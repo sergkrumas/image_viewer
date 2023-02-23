@@ -1,0 +1,9 @@
+*.pyc
+/utility
+default_paths.txt
+comments.txt
+fav.txt
+secret_data.txt
+session.txt
+session_old.txt
+settings.json
