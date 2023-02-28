@@ -997,7 +997,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
     def isLeftClickAndCtrlShift(self, event):
         return event.buttons() == Qt.LeftButton \
-                             and event.modifiers() == (Qt.ControlModifier | Qt.ShiftModifier) 
+                             and event.modifiers() == (Qt.ControlModifier | Qt.ShiftModifier)
 
     def get_comment_rect_info(self):
         rect = build_valid_rect(self.COMMENT_RECT_INPUT_POINT1, self.COMMENT_RECT_INPUT_POINT2)

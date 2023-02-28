@@ -327,7 +327,7 @@ class SettingsWindow(QWidget):
             setting_data = list(cls.strings[setting_id])
             setting_data[0] = setting_value
             cls.strings[setting_id] = tuple(setting_data)
-            valid = True            
+            valid = True
         if valid:
             cls.store_to_disk()
         else:
