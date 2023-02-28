@@ -22,6 +22,9 @@ from _utils import *
 from collections import defaultdict
 import datetime
 
+import locale
+locale.setlocale(locale.LC_ALL, "russian")
+
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 
 class ThumbnailsThread(QThread):
