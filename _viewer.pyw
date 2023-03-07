@@ -2360,14 +2360,14 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                     LibraryData().show_viewed_image_next()
                 elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
                     self.toggle_monitor('right')
-                elif event.modifiers() == Qt.NoModifier:
+                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
                     LibraryData().show_next_image()
             elif key == Qt.Key_Left:
                 if event.modifiers() & Qt.AltModifier:
                     LibraryData().show_viewed_image_prev()
                 elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
                     self.toggle_monitor('left')
-                elif event.modifiers() == Qt.NoModifier:
+                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
                     LibraryData().show_previous_image()
         self.update()
 
