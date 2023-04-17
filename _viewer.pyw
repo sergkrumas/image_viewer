@@ -1066,7 +1066,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
     def mousePressEvent(self, event):
         if self.is_startpage_activated():
-            self.mousePressEventStartPage(self, event)
+            self.mousePressEventStartPage(event)
             return
 
         if event.button() == Qt.LeftButton:
@@ -2887,6 +2887,10 @@ def exit_threads():
         thread.terminate()
         # нужно вызывать terminate вместо exit
 
+def start_isolated_process(path):
+    args = [sys.executable, __file__, path, "-isolated"]
+    subprocess.Popen(args)
+
 def open_in_separated_app_copy(folder_data):
     ci = folder_data.current_image()
     content_path = ci.filepath
@@ -2905,8 +2909,7 @@ def open_in_separated_app_copy(folder_data):
                 r = desktop.screenGeometry(screen=i)
                 QCursor().setPos(r.center())
                 break
-        args = [sys.executable, __file__, content_path, "-isolated"]
-        subprocess.Popen(args)
+        start_isolated_process(content_path)
     else:
         msg = "Ни изображение, ни папка, в которой оно находится, не существуют"
         QMessageBox.critical(None, "Отмена!", msg)
@@ -3016,7 +3019,8 @@ def _main():
 
     if not Globals.isolated_mode:
         if Globals.USE_SOCKETS:
-            path = ServerOrClient.server_or_client_via_sockets(path, open_request)
+            path = ServerOrClient.server_or_client_via_sockets(path, open_request,
+                                                                            start_isolated_process)
         else:
             path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
 

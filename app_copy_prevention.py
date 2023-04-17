@@ -90,7 +90,7 @@ class ServerOrClient():
 
 
     @classmethod
-    def server_or_client_via_sockets(cls, path, open_request_callback):
+    def server_or_client_via_sockets(cls, path, open_request_callback, start_process_callback):
         print("begin of server_or_client_via_sockets")
 
         SERVER_NAME = "krumasimageviewer"
@@ -145,15 +145,15 @@ class ServerOrClient():
                 return True
 
         def start_client():
-            global socket
-            socket = QLocalSocket()
+            global client_socket
+            client_socket = QLocalSocket()
 
             def exit_func():
                 sys.exit()
 
             def transfer_data_callback():
                 data = str(path).encode("utf8")
-                socket.writeData(data)
+                client_socket.writeData(data)
 
                 global transfer_delay_timer
                 transfer_delay_timer = QTimer()
@@ -161,7 +161,11 @@ class ServerOrClient():
                 transfer_delay_timer.setInterval(10*1000)
                 transfer_delay_timer.start()
 
-            def socket_error(socketError):
+            def do_start_server():
+                nonlocal SERVER_STARTED
+                SERVER_STARTED = start_server()
+
+            def client_socket_error(socketError):
                 errors = {
                     QLocalSocket.ServerNotFoundError:
                         "The host was not found. Please check the host name and port "
@@ -173,15 +177,24 @@ class ServerOrClient():
                     QLocalSocket.PeerClosedError:
                         None,
                 }
-                msg = errors.get(socketError, "The following error occurred: %s." % socket.errorString())
-                # QMessageBox.critical(None, "", msg)
-                nonlocal SERVER_STARTED
-                SERVER_STARTED = start_server()
+                msg = errors.get(socketError, "The following error occurred: %s." % client_socket.errorString())
 
-            socket.connected.connect(transfer_data_callback)
-            socket.error.connect(socket_error)
-            socket.abort()
-            socket.connectToServer(SERVER_NAME)
+                ret = QMessageBox.No
+                if os.path.exists(path):
+                    ret = QMessageBox.question(None,'Не обнаружено запущенной копии приложения',
+                        f"Запуститься в упрощённом режиме?",
+                        QMessageBox.Yes | QMessageBox.No)
+                if ret == QMessageBox.Yes:
+                    start_process_callback(path)
+                    sys.exit()
+                else:
+                    # finally start server
+                    do_start_server()
+
+            client_socket.connected.connect(transfer_data_callback)
+            client_socket.error.connect(client_socket_error)
+            client_socket.abort()
+            client_socket.connectToServer(SERVER_NAME)
 
         start_client()
 
