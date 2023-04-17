@@ -998,6 +998,9 @@ class LibraryData(object):
             MW.update()
             MW.activateWindow()
 
+            if MW.show_startpage:
+                MW.show_startpage = False
+
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()
 

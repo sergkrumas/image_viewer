@@ -1050,17 +1050,25 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         self.comment_data_candidate = None
         self.update()
 
+    def mousePressEventStartPage(self, event):
+        if self.over_corner_button(corner_attr="topLeft"):
+            self.toggle_viewer_library_mode()
+            return
+        elif self.over_corner_button():
+            main_window = Globals.main_window
+            main_window.require_the_closing()
+            return
+        else:
+            path = input_path_dialog("", exit=False)
+            if path:
+                LibraryData().handle_input_data(path)
+                self.update()
+
     def mousePressEvent(self, event):
         if self.is_startpage_activated():
-            if self.over_corner_button(corner_attr="topLeft"):
-                self.toggle_viewer_library_mode()
-                return
-            else:
-                path = input_path_dialog("", exit=False)
-                if path:
-                    LibraryData().handle_input_data(path)
-                    self.update()
+            self.mousePressEventStartPage(self, event)
             return
+
         if event.button() == Qt.LeftButton:
             self.left_button_pressed = True
 
