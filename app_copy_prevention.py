@@ -180,10 +180,11 @@ class ServerOrClient():
                 msg = errors.get(socketError, "The following error occurred: %s." % client_socket.errorString())
 
                 ret = QMessageBox.No
-                if os.path.exists(path):
-                    ret = QMessageBox.question(None,'Не обнаружено запущенной копии приложения',
-                        f"Запуститься в упрощённом режиме?",
-                        QMessageBox.Yes | QMessageBox.No)
+                if not cls.globals.started_from_sublime_text:
+                    if os.path.exists(path):
+                        ret = QMessageBox.question(None,'Не обнаружено запущенной копии приложения',
+                            f"Запуститься в упрощённом режиме?",
+                            QMessageBox.Yes | QMessageBox.No)
                 if ret == QMessageBox.Yes:
                     start_process_callback(path)
                     sys.exit()

@@ -54,6 +54,8 @@ class Globals():
 
     USE_GLOBAL_LIST_VIEW_HISTORY = False
 
+    started_from_sublime_text = False
+
     SECRET_HINTS_FILEPATH = "secret_data.txt"
     SESSION_FILENAME = "session.txt"
     FAV_FILENAME = "fav.txt"
@@ -65,24 +67,6 @@ class Globals():
 
     app_title = "Krumassano Image Viewer v0.90 Alpha"
 
-
-
-class VideoLabel(QLabel):
-    def __init__(self, text, parent):
-        super().__init__(text, parent)
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        painter = QPainter()
-        painter.begin(self)
-        MW = Globals.main_window
-        # draw thirds
-        if MW.show_thirds:
-            MW.draw_thirds(painter, self.rect())
-        # draw image center
-        if MW.show_image_center or MW.show_center_point:
-            MW.draw_center_point(painter, self.rect().center())
-        painter.end()
 
 class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
@@ -336,10 +320,8 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         self.secret_width = 0
         self.secret_height = 0
 
-        self.movie_base = None
         self.movie = None
-        self.movie_width = 0
-        self.movie_height = 0
+        self.invalid_movie = False
 
         self.CENTER_LABEL_TIME_LIMIT = 2
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT - 1
@@ -360,8 +342,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
         self.show_center_point = False
 
-        self.invalid_movie = False
-
         self.contextMenuActivated = False
 
         self.property_animation_attr_name = ""
@@ -381,9 +361,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
         self._key_pressed = False
         self._key_unreleased = False
-
-        self.movie_need_to_be_paused = False
-        self.movie_need_to_be_paused2 = False
 
         self.two_monitors_wide = False
 
@@ -437,7 +414,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         for attr_name, start_value, end_value in self.property_animation_data:
             value = self.interpolate_values(start_value, end_value, factor)
             setattr(self, attr_name, value)
-            self.apply_movie_tranformation()
             self.update()
         if self.animation_duration < (time.time() - self.at_start_timestamp):
             if self.property_animation_callback_on_finish:
@@ -657,20 +633,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         self.hint_center_position = QPoint(0, 0)
 
         if correct:
-            if self.animated:
-                # обязательно вызвать start ПЕРЕД запросом размеров!
-                self.movie.start()
-                p = self.movie.currentPixmap()
-                self.movie_width = p.width()
-                self.movie_height = p.height()
-                self.movie_base.resize(self.movie_width, self.movie_height)
-                w2 = self.movie_width/2
-                pos = QPoint(self.image_center_position) - QPointF(w2, w2).toPoint()
-                self.movie_base.move(pos)
-                self.movie_base.update()
-            else:
-                # пока только для статического контента
-                self.correct_scale()
+            self.correct_scale()
 
     def generate_info_pixmap(self, label, text, size=1000, no_background=False):
         pxm = QPixmap(size, size)
@@ -720,8 +683,9 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         p.end()
         return pxm
 
-    def is_animated_valid(self):
+    def is_animated_file_valid(self):
         self.movie.jumpToFrame(0)
+        self.animation_stamp()
         fr = self.movie.frameRect()
         if fr.width() == 0 or fr.height() == 0:
             self.invalid_movie = True
@@ -730,25 +694,30 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
     def show_animated(self, filepath):
         if filepath is not None:
             self.invalid_movie = False
-            # self.movie_base = QLabel("", self)
-            self.movie_base = VideoLabel("", self)
-            self.movie_base.setVisible(self.library_mode == False)
             self.movie = QMovie(filepath)
             self.movie.setCacheMode(QMovie.CacheAll)
-            self.movie.updated.connect(self.movie_update_handler)
-            # self.movie.resized.connect(self.movie_update_handler)
-            self.movie_base.setMovie(self.movie)
             self.image_filepath = filepath
             self.tranformations_allowed = True
-            # self.update()
-            self.is_animated_valid()
+            self.is_animated_file_valid()
         else:
             if self.movie:
-                self.movie.setParent(None)
                 self.movie.deleteLater()
                 self.movie = None
-            if self.movie_base:
-                self.movie_base.setVisible(False)
+
+    def animation_stamp(self):
+        self.frame_delay = self.movie.nextFrameDelay()
+        self.frame_time = time.time()
+
+    def tick_animation(self):
+        delta = (time.time() - self.frame_time) * 1000
+        is_playing = not self.image_data.anim_paused
+        is_animation = self.movie.frameCount() > 1
+        if delta > self.frame_delay and is_playing and is_animation:
+            self.movie.jumpToNextFrame()
+            self.animation_stamp()
+            self.frame_delay = self.movie.nextFrameDelay()
+            self.pixmap = self.movie.currentPixmap()
+            self.get_rotated_pixmap(force_update=True)
 
     def show_static(self, filepath, pass_=1):
         # pixmap = QPixmap(filepath)
@@ -846,10 +815,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
     def current_image_details(self):
         w, h = None, None
-        if self.animated:
-            w = self.movie_width
-            h = self.movie_height
-        elif self.pixmap:
+        if (self.animated and self.pixmap) or self.pixmap:
             w = self.pixmap.width()
             h = self.pixmap.height()
         if self.animated or self.pixmap:
@@ -865,31 +831,19 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         else:
             return "Загрузка"
 
-    def apply_movie_tranformation(self):
-        if not self.animated:
-            return
-        rect = self.get_image_viewport_rect()
-        self.movie_base.resize(rect.width(), rect.height())
-        self.movie.setScaledSize(QSize(rect.width(), rect.height()))
-        r = QPointF(rect.width()/2, rect.height()/2).toPoint()
-        pos = QPoint(self.image_center_position) - r
-        self.movie_base.move(pos)
-
     def get_rotated_pixmap(self, force_update=False):
         if self.rotated_pixmap is None or force_update:
             rm = QTransform()
             rm.rotate(self.image_rotation)
+            if self.pixmap is None and self.animated:
+                self.pixmap = self.movie.currentPixmap()
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
 
     def get_image_viewport_rect(self, debug=False, respect_rotation=False):
         image_rect = QRect()
-        if self.animated and not self.invalid_movie:
-            orig_width = self.movie_width
-            orig_height = self.movie_height
-        elif self.pixmap or self.invalid_movie:
+        if self.pixmap or self.invalid_movie or self.animated:
             if self.pixmap:
-                # pixmap = self.pixmap
                 pixmap = self.get_rotated_pixmap()
                 orig_width = pixmap.rect().width()
                 orig_height = pixmap.rect().height()
@@ -898,8 +852,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         else:
             orig_width = 0
             orig_height = 0
-        # if respect_rotation and self.image_rotation in [90, 270] and not self.animated:
-        #     orig_width, orig_height = orig_height, orig_width
         image_rect.setLeft(0)
         image_rect.setTop(0)
         if self.error:
@@ -937,7 +889,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             (event.oldSize().width() - event.size().width())/2,
             (event.oldSize().height() - event.size().height())/2,
         ).toPoint()
-        self.apply_movie_tranformation()
 
         if self.library_mode or True:
             LibraryData().update_current_folder_columns()
@@ -967,9 +918,11 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         if not Globals.USE_SOCKETS:
             ServerOrClient.retrieve_server_data(open_request)
         self.control_panel_visibility()
-        self.noise_time += 0.005
         if self.show_noise_cells and noise:
+            self.noise_time += 0.005
             self.update()
+        if self.animated:
+            self.tick_animation()
 
     def control_panel_visibility(self):
         CP = Globals.control_panel
@@ -1092,7 +1045,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                     self.image_translating = True
                     self.oldCursorPos = self.mapped_cursor_pos()
                     self.oldElementPos = self.image_center_position
-                    self.apply_movie_tranformation()
                     self.update()
 
             viewer_mode = not self.library_mode and not self.handling_input
@@ -1123,7 +1075,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                 old = self.image_center_position
                 self.hint_center_position += new-old
                 self.image_center_position = new
-                self.apply_movie_tranformation()
         elif event.buttons() == Qt.NoButton and self.library_mode:
             if self.previews_list:
                 ai = self.previews_list_active_item
@@ -1152,7 +1103,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         elif event.button() == Qt.LeftButton:
             if self.tranformations_allowed:
                 self.image_translating = False
-                self.apply_movie_tranformation()
                 self.update()
         self.update()
         super().mouseReleaseEvent(event)
@@ -1231,7 +1181,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             self.rect().width()/2,
             self.rect().height()/2
         ).toPoint()
-        self.apply_movie_tranformation()
         # setGeometry вместо resize и move и мерцания исчезают полностью
         if True:
             size = QSize(r.width(), r.height())
@@ -1264,7 +1213,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         desktop = QDesktopWidget()
         self.image_center_position -= desktop.screenGeometry(self).topLeft()
         self.hint_center_position -= desktop.screenGeometry(self).topLeft()
-        self.apply_movie_tranformation()
         self.update()
 
     def get_center_position(self):
@@ -1397,7 +1345,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             if scroll_value > 0:
                 index +=1
         self.movie.setSpeed(speed_values[index])
-        self.movie.start()
 
     def do_scroll_playbar(self, scroll_value):
         if not self.animated:
@@ -1408,7 +1355,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         else:
             frames_list = list(reversed(frames_list))
         frames_list.append(0)
-        self.movie.setPaused(True)
         i = frames_list.index(self.movie.currentFrameNumber()) + 1
         self.movie.jumpToFrame(frames_list[i])
 
@@ -1420,7 +1366,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
     def set_original_scale(self):
         self.image_scale = 1.0
-        self.apply_movie_tranformation()
         self.update()
 
     def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None):
@@ -1440,12 +1385,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         if self.image_scale <= self.LOWER_SCALE_LIMIT:
             if scroll_value < 0.0:
                 return
-
-        was_paused = True
-        if self.animated and self.movie.state() != QMovie.Paused:
-            was_paused = False
-            self.movie.setPaused(True)
-            # self.movie.start()
 
         before_scale = self.image_scale
 
@@ -1475,15 +1414,9 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         delta = before_scale - self.image_scale
         self.image_scale = min(max(self.LOWER_SCALE_LIMIT, self.image_scale),
                                                                     self.UPPER_SCALE_LIMIT)
-
-        if self.animated:
-            width = self.movie_width
-            height = self.movie_height
-        else:
-            # pixmap = self.pixmap
-            pixmap = self.get_rotated_pixmap()
-            width = pixmap.rect().width()
-            height = pixmap.rect().height()
+        pixmap = self.get_rotated_pixmap()
+        width = pixmap.rect().width()
+        height = pixmap.rect().height()
 
         if override_factor:
             pivot = QPointF(self.rect().center())
@@ -1558,34 +1491,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
 
         self.activate_or_reset_secret_hint()
 
-        if self.animated:
-            if was_paused:
-                self.movie_need_to_be_paused = True
-            if self.movie.frameCount() == 1:
-                self.movie_update_handler()
-                # из-за того, что при остановке компонент qmovie перестаёт масштабироваться,
-                # нужно пользоваться костылем movie_update_handler который заставляет таки
-                # компонент застопариться на нужном кадре, но делает это в два этапа
-            self.movie.start()
-
-            self.apply_movie_tranformation()
-
         self.update()
-
-    def movie_update_handler(self):
-        if self.movie and self.movie.frameCount() == 1:
-            self.movie_need_to_be_paused = False
-            self.movie_need_to_be_paused2 = False
-            self.movie.setPaused(False)
-            return
-        if self.movie_need_to_be_paused2:
-            self.movie_need_to_be_paused2 = False
-            self.movie.setPaused(True)
-        if self.movie_need_to_be_paused:
-            self.movie_need_to_be_paused = False
-            self.movie.jumpToFrame(self.movie.currentFrameNumber()-1)
-            self.movie.setPaused(True)
-            self.movie_need_to_be_paused2 = True
 
     def scale_label_opacity(self):
         delta = time.time() - self.center_label_time
@@ -1626,14 +1532,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         # if not large: #debug
         #   text = "{text}\n{Globals.control_panel.window_opacity:.2f}"
         r = self.rect()
-        if self.animated:
-            pict = self.movie.currentPixmap()
-            w = pict.width()
-            h = pict.height()
-            x = int(self.image_center_position.x()-w/2)
-            y = int(self.image_center_position.y()-h/2)
-            i = QRect(x, y, w, h)
-            r = QRect(i.left(), i.top()-50, i.width(), 50)
         brect = p.drawText(r.x(), r.y(), r.width(), r.height(), Qt.AlignCenter, text)
         p.end()
         del p
@@ -2105,7 +2003,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             painter.setBrush(Qt.NoBrush)
             # 4. DRAW IMAGE
             pixmap = self.get_rotated_pixmap()
-            # pixmap = self.pixmap
             painter.drawPixmap(image_rect, pixmap, pixmap.rect())
             if self.invert_image:
                 # intertion code
@@ -2138,28 +2035,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                     value = math.ceil(self.image_scale*100)
                     # "{:.03f}"
                     text = f"{value:,}%".replace(',', ' ')
-                else:
-                    text = self.center_label_info_type
-                self.draw_center_label(painter, text)
-
-            self.draw_secret_hint(painter)
-
-        elif self.movie:
-            # for debug purposes only
-            # painter.drawRect(self.get_image_viewport_rect())
-            r = self.get_image_viewport_rect()
-            div_ = self.movie.frameCount()-1 if self.movie.frameCount() > 1 else 1
-            progress_width = r.width() * self.movie.currentFrameNumber()/div_
-            progress_bar_rect = QRect(r.left(), r.bottom(), int(progress_width), 10)
-            painter.setBrush(QBrush(Qt.green))
-            painter.setPen(Qt.NoPen)
-            painter.drawRect(progress_bar_rect)
-            # draw scale label
-            if self.image_center_position:
-                if self.center_label_info_type == "scale":
-                    value = math.ceil(self.image_scale*100)
-                    # "{:.03f}"
-                    text = f"{value:,}%".replace(',', ' ')
                 elif self.center_label_info_type == "playspeed":
                     speed = self.movie.speed()
                     text = f"speed {speed}%"
@@ -2170,9 +2045,23 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                 else:
                     text = self.center_label_info_type
                 self.draw_center_label(painter, text)
+
+            self.draw_secret_hint(painter)
+        elif self.movie:
+            pass
         else:
             self.draw_center_label(painter, self.loading_text, large=True)
 
+        if self.movie:
+            # for debug purposes only
+            # painter.drawRect(self.get_image_viewport_rect())
+            r = self.get_image_viewport_rect()
+            div_ = self.movie.frameCount()-1 if self.movie.frameCount() > 1 else 1
+            progress_width = r.width() * self.movie.currentFrameNumber()/div_
+            progress_bar_rect = QRect(r.left(), r.bottom(), int(progress_width), 10)
+            painter.setBrush(QBrush(Qt.green))
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(progress_bar_rect)
 
         self.draw_comments(painter)
 
@@ -2300,8 +2189,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             MW.show_startpage = False
         MW.viewer_reset() # для показа сообщения о загрузке
         LibraryData().post_choose()
-        if self.movie_base:
-            self.movie_base.setVisible(True)
         Globals.control_panel.setVisible(True)
         LibraryData().add_current_image_to_view_history()
         if start_page_was_activated:
@@ -2312,8 +2199,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
         LibraryData().update_current_folder_columns()
         self.autoscroll_set_or_reset()
         LibraryData().pre_choose()
-        if self.movie_base:
-            self.movie_base.setVisible(False)
         Globals.control_panel.setVisible(False)
         self.previews_list_active_item = None
         for folder_data in LibraryData().folders:
@@ -2419,7 +2304,8 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                 LibraryData().jump_to_last()
             elif key == Qt.Key_Space:
                 if self.animated:
-                    self.movie.setPaused(self.movie.state() == QMovie.Running)
+                    im_data = self.image_data
+                    im_data.anim_paused = not im_data.anim_paused
             elif check_scancode_for(event, ("W", "S", "A", "D")):
                 length = 1.0
                 if event.modifiers() & Qt.ShiftModifier:
@@ -2433,7 +2319,6 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                 elif check_scancode_for(event, "D"):
                     delta =  QPoint(-1, 0) * length
                 self.image_center_position += delta
-                self.apply_movie_tranformation()
                 self.update()
             elif check_scancode_for(event, "Y"):
                 if self.frameless_mode:
@@ -2495,11 +2380,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             self.show_center_label("Невозможно сохранить: нет файла или файл не найден")
             return
         path = self.image_data.filepath
-        if self.animated:
-            pixmap = self.movie.currentPixmap()
-        else:
-            # pixmap = QPixmap(path)
-            pixmap = self.get_rotated_pixmap()
+        pixmap = self.get_rotated_pixmap()
         save_pixmap = QPixmap(self.size())
         save_pixmap.fill(Qt.transparent)
         painter = QPainter()
@@ -2546,7 +2427,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             else:
                 pixmap = self.pixmap
         elif self.animated:
-            pixmap = self.movie.currentPixmap()
+            pixmap = self.get_rotated_pixmap()
         image = pixmap.toImage()
         path, ext = os.path.splitext(content_filepath)
         content_filepath = f"{path}.{_format}"
@@ -2717,8 +2598,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                 save_as_png = contextMenu.addAction("Сохранить в .png...")
                 save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
                 copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
-                if not self.animated:
-                    copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
+                copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
                 if LibraryData().current_folder().fav:
 
                     contextMenu.addSeparator()
@@ -2918,8 +2798,9 @@ def get_predefined_path_if_started_from_sublimeText():
     process = psutil.Process(os.getpid())
     cmdline = process.cmdline()
     if "-u" in cmdline:
-        print('started in sublime text')
+        print('started from sublime text')
         # run from sublime_text
+        Globals.started_from_sublime_text = True
         default_paths_txt = os.path.join(os.path.dirname(__file__),
                                                         Globals.DEFAULT_PATHS_FILENAME)
         if os.path.exists(default_paths_txt):
@@ -2932,6 +2813,7 @@ def get_predefined_path_if_started_from_sublimeText():
                         print("\tdefault path is set")
     else:
         path = ""
+        Globals.started_from_sublime_text = False
     return path
 
 class HookConsoleOutput:
@@ -2944,7 +2826,7 @@ class HookConsoleOutput:
         if self.console:
             self.console.write(message)
         type(self).messages.insert(0, (time.time(), message))
-        type(self).messages = type(self).messages[:20]
+        type(self).messages = type(self).messages[:100]
         # self.file.write(message)
 
     def flush(self):

@@ -335,7 +335,6 @@ class LibraryData(object):
         im = LibraryData().current_folder().current_image()
         MW.show_image(im)
         im.load_data()
-        MW.apply_movie_tranformation()
         MW.set_window_title(MW.current_image_details())
         MW.update()
 
@@ -410,7 +409,6 @@ class LibraryData(object):
             im_data = self.current_folder().current_image()
             MW.show_image(im_data)
             cf.current_image().load_data()
-            MW.apply_movie_tranformation()
             MW.set_window_title(MW.current_image_details())
             LibraryData.update_current_folder_columns()
             MW.update()
@@ -440,7 +438,6 @@ class LibraryData(object):
             cf.current_image().load_data(cp=old_center_pos)
         else:
             cf.current_image().load_data()
-        MW.apply_movie_tranformation()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if old_current == cf.current_image():
@@ -462,7 +459,6 @@ class LibraryData(object):
             cf.current_image().load_data(cp=old_center_pos)
         else:
             cf.current_image().load_data()
-        MW.apply_movie_tranformation()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if old_current == cf.current_image():
@@ -484,7 +480,6 @@ class LibraryData(object):
             cf.current_image().load_data(cp=old_center_pos)
         else:
             cf.current_image().load_data()
-        MW.apply_movie_tranformation()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if leave_history_record:
@@ -1225,7 +1220,6 @@ class ImageData():
         self.hint_position = MW.hint_center_position
         self.image_rotation = MW.image_rotation
         if MW.animated:
-            self.anim_paused = MW.movie.state() == QMovie.Paused
             self.anim_cur_frame = MW.movie.currentFrameNumber()
 
     def load_data(self, cp=None):
@@ -1254,7 +1248,7 @@ class ImageData():
         self.update_fav_button_state()
         if MW.animated and self.anim_paused:
             MW.movie.jumpToFrame(self.anim_cur_frame)
-            MW.movie_need_to_be_paused = True
+            MW.get_rotated_pixmap(force_update=True)
 
     def update_fav_button_state(self):
         favorite_btn = LibraryData().globals.control_panel.favorite_btn
