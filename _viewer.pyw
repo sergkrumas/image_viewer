@@ -2063,7 +2063,8 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        self.draw_comments(painter)
+        if not Globals.isolated_mode:
+            self.draw_comments(painter)
 
         self.draw_view_history_row(painter)
 
