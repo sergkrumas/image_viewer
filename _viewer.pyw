@@ -1955,38 +1955,21 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         # draw image
         if self.pixmap or self.invalid_movie:
-            image_rect_ = self.get_image_viewport_rect()
+            image_rect = self.get_image_viewport_rect()
 
-            # 1. PREPARE TRANSFORMATIONS
-            painter.translate(self.image_center_position)
-            # painter.rotate(self.image_rotation)
-            image_rect = QRectF(-image_rect_.width()/2,
-                                -image_rect_.height()/2,
-                                image_rect_.width(),
-                                image_rect_.height()).toRect()
-            # 2. DRAW "SHADOW"
-            if False:
-                # применение эффекта QGraphicsDropShadowEffect дало тормоза при масштабировании,
-                # поэтому от тени пришлось отказаться. При всё этом сама тень так и не
-                #                                                                     отрисовалась,
-                # а тормоза тем не менее были! Тень теперь заменяет полупрозрачная чёрная рамка.
-                shadow_rect = image_rect.adjusted(-1, -1, 1, 1)
-                painter.setBrush(Qt.NoBrush)
-                painter.setPen(QPen(QColor(0, 0, 0, 100), 5, Qt.SolidLine))
-                painter.drawRect(shadow_rect)
-            else:
-                # тень таки удалось сделать с помощью радиальных и линейных градиентов
-                OFFSET = 15
-                shadow_rect = QRect(image_rect)
-                shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
-                draw_shadow(
-                    self,
-                    painter,
-                    shadow_rect, 30,
-                    webRGBA(QColor(0, 0, 0, 140)),
-                    webRGBA(QColor(0, 0, 0, 0))
-                )
-            # 3. DRAW CHECKERBOARD
+            # 1. DRAW SHADOW
+            OFFSET = 15
+            shadow_rect = QRect(image_rect)
+            shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
+            draw_shadow(
+                self,
+                painter,
+                shadow_rect, 30,
+                webRGBA(QColor(0, 0, 0, 140)),
+                webRGBA(QColor(0, 0, 0, 0))
+            )
+
+            # 2. DRAW CHECKERBOARD
             checkerboard_br = QBrush()
             pixmap = QPixmap(40, 40)
             painter_ = QPainter()
@@ -2001,11 +1984,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setBrush(checkerboard_br)
             painter.drawRect(image_rect)
             painter.setBrush(Qt.NoBrush)
-            # 4. DRAW IMAGE
+
+            # 3. DRAW IMAGE
             pixmap = self.get_rotated_pixmap()
             painter.drawPixmap(image_rect, pixmap, pixmap.rect())
             if self.invert_image:
-                # intertion code
                 cm = painter.compositionMode()
                 painter.setCompositionMode(QPainter.RasterOp_NotDestination)
                                                                 #RasterOp_SourceXorDestination
@@ -2016,10 +1999,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 painter.setBrush(Qt.white)
                 painter.drawRect(image_rect)
                 painter.setCompositionMode(cm)
-            # 5. RESET TRANFORMATION
-            painter.resetTransform()
 
-            image_rect = self.get_image_viewport_rect()
             # draw cyberpunk
             if self.show_cyberpunk:
                 draw_cyberpunk_corners(self, painter, image_rect)
