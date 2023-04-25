@@ -68,7 +68,7 @@ class Globals():
     app_title = "Krumassano Image Viewer v0.90 Alpha"
 
 
-class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
+class MainWindow(QMainWindow, UtilsMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -840,7 +840,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
 
-    def get_image_viewport_rect(self, debug=False, respect_rotation=False):
+    def get_image_viewport_rect(self, debug=False):
         image_rect = QRect()
         if self.pixmap or self.invalid_movie or self.animated:
             if self.pixmap:
@@ -935,7 +935,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
                     CP.setVisible(True)
 
     def is_cursor_over_image(self):
-        return self.cursor_in_rect(self.get_image_viewport_rect(respect_rotation=True))
+        return self.cursor_in_rect(self.get_image_viewport_rect())
 
     def toggle_viewer_library_mode(self):
         event = QKeyEvent(QEvent.KeyRelease, Qt.Key_Tab, Qt.NoModifier, 0, 0, 0)
@@ -2019,7 +2019,7 @@ class MainWindow(QMainWindow, QGraphicsView, UtilsMixin):
             # 5. RESET TRANFORMATION
             painter.resetTransform()
 
-            image_rect = self.get_image_viewport_rect(respect_rotation=True)
+            image_rect = self.get_image_viewport_rect()
             # draw cyberpunk
             if self.show_cyberpunk:
                 draw_cyberpunk_corners(self, painter, image_rect)
