@@ -595,35 +595,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         # корректировка скейла для всех картинок таким образом
         # чтобы каждая занимала максимум экранного пространства
         # и при этом умещалась полностью независимо от размера
-        size_rect = self.get_image_viewport_rect()
-        if True:
-            # new, more accurate method
-            target_rect = self.rect()
-            target_rect.adjust(0, 50, 0, -50)
-            projected_rect = fit_rect_into_rect(size_rect, target_rect)
-            self.image_scale = projected_rect.width()/size_rect.width()
-        else:
-            # legacy
-            SMALL_IMAGE_HEIGHT = 700
-            SMALL_IMAGE_WIDTH = 700
-            target_size = self.rect().height()-100
-
-            width_is_great = size_rect.width() > self.rect().width()
-            height_is_great = size_rect.height() > self.rect().height()
-            width_is_less = size_rect.width() < SMALL_IMAGE_WIDTH
-            height_is_less = size_rect.height() < SMALL_IMAGE_HEIGHT
-            if width_is_great or height_is_great:
-                # если контент не влазит на экран
-                if size_rect.width() > size_rect.height():
-                    self.image_scale = target_size/size_rect.width()
-                else:
-                    self.image_scale = target_size/size_rect.height()
-            elif width_is_less or height_is_less:
-                # если контент слишком мелкий?
-                if size_rect.width() > size_rect.height():
-                    self.image_scale = target_size/size_rect.width()
-                else:
-                    self.image_scale = target_size/size_rect.height()
+        size_rect = self.get_rotated_pixmap(force_update=True).rect()
+        target_rect = self.rect()
+        target_rect.adjust(0, 50, 0, -50)
+        projected_rect = fit_rect_into_rect(size_rect, target_rect)
+        self.image_scale = projected_rect.width()/size_rect.width()
 
     def restore_image_transformations(self, correct=True):
         self.image_rotation = self.image_data.image_rotation
