@@ -1333,6 +1333,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         frames_list.append(0)
         i = frames_list.index(self.movie.currentFrameNumber()) + 1
         self.movie.jumpToFrame(frames_list[i])
+        self.pixmap = self.movie.currentPixmap()
+        self.get_rotated_pixmap(force_update=True)
 
     def do_scroll_images_list(self, scroll_value):
         if scroll_value > 0:
