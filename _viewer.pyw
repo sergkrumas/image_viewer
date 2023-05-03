@@ -52,6 +52,8 @@ class Globals():
 
     VIEW_HISTORY_SIZE = 20
 
+    is_path_exists = False
+
     USE_GLOBAL_LIST_VIEW_HISTORY = False
 
     started_from_sublime_text = False
@@ -2864,6 +2866,8 @@ def _main():
                                                                             start_isolated_process)
         else:
             path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
+
+    Globals.is_path_exists = os.path.exists(path)
 
     generate_pixmaps(Globals, SettingsWindow)
 

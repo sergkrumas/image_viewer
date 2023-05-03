@@ -647,9 +647,10 @@ class LibraryData(object):
                     content_hash=item.content_hash,
                     modifiers=item.modifiers
                 )
-        # сохраняем заново, чтобы отвалилось всё то,
-        # что корректно не открылось в handle_input_data
-        LibraryData().store_session_file()
+        if LibraryData().globals.is_path_exists:
+            # сохраняем заново, чтобы отвалилось всё то,
+            # что корректно не открылось в handle_input_data
+            LibraryData().store_session_file()
 
     @staticmethod
     def store_session_file():
