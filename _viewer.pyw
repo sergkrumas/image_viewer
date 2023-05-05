@@ -933,8 +933,8 @@ class MainWindow(QMainWindow, UtilsMixin):
     def get_comment_rect_info(self):
         rect = build_valid_rect(self.COMMENT_RECT_INPUT_POINT1, self.COMMENT_RECT_INPUT_POINT2)
         image_rect = self.get_image_viewport_rect()
-        screen_delta1 = image_rect.topLeft() - rect.topLeft()
-        screen_delta2 = image_rect.topLeft() - rect.bottomRight()
+        screen_delta1 = rect.topLeft() - image_rect.topLeft()
+        screen_delta2 = rect.bottomRight() - image_rect.topLeft()
 
         left = screen_delta1.x()/image_rect.width()
         top = screen_delta1.y()/image_rect.height()
@@ -2042,11 +2042,12 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             base_point = image_rect.topLeft()
 
-            screen_left = base_point.x() + -image_rect.width()*comment.left
-            screen_top = base_point.y() + -image_rect.height()*comment.top
+            # abs is for backwards compatibility
+            screen_left = base_point.x() + image_rect.width()*abs(comment.left)
+            screen_top = base_point.y() + image_rect.height()*abs(comment.top)
 
-            screen_right = base_point.x() + -image_rect.width()*comment.right
-            screen_bottom = base_point.y() + -image_rect.height()*comment.bottom
+            screen_right = base_point.x() + image_rect.width()*abs(comment.right)
+            screen_bottom = base_point.y() + image_rect.height()*abs(comment.bottom)
 
             comment_rect = QRectF(
                 QPointF(screen_left, screen_top),
