@@ -547,6 +547,7 @@ class ControlPanel(QWidget, UtilsMixin):
             button.setStyleSheet(style)
             button.setProperty("tooltip_text", button.text())
             button.setText("")
+            button.setFocusPolicy(Qt.NoFocus)
             # if button is self.favorite_btn:
             #   button.setText("+")
             _buttons_layout.addWidget(button)

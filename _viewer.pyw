@@ -2268,6 +2268,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if self.animated:
                     im_data = self.image_data
                     im_data.anim_paused = not im_data.anim_paused
+                self.update()
             elif check_scancode_for(event, ("W", "S", "A", "D")):
                 length = 1.0
                 if event.modifiers() & Qt.ShiftModifier:
