@@ -295,6 +295,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.show_startpage = True
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
+        else:
+            self.need_for_init_after_call_from_tray = False
         super().__init__(*args, **kwargs)
 
         self.loading_text = random.choice(self.LOADING_TEXT)
