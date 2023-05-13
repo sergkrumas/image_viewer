@@ -21,6 +21,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtSvg import  QSvgRenderer
 
 import PIL
 
@@ -427,6 +428,20 @@ def load_image_respect_orientation(filepath):
     imgReader.setAutoTransform(True)
     img = imgReader.read()
     return QPixmap().fromImage(img)
+
+def load_svg(path, scale_factor=20):
+    renderer =  QSvgRenderer(path)
+    size = renderer.defaultSize()
+    rastered_image = QImage(
+        size.width()*scale_factor,
+        size.height()*scale_factor,
+        QImage.Format_ARGB32
+    )
+    rastered_image.fill(Qt.transparent)
+    painter = QPainter(rastered_image)
+    renderer.render(painter)
+    painter.end()
+    return QPixmap.fromImage(rastered_image)
 
 def processAppEvents(_all=False):
     app = QApplication.instance()

@@ -373,7 +373,7 @@ class ControlPanel(QWidget, UtilsMixin):
             def __lt__(self, other):
                 return self.distance > other.distance
         window_rect = MW.rect()
-        content_rect = MW.get_image_viewport_rect(debug=False, respect_rotation=True)
+        content_rect = MW.get_image_viewport_rect(debug=False)
         i_rect = window_rect.intersected(content_rect)
         if i_rect.width() == 0 or i_rect.height() == 0:
             cp1 = ContentCornerPoint(content_rect.topLeft())

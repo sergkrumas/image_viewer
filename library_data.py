@@ -1207,6 +1207,7 @@ class ImageData():
         self.filepath = filepath
         self.preview_size = QSize(0, 0)
         self.anim_paused = False
+        self.svg_scale_factor = 20
         self.anim_cur_frame = 0
         if self.filepath:
             self.md5 = generate_md5(self.filepath)

@@ -728,6 +728,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.image_filepath = None
         self.tranformations_allowed = False
         self.animated = False
+        self.svg_rendered = False
         self.rotated_pixmap = None
         self.copied_from_clipboard = False
         self.comment_data = None
@@ -749,6 +750,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         # setting new image
         is_gif_file = lambda fp: fp.lower().endswith(".gif")
         is_webp_file = lambda fp: fp.lower().endswith(".webp")
+        is_svg_file = lambda fp: fp.lower().endswith((".svg", ".svgz"))
         is_supported_file = LibraryData.is_interest_file(filepath)
         self.error = False
         if filepath == "":
@@ -765,9 +767,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                     if _gif_file or _webp_animated_file:
                         self.show_animated(filepath)
                         self.animated = True
+                    elif is_svg_file(filepath):
+                        self.show_static(filepath)
+                        self.pixmap = load_svg(filepath,
+                                                    scale_factor=self.image_data.svg_scale_factor)
+                        self.svg_rendered = True
                     else:
                         self.show_static(filepath)
-                        self.animated = False
                 except:
                     self.error_pixmap_and_reset("Невозможно\nотобразить", traceback.format_exc())
         if not self.error:
@@ -2473,6 +2479,31 @@ class MainWindow(QMainWindow, UtilsMixin):
                     break
         return selected_comment
 
+    def contextMenuChangeSVGScale(self):
+        contextMenu = QMenu()
+
+        factors = [1, 5, 10, 20, 30, 40, 50, 80, 100]
+        actions = []
+        current_factor = self.image_data.svg_scale_factor
+        for factor in factors:
+            action = contextMenu.addAction(f"x{factor}")
+            action.setCheckable(True)
+            action.setChecked(factor==current_factor)
+            actions.append((action, factor))
+
+        cur_action = contextMenu.exec_(QCursor().pos())
+        self.contextMenuActivated = False
+        if cur_action is not None:
+            for (action, factor) in actions:
+                if cur_action == action:
+                    self.image_data.svg_scale_factor = factor
+                    self.show_image(self.image_data)
+                    self.get_rotated_pixmap(force_update=True)
+                    w = self.pixmap.width()
+                    h = self.pixmap.height()
+                    text = f"{w}x{h}"
+                    self.show_center_label(text)
+
     def contextMenuEvent(self, event):
         contextMenu = QMenu()
         self.contextMenuActivated = True
@@ -2516,6 +2547,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             change_comment_text = None
             change_comment_borders = None
 
+            change_svg_scale = None
+
             copy_image_metadata = None
 
             open_settings = contextMenu.addAction("Настройки...")
@@ -2558,6 +2591,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                 toggle_two_monitors_wide = contextMenu.addAction(text)
 
             contextMenu.addSeparator()
+
+            if self.svg_rendered:
+                text = "Изменить разрешение растеризации SVG-файла..."
+                change_svg_scale = contextMenu.addAction(text)
+                contextMenu.addSeparator()
 
             if not self.error:
                 save_as_png = contextMenu.addAction("Сохранить в .png...")
@@ -2621,6 +2659,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 elif action == copy_image_metadata:
                     QApplication.clipboard().setText(ci.image_metadata_info)
+
+                elif action == change_svg_scale:
+                    self.contextMenuChangeSVGScale()
 
     def closeEvent(self, event):
         if Globals.DEBUG:
