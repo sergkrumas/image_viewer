@@ -182,15 +182,20 @@ class ServerOrClient():
                 ret = QMessageBox.No
                 if not cls.globals.started_from_sublime_text:
                     if os.path.exists(path):
-                        ret = QMessageBox.question(None,'Не обнаружено запущенной копии приложения',
+                        ret = QMessageBox.question(None,
+                            "Вопрос",
+                            'Не обнаружено запущенной копии приложения.\n\n'
                             f"Запуститься в упрощённом режиме?",
-                            QMessageBox.Yes | QMessageBox.No)
+                            QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
+                            )
                 if ret == QMessageBox.Yes:
                     start_process_callback(path)
                     sys.exit()
-                else:
+                elif ret == QMessageBox.No:
                     # finally start server
                     do_start_server()
+                elif ret == QMessageBox.Close:
+                    sys.exit(0)
 
             client_socket.connected.connect(transfer_data_callback)
             client_socket.error.connect(client_socket_error)
