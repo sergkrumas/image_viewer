@@ -2523,6 +2523,10 @@ class MainWindow(QMainWindow, UtilsMixin):
                     else:
                         text = "Развернуть окно на два монитора"
                     toggle_two_monitors_wide = contextMenu.addAction(text)
+                rerun_extended_mode = None
+                if not Globals.isolated_mode:
+                    rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
+
                 action = contextMenu.exec_(self.mapToGlobal(event.pos()))
                 self.contextMenuActivated = False
                 if action is not None:
@@ -2530,6 +2534,9 @@ class MainWindow(QMainWindow, UtilsMixin):
                         open_in_separated_app_copy(folder_data)
                     elif action == toggle_two_monitors_wide:
                         self.do_toggle_two_monitors_wide()
+                    elif action == rerun_extended_mode:
+                        is_library_mode = self.library_mode
+                        do_rerun_in_extended_mode(is_library_mode)
         else:
             show_in_gchrome = None
             show_in_explorer = None
@@ -2592,9 +2599,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                 toggle_two_monitors_wide = contextMenu.addAction(text)
 
             rerun_in_extended_mode = None
+            rerun_extended_mode = None
             if Globals.isolated_mode:
                 contextMenu.addSeparator()
                 rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
+            else:
+                contextMenu.addSeparator()
+                rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
 
             contextMenu.addSeparator()
 
@@ -2609,9 +2620,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
                 copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
                 if LibraryData().current_folder().fav:
-
                     contextMenu.addSeparator()
-
                     action_title = "Перейти из избранного в папку с этим изображением"
                     go_to_folder = contextMenu.addAction(action_title)
 
@@ -2666,9 +2675,10 @@ class MainWindow(QMainWindow, UtilsMixin):
                 elif action == change_svg_scale:
                     self.contextMenuChangeSVGScale()
                 elif action == rerun_in_extended_mode:
-                    folder_data = LibraryData().current_folder()
-                    content_path = LibraryData.get_content_path(folder_data)
-                    do_rerun_in_extended_mode(content_path)
+                    do_rerun_in_extended_mode(False)
+                elif action == rerun_extended_mode:
+                    is_library_mode = self.library_mode
+                    do_rerun_in_extended_mode(is_library_mode)
 
     def closeEvent(self, event):
         if Globals.DEBUG:
@@ -2784,8 +2794,11 @@ def start_isolated_process(path):
     args = [sys.executable, __file__, path, "-isolated"]
     subprocess.Popen(args)
 
-def do_rerun_in_extended_mode(path):
+def do_rerun_in_extended_mode(is_library_mode):
+    path = LibraryData.get_content_path(LibraryData().current_folder())
     args = [sys.executable, __file__, path, "-extended"]
+    if is_library_mode:
+        args.append("-forcelibrarypage")
     subprocess.Popen(args)
     app = QApplication.instance()
     app.exit()
@@ -2898,6 +2911,7 @@ def _main():
     parser.add_argument('-isolated', help="", action="store_true")
     parser.add_argument('-extended', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
+    parser.add_argument('-forcelibrarypage', help="", action="store_true")
     args = parser.parse_args(sys.argv[1:])
     # print(args)
     if args.path:
@@ -2906,10 +2920,6 @@ def _main():
         frameless_mode = False
     if args.isolated:
         Globals.isolated_mode = True
-    if args.extended:
-        force_extended_mode = True
-    else:
-        force_extended_mode = False   
 
     if Globals.isolated_mode:
         app_icon = QIcon()
@@ -2926,7 +2936,7 @@ def _main():
                 open_request,
                 start_isolated_process,
                 do_not_show_start_dialog,
-                force_extended_mode
+                args.extended
             )
         else:
             path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
@@ -2969,6 +2979,9 @@ def _main():
     # обработка входящих данных
     if path:
         LibraryData().handle_input_data(path)
+    if args.forcelibrarypage:
+        MW.toggle_viewer_library_mode()
+
     # вход в петлю обработки сообщений
     exit_code = app.exec()
     if sti:

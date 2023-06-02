@@ -206,7 +206,7 @@ class ServerOrClient():
                                     )
                 if ret == QMessageBox.Yes:
                     start_process_callback(path)
-                    sys.exit()
+                    sys.exit(0)
                 elif ret == QMessageBox.No:
                     # finally start server
                     do_start_server()
