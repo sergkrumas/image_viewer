@@ -188,6 +188,17 @@ class LibraryData(object):
             i.load_session_file()
         return cls.instance
 
+    @staticmethod
+    def get_content_path(folder_data):
+        ci = folder_data.current_image()
+        content_path = ci.filepath
+        if not os.path.exists(content_path):
+            if os.path.exists(folder_data.folder_path):
+                content_path = folder_data.folder_path
+            else:
+                content_path = None
+        return content_path
+
     def any_content(self):
         return bool(self.folders)
 

@@ -404,7 +404,8 @@ class SettingsWindow(QWidget):
         "use_global_view_history": (False, "Выключить историю просмотра для каждой папки отдельно и включить глобальную"),
         "hide_on_app_start": (False, "Прятать окно в трей на старте"),
         "show_image_metadata": (True, "Показывать метаданные изображения"),
-        "show_noise_cells": (True, "Показывать анимированнную сетку")
+        "show_noise_cells": (True, "Показывать анимированнную сетку"),
+        "do_not_show_start_dialog": (True, "Запускать упрощённый режим сразу и без диалога"),
     }
     values = {
         "viewer_mode_transparency": (0.7, (0.0, 1.0), "Прозрачность режима вьювера"),
@@ -465,7 +466,9 @@ class SettingsWindow(QWidget):
         super().__init__()
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
-        self.resize(1000, 900)
+        # layout почему-то не задаёт высоту, приходится делать это вручную
+        # и даже поправлять, когда настроек становится слишком много
+        self.resize(1000, 1000)
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init

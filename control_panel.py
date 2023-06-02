@@ -457,7 +457,7 @@ class ControlPanel(QWidget, UtilsMixin):
         self.open_in_explorer_btn = ControlPanelButton("", "Найти\nна диске")
         self.open_in_google_chrome_btn = ControlPanelButton("", "Открыть в\nGoogle Chrome")
 
-        self.control_panel_label = QLabel("picture.extension (1920x1080)", self)
+        self.control_panel_label = QLabel("picture_filename.extension (XxW)", self)
         self.control_panel_label.setStyleSheet("font-weight: bold; color: white; font-size: 12pt; padding: 5px;")
         self.control_panel_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 

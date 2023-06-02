@@ -41,7 +41,7 @@ class Globals():
     DEFAULT_THUMBNAIL = None
     FAV_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
-    isolated_mode = False
+    isolated_mode = False # isolated aka упрощённый
     NO_SOCKETS_SERVER_FILENAME = "server.data"
     NO_SOCKETS_CLIENT_DATA_FILENAME = "dat.data"
 
@@ -2572,6 +2572,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if ci.image_metadata:
                 copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
 
+            contextMenu.addSeparator()
 
             open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
             if not self.error:
@@ -2589,6 +2590,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                 else:
                     text = "Развернуть окно на два монитора"
                 toggle_two_monitors_wide = contextMenu.addAction(text)
+
+            rerun_in_extended_mode = None
+            if Globals.isolated_mode:
+                contextMenu.addSeparator()
+                rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
 
             contextMenu.addSeparator()
 
@@ -2641,8 +2647,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 elif action == copy_from_cp:
                     self.paste_from_clipboard()
                 elif action == open_in_sep_app:
-                    open_in_separated_app_copy()
-
+                    open_in_separated_app_copy(LibraryData().current_folder())
                 elif action == delete_comment:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
@@ -2656,12 +2661,14 @@ class MainWindow(QMainWindow, UtilsMixin):
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
                         self.comment_data_candidate = sel_comment
-
                 elif action == copy_image_metadata:
                     QApplication.clipboard().setText(ci.image_metadata_info)
-
                 elif action == change_svg_scale:
                     self.contextMenuChangeSVGScale()
+                elif action == rerun_in_extended_mode:
+                    folder_data = LibraryData().current_folder()
+                    content_path = LibraryData.get_content_path(folder_data)
+                    do_rerun_in_extended_mode(content_path)
 
     def closeEvent(self, event):
         if Globals.DEBUG:
@@ -2777,14 +2784,14 @@ def start_isolated_process(path):
     args = [sys.executable, __file__, path, "-isolated"]
     subprocess.Popen(args)
 
+def do_rerun_in_extended_mode(path):
+    args = [sys.executable, __file__, path, "-extended"]
+    subprocess.Popen(args)
+    app = QApplication.instance()
+    app.exit()
+
 def open_in_separated_app_copy(folder_data):
-    ci = folder_data.current_image()
-    content_path = ci.filepath
-    if not os.path.exists(content_path):
-        if os.path.exists(folder_data.folder_path):
-            content_path = folder_data.folder_path
-        else:
-            content_path = None
+    content_path = LibraryData.get_content_path(folder_data)
     if content_path is not None:
         # если есть второй монитор, то уводим окно на него,
         # перемещая для этого курсор
@@ -2868,6 +2875,8 @@ def _main():
     SettingsWindow.globals = Globals
     SettingsWindow.load_from_disk()
 
+    do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
+
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(exit_threads)
 
@@ -2887,6 +2896,7 @@ def _main():
     parser.add_argument('path', nargs='?', default=None)
     parser.add_argument('-frame', help="", action="store_true")
     parser.add_argument('-isolated', help="", action="store_true")
+    parser.add_argument('-extended', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
     args = parser.parse_args(sys.argv[1:])
     # print(args)
@@ -2896,6 +2906,10 @@ def _main():
         frameless_mode = False
     if args.isolated:
         Globals.isolated_mode = True
+    if args.extended:
+        force_extended_mode = True
+    else:
+        force_extended_mode = False   
 
     if Globals.isolated_mode:
         app_icon = QIcon()
@@ -2906,9 +2920,14 @@ def _main():
     ServerOrClient.globals = Globals
 
     if not Globals.isolated_mode:
-        if Globals.USE_SOCKETS:
-            path = ServerOrClient.server_or_client_via_sockets(path, open_request,
-                                                                            start_isolated_process)
+        if Globals.USE_SOCKETS:            
+            path = ServerOrClient.server_or_client_via_sockets(
+                path,
+                open_request,
+                start_isolated_process,
+                do_not_show_start_dialog,
+                force_extended_mode
+            )
         else:
             path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
 
