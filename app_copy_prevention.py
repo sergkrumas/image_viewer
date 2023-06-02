@@ -94,9 +94,7 @@ class ServerOrClient():
             cls,
             path,
             open_request_callback,
-            start_process_callback,
-            do_not_show_start_dialog,
-            force_extended_mode,
+            choose_start_option_callback,
         ):
 
         print("begin of server_or_client_via_sockets")
@@ -187,31 +185,7 @@ class ServerOrClient():
                 }
                 msg = errors.get(socketError, "The following error occurred: %s." % client_socket.errorString())
 
-                if force_extended_mode:
-                    ret = QMessageBox.No
-                else:
-                    if do_not_show_start_dialog:
-                        # запускаем упрощённый режим
-                        ret = QMessageBox.Yes
-                    else:
-                        # иначе по дефолту не запускаем, но обязательно спрашиваем
-                        ret = QMessageBox.No
-                        if not cls.globals.started_from_sublime_text:
-                            if os.path.exists(path):
-                                ret = QMessageBox.question(None,
-                                    "Вопрос",
-                                    'Не обнаружено запущенной копии приложения.\n\n'
-                                    f"Запуститься в упрощённом режиме?",
-                                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
-                                    )
-                if ret == QMessageBox.Yes:
-                    start_process_callback(path)
-                    sys.exit(0)
-                elif ret == QMessageBox.No:
-                    # finally start server
-                    do_start_server()
-                elif ret == QMessageBox.Close:
-                    sys.exit(0)
+                choose_start_option_callback(do_start_server, path)
 
             client_socket.connected.connect(transfer_data_callback)
             client_socket.error.connect(client_socket_error)

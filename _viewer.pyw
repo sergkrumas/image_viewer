@@ -42,6 +42,8 @@ class Globals():
     FAV_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
     isolated_mode = False # isolated aka упрощённый
+    force_extended_mode = False
+    do_not_show_start_dialog = False
     NO_SOCKETS_SERVER_FILENAME = "server.data"
     NO_SOCKETS_CLIENT_DATA_FILENAME = "dat.data"
 
@@ -2695,7 +2697,32 @@ class MainWindow(QMainWindow, UtilsMixin):
             window.show()
 
 
-
+def choose_start_option_callback(do_start_server, path):
+    if Globals.force_extended_mode:
+        ret = QMessageBox.No
+    else:
+        if Globals.do_not_show_start_dialog:
+            # запускаем упрощённый режим
+            ret = QMessageBox.Yes
+        else:
+            # иначе по дефолту не запускаем, но обязательно спрашиваем
+            ret = QMessageBox.No
+            if not cls.globals.started_from_sublime_text:
+                if os.path.exists(path):
+                    ret = QMessageBox.question(None,
+                        "Вопрос",
+                        'Не обнаружено запущенной копии приложения.\n\n'
+                        f"Запуститься в упрощённом режиме?",
+                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
+                        )
+    if ret == QMessageBox.Yes:
+        start_isolated_process(path)
+        sys.exit(0)
+    elif ret == QMessageBox.No:
+        # finally start server
+        do_start_server()
+    elif ret == QMessageBox.Close:
+        sys.exit(0)
 
 def open_request(path):
     LibraryData().handle_input_data(path)
@@ -2888,7 +2915,7 @@ def _main():
     SettingsWindow.globals = Globals
     SettingsWindow.load_from_disk()
 
-    do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
+    Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(exit_threads)
@@ -2918,8 +2945,8 @@ def _main():
         path = args.path
     if args.frame:
         frameless_mode = False
-    if args.isolated:
-        Globals.isolated_mode = True
+    Globals.isolated_mode = args.isolated
+    Globals.force_extended_mode = args.extended
 
     if Globals.isolated_mode:
         app_icon = QIcon()
@@ -2934,9 +2961,7 @@ def _main():
             path = ServerOrClient.server_or_client_via_sockets(
                 path,
                 open_request,
-                start_isolated_process,
-                do_not_show_start_dialog,
-                args.extended
+                choose_start_option_callback,
             )
         else:
             path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
