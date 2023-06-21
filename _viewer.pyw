@@ -381,6 +381,15 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.noise_time = 0.0
 
+    # def changeEvent(self, event):
+    #     if event.type() == QEvent.WindowStateChange:
+    #         if self.windowState() & Qt.WindowMaximized:
+    #             self.frameless_mode = True
+    #             self.set_window_style()
+    #         else:
+    #             self.frameless_mode = True
+    #             self.set_window_style()
+
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, float):
             value = fit(factor, 0.0, 1.0, start_value, end_value)
@@ -3012,6 +3021,7 @@ def _main():
     MainWindow.LibraryData = LibraryData
     MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
     if frameless_mode:
+        MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown 
         if not SettingsWindow.get_setting_value("hide_on_app_start"):
             MW.showMaximized()
     else:
