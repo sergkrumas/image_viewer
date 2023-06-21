@@ -1011,6 +1011,8 @@ class LibraryData(object):
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()
 
+            LibraryData().write_history_file(input_path)
+
             # make thumbnails
             ThumbnailsThread(fd, Globals).start()
             # old make thumbnials
@@ -1023,6 +1025,15 @@ class LibraryData(object):
 
         if not pre_load:
             MW.handling_input = False
+
+    @staticmethod
+    def write_history_file(path):
+        root = os.path.dirname(__file__)
+        history_file_path = os.path.join(root, "history.log")
+        date = datetime.datetime.now().strftime("%d %b %Y %X")
+        with open(history_file_path, "a+", encoding="utf8") as file:
+            record = "%s %s\n" % (date, path)
+            file.write(record)
 
 class FolderData():
 
