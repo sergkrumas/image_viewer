@@ -28,6 +28,10 @@ from settings_handling import SettingsWindow
 from control_panel import ControlPanel
 from app_copy_prevention import ServerOrClient
 from comments import CommentWindow
+
+from win32con import VK_CAPITAL, VK_NUMLOCK, VK_SCROLL
+from ctypes import windll
+
 try:
     noise = __import__("noise")
 except:
@@ -2177,6 +2181,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             images_data = folder_data.images_list
             ThumbnailsThread(folder_data, Globals).start()
 
+    def check_scroll_lock(self):
+        return windll.user32.GetKeyState(VK_SCROLL)
+
     def isAnimationEffectsAllowed(self):
         if self._key_unreleased:
             # если одна из клавиш для перелистывания картинок зажата и не отпускается,
@@ -2212,28 +2219,44 @@ class MainWindow(QMainWindow, UtilsMixin):
         else:
             if self.is_startpage_activated():
                 return
-            if key == Qt.Key_Up:
-                main_window = Globals.main_window
-                main_window.do_scale_image(0.05, cursor_pivot=False)
-                self.show_center_label("scale")
-            elif key == Qt.Key_Down:
-                main_window = Globals.main_window
-                main_window.do_scale_image(-0.05, cursor_pivot=False)
-                self.show_center_label("scale")
-            elif key == Qt.Key_Right:
-                if event.modifiers() & Qt.AltModifier:
-                    LibraryData().show_viewed_image_next()
-                elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
-                    self.toggle_monitor('right')
-                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                    LibraryData().show_next_image()
-            elif key == Qt.Key_Left:
-                if event.modifiers() & Qt.AltModifier:
-                    LibraryData().show_viewed_image_prev()
-                elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
-                    self.toggle_monitor('left')
-                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                    LibraryData().show_previous_image()
+            if self.check_scroll_lock():
+                if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
+                    length = 1.0
+                    if event.modifiers() & Qt.ShiftModifier:
+                        length *= 20.0
+                    if key == Qt.Key_Up:
+                        delta =  QPoint(0, 1) * length
+                    elif key == Qt.Key_Down:
+                        delta =  QPoint(0, -1) * length
+                    elif key == Qt.Key_Left:
+                        delta =  QPoint(1, 0) * length
+                    elif key == Qt.Key_Right:
+                        delta =  QPoint(-1, 0) * length
+                    self.image_center_position += delta
+                    self.update()
+            else:
+                if key == Qt.Key_Up:
+                    main_window = Globals.main_window
+                    main_window.do_scale_image(0.05, cursor_pivot=False)
+                    self.show_center_label("scale")
+                elif key == Qt.Key_Down:
+                    main_window = Globals.main_window
+                    main_window.do_scale_image(-0.05, cursor_pivot=False)
+                    self.show_center_label("scale")
+                elif key == Qt.Key_Right:
+                    if event.modifiers() & Qt.AltModifier:
+                        LibraryData().show_viewed_image_next()
+                    elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
+                        self.toggle_monitor('right')
+                    elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                        LibraryData().show_next_image()
+                elif key == Qt.Key_Left:
+                    if event.modifiers() & Qt.AltModifier:
+                        LibraryData().show_viewed_image_prev()
+                    elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
+                        self.toggle_monitor('left')
+                    elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                        LibraryData().show_previous_image()
         self.update()
 
     def keyPressEvent(self, event):
@@ -2560,6 +2583,10 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             copy_image_metadata = None
 
+            minimize_window = contextMenu.addAction("Свернуть")
+
+            contextMenu.addSeparator()
+
             open_settings = contextMenu.addAction("Настройки...")
 
             contextMenu.addSeparator()
@@ -2631,6 +2658,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             if action is not None:
                 if action == show_in_explorer:
                     Globals.control_panel.show_in_folder()
+                elif action == minimize_window:
+                    Globals.main_window.showMinimized()
                 elif action == show_in_gchrome:
                     main_window = Globals.main_window
                     if main_window.image_filepath:
