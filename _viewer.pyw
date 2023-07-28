@@ -731,11 +731,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.show_static(filepath, pass_=2)
 
     def error_pixmap_and_reset(self, title, msg, no_background=False):
+        self.error = True
         self.pixmap = self.generate_info_pixmap(title, msg, no_background=no_background)
         self.image_filepath = None
         self.tranformations_allowed = False
         self.animated = False
-        self.error = True
         self.restore_image_transformations(correct=False)
 
     def viewer_reset(self, simple=False):
@@ -835,7 +835,8 @@ class MainWindow(QMainWindow, UtilsMixin):
     def get_rotated_pixmap(self, force_update=False):
         if self.rotated_pixmap is None or force_update:
             rm = QTransform()
-            rm.rotate(self.image_rotation)
+            if not self.error: # не поворачиваем пиксмапы с инфой об ошибке
+                rm.rotate(self.image_rotation)
             if self.pixmap is None and self.animated:
                 self.pixmap = self.movie.currentPixmap()
             self.rotated_pixmap = self.pixmap.transformed(rm)
@@ -2763,6 +2764,7 @@ def choose_start_option_callback(do_start_server, path):
                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
                         )
     if ret == QMessageBox.Yes:
+        print("Rerun from choose_start_option_callback...")
         start_isolated_process(path)
         sys.exit(0)
     elif ret == QMessageBox.No:
@@ -2947,7 +2949,7 @@ def _main():
     os.chdir(os.path.dirname(__file__))
     sys.excepthook = excepthook
     pid = os.getpid()
-    print(f'Proccess ID: {pid}')
+    print(f'Proccess ID: {pid}', ", ".join(sys.argv))
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
