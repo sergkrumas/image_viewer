@@ -381,6 +381,34 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.noise_time = 0.0
 
+        self.context_menu_stylesheet = """
+        QMenu{
+            padding: 0px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Consolas';
+        }
+        QMenu::item {
+            padding: 10px;
+            background: #303940;
+            color: rgb(230, 230, 230);
+        }
+        QMenu::icon {
+            padding-left: 15px;
+        }
+        QMenu::item:selected {
+            background-color: rgb(253, 203, 54);
+            color: rgb(50, 50, 50);
+            border-left: 2px dashed #303940;
+        }
+        QMenu::separator {
+            height: 1px;
+            background: gray;
+        }
+        QMenu::item:checked {
+        }
+        """
+
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
     #         if self.windowState() & Qt.WindowMaximized:
@@ -2525,6 +2553,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def contextMenuChangeSVGScale(self):
         contextMenu = QMenu()
+        contextMenu.setStyleSheet(self.context_menu_stylesheet)
 
         factors = [1, 5, 10, 20, 30, 40, 50, 80, 100]
         actions = []
@@ -2550,6 +2579,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu()
+        contextMenu.setStyleSheet(self.context_menu_stylesheet)
+
         self.contextMenuActivated = True
         if self.library_mode:
             folder_data = None

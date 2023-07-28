@@ -851,6 +851,7 @@ class ControlPanel(QWidget, UtilsMixin):
         if MW.show_startpage:
             return
         CM = QMenu()
+        CM.setStyleSheet(self.parent().context_menu_stylesheet)
         self.contextMenuActivated = True
         cf = self.LibraryData().current_folder()
         current_sort_type = cf.sort_type

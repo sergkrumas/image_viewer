@@ -1011,7 +1011,8 @@ class LibraryData(object):
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()
 
-            LibraryData().write_history_file(input_path)
+            if not Globals.DEBUG:
+                LibraryData().write_history_file(input_path)
 
             # make thumbnails
             ThumbnailsThread(fd, Globals).start()
