@@ -2073,12 +2073,10 @@ class MainWindow(QMainWindow, UtilsMixin):
         else:
             self.draw_center_label(painter, self.loading_text, large=True)
 
+        # draw animation progressbar
         if self.movie:
-            # for debug purposes only
-            # painter.drawRect(self.get_image_viewport_rect())
             r = self.get_image_viewport_rect()
-            div_ = self.movie.frameCount()-1 if self.movie.frameCount() > 1 else 1
-            progress_width = r.width() * self.movie.currentFrameNumber()/div_
+            progress_width = r.width() * self.movie.currentFrameNumber()/self.movie.frameCount()
             progress_bar_rect = QRect(r.left(), r.bottom(), int(progress_width), 10)
             painter.setBrush(QBrush(Qt.green))
             painter.setPen(Qt.NoPen)
