@@ -3037,7 +3037,7 @@ def _main():
     ServerOrClient.globals = Globals
 
     if not Globals.isolated_mode:
-        if Globals.USE_SOCKETS:            
+        if Globals.USE_SOCKETS:
             path = ServerOrClient.server_or_client_via_sockets(
                 path,
                 open_request,
@@ -3063,7 +3063,7 @@ def _main():
     MainWindow.LibraryData = LibraryData
     MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
     if frameless_mode:
-        MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown 
+        MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown
         if not SettingsWindow.get_setting_value("hide_on_app_start"):
             MW.showMaximized()
     else:
