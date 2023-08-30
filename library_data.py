@@ -476,6 +476,22 @@ class LibraryData(object):
             self.globals.control_panel.quick_show()
         self.add_current_image_to_view_history()
 
+    def move_image(self, before_index, after_index):
+        if before_index is None:
+            print("return")
+            return
+
+        cf = self.current_folder()
+        # получаем сначала текущее изображение
+        current_image = cf.current_image()
+
+        the_image = cf.images_list[before_index]
+        self.current_folder().images_list.remove(the_image)
+        self.current_folder().images_list.insert(after_index, the_image)
+
+        # оставляем текущую картинку текущей
+        cf.set_current_index(cf.images_list.index(current_image))
+
     def jump_to_image(self, index, leave_history_record=True):
         MW = self.globals.main_window
         if MW.isBlockedByAnimation():
@@ -1293,3 +1309,9 @@ class ImageData():
     def __repr__(self):
         filename = os.path.basename(self.filepath)
         return f'IMAGE from {filename}'
+
+# для запуска программы прямо из этого файла при разработке и отладке
+if __name__ == '__main__':
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()
