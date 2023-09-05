@@ -20,6 +20,8 @@
 
 from _utils import *
 
+import pureref
+
 from library_data import (CommentData, LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
 from help_text import help_info
@@ -409,6 +411,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         }
         """
 
+        self.pureref_mode = False
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
     #         if self.windowState() & Qt.WindowMaximized:
@@ -1052,42 +1055,47 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.mousePressEventStartPage(event)
             return
 
-        if event.button() == Qt.LeftButton:
-            self.left_button_pressed = True
+        if self.pureref_mode:
+            pureref.mousePressEvent(self, event)
+        else:
 
-        if self.isLeftClickAndCtrl(event):
-            self.region_zoom_in_mousePressEvent(event)
-        elif self.isLeftClickAndCtrlShift(event):
-            self.image_comment_mousePressEvent(event)
-        elif event.button() == Qt.LeftButton:
-            if self.over_corner_button():
-                main_window = Globals.main_window
-                main_window.require_the_closing()
-                return
+            if event.button() == Qt.LeftButton:
+                self.left_button_pressed = True
 
-            # этот же самый код прописан в eventFilter
-            elif self.over_corner_button(corner_attr="topLeft"):
-                self.toggle_viewer_library_mode()
-                return
+            if self.isLeftClickAndCtrl(event):
+                self.region_zoom_in_mousePressEvent(event)
+            elif self.isLeftClickAndCtrlShift(event):
+                self.image_comment_mousePressEvent(event)
+            elif event.button() == Qt.LeftButton:
+                if self.over_corner_button():
+                    main_window = Globals.main_window
+                    main_window.require_the_closing()
+                    return
 
-            if self.tranformations_allowed:
-                if self.is_cursor_over_image():
-                    self.image_translating = True
-                    self.oldCursorPos = self.mapped_cursor_pos()
-                    self.oldElementPos = self.image_center_position
-                    self.update()
+                # этот же самый код прописан в eventFilter
+                elif self.over_corner_button(corner_attr="topLeft"):
+                    self.toggle_viewer_library_mode()
+                    return
 
-            viewer_mode = not self.library_mode and not self.handling_input
-            cursor_not_over_image = not self.is_cursor_over_image()
-            cases = (
-                viewer_mode,
-                cursor_not_over_image,
-                self.frameless_mode,
-                self.doubleclick_toggle,
+                if self.tranformations_allowed:
+                    if self.is_cursor_over_image():
+                        self.image_translating = True
+                        self.oldCursorPos = self.mapped_cursor_pos()
+                        self.oldElementPos = self.image_center_position
+                        self.update()
 
-            )
-            if all(cases):
-                self.toggle_to_frame_mode()
+                viewer_mode = not self.library_mode and not self.handling_input
+                cursor_not_over_image = not self.is_cursor_over_image()
+                cases = (
+                    viewer_mode,
+                    cursor_not_over_image,
+                    self.frameless_mode,
+                    self.doubleclick_toggle,
+
+                )
+                if all(cases):
+                    self.toggle_to_frame_mode()
+
         self.update()
         super().mousePressEvent(event)
 
@@ -1095,45 +1103,52 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.is_startpage_activated():
             return
 
-        if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
-            self.region_zoom_in_mouseMoveEvent(event)
-        elif self.isLeftClickAndCtrlShift(event) or self.comment_data:
-            self.image_comment_mouseMoveEvent(event)
-        elif event.buttons() == Qt.LeftButton:
-            if self.tranformations_allowed and self.image_translating:
-                new =  self.oldElementPos - (self.oldCursorPos - self.mapped_cursor_pos())
-                old = self.image_center_position
-                self.hint_center_position += new-old
-                self.image_center_position = new
-        elif event.buttons() == Qt.NoButton and self.library_mode:
-            if self.previews_list:
-                ai = self.previews_list_active_item
-                over_active_item = False
-                if ai:
-                    r = self.previews_active_item_rect(ai[0])
-                    over_active_item = r.contains(event.pos())
-                if not over_active_item:
-                    self.previews_list_active_item = None
-                    for item_rect, item_data in self.previews_list:
-                        if item_rect.contains(event.pos()):
-                            self.previews_list_active_item = (item_rect, item_data)
+        if self.pureref_mode:
+            pureref.mouseMoveEvent(self, event)
+        else:
+            if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
+                self.region_zoom_in_mouseMoveEvent(event)
+            elif self.isLeftClickAndCtrlShift(event) or self.comment_data:
+                self.image_comment_mouseMoveEvent(event)
+            elif event.buttons() == Qt.LeftButton:
+                if self.tranformations_allowed and self.image_translating:
+                    new =  self.oldElementPos - (self.oldCursorPos - self.mapped_cursor_pos())
+                    old = self.image_center_position
+                    self.hint_center_position += new-old
+                    self.image_center_position = new
+            elif event.buttons() == Qt.NoButton and self.library_mode:
+                if self.previews_list:
+                    ai = self.previews_list_active_item
+                    over_active_item = False
+                    if ai:
+                        r = self.previews_active_item_rect(ai[0])
+                        over_active_item = r.contains(event.pos())
+                    if not over_active_item:
+                        self.previews_list_active_item = None
+                        for item_rect, item_data in self.previews_list:
+                            if item_rect.contains(event.pos()):
+                                self.previews_list_active_item = (item_rect, item_data)
         self.update()
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self.is_startpage_activated():
             return
-        if event.button() == Qt.LeftButton:
-            self.left_button_pressed = False
 
-        if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
-            self.region_zoom_in_mouseReleaseEvent(event)
-        elif self.isLeftClickAndCtrlShift(event) or self.comment_data is not None:
-            self.image_comment_mouseReleaseEvent(event)
-        elif event.button() == Qt.LeftButton:
-            if self.tranformations_allowed:
-                self.image_translating = False
-                self.update()
+        if self.pureref_mode:
+            pureref.mouseReleaseEvent(self, event)
+        else:
+            if event.button() == Qt.LeftButton:
+                self.left_button_pressed = False
+
+            if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
+                self.region_zoom_in_mouseReleaseEvent(event)
+            elif self.isLeftClickAndCtrlShift(event) or self.comment_data is not None:
+                self.image_comment_mouseReleaseEvent(event)
+            elif event.button() == Qt.LeftButton:
+                if self.tranformations_allowed:
+                    self.image_translating = False
+                    self.update()
         self.update()
         super().mouseReleaseEvent(event)
 
@@ -1352,22 +1367,25 @@ class MainWindow(QMainWindow, UtilsMixin):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
-        if self.library_mode:
-            self.wheelEventLibraryMode(scroll_value, event)
+        if self.pureref_mode:
+            pureref.wheelEvent(self, event)
         else:
-            if ctrl and (not shift) and self.zoom_on_mousewheel:
-                self.do_scroll_images_list(scroll_value)
-            if self.left_button_pressed:
-                self.do_scroll_playbar(scroll_value)
-                self.show_center_label("framenumber")
-            if shift and ctrl:
-                self.do_scroll_playspeed(scroll_value)
-                self.show_center_label("playspeed")
-            if no_mod and self.zoom_on_mousewheel and not self.left_button_pressed:
-                self.do_scale_image(scroll_value)
-                self.show_center_label("scale")
-            elif no_mod and not self.left_button_pressed:
-                self.do_scroll_images_list(scroll_value)
+            if self.library_mode:
+                self.wheelEventLibraryMode(scroll_value, event)
+            else:
+                if ctrl and (not shift) and self.zoom_on_mousewheel:
+                    self.do_scroll_images_list(scroll_value)
+                if self.left_button_pressed:
+                    self.do_scroll_playbar(scroll_value)
+                    self.show_center_label("framenumber")
+                if shift and ctrl:
+                    self.do_scroll_playspeed(scroll_value)
+                    self.show_center_label("playspeed")
+                if no_mod and self.zoom_on_mousewheel and not self.left_button_pressed:
+                    self.do_scale_image(scroll_value)
+                    self.show_center_label("scale")
+                elif no_mod and not self.left_button_pressed:
+                    self.do_scroll_images_list(scroll_value)
 
     def do_scroll_playspeed(self, scroll_value):
         if not self.animated:
@@ -1639,18 +1657,21 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setBrush(QBrush(Qt.gray, Qt.SolidPattern))
             painter.drawRect(self.rect())
 
-        # draw modes
-        if self.help_mode:
-            self.draw_help(painter)
-        elif self.library_mode:
-            self.draw_library(painter)
+        if self.pureref_mode:
+            pureref.draw(self, painter)
         else:
-            # viewer mode
-            if self.show_startpage:
-                self.draw_startpage(painter)
+            # draw modes
+            if self.help_mode:
+                self.draw_help(painter)
+            elif self.library_mode:
+                self.draw_library(painter)
             else:
-                self.draw_content(painter)
-                self.region_zoom_in_draw(painter)
+                # viewer mode
+                if self.show_startpage:
+                    self.draw_startpage(painter)
+                else:
+                    self.draw_content(painter)
+                    self.region_zoom_in_draw(painter)
 
         # draw close button
         self.draw_corner_button(painter)
@@ -2622,6 +2643,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             copy_from_cp = None
             toggle_two_monitors_wide = None
 
+            pureref_mode_chb = None
 
             delete_comment = None
             change_comment_text = None
@@ -2631,38 +2653,49 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             copy_image_metadata = None
 
+            rerun_in_extended_mode = None
+            rerun_extended_mode = None            
+
             minimize_window = contextMenu.addAction("Свернуть")
 
             contextMenu.addSeparator()
+
+            pureref_mode_chb = contextMenu.addAction("Режим PureRef")
+            if pureref_mode_chb:
+                pureref_mode_chb.setCheckable(True)
+                pureref_mode_chb.setChecked(self.pureref_mode)            
 
             open_settings = contextMenu.addAction("Настройки...")
 
             contextMenu.addSeparator()
 
-            sel_comment = self.get_selected_comment(event)
-            if sel_comment:
-                action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
-                change_comment_text = contextMenu.addAction(action_text)
+            if not self.pureref_mode:
+                sel_comment = self.get_selected_comment(event)
+                if sel_comment:
+                    action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
+                    change_comment_text = contextMenu.addAction(action_text)
 
-                action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
-                change_comment_borders = contextMenu.addAction(action_text)
+                    action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
+                    change_comment_borders = contextMenu.addAction(action_text)
 
-                action_text = f'Удалить комент "{sel_comment.get_title()}"'
-                delete_comment = contextMenu.addAction(action_text)
+                    action_text = f'Удалить комент "{sel_comment.get_title()}"'
+                    delete_comment = contextMenu.addAction(action_text)
 
-                contextMenu.addSeparator()
+                    contextMenu.addSeparator()
 
-            ci = LibraryData().current_folder().current_image()
-            if ci.image_metadata:
-                copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
+                ci = LibraryData().current_folder().current_image()
+                if ci.image_metadata:
+                    copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
 
             contextMenu.addSeparator()
 
-            open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
-            if not self.error:
-                show_in_explorer = contextMenu.addAction("Найти на диске")
-                show_in_gchrome = contextMenu.addAction("Открыть в Google Chrome")
-                place_at_center = contextMenu.addAction("Вернуть картинку в центр окна")
+            if not self.pureref_mode:
+                open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
+                if not self.error:
+                    show_in_explorer = contextMenu.addAction("Найти на диске")
+                    show_in_gchrome = contextMenu.addAction("Открыть в Google Chrome")
+                    place_at_center = contextMenu.addAction("Вернуть картинку в центр окна")
+
             if self.frameless_mode:
                 text = "Переключиться в оконный режим"
             else:
@@ -2675,31 +2708,31 @@ class MainWindow(QMainWindow, UtilsMixin):
                     text = "Развернуть окно на два монитора"
                 toggle_two_monitors_wide = contextMenu.addAction(text)
 
-            rerun_in_extended_mode = None
-            rerun_extended_mode = None
-            if Globals.isolated_mode:
-                contextMenu.addSeparator()
-                rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
-            else:
-                contextMenu.addSeparator()
-                rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
+            if not self.pureref_mode:
+                if Globals.isolated_mode:
+                    contextMenu.addSeparator()
+                    rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
+                else:
+                    contextMenu.addSeparator()
+                    rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
 
             contextMenu.addSeparator()
 
-            if self.svg_rendered:
-                text = "Изменить разрешение растеризации SVG-файла..."
-                change_svg_scale = contextMenu.addAction(text)
-                contextMenu.addSeparator()
-
-            if not self.error:
-                save_as_png = contextMenu.addAction("Сохранить в .png...")
-                save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
-                copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
-                copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
-                if LibraryData().current_folder().fav:
+            if not self.pureref_mode:
+                if self.svg_rendered:
+                    text = "Изменить разрешение растеризации SVG-файла..."
+                    change_svg_scale = contextMenu.addAction(text)
                     contextMenu.addSeparator()
-                    action_title = "Перейти из избранного в папку с этим изображением"
-                    go_to_folder = contextMenu.addAction(action_title)
+
+                if not self.error:
+                    save_as_png = contextMenu.addAction("Сохранить в .png...")
+                    save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
+                    copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
+                    copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
+                    if LibraryData().current_folder().fav:
+                        contextMenu.addSeparator()
+                        action_title = "Перейти из избранного в папку с этим изображением"
+                        go_to_folder = contextMenu.addAction(action_title)
 
             action = contextMenu.exec_(self.mapToGlobal(event.pos()))
             self.contextMenuActivated = False
@@ -2708,6 +2741,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                     Globals.control_panel.show_in_folder()
                 elif action == minimize_window:
                     Globals.main_window.showMinimized()
+                elif action == pureref_mode_chb:
+                    self.pureref_mode = not self.pureref_mode
+                    if self.pureref_mode:
+                        pureref.mode_enter(self)
+                    else:
+                        pureref.mode_leave(self)
+                    self.update()
                 elif action == show_in_gchrome:
                     main_window = Globals.main_window
                     if main_window.image_filepath:
