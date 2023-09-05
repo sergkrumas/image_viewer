@@ -8,3 +8,4 @@ session.txt
 session_old.txt
 settings.json
 history.log
+/tagging/*.*
