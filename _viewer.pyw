@@ -664,6 +664,19 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.correct_scale()
 
     def generate_info_pixmap(self, label, text, size=1000, no_background=False):
+
+        if not self.image_data.is_supported_filetype:
+            text_files = (
+                ".log",
+                ".txt",
+                ".url",
+                ".ini",
+            )
+            if self.image_data.filepath.lower().endswith(text_files):
+                with open(self.image_data.filepath, "r", encoding="utf8") as file:
+                    text = file.read()[:500]
+                    print(text)
+
         pxm = QPixmap(size, size)
         p = QPainter()
         p.begin(pxm)
@@ -823,7 +836,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                     else:
                         self.show_static(filepath)
                 except:
-                    self.error_pixmap_and_reset("Невозможно\nотобразить", traceback.format_exc())
+                    self.error_pixmap_and_reset(
+                        "Невозможно\nотобразить поддерживаемый тип файла", traceback.format_exc())
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
@@ -2687,7 +2701,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             copy_image_metadata = None
 
             rerun_in_extended_mode = None
-            rerun_extended_mode = None            
+            rerun_extended_mode = None
+
+            run_unsupported_file = None
 
             minimize_window = contextMenu.addAction("Свернуть")
 
@@ -2696,13 +2712,19 @@ class MainWindow(QMainWindow, UtilsMixin):
             pureref_mode_chb = contextMenu.addAction("Режим PureRef")
             if pureref_mode_chb:
                 pureref_mode_chb.setCheckable(True)
-                pureref_mode_chb.setChecked(self.pureref_mode)            
+                pureref_mode_chb.setChecked(self.pureref_mode)
 
             open_settings = contextMenu.addAction("Настройки...")
 
             contextMenu.addSeparator()
 
             if not self.pureref_mode:
+
+                if self.image_data and not self.image_data.is_supported_filetype:
+                    run_unsupported_file = contextMenu.addAction("Открыть неподдерживаемый файл...")
+
+                contextMenu.addSeparator()
+
                 sel_comment = self.get_selected_comment(event)
                 if sel_comment:
                     action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
@@ -2772,6 +2794,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             if action is not None:
                 if action == show_in_explorer:
                     Globals.control_panel.show_in_folder()
+                elif action == run_unsupported_file:
+                    import win32api
+                    win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)                    
                 elif action == minimize_window:
                     Globals.main_window.showMinimized()
                 elif action == pureref_mode_chb:

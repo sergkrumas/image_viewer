@@ -406,6 +406,7 @@ class SettingsWindow(QWidget):
         "show_image_metadata": (True, "Показывать метаданные изображения"),
         "show_noise_cells": (True, "Показывать анимированнную сетку"),
         "do_not_show_start_dialog": (True, "Запускать упрощённый режим сразу и без диалога"),
+        "browse_images_only": (False, "Показывать только изображения"),
     }
     values = {
         "viewer_mode_transparency": (0.7, (0.0, 1.0), "Прозрачность режима вьювера"),

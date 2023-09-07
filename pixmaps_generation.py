@@ -52,6 +52,21 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.ERROR_PREVIEW_PIXMAP = ERROR_PREVIEW_PIXMAP
 
+    NOT_SUPPORTED_PIXMAP = QPixmap(200, 200)
+    NOT_SUPPORTED_PIXMAP.fill(Qt.black)
+    painter = QPainter()
+    painter.begin(NOT_SUPPORTED_PIXMAP)
+    painter.setPen(QPen(Qt.red, 5))
+    font = painter.font()
+    font.setPixelSize(100)
+    painter.setFont(font)
+    r = NOT_SUPPORTED_PIXMAP.rect().adjusted(20, 20, -20, -20)
+    # painter.drawLine(r.topLeft(), r.bottomRight())
+    # painter.drawLine(r.bottomLeft(), r.topRight())
+    painter.drawText(NOT_SUPPORTED_PIXMAP.rect(), Qt.AlignCenter | Qt.AlignVCenter, "?!")
+    painter.end()
+    Globals.NOT_SUPPORTED_PIXMAP = NOT_SUPPORTED_PIXMAP
+
     WIDTH = 50
     FAV_BIG_ICON = QPixmap(WIDTH, WIDTH)
     FAV_BIG_ICON.fill(Qt.transparent)
@@ -76,3 +91,6 @@ def generate_pixmaps(Globals, SettingsWindow):
     Globals.FAV_BIG_ICON = FAV_BIG_ICON
 
     print('finish generating pixmaps')
+
+
+

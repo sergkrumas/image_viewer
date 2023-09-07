@@ -20,6 +20,7 @@
 
 from _utils import *
 
+import settings_handling
 
 from collections import defaultdict
 import datetime
@@ -830,11 +831,13 @@ class LibraryData(object):
     @staticmethod
     def list_interest_files(folder_path, deep_scan=False):
         filepaths = []
+
+        all_allowed = not settings_handling.SettingsWindow.get_setting_value("browse_images_only")
         if os.path.exists(folder_path):
             for cur_dir, dirs, files in os.walk(folder_path):
                 for name in files:
                     filepath = os.path.join(cur_dir, name)
-                    if LibraryData.is_interest_file(filepath):
+                    if LibraryData.is_interest_file(filepath) or all_allowed:
                         filepaths.append(filepath)
                 if not deep_scan:
                     break
@@ -849,12 +852,15 @@ class LibraryData(object):
         for n, image_data in enumerate(images_data):
             if image_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
                 continue
+
             if thread_instance:
                 # switch to main thread
                 thread_instance.msleep(1)
             source = load_image_respect_orientation(image_data.filepath)
             if source.width() == 0 or source.height() == 0:
                 source = Globals.ERROR_PREVIEW_PIXMAP
+            if not image_data.is_supported_filetype:
+                source = Globals.NOT_SUPPORTED_PIXMAP
             # thumbnail
             THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
             thumbnail = source.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH,
@@ -1081,6 +1087,8 @@ class FolderData():
                 for filename, value in items:
                     if os.path.basename(image_data.filepath) == filename:
                         image_data.image_rotation = value
+        for image_data in self.images_list:
+            image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
 
     def __init__(self, folder_path, files, image_filepath=None, fav=False, comm=False):
         super().__init__()
@@ -1250,6 +1258,7 @@ class ImageData():
         self.position = None
         self.hint_position = None
         self.image_rotation = 0
+        self.is_supported_filetype = True
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
         self.filename = os.path.basename(filepath)
