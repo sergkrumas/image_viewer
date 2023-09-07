@@ -20,7 +20,7 @@
 
 from _utils import *
 
-import pureref
+import pureref, tagging
 
 from library_data import (CommentData, LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
@@ -411,7 +411,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         }
         """
 
-        self.pureref_mode = False
+        pureref.init(self)
+        tagging.init(self)
+
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
     #         if self.windowState() & Qt.WindowMaximized:
@@ -1059,6 +1061,10 @@ class MainWindow(QMainWindow, UtilsMixin):
             pureref.mousePressEvent(self, event)
         else:
 
+            if self.tagging_overlay_mode:
+                tagging.main_mousePressEvent(self, event)
+                return
+
             if event.button() == Qt.LeftButton:
                 self.left_button_pressed = True
 
@@ -1106,6 +1112,17 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.pureref_mode:
             pureref.mouseMoveEvent(self, event)
         else:
+
+            curpos = self.mapFromGlobal(QCursor().pos())
+            if not self.tagging_sidebar_visible:
+                self.tagging_sidebar_visible = tagging.get_tiny_sidebar_rect(self).contains(curpos)
+            else:
+                self.tagging_sidebar_visible = tagging.get_sidebar_rect(self).contains(curpos)
+
+            if self.tagging_overlay_mode:
+                tagging.main_mouseMoveEvent(self, event)
+                return
+
             if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
                 self.region_zoom_in_mouseMoveEvent(event)
             elif self.isLeftClickAndCtrlShift(event) or self.comment_data:
@@ -1138,6 +1155,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.pureref_mode:
             pureref.mouseReleaseEvent(self, event)
         else:
+
+            if self.tagging_overlay_mode:
+                tagging.main_mouseReleaseEvent(self, event)
+                return
+
             if event.button() == Qt.LeftButton:
                 self.left_button_pressed = False
 
@@ -1370,6 +1392,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.pureref_mode:
             pureref.wheelEvent(self, event)
         else:
+
+            if self.tagging_overlay_mode:
+                tagging.main_wheelEvent(self, event)
+                return
+
             if self.library_mode:
                 self.wheelEventLibraryMode(scroll_value, event)
             else:
@@ -2110,6 +2137,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.draw_image_metadata(painter)
 
+        tagging.draw_tags_sidebar_overlay(self, painter)
+        tagging.draw_main(self, painter)
+
     def draw_comments(self, painter):
 
         old_pen = painter.pen()
@@ -2392,8 +2422,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif check_scancode_for(event, "C"):
                 self.show_center_point = not self.show_center_point
                 self.update()
-            elif check_scancode_for(event, "T"):
+            elif check_scancode_for(event, "D"):
                 self.show_thirds = not self.show_thirds
+                self.update()
+            elif check_scancode_for(event, "T"):
+                tagging.toggle_overlay(self)
                 self.update()
             elif check_scancode_for(event, "I"):
                 self.invert_image = not self.invert_image
@@ -3088,7 +3121,9 @@ def _main():
 
     generate_pixmaps(Globals, SettingsWindow)
 
-    # создание библиотеки
+    tagging.load_tags_info()
+
+    # инициализация библиотеки
     LibraryData.globals = Globals
     LibraryData.FolderData = FolderData
     CommentWindow.globals = Globals

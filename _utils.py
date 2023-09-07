@@ -92,13 +92,22 @@ def delete_to_recyclebin(filename):
         if os.path.exists(filename):
             os.system('del "%s"' % filename)
 
+
+def convert_md5_to_int_tuple(md5_str):
+    md5_by_parts = []
+    for i in range(4):
+        part_str = md5_str[i*8:i*8+8]
+        part_value = int(part_str, 16)
+        md5_by_parts.append(part_value)
+    return tuple(md5_by_parts)
+
 def generate_md5(filepath):
     hash_md5 = hashlib.md5()
     with open(filepath, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
-    value = hash_md5.hexdigest()
-    return f'{value}'
+    md5_str = hash_md5.hexdigest()
+    return md5_str, convert_md5_to_int_tuple(md5_str)
 
 def read_meta_info(filepath):
     try:

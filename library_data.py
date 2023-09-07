@@ -19,6 +19,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 from _utils import *
+
+
 from collections import defaultdict
 import datetime
 
@@ -1234,6 +1236,14 @@ class ImageData():
         except Exception as e:
             return 0
 
+    # решение проблемы циклических импортов
+    get_tags_func = None
+    @classmethod
+    def get_tags_function(cls):
+        if cls.get_tags_func is None:
+            cls.get_tags_func = __import__("tagging").get_tags_for_image_data
+        return cls.get_tags_func
+
     def __init__(self, filepath, folder_data):
         super().__init__()
         self.scale = None
@@ -1248,10 +1258,12 @@ class ImageData():
         self.anim_paused = False
         self.svg_scale_factor = 20
         self.anim_cur_frame = 0
+        self.tags_list = list()
         if self.filepath:
-            self.md5 = generate_md5(self.filepath)
+            self.md5, self.md5_tuple = generate_md5(self.filepath)
             self.creation_date = self.get_creation_date(self.filepath)
             self.image_metadata = dict()
+            self.tags_list = ImageData.get_tags_function()(self)
             self.disk_size = self.get_disk_size(self.filepath)
 
     def save_data(self):
