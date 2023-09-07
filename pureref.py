@@ -21,7 +21,8 @@
 from _utils import *
 
 
-
+def init(self):
+    self.pureref_mode = False    
 
 
 
