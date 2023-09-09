@@ -479,15 +479,17 @@ class LibraryData(object):
             self.globals.control_panel.quick_show()
         self.add_current_image_to_view_history()
 
-    def move_image(self, before_index, after_index):
+    def move_image(self, before_index, after_index, dec_index):
         if before_index is None:
-            print("return")
             return
 
         cf = self.current_folder()
         # получаем сначала текущее изображение
         current_image = cf.current_image()
 
+        if dec_index:
+            after_index -=1
+        after_index = max(0, after_index)
         the_image = cf.images_list[before_index]
         self.current_folder().images_list.remove(the_image)
         self.current_folder().images_list.insert(after_index, the_image)

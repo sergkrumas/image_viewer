@@ -805,7 +805,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 # draw thumbnail
                 if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                     painter.drawRect(thumb_rect)
-                if current_drag_and_drop_index == n and current_drag_and_drop_index != self.start_click_index:
+                if current_drag_and_drop_index == n: # and current_drag_and_drop_index != self.start_click_index:
                     saved_thumb_rect = QRect(thumb_rect)
                 painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
                 painter.setOpacity(1.0)
@@ -841,12 +841,12 @@ class ControlPanel(QWidget, UtilsMixin):
                     painter.resetTransform()
                     painter.setOpacity(1.0)
         if saved_thumb_rect:
+            # рисовании линии и усиков для неё снизу и сверху
             painter.setPen(QPen(QColor(200, 0, 0), 2))
             painter.drawLine(saved_thumb_rect.topLeft(), saved_thumb_rect.bottomLeft())
             p = saved_thumb_rect.topLeft()
             painter.drawLine(p + QPoint(5, -3), p)
             painter.drawLine(p + QPoint(-5, -3), p)
-
             p = saved_thumb_rect.bottomLeft()
             painter.drawLine(p + QPoint(5, 3), p)
             painter.drawLine(p + QPoint(-5, 3), p)
@@ -886,9 +886,9 @@ class ControlPanel(QWidget, UtilsMixin):
         r = self.rect()
         check_rect = r.adjusted(-THUMBNAIL_WIDTH, -THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
         pos = QCursor().pos()
-        if (get_index or drag_and_drop) and shift_cursor:
-            pos += QPoint(THUMBNAIL_WIDTH//2, 0)
         cursor_pos = self.mapFromGlobal(pos)
+        if get_index and shift_cursor:
+            cursor_pos += QPoint(THUMBNAIL_WIDTH//2, 0)
         for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
             offset = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-folder.current_index())
@@ -899,7 +899,8 @@ class ControlPanel(QWidget, UtilsMixin):
                     break
             if drag_and_drop:
                 if d_rect.contains(cursor_pos):
-                    self.LibraryData().move_image(self.start_click_index, image_index)
+                    dec_index = not d_rect.contains(cursor_pos - QPoint(THUMBNAIL_WIDTH//2, 0))
+                    self.LibraryData().move_image(self.start_click_index, image_index, dec_index)
                     break
             if not (get_index or drag_and_drop) and check_rect.contains(d_rect.center()):
                 if d_rect.contains(cursor_pos):
@@ -914,7 +915,7 @@ class ControlPanel(QWidget, UtilsMixin):
     def mouseReleaseEvent(self, event):
         if event.button() != Qt.LeftButton:
             return
-        if event.pos() != self.start_click_pos:
+        if self.distance(event.pos(), self.start_click_pos) > self.globals.THUMBNAIL_WIDTH//2:
             # перетаскивание миниатюрок
             self.thumbnails_row_clicked(drag_and_drop=True, shift_cursor=False)
         else:
@@ -926,6 +927,9 @@ class ControlPanel(QWidget, UtilsMixin):
         self.start_click_pos = None
         self.start_click_index = -1
         return
+
+    def distance(self, p1, p2):
+        return math.sqrt((p1.x()-p2.x())**2 + (p1.y()-p2.y())**2)
 
     def contextMenuEvent(self, event):
         MW = self.globals.main_window
