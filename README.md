@@ -1,10 +1,11 @@
-# [Russian] GIF/AnimatedWEBP/WEBP/SVG/PNG/JPG/JFIF/ICO/BMP/SVG/TGA/TIF Image Viewer v0.9 for Windows by Sergei Krumas
+# [Russian] GIF/AnimatedWEBP/WEBP/SVG/PNG/JPG/JPEG/JFIF/ICO/BMP/SVG/TGA/TIF Image Viewer v0.9 for Windows by Sergei Krumas
 
 На данный момент документация ещё не готова и будет готова ближе к релизу летом 2024.
 
+Image Viewer я пишу на замену почившей в 2015м году Picasa Photo Viewer. Как и с моей недавней разработкой Oxxxy Screenshoter, кое-что взято за основу из оригинала и вдобавок поверх наворочено куча отсебятины.
+
 ## Состояние проекта на сегодня
 
-Image Viewer я пишу на замену почившей в 2015м году Picasa Photo Viewer. Как и с моей недавней разработкой Oxxxy Screenshoter, кое-что взято за основу из оригинала и вдобавок поверх наворочено куча отсебятины.
 - 11 февраля 2022 - начата разработка
 - 28 марта 2022 - начато активное использование
 - 30 мая 2022 - готова полноценная альфа-версия
