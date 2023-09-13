@@ -62,8 +62,8 @@ class Globals():
 
     is_path_exists = False
 
-    AFTERCRUSH = False
-    CRUSH_SIMULATOR = True
+    AFTERCRASH = False
+    CRASH_SIMULATOR = True
 
     USE_GLOBAL_LIST_VIEW_HISTORY = False
 
@@ -2701,7 +2701,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             change_comment_text = None
             change_comment_borders = None
 
-            crush_simulator = None
+            crash_simulator = None
 
             change_svg_scale = None
 
@@ -2721,8 +2721,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                 pureref_mode_chb.setCheckable(True)
                 pureref_mode_chb.setChecked(self.pureref_mode)
 
-            if Globals.CRUSH_SIMULATOR:
-                crush_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
+            if Globals.CRASH_SIMULATOR:
+                crash_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
 
             open_settings = contextMenu.addAction("Настройки...")
 
@@ -2804,7 +2804,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if action is not None:
                 if action == show_in_explorer:
                     Globals.control_panel.show_in_folder()
-                elif action == crush_simulator:
+                elif action == crash_simulator:
                     1 / 0
                 elif action == run_unsupported_file:
                     import win32api
@@ -2971,8 +2971,8 @@ def show_system_tray(app, icon):
     sti.show()
     return sti
 
-def get_crushlog_filepath():
-    return os.path.join(os.path.dirname(__file__), "crush.log")
+def get_crashlog_filepath():
+    return os.path.join(os.path.dirname(__file__), "crash.log")
 
 def excepthook(exc_type, exc_value, exc_tb):
     # пишем инфу о краше
@@ -2986,11 +2986,11 @@ def excepthook(exc_type, exc_value, exc_tb):
     dt = f"{spaces} {datetime_string} {spaces}"
     dashes = "-"*len(dt)
     dt_framed = f"{dashes}\n{dt}\n{dashes}\n"
-    with open(get_crushlog_filepath(), "a+", encoding="utf8") as crush_log:
-        crush_log.write("\n"*10)
-        crush_log.write(dt_framed)
-        crush_log.write("\n")
-        crush_log.write(traceback_lines)
+    with open(get_crashlog_filepath(), "a+", encoding="utf8") as crash_log:
+        crash_log.write("\n"*10)
+        crash_log.write(dt_framed)
+        crash_log.write("\n")
+        crash_log.write(traceback_lines)
     print(traceback_lines)
     if not Globals.USE_SOCKETS:
         ServerOrClient.remove_server_data()
@@ -2999,12 +2999,12 @@ def excepthook(exc_type, exc_value, exc_tb):
     if stray_icon:
         stray_icon.hide()
     if not Globals.DEBUG:
-        _restart_app(aftercrush=True)
+        _restart_app(aftercrash=True)
     sys.exit()
 
-def _restart_app(aftercrush=False):
-    if aftercrush:
-        subprocess.Popen([sys.executable, sys.argv[0], "-aftercrush"])
+def _restart_app(aftercrash=False):
+    if aftercrash:
+        subprocess.Popen([sys.executable, sys.argv[0], "-aftercrash"])
     else:
         subprocess.Popen([sys.executable, sys.argv[0]])
 
@@ -3111,7 +3111,7 @@ def _main():
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
-        if (RERUN_ARG not in sys.argv) and ("-aftercrush" not in sys.argv):
+        if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
             subprocess.Popen([sys.executable, "-u", *sys.argv, RERUN_ARG])
             sys.exit()
 
@@ -3150,7 +3150,7 @@ def _main():
     parser.add_argument('-isolated', help="", action="store_true")
     parser.add_argument('-extended', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
-    parser.add_argument('-aftercrush', help="", action="store_true")
+    parser.add_argument('-aftercrash', help="", action="store_true")
     parser.add_argument('-forcelibrarypage', help="", action="store_true")
     args = parser.parse_args(sys.argv[1:])
     # print(args)
@@ -3158,8 +3158,8 @@ def _main():
         path = args.path
     if args.frame:
         frameless_mode = False
-    if args.aftercrush:
-        Globals.AFTERCRUSH = True
+    if args.aftercrash:
+        Globals.AFTERCRASH = True
     Globals.isolated_mode = args.isolated
     Globals.force_extended_mode = args.extended
 
@@ -3170,11 +3170,11 @@ def _main():
         app.setWindowIcon(app_icon)
         app.setQuitOnLastWindowClosed(True)
 
-    if Globals.AFTERCRUSH:
-        filepath = get_crushlog_filepath()
+    if Globals.AFTERCRASH:
+        filepath = get_crashlog_filepath()
         msg0 = f"Информация о краше сохранена в файл\n\t{filepath}"
-        msg = f"Программа упала. Application crush.\n{msg0}\n\nПерезапустить? Restart app?"
-        ret = QMessageBox.question(None, 'Error', msg, QMessageBox.Yes | QMessageBox.No)
+        msg = f"Программа аварийно завершила работу! Application crash! \n{msg0}\n\nПерезапустить? Restart app?"
+        ret = QMessageBox.question(None, 'Fatal Error!', msg, QMessageBox.Yes | QMessageBox.No)
         if ret == QMessageBox.Yes:
             _restart_app()
         sys.exit(0)
