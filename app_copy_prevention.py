@@ -64,7 +64,7 @@ class ServerOrClient():
                 # что-то пошло не так:
                 # удаляем файл и сразу закрываемся
                 os.remove(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME)
-                print("removing crush trash")
+                print("removing crash traces")
                 sys.exit()
             else:
                 # передаём входящие данные к первой копии приложения и сразу закрываемся
