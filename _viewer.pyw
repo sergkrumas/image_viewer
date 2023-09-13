@@ -136,7 +136,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                     paths.append(path)
             all_but_last = paths[:-1]
             last_path = paths[-1:]
-            print("Drop Event Data", paths)
+            to_print = f'Drop Event Data {paths}'
+            print(to_print)
             for path in all_but_last:
                 LibraryData().handle_input_data(path, pre_load=True)
             for path in last_path:
@@ -775,7 +776,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                 raise Exception("Error during openning")
             else:
                 # for corrupted instagram .webp files
-                print("trying to convert '%s' ..." % filepath)
+                to_print = f"trying to convert '{filepath}' ..."
+                print(to_print)
                 Image.open(filepath).save(filepath)
                 self.show_static(filepath, pass_=2)
 
@@ -916,7 +918,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         icp = self.image_center_position
         pos = QPointF(icp).toPoint() - QPointF(new_width/2, new_height/2).toPoint()
         if debug:
-            print(pos, new_width, new_height)
+            to_print = f'{pos} {new_width} {new_height}'
+            print(to_print)
         image_rect.moveTo(pos)
         image_rect.setWidth(int(new_width))
         image_rect.setHeight(int(new_height))
@@ -2920,7 +2923,8 @@ def open_request(path):
     else:
         MW.show()
     MW.activateWindow()
-    print("retrieved data:", path)
+    to_print = f'retrieved data: {path}'
+    print(to_print)
 
 def input_path_dialog(path, exit=True):
     if os.path.exists(path):
@@ -3107,7 +3111,8 @@ def _main():
     os.chdir(os.path.dirname(__file__))
     sys.excepthook = excepthook
     pid = os.getpid()
-    print(f'Proccess ID: {pid}', ", ".join(sys.argv))
+    arguments = ", ".join(sys.argv)
+    print(f'Proccess ID: {pid} {arguments}')
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'

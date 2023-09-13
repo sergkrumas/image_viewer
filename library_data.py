@@ -239,7 +239,9 @@ class LibraryData(object):
                 # raise
                 errors = True
             if errors:
-                print("Ошибки при чтении файла", self.get_comments_list_path())
+                _path = self.get_comments_list_path()
+                to_print = f"Ошибки при чтении файла {_path}"
+                print(to_print)
         files = list(set(files))
         self.create_folder_data("С комментариями", files, image_filepath=None, comm=True)
 
@@ -320,7 +322,8 @@ class LibraryData(object):
                 if fd != folder_data:
                     # folder_data.set_modifiers(fd.get_modifiers())
                     LibraryData().folders.remove(fd)
-                    print("dublicated item removed: %s" % fd.folder_path)
+                    to_print = f"dublicated item removed: {fd.folder_path}"
+                    print(to_print)
                     # break
                     # иногда дубликатов получается больше, чем 2, поэтому break отменяется
 
@@ -668,7 +671,7 @@ class LibraryData(object):
                 except:
                     errors = True
             if errors:
-                print("Файл сессии повреждён и должен быть удалён", path)
+                to_print = f'Файл сессии повреждён и должен быть удалён {path}'
                 # очень интересно посмотреть на повреждения, поэтому файл пока что не удаляется
                 # os.remove(path)
         for item in data:
@@ -726,7 +729,9 @@ class LibraryData(object):
                 except Exception as e:
                     errors = True
             if errors:
-                print("Ошибки при чтении файла", self.get_fav_list_path())
+                _path = self.get_fav_list_path()
+                to_print = f'Ошибки при чтении файла {_path}'
+                print(to_print)
                 # пока ещё не удаляем, мало ли что
                 # os.remove(self.get_fav_list_path())
         self.create_folder_data("Избранное", files, image_filepath=None, fav=True)
@@ -928,7 +933,8 @@ class LibraryData(object):
     @classmethod
     def read_user_rotations_for_folder(cls, folder_data):
         filepath = cls.get_user_rotations_filepath(folder_data)
-        print("reading image rotations in ", filepath)
+        to_print = f"reading image rotations in {filepath}"
+        print(to_print)
         data = []
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf8") as f:
@@ -961,7 +967,8 @@ class LibraryData(object):
                     imd_r_str = f"{dir_path}\n{rotation}\n"
                     data.append(imd_r_str)
             f.write("\n".join(data))
-            print("Rotations written to:", filepath)
+            to_print = f'Rotations written to: {filepath}'
+            print(to_print)
         win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
 
     @staticmethod
@@ -1134,7 +1141,8 @@ class FolderData():
             s = f'-{ma}'
             value = s in modifiers_string
             setattr(self, ma, value)
-            # print(ma, 'is set to', value)
+            to_print = f"{ma} is set to {value}"
+            # print(to_print)
 
     def do_sort(self, sort_type, reversed=False):
         import operator
