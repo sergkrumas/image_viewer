@@ -75,7 +75,7 @@ class Globals():
 
     NULL_PIXMAP = None
 
-    app_title = "Krumassano Image Viewer v0.90 Alpha"
+    app_title = "Krumaserg Image Viewer v0.90 Alpha"
 
 
 class MainWindow(QMainWindow, UtilsMixin):
