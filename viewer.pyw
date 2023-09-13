@@ -22,4 +22,5 @@ import _viewer
 
 
 if __name__ == "__main__":
+    _viewer.Globals.DEBUG = False
     _viewer.main()

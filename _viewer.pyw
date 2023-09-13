@@ -62,6 +62,9 @@ class Globals():
 
     is_path_exists = False
 
+    AFTERCRUSH = False
+    CRUSH_SIMULATOR = True
+
     USE_GLOBAL_LIST_VIEW_HISTORY = False
 
     started_from_sublime_text = False
@@ -2247,6 +2250,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         if Globals.isolated_mode:
             # self.close()
             # return
+            app = QApplication.instance()
+            app.exit()
             pass
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
@@ -2696,6 +2701,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             change_comment_text = None
             change_comment_borders = None
 
+            crush_simulator = None
+
             change_svg_scale = None
 
             copy_image_metadata = None
@@ -2713,6 +2720,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             if pureref_mode_chb:
                 pureref_mode_chb.setCheckable(True)
                 pureref_mode_chb.setChecked(self.pureref_mode)
+
+            if Globals.CRUSH_SIMULATOR:
+                crush_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
 
             open_settings = contextMenu.addAction("Настройки...")
 
@@ -2794,9 +2804,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             if action is not None:
                 if action == show_in_explorer:
                     Globals.control_panel.show_in_folder()
+                elif action == crush_simulator:
+                    1 / 0
                 elif action == run_unsupported_file:
                     import win32api
-                    win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)                    
+                    win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)
                 elif action == minimize_window:
                     Globals.main_window.showMinimized()
                 elif action == pureref_mode_chb:
@@ -2959,6 +2971,9 @@ def show_system_tray(app, icon):
     sti.show()
     return sti
 
+def get_crushlog_filepath():
+    return os.path.join(os.path.dirname(__file__), "crush.log")
+
 def excepthook(exc_type, exc_value, exc_tb):
     # пишем инфу о краше
     if type(exc_tb) is str:
@@ -2971,7 +2986,7 @@ def excepthook(exc_type, exc_value, exc_tb):
     dt = f"{spaces} {datetime_string} {spaces}"
     dashes = "-"*len(dt)
     dt_framed = f"{dashes}\n{dt}\n{dashes}\n"
-    with open("crush.log", "a+", encoding="utf8") as crush_log:
+    with open(get_crushlog_filepath(), "a+", encoding="utf8") as crush_log:
         crush_log.write("\n"*10)
         crush_log.write(dt_framed)
         crush_log.write("\n")
@@ -2983,7 +2998,15 @@ def excepthook(exc_type, exc_value, exc_tb):
     stray_icon = app.property("stray_icon")
     if stray_icon:
         stray_icon.hide()
-    app.quit()
+    if not Globals.DEBUG:
+        _restart_app(aftercrush=True)
+    sys.exit()
+
+def _restart_app(aftercrush=False):
+    if aftercrush:
+        subprocess.Popen([sys.executable, sys.argv[0], "-aftercrush"])
+    else:
+        subprocess.Popen([sys.executable, sys.argv[0]])
 
 def exit_threads():
     if not Globals.USE_SOCKETS:
@@ -2994,12 +3017,20 @@ def exit_threads():
         # нужно вызывать terminate вместо exit
 
 def start_isolated_process(path):
-    args = [sys.executable, __file__, path, "-isolated"]
+    if Globals.DEBUG:
+        app_path = __file__
+    else:
+        app_path = sys.argv[0]
+    args = [sys.executable, app_path, path, "-isolated"]
     subprocess.Popen(args)
 
 def do_rerun_in_extended_mode(is_library_mode):
     path = LibraryData.get_content_path(LibraryData().current_folder())
-    args = [sys.executable, __file__, path, "-extended"]
+    if Globals.DEBUG:
+        app_path = __file__
+    else:
+        app_path = sys.argv[0]
+    args = [sys.executable, app_path, path, "-extended"]
     if is_library_mode:
         args.append("-forcelibrarypage")
     subprocess.Popen(args)
@@ -3080,9 +3111,14 @@ def _main():
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
-        if RERUN_ARG not in sys.argv:
+        if (RERUN_ARG not in sys.argv) and ("-aftercrush" not in sys.argv):
             subprocess.Popen([sys.executable, "-u", *sys.argv, RERUN_ARG])
             sys.exit()
+
+    if sys.argv[0].lower().endswith("_viewer.pyw"):
+        Globals.DEBUG = True
+    else:
+        Globals.DEBUG = False
 
     sys.stdout = HookConsoleOutput()
 
@@ -3114,6 +3150,7 @@ def _main():
     parser.add_argument('-isolated', help="", action="store_true")
     parser.add_argument('-extended', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
+    parser.add_argument('-aftercrush', help="", action="store_true")
     parser.add_argument('-forcelibrarypage', help="", action="store_true")
     args = parser.parse_args(sys.argv[1:])
     # print(args)
@@ -3121,6 +3158,8 @@ def _main():
         path = args.path
     if args.frame:
         frameless_mode = False
+    if args.aftercrush:
+        Globals.AFTERCRUSH = True
     Globals.isolated_mode = args.isolated
     Globals.force_extended_mode = args.extended
 
@@ -3129,6 +3168,16 @@ def _main():
         path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_isolated.ico")
         app_icon.addFile(path_icon)
         app.setWindowIcon(app_icon)
+        app.setQuitOnLastWindowClosed(True)
+
+    if Globals.AFTERCRUSH:
+        filepath = get_crushlog_filepath()
+        msg0 = f"Информация о краше сохранена в файл\n\t{filepath}"
+        msg = f"Программа упала. Application crush.\n{msg0}\n\nПерезапустить? Restart app?"
+        ret = QMessageBox.question(None, 'Error', msg, QMessageBox.Yes | QMessageBox.No)
+        if ret == QMessageBox.Yes:
+            _restart_app()
+        sys.exit(0)
 
     ServerOrClient.globals = Globals
 
