@@ -2984,7 +2984,7 @@ def excepthook(exc_type, exc_value, exc_tb):
         traceback_lines = exc_tb
     else:
         traceback_lines = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    locale.setlocale(locale.LC_ALL, "russian")
+    # locale.setlocale(locale.LC_ALL, "russian")
     datetime_string = time.strftime("%A, %d %B %Y %X").capitalize()
     spaces = " "*15
     dt = f"{spaces} {datetime_string} {spaces}"
