@@ -671,7 +671,7 @@ class ControlPanel(QWidget, UtilsMixin):
         cursor_pos = QCursor().pos()
         delta = (cursor_pos - self.last_cursor_pos).y()
         self.last_cursor_pos = cursor_pos
-        # старая система задавания
+
         if delta > 0+self.MOUSE_SENSITIVITY:
             if self.touched == 0:
                 self.touched = 1
