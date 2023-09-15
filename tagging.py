@@ -584,6 +584,21 @@ class TaggingForm(QWidget):
         im_data.tags_list = []
         image_record = TagListRecord(im_data.md5, im_data.md5_tuple, im_data.filepath)
 
+
+        # TODO: попробовать переписать обработку тегов таким способом:
+        # old_set = {1, 2, 3, 7}
+        # new_set = {2, 3, 5}
+        # old_set = {3, 1, 2}
+        # new_set = {1, 4}
+        # sd = old_set.symmetric_difference(new_set)
+        # #то, чего нет в new_set
+        # deleted = old_set.intersection(sd)
+        # print( deleted )
+        # #то, чего нет в old_set
+        # added = new_set.intersection(sd)
+        # print( added )
+
+
         # обработка добавленных тегов
         for tag_text in tags_list:
             if tag_text in base_tags_list:
