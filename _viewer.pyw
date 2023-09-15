@@ -3117,7 +3117,7 @@ def _main():
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
         if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
-            subprocess.Popen([sys.executable, "-u", *sys.argv, RERUN_ARG])
+            subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
             sys.exit()
 
     if sys.argv[0].lower().endswith("_viewer.pyw"):
