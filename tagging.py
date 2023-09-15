@@ -408,6 +408,7 @@ class TextEdit(QPlainTextEdit):
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer = completer
         self.textChanged.connect(self.complete)
+        self.off_competer_on_first_call = True
 
     def insert_completion(self, completion):
         tc = self.textCursor()
@@ -429,6 +430,9 @@ class TextEdit(QPlainTextEdit):
         return tc.selectedText()
 
     def complete(self):
+        if self.off_competer_on_first_call:
+            self.off_competer_on_first_call = False
+            return
         prefix = self.text_under_cursor
         if not prefix:
             return
