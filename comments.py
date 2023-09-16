@@ -100,7 +100,7 @@ class CommentWindow(QWidget):
 
     def save_button_handler(self):
         self.comment.text = self.editfield.toPlainText()
-        LibraryData().store_comments_list()
+        CommentWindow.LibraryData().store_comments_list()
         self.hide()
 
     def hide(self):

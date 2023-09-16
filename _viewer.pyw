@@ -3207,6 +3207,7 @@ def _main():
     LibraryData.globals = Globals
     LibraryData.FolderData = FolderData
     CommentWindow.globals = Globals
+    CommentWindow.LibraryData = LibraryData
     lib = LibraryData()
     # создание элементов интерфейса
     sti = None
