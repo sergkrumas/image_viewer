@@ -452,7 +452,7 @@ class SettingsWindow(QWidget):
         cp = MW.rect().center()
         qr = self.frameGeometry()
         qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        self.move(qr.topLeft() + QPoint(0, -50))
         self.activateWindow()
 
     def handle_windows_startup_chbx(self, sender):
@@ -601,6 +601,8 @@ class SettingsWindow(QWidget):
     def mouseReleaseEvent(self, event):
         pass
 
-    def keyReleaseEvent(self, event):
+    def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
+            self.hide()
+        if event.nativeScanCode() == 0x29:
             self.hide()
