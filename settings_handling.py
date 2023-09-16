@@ -417,7 +417,7 @@ class SettingsWindow(QWidget):
     }
 
     strings = {
-        "inframed_folderpath": (".", "Папка для кадрированных картинок (изменяется через Ctrl+R)"),
+        "inframed_folderpath": (".", "Папка для кадрированных картинок (изменяется через Ctrl+R вне окна настроек)"),
     }
 
     isWindowVisible = False
@@ -461,15 +461,21 @@ class SettingsWindow(QWidget):
         else:
             remove_from_startup(self.STARTUP_CONFIG[0])
 
-    def __init__(self):
+    def __init__(self, parent):
         if self.is_initialized:
             return
-        super().__init__()
+        super().__init__(parent)
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
         # layout почему-то не задаёт высоту, приходится делать это вручную
         # и даже поправлять, когда настроек становится слишком много
-        self.resize(1000, 1000)
+        WINDOW_HEIGHT = 0
+        WINDOW_HEIGHT += 40*len(self.checkboxes)
+        WINDOW_HEIGHT += 50*len(self.values)
+        WINDOW_HEIGHT += 40*len(self.strings)
+        WINDOW_HEIGHT += 50 #buttons
+        self.resize(1000, WINDOW_HEIGHT)
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init
@@ -558,7 +564,7 @@ class SettingsWindow(QWidget):
         main_layout.addSpacing(100)
         main_layout.addLayout(buttons)
         self.setLayout(main_layout)
-        self.setParent(self.globals.main_window)
+        # self.setParent(self.globals.main_window)
 
         SettingsWindow.isWindowVisible = True
 
@@ -594,3 +600,7 @@ class SettingsWindow(QWidget):
         pass
     def mouseReleaseEvent(self, event):
         pass
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.hide()

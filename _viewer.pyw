@@ -2880,11 +2880,12 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.hide()
 
     def open_settings_window(self):
-        window = SettingsWindow()
+        window = SettingsWindow(self)
         if window.isVisible():
             window.hide()
         else:
             window.show()
+            window.activateWindow()
 
 
 def choose_start_option_callback(do_start_server, path):
