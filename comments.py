@@ -44,7 +44,9 @@ class CommentWindow(QWidget):
     def __init__(self):
         if self.is_initialized:
             return
-        super().__init__()
+        parent = self.globals.main_window
+        super().__init__(parent)
+
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
         self.resize(1000, 400)
@@ -90,7 +92,7 @@ class CommentWindow(QWidget):
         # main_layout.addSpacing(0)
         main_layout.addLayout(buttons)
         self.setLayout(main_layout)
-        self.setParent(self.globals.main_window)
+        # self.setParent(self.globals.main_window)
 
         CommentWindow.isWindowVisible = True
         self.is_initialized = True
@@ -127,3 +129,14 @@ class CommentWindow(QWidget):
         pass
     def mouseReleaseEvent(self, event):
         pass
+
+
+    def keyReleaseEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            self.exit_button_handler()
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            self.exit_button_handler()

@@ -220,6 +220,8 @@ def toggle_overlay(parent):
         # enter
         parent.tagging_form = TaggingForm(parent, )
         parent.tagging_form.show()
+        parent.tagging_form.activateWindow()
+        parent.tagging_form.tagslist.setFocus()
     else:
         # leave
         if parent.tagging_form:
@@ -495,10 +497,12 @@ class TaggingForm(QWidget):
 
     def __init__(self, *args):
         # QWidget.__init__(self, *args)
-        super().__init__()
+        # super().__init__()
+        parent = args[0]
+        super().__init__(parent)
 
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        # self.setWindowFlags( Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)        
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setWindowModality(Qt.WindowModal)
 
         completer_words = [str(t) for t in get_base_tags()]
@@ -536,7 +540,7 @@ class TaggingForm(QWidget):
                 elem.setXYvalues(x, y)
             return layout
 
-        self.existing_tags = createClicableLabelsGrid(get_base_tags())
+        self.existing_tags_layout = createClicableLabelsGrid(get_base_tags())
 
         style = """
         QWidget{
@@ -553,7 +557,7 @@ class TaggingForm(QWidget):
         save_btn = QPushButton("Сохранить")
         save_btn.clicked.connect(self.save_handler)
 
-        vl.addLayout(self.existing_tags)
+        vl.addLayout(self.existing_tags_layout)
         vl.addWidget(self.tagslist)
         vl.addWidget(save_btn)
 
@@ -561,14 +565,14 @@ class TaggingForm(QWidget):
 
         self.setLayout(vl)
 
-        self.resize(2000, self.height())
+        self.resize(parent.width()-100, self.height())
 
         app = QApplication.instance()
         x = (app.desktop().width()//2*1 - self.frameSize().width()) // 2
         y = (app.desktop().height() - self.frameSize().height()) // 2
         self.move(x,y)
 
-        self.setParent(args[0])
+        # self.setParent(args[0])
 
     def save_handler(self):
         # tagslist_data = self.tagslist.document().toPlainText().strip()
@@ -677,14 +681,24 @@ class TaggingForm(QWidget):
         # self.destroy() #если раскоментировать, то процесс будет висеть вечно после закрытия главного окна
 
     def keyReleaseEvent(self, event):
-        self.parent().keyReleaseEvent(event)
+        key = event.key()
+        if key == Qt.Key_Escape:
+            toggle_overlay(self.parent())
 
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key_Escape:
             toggle_overlay(self.parent())
-        # else:        
-        #     self.parent().keyPressEvent(event)
+
+    def mousePressEvent(self, event):
+        pass
+
+    def mouseMoveEvent(self, event):
+        pass
+
+    def mouseReleaseEvent(self, event):
+        pass
+
 
 
 # if __name__ == '__main__':

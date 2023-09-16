@@ -322,7 +322,7 @@ class LibraryData(object):
                 if fd != folder_data:
                     # folder_data.set_modifiers(fd.get_modifiers())
                     LibraryData().folders.remove(fd)
-                    to_print = f"dublicated item removed: {fd.folder_path}"
+                    to_print = f"dublicated folder item removed from LibraryData: {fd.folder_path}"
                     print(to_print)
                     # break
                     # иногда дубликатов получается больше, чем 2, поэтому break отменяется
