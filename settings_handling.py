@@ -564,7 +564,9 @@ class SettingsWindow(QWidget):
         main_layout.addSpacing(100)
         main_layout.addLayout(buttons)
         self.setLayout(main_layout)
-        # self.setParent(self.globals.main_window)
+        # если задавать родителя в super().__init__(parent), то форма становится модальной.
+        # Иначе в случае ниже - не становится модальной.
+        # self.setParent(self.globals.main_window)         
 
         SettingsWindow.isWindowVisible = True
 
