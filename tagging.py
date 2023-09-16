@@ -242,12 +242,13 @@ def draw_main(self, painter):
 
         painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 200)))
 
+# эти обработчики не актуальны, если форма тегов будет модальной
+def main_wheelEvent(self, event):
+    pass
 def main_mousePressEvent(self, event):
     pass
-
 def main_mouseMoveEvent(self, event):
     pass
-
 def main_mouseReleaseEvent(self, event):
     pass
 
