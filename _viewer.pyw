@@ -2898,7 +2898,7 @@ def choose_start_option_callback(do_start_server, path):
         else:
             # иначе по дефолту не запускаем, но обязательно спрашиваем
             ret = QMessageBox.No
-            if not cls.globals.started_from_sublime_text:
+            if not Globals.started_from_sublime_text:
                 if os.path.exists(path):
                     ret = QMessageBox.question(None,
                         "Вопрос",
