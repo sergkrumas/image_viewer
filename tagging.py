@@ -221,7 +221,7 @@ def toggle_overlay(parent):
         parent.tagging_form = TaggingForm(parent, )
         parent.tagging_form.show()
         parent.tagging_form.activateWindow()
-        parent.tagging_form.tagslist.setFocus()
+        parent.tagging_form.tagslist_edit.setFocus()
     else:
         # leave
         if parent.tagging_form:
@@ -361,6 +361,7 @@ class ClickableLabel(QLabel):
     def mouseHandler(self, event):
         if event.button() == Qt.LeftButton:
             self.checked = not self.checked
+            self.updateParent.tagslist_edit.off_competer_for_one_call = True
             self.updateLinkedTextWidget()
             self.updateParent.update()
         elif event.button() == Qt.RightButton:
@@ -411,7 +412,7 @@ class TextEdit(QPlainTextEdit):
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer = completer
         self.textChanged.connect(self.complete)
-        self.off_competer_on_first_call = True
+        self.off_competer_for_one_call = True
 
     def insert_completion(self, completion):
         tc = self.textCursor()
@@ -433,8 +434,8 @@ class TextEdit(QPlainTextEdit):
         return tc.selectedText()
 
     def complete(self):
-        if self.off_competer_on_first_call:
-            self.off_competer_on_first_call = False
+        if self.off_competer_for_one_call:
+            self.off_competer_for_one_call = False
             return
         prefix = self.text_under_cursor
         if not prefix:
@@ -465,7 +466,7 @@ class TextEdit(QPlainTextEdit):
 class TaggingForm(QWidget):
 
     def updateClickableLables(self):
-        tags_list = text_to_list(self.tagslist.document().toPlainText())
+        tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
 
         for child in self.children():
             if isinstance(child, ClickableLabel):
@@ -506,7 +507,7 @@ class TaggingForm(QWidget):
         self.setWindowModality(Qt.WindowModal)
 
         completer_words = [str(t) for t in get_base_tags()]
-        self.tagslist = TextEdit(completer_words)
+        self.tagslist_edit = TextEdit(completer_words)
         style = """
         QPlainTextEdit{
             background-color: transparent;
@@ -515,12 +516,14 @@ class TaggingForm(QWidget):
             font-size: 15pt;
         }
         """
-        self.tagslist.setStyleSheet(style)
-        self.tagslist.setFixedHeight(140)
-        self.tagslist.textChanged.connect(self.updateClickableLables)
+        self.tagslist_edit.setStyleSheet(style)
+        self.tagslist_edit.setFixedHeight(140)
+        self.tagslist_edit.textChanged.connect(self.updateClickableLables)
 
 
         self.tagslabels_list = []
+
+
 
         def createClicableLabelsGrid(_list):
             elems = []
@@ -531,7 +534,7 @@ class TaggingForm(QWidget):
             for n, elem in enumerate(elems):
                 elem.setUpdateParent(self)
                 #add reference to corresponding PlainTextEditWidget
-                elem.plainTextEditWidget = self.tagslist
+                elem.plainTextEditWidget = self.tagslist_edit
                 #add self to special group list
                 self.tagslabels_list.append(elem)
                 x = n // UI_TAGGING_ELEMENTS_IN_A_ROW
@@ -558,7 +561,7 @@ class TaggingForm(QWidget):
         save_btn.clicked.connect(self.save_handler)
 
         vl.addLayout(self.existing_tags_layout)
-        vl.addWidget(self.tagslist)
+        vl.addWidget(self.tagslist_edit)
         vl.addWidget(save_btn)
 
         self.init_tagging_UI()
@@ -575,13 +578,13 @@ class TaggingForm(QWidget):
         # self.setParent(args[0])
 
     def save_handler(self):
-        # tagslist_data = self.tagslist.document().toPlainText().strip()
+        # tagslist_data = self.tagslist_edit.document().toPlainText().strip()
         # verified_tags = bool(re.fullmatch(  r'^([^.,*]*)', tagslist_data ))
         # if not verified_tags:
         #     QMessageBox.warning(self,"Error", "Do not use commas and periods: .,")
         #     return
 
-        tags_list = text_to_list(self.tagslist.document().toPlainText())
+        tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
         base_tags_list = [tag.name for tag in get_base_tags()]
         im_data = LibraryData().current_folder().current_image()
         before_tags_list = im_data.tags_list
@@ -667,7 +670,7 @@ class TaggingForm(QWidget):
         found_tags = [str(l) for l in found_tags]
         if found_tags:
             # set text
-            self.tagslist.document().setPlainText(" ".join(found_tags))
+            self.tagslist_edit.document().setPlainText(" ".join(found_tags))
             # set labels checked
             found_tags = [l.lower() for l in found_tags]
             for label_tag_element in self.tagslabels_list:
