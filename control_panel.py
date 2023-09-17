@@ -69,7 +69,7 @@ class ControlPanelButton(QPushButton):
             else:
                 painter.setBrush(QBrush(Qt.black))
                 painter.setPen(Qt.NoPen)
-                painter.setOpacity(0.3)
+                painter.setOpacity(0.5)
                 painter.drawPath(path)
                 painter.setOpacity(1.0)
                 painter.setPen(Qt.white)
@@ -127,19 +127,21 @@ class ControlPanelButton(QPushButton):
 
             w = self.rect().width()
             points = [
-                QPointF(5, w/2),
-                QPointF(w/2+2, 12),
-                QPointF(w/2, 20),
-                QPointF(w-5, 22),
-                QPointF(w-5, 28),
-                QPointF(w/2, 30),
-                QPointF(w/2+2, 38),
-                QPointF(5, w/2),
+                QPointF(w/2+3, w/2) + QPointF(0, -10),
+                QPointF(w/2+3, w/2) + QPointF(-10, 0),
+                QPointF(w/2+3, w/2) + QPointF(0, 10),
             ]
-            poly = QPolygonF(points)
-            painter.setPen(Qt.NoPen)
-            # painter.setBrush(Qt.white)
-            painter.drawPolygon(poly, fillRule=Qt.WindingFill)
+            pen = painter.pen()
+            pen.setWidth(6)
+            pen.setCapStyle(Qt.RoundCap)
+            pen.setJoinStyle(Qt.RoundJoin)
+            painter.setPen(pen)
+            painter.setBrush(Qt.NoBrush)
+            path = QPainterPath()
+            path.moveTo(points[0].x(), points[0].y())
+            path.lineTo(points[1].x(), points[1].y())
+            path.lineTo(points[2].x(), points[2].y())
+            painter.drawPath(path)
 
         elif self.id == "play":
 
@@ -163,18 +165,21 @@ class ControlPanelButton(QPushButton):
 
             w = self.rect().width()
             points = [
-                QPointF(w, w) - QPointF(5, w/2),
-                QPointF(w, w) - QPointF(w/2+2, 12),
-                QPointF(w, w) - QPointF(w/2, 20),
-                QPointF(w, w) - QPointF(w-5, 22),
-                QPointF(w, w) - QPointF(w-5, 28),
-                QPointF(w, w) - QPointF(w/2, 30),
-                QPointF(w, w) - QPointF(w/2+2, 38),
-                QPointF(w, w) - QPointF(5, w/2),
+                QPointF(w/2-3, w/2) + QPointF(0, -10),
+                QPointF(w/2-3, w/2) + QPointF(10, 0),
+                QPointF(w/2-3, w/2) + QPointF(0, 10),
             ]
-            poly = QPolygonF(points)
-            painter.setPen(Qt.NoPen)
-            painter.drawPolygon(poly, fillRule=Qt.WindingFill)
+            pen = painter.pen()
+            pen.setWidth(6)
+            pen.setCapStyle(Qt.RoundCap)
+            pen.setJoinStyle(Qt.RoundJoin)
+            painter.setPen(pen)
+            painter.setBrush(Qt.NoBrush)
+            path = QPainterPath()
+            path.moveTo(points[0].x(), points[0].y())
+            path.lineTo(points[1].x(), points[1].y())
+            path.lineTo(points[2].x(), points[2].y())
+            painter.drawPath(path)
 
         elif self.id == "rotate_clockwise":
 
