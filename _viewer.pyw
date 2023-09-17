@@ -2460,7 +2460,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif check_scancode_for(event, "R"):
                 self.start_inframed_image_saving()
             elif check_scancode_for(event, "M"):
-                self.mirror_current_image()
+                self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
             elif check_scancode_for(event, "P"):
                 self.toggle_stay_on_top()
                 self.update()
@@ -2481,9 +2481,13 @@ class MainWindow(QMainWindow, UtilsMixin):
         else:
             self.show_center_label('Отмена!\nАнимационные эффекты отключены в настройках')
 
-    def mirror_current_image(self):
+    def mirror_current_image(self, ctrl_pressed):
         if self.pixmap:
-            tm = QTransform().scale(-1, 1)
+            tm = QTransform()
+            if ctrl_pressed:
+                tm = tm.scale(1, -1)
+            else:
+                tm = tm.scale(-1, 1)
             self.rotated_pixmap = self.get_rotated_pixmap().transformed(tm)
             self.update()
 
