@@ -485,8 +485,8 @@ class ControlPanel(QWidget, UtilsMixin):
             self.play_btn,
             self.next_btn,
 
-            self.rotate_clockwise_btn,
             self.rotate_counterclockwise_btn,
+            self.rotate_clockwise_btn,
             self.favorite_btn,
 
             # self.space_btn_generator(),
@@ -506,8 +506,8 @@ class ControlPanel(QWidget, UtilsMixin):
             self.play,
             self.show_next,
 
-            self.rotate_clockwise,
             self.rotate_counterclockwise,
+            self.rotate_clockwise,
             self.manage_favorite_list,
 
             self.update_folder_list,
