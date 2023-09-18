@@ -769,6 +769,8 @@ class LibraryData(object):
         image_data = self.globals.main_window.image_data
         if not image_data.filepath:
             return
+        if not LibraryData.is_interest_file(image_data.filepath):
+            return "rejected"
         fav_folder = self.get_fav_virtual_folder()
         if image_data.filepath in self.fav_list_filepaths():
             for im_data in self.get_fav_virtual_folder().images_list:
@@ -816,9 +818,9 @@ class LibraryData(object):
             # дополнительно через QMovie поддерживаются форматы
                 # .gif
                 # .webp (animated)
-        exts = [
+        exts = (
             ".jpg", ".jpeg",
-            ".jfif", # внутри jfif-файлы то же самое, что и jpeg или jpg
+            ".jfif", # внутри jfif-файлы то же самое, что и внутри jpeg или jpg
             ".bmp",
             ".gif",
             ".png",
@@ -828,12 +830,8 @@ class LibraryData(object):
             ".ico",
             ".tif", ".tiff",
             ".webp",
-        ]
-        for ext in exts:
-            filepath = filepath.lower()
-            if filepath.endswith(ext):
-                return True
-        return False
+        )
+        return filepath.lower().endswith(exts)
 
     @staticmethod
     def list_interest_files(folder_path, deep_scan=False):
@@ -1279,7 +1277,10 @@ class ImageData():
         self.anim_cur_frame = 0
         self.tags_list = list()
         if self.filepath:
-            self.md5, self.md5_tuple = generate_md5(self.filepath)
+            if LibraryData.is_interest_file(self.filepath):
+                self.md5, self.md5_tuple = generate_md5(self.filepath)
+            else:
+                self.md5, self.md5_tuple = "", ()
             self.creation_date = self.get_creation_date(self.filepath)
             self.image_metadata = dict()
             self.tags_list = ImageData.get_tags_function()(self)

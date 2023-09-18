@@ -678,8 +678,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             )
             if self.image_data.filepath.lower().endswith(text_files):
                 with open(self.image_data.filepath, "r", encoding="unicode_escape") as file:
-                    text = file.read()[:500]
-                    # print(text)
+                    text = file.read(500)
 
         pxm = QPixmap(size, size)
         p = QPainter()
