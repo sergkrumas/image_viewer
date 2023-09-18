@@ -1,4 +1,4 @@
-# [Russian] [PyQt] GIF/AnimatedWEBP/WEBP/SVG/PNG/JPG/JPEG/JFIF/ICO/BMP/SVG/TGA/TIF Image Viewer v0.9 for Windows by Sergei Krumas
+# [Russian] [PyQt] GIF/AnimatedWEBP/WEBP/SVG/PNG/JPG/JPEG/JFIF/ICO/BMP/SVG/TGA/TIF/AVIF/HEIF/HEIC Image Viewer v0.9 for Windows by Sergei Krumas
 
 Image Viewer разрабатывается на замену почившей в 2015м году Picasa Photo Viewer. Как и с [моей недавней разработкой Oxxxy Screenshoter](https://github.com/sergkrumas/oxxxy), кое-что взято за основу из оригинала и вдобавок поверх наворочено куча отсебятины.
 

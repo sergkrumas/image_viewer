@@ -24,6 +24,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtSvg import  QSvgRenderer
 
 import PIL
+import pillow_avif
 
 import time, math, sys, subprocess, os, random, \
      traceback, psutil, ctypes, itertools, locale,\
@@ -64,6 +65,25 @@ SCANCODES_FROM_LATIN_CHAR = {
     "[": 26,
     "]": 27,
 }
+
+def PIL_to_QPixmap(im):
+    if im.mode == "RGB":
+      r, g, b = im.split()
+      im = Image.merge("RGB", (b, g, r))
+    elif  im.mode == "RGBA":
+      r, g, b, a = im.split()
+      im = Image.merge("RGBA", (b, g, r, a))
+    elif im.mode == "L":
+      im = im.convert("RGBA")
+    im2 = im.convert("RGBA")
+    data = im2.tobytes("raw", "RGBA")
+    qim = QImage(data, im.size[0], im.size[1], QImage.Format_ARGB32)
+    pixmap = QPixmap.fromImage(qim)
+    return pixmap
+
+def read_AVIF_to_QPixmap(filepath):
+    # `pip install pillow-avif-plugin` required for reading
+    return PIL_to_QPixmap(Image.open(filepath))
 
 def check_scancode_for(event, data):
     if data is None:
@@ -433,10 +453,13 @@ def fit01(t, output_a, output_b):
     return fit(t, 0.0, 1.0, output_a, output_b)
 
 def load_image_respect_orientation(filepath):
-    imgReader = QImageReader(filepath)
-    imgReader.setAutoTransform(True)
-    img = imgReader.read()
-    return QPixmap().fromImage(img)
+    if filepath.lower().endswith((".avif", ".heif", ".heic")):
+        return read_AVIF_to_QPixmap(filepath)
+    else:        
+        imgReader = QImageReader(filepath)
+        imgReader.setAutoTransform(True)
+        img = imgReader.read()
+        return QPixmap().fromImage(img)
 
 def load_svg(path, scale_factor=20):
     renderer =  QSvgRenderer(path)

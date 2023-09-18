@@ -830,6 +830,7 @@ class LibraryData(object):
             ".ico",
             ".tif", ".tiff",
             ".webp",
+            ".avif", ".heif", ".heic",
         )
         return filepath.lower().endswith(exts)
 
@@ -861,7 +862,11 @@ class LibraryData(object):
             if thread_instance:
                 # switch to main thread
                 thread_instance.msleep(1)
-            source = load_image_respect_orientation(image_data.filepath)
+            try:
+                # try only for .avif-files
+                source = load_image_respect_orientation(image_data.filepath)
+            except:
+                source = QPixmap()
             if source.width() == 0 or source.height() == 0:
                 source = Globals.ERROR_PREVIEW_PIXMAP
             if not image_data.is_supported_filetype:

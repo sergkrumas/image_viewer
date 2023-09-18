@@ -682,8 +682,34 @@ class MainWindow(QMainWindow, UtilsMixin):
         pxm = QPixmap(size, size)
         p = QPainter()
         p.begin(pxm)
+
         p.setRenderHint(QPainter.HighQualityAntialiasing, True)
         p.fillRect(QRect(0, 0, size, size), QBrush(QColor(0, 0, 0)))
+
+        p.setPen(Qt.NoPen)
+        if not no_background:
+            gradient = QLinearGradient(QPointF(0, size/2).toPoint(), QPoint(0, size))
+            gradient.setColorAt(1.0, Qt.red)
+            gradient.setColorAt(0.0, Qt.yellow)
+            brush = QBrush(gradient)
+            points = QPolygonF([
+                QPoint(size//2, size//2),
+                QPoint(size//2, size//2) + QPoint(size//40*3, size//8)*1.4,
+                QPoint(size//2, size//2) + QPoint(-size//40*3, size//8)*1.4,
+            ])
+            pp = QPainterPath()
+            pp.addPolygon(points)
+            p.fillPath(pp, brush)
+            p.setBrush(QBrush(Qt.black))
+            p.drawRect(size//2-10, size//2-10 + 150, 20, 20)
+            points = QPolygonF([
+                QPoint(size//2+15, size//2-15 + 60),
+                QPoint(size//2-15, size//2-15 + 60),
+                QPoint(size//2-10, size//2+75 + 60),
+                QPoint(size//2+10, size//2+75 + 60),
+            ])
+            p.drawPolygon(points)
+
         p.setPen(QColor(255, 0, 0))
         font = p.font()
         font.setPixelSize(50)
@@ -699,30 +725,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         p.setFont(font)
         p.setPen(QColor(255, 255, 255))
         p.drawText(QRect(0, 0, size, size-50).adjusted(20, 20, -20, -20), Qt.TextWordWrap, text)
-        p.setPen(Qt.NoPen)
-        if not no_background:
-            gradient = QLinearGradient(QPointF(0, size/2).toPoint(), QPoint(0, size))
-            gradient.setColorAt(1.0, Qt.red)
-            gradient.setColorAt(0.0, Qt.yellow)
-            brush = QBrush(gradient)
-            points = QPolygonF([
-                QPoint(size//2, size//2),
-                QPoint(size//2, size//2) + QPoint(size//40*3, size//8)*1.4,
-                QPoint(size//2, size//2) + QPoint(-size//40*3, size//8)*1.4,
-            ])
-            pp = QPainterPath()
-            pp.addPolygon(points)
-            p.fillPath(pp, brush)
 
-            p.setBrush(QBrush(Qt.black))
-            p.drawRect(size//2-10, size//2-10 + 150, 20, 20)
-            points = QPolygonF([
-                QPoint(size//2+15, size//2-15 + 60),
-                QPoint(size//2-15, size//2-15 + 60),
-                QPoint(size//2-10, size//2+75 + 60),
-                QPoint(size//2+10, size//2+75 + 60),
-            ])
-            p.drawPolygon(points)
         p.end()
         return pxm
 
@@ -815,6 +818,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         is_gif_file = lambda fp: fp.lower().endswith(".gif")
         is_webp_file = lambda fp: fp.lower().endswith(".webp")
         is_svg_file = lambda fp: fp.lower().endswith((".svg", ".svgz"))
+        is_avif_file = lambda fp: fp.lower().endswith((".avif", ".heif", ".heic"))
         is_supported_file = LibraryData.is_interest_file(filepath)
         self.error = False
         if filepath == "":
@@ -832,7 +836,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                         self.show_animated(filepath)
                         self.animated = True
                     elif is_svg_file(filepath):
-                        self.show_static(filepath)
+                        self.image_filepath = filepath
+                        self.tranformations_allowed = True
                         self.pixmap = load_svg(filepath,
                                                     scale_factor=self.image_data.svg_scale_factor)
                         self.svg_rendered = True
@@ -840,7 +845,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                         self.show_static(filepath)
                 except:
                     self.error_pixmap_and_reset(
-                        "Невозможно\nотобразить поддерживаемый тип файла", traceback.format_exc())
+                        "Невозможно отобразить\nподдерживаемый тип файла", traceback.format_exc())
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
