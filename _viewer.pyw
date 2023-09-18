@@ -69,7 +69,7 @@ class Globals():
 
     started_from_sublime_text = False
 
-    SECRET_HINTS_FILEPATH = "secret_data.txt"
+    SECRET_HINTS_FILEPATH = "deep_secrets.txt"
     SESSION_FILENAME = "session.txt"
     FAV_FILENAME = "fav.txt"
     COMMENTS_FILENAME = "comments.txt"
@@ -242,13 +242,12 @@ class MainWindow(QMainWindow, UtilsMixin):
                 rect = self.rect()
                 self.hint_text = random.choice(self.secret_hints_list)
 
-                # self.secret_width = 2560
-                # self.secret_height = 1400
                 self.secret_width = rect.width()
                 self.secret_height = rect.height()
 
-                w2 = self.secret_width/2
-                self.hint_center_position = QPointF(w2, w2).toPoint()
+                w1 = self.secret_width/2
+                w2 = self.secret_height/2
+                self.hint_center_position = QPointF(w1, w2).toPoint()
 
                 self.secret_pic = QPixmap(self.secret_width, self.secret_height)
                 self.secret_p = QPainter()
@@ -259,7 +258,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.secret_p.setPen(QPen(Qt.white))
                 self.secret_p.setFont(font)
                 r = QRect(0, 0, self.secret_width, self.secret_height)
-                self.secret_p.drawText(r, Qt.AlignCenter | Qt.TextWordWrap, self.hint_text)
+                self.secret_p.drawText(r, Qt.AlignCenter | Qt.TextWordWrap | Qt.AlignHCenter, self.hint_text)
                 self.secret_p.end()
 
         if self.image_scale < self.START_HINT_AT_SCALE_VALUE:
