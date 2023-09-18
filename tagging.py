@@ -570,9 +570,9 @@ class TaggingForm(QWidget):
 
         self.resize(parent.width()-100, self.height())
 
-        app = QApplication.instance()
-        x = (app.desktop().width()//2*1 - self.frameSize().width()) // 2
-        y = (app.desktop().height() - self.frameSize().height()) // 2
+        desktop_rect = QDesktopWidget().screenGeometry(screen=0)
+        x = (desktop_rect.width() - self.frameSize().width()) // 2
+        y = (desktop_rect.height() - self.frameSize().height()) // 2
         self.move(x,y)
 
         # self.setParent(args[0])
