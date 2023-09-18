@@ -1594,7 +1594,12 @@ class MainWindow(QMainWindow, UtilsMixin):
                 pass
             else:
                 self.image_scale = image_scale
-            self.image_center_position = image_center_position.toPoint()
+            viewport_rect = self.get_image_viewport_rect()
+            is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
+            if before_scale < self.image_scale and is_vr_small:
+                self.image_center_position = QPoint(QCursor().pos())
+            else:
+                self.image_center_position = image_center_position.toPoint()
             # self.hint_center_position = hcp
             self.hint_center_position = ((t1 + t2)/2).toPoint()
 
