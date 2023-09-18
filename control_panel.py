@@ -26,9 +26,11 @@ from _utils import *
 
 
 class ControlPanelButton(QPushButton):
-    def __init__(self, id, *args):
+    def __init__(self, id, *args, callback=None):
         super().__init__(*args)
         self.id = id
+        if callback:
+            self.clicked.connect(callback)
 
     def set_font(self, painter, large=True):
         font = painter.font()
@@ -450,29 +452,40 @@ class ControlPanel(QWidget, UtilsMixin):
         _buttons_layout = QHBoxLayout()
         _label_layout = QHBoxLayout()
 
-        self.zoom_out_btn = ControlPanelButton("zoom_out", "Уменьшить")
-        self.zoom_in_btn = ControlPanelButton("zoom_in", "Увеличить")
-        self.original_scale_btn = ControlPanelButton("orig_scale", "1:1")
-        self.help_btn = ControlPanelButton("help", "Справка")
-        self.settings_btn = ControlPanelButton("settings", "Настройки")
+        self.zoom_out_btn = ControlPanelButton("zoom_out", "Уменьшить",
+                                                    callback=self.zoom_out)
+        self.zoom_in_btn = ControlPanelButton("zoom_in", "Увеличить",
+                                                    callback=self.zoom_in)
+        self.original_scale_btn = ControlPanelButton("orig_scale", "1:1",
+                                                    callback=self.set_original_scale)
+        self.help_btn = ControlPanelButton("help", "Справка",
+                                                    callback=self.toggle_help)
+        self.settings_btn = ControlPanelButton("settings", "Настройки",
+                                                    callback=self.show_settings_window)
+        self.previous_btn = ControlPanelButton("previous", "Предыдущий",
+                                                    callback=self.show_previous)
+        self.play_btn = ControlPanelButton("play", "Слайдшоу",
+                                                    callback=self.play)
+        self.next_btn = ControlPanelButton("next", "Следующий",
+                                                    callback=self.show_next)
+        self.rotate_clockwise_btn = ControlPanelButton("rotate_clockwise", "Повернуть\nпо часовой стрелке",
+                                                    callback=self.rotate_clockwise)
+        self.rotate_counterclockwise_btn = ControlPanelButton("rotate_counterclockwise", "Повернуть против\nчасовой стрелки",
+                                                    callback=self.rotate_counterclockwise)
+        self.favorite_btn = ControlPanelButton("favorite", "Избранное",
+                                                    callback=self.manage_favorite_list)
+        self.update_list_btn = ControlPanelButton("update_list", "Обновить список",
+                                                    callback=self.update_folder_list)
 
-        self.previous_btn = ControlPanelButton("previous", "Предыдущий")
-        self.play_btn = ControlPanelButton("play", "Слайдшоу")
-        self.next_btn = ControlPanelButton("next", "Следующий")
+        # self.open_in_explorer_btn = ControlPanelButton("", "Найти\nна диске")
+        # self.open_in_google_chrome_btn = ControlPanelButton("", "Открыть в\nGoogle Chrome")
+        self.space_btn_generator = lambda: ControlPanelButton("space")
 
-        self.rotate_clockwise_btn = ControlPanelButton("rotate_clockwise", "Повернуть\nпо часовой стрелке")
-        self.rotate_counterclockwise_btn = ControlPanelButton("rotate_counterclockwise", "Повернуть против\nчасовой стрелки")
-        self.favorite_btn = ControlPanelButton("favorite", "Избранное")
-        self.open_in_explorer_btn = ControlPanelButton("", "Найти\nна диске")
-        self.open_in_google_chrome_btn = ControlPanelButton("", "Открыть в\nGoogle Chrome")
 
-        self.control_panel_label = QLabel("picture_filename.extension (XxW)", self)
+        self.control_panel_label = QLabel("", self) #"picture_filename.extension (XxW)"
         self.control_panel_label.setStyleSheet("font-weight: bold; color: white; font-size: 12pt; padding: 5px;")
         self.control_panel_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
-        self.update_list_btn = ControlPanelButton("update_list", "Обновить список")
-
-        self.space_btn_generator = lambda: ControlPanelButton("space")
 
         _label_layout.addWidget(self.control_panel_label)
         effect = QGraphicsDropShadowEffect()
@@ -503,32 +516,6 @@ class ControlPanel(QWidget, UtilsMixin):
             self.space_btn_generator(),
         ]
 
-        click_handlers = [
-            self.set_original_scale,
-            self.zoom_out,
-            self.zoom_in,
-
-            self.toggle_help,
-            self.show_settings_window,
-
-            self.show_previous,
-            self.play,
-            self.show_next,
-
-            self.rotate_counterclockwise,
-            self.rotate_clockwise,
-            self.manage_favorite_list,
-
-            self.update_folder_list,
-
-            lambda: None,
-        ]
-
-        for button, handler in zip(self.buttons_list, click_handlers):
-            button.clicked.connect(handler)
-            button.setFixedWidth(50)
-            button.setFixedHeight(50)
-
         style = """
             QPushButton {
                 color: black;
@@ -553,6 +540,8 @@ class ControlPanel(QWidget, UtilsMixin):
         """
         _buttons_layout.addStretch()
         for button in self.buttons_list:
+            button.setFixedWidth(50)
+            button.setFixedHeight(50)
             button.setStyleSheet(style)
             button.setProperty("tooltip_text", button.text())
             button.setText("")
