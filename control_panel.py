@@ -743,9 +743,18 @@ class ControlPanel(QWidget, UtilsMixin):
         else:
             overrided_current_index = True
             images_list = imgs_to_show
-        first_thm = images_list[0].get_thumbnail()
-        if not first_thm:
-            return
+
+        # закомментировано из-за вызова get_index_centered_list в модуле LibraryData,
+        # иначе не будет того желаемого эффекта,
+        # когда превьюшки создаются рядом с текущей на данный момент картинкой по обе стороны,
+        # а не как раньше, когда они отсортированы от первой до последней в исходном списке.
+        # Но смутные воспоминания отбрасывают неясную тень на это решение,
+        # ведь я мог добавить эти три строчки, чтобы пофиксить очередной краш,
+        # поэтому посмотрю как код будет вести себя,
+        # и уже потом решу окончательно, выпиливать или нет
+        # first_thm = images_list[0].get_thumbnail()
+        # if not first_thm:
+        #     return
 
         mouse_over_control_button = False
         if library_mode_rect:

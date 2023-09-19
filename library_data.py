@@ -851,11 +851,17 @@ class LibraryData(object):
 
     @staticmethod
     def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance):
-        images_data = folder_data.images_list
+
+        current_image = folder_data.current_image()
+        if current_image in folder_data.images_list:
+            images_list = list(get_index_centered_list(folder_data.images_list,
+                                                                      folder_data.current_image()))
+        else:
+            images_list = folder_data.images_list
         folder_data.previews_done = False
-        data_length = len(images_data)
+        image_count = len(images_list)
         Globals = LibraryData().globals
-        for n, image_data in enumerate(images_data):
+        for n, image_data in enumerate(images_list):
             if image_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
                 continue
 
@@ -881,7 +887,7 @@ class LibraryData(object):
                 data = ThreadRuntimeData(
                     int(id(thread_instance)),
                     n+1,
-                    data_length,
+                    image_count,
                     thread_instance.ui_name,
                 )
                 thread_instance.update_signal.emit(data)
@@ -902,8 +908,8 @@ class LibraryData(object):
                 if folder_data not in LibraryData().all_folders():
                     data = ThreadRuntimeData(
                         int(id(thread_instance)),
-                        data_length,
-                        data_length,
+                        image_count,
+                        image_count,
                         "",
                     )
                     thread_instance.update_signal.emit(data)

@@ -85,6 +85,33 @@ def read_AVIF_to_QPixmap(filepath):
     # `pip install pillow-avif-plugin` required for reading
     return PIL_to_QPixmap(Image.open(filepath))
 
+def get_index_centered_list(listed_data, value_in_list_to_start_from):
+    if len(listed_data) == 0:
+        return []
+    if value_in_list_to_start_from not in listed_data:
+        return listed_data
+    right_or_left_side = True
+    index = listed_data.index(value_in_list_to_start_from)
+    yield value_in_list_to_start_from # first element
+    right_index = index + 1
+    left_index = index - 1
+    while (right_index < len(listed_data) or left_index > -1):
+        if right_or_left_side:
+            if right_index < len(listed_data):
+                yield listed_data[right_index]
+                right_index += 1
+            else:
+                yield listed_data[left_index]
+                left_index -= 1
+        else:
+            if left_index > -1:
+                yield listed_data[left_index]
+                left_index -= 1
+            else:
+                yield listed_data[right_index]
+                right_index += 1
+        right_or_left_side = not right_or_left_side
+
 def check_scancode_for(event, data):
     if data is None:
         return False
