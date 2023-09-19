@@ -1527,9 +1527,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         delta = before_scale - self.image_scale
         self.image_scale = min(max(self.LOWER_SCALE_LIMIT, self.image_scale),
                                                                     self.UPPER_SCALE_LIMIT)
-        pixmap = self.get_rotated_pixmap()
-        width = pixmap.rect().width()
-        height = pixmap.rect().height()
+        pixmap_rect = self.get_rotated_pixmap().rect()
+        width = pixmap_rect.width()
+        height = pixmap_rect.height()
 
         if override_factor:
             pivot = QPointF(self.rect().center())
@@ -1585,6 +1585,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         image_scale = new_width / width
         image_center_position = (p1 + p2)/2
 
+        # end
         if override_factor:
             return image_scale, image_center_position.toPoint()
         else:
@@ -1595,6 +1596,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 pass
             else:
                 self.image_scale = image_scale
+
             viewport_rect = self.get_image_viewport_rect()
             is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
             if before_scale < self.image_scale and is_vr_small:
