@@ -1201,7 +1201,7 @@ class FolderData():
     def count(self):
         return len(self.images_list)
 
-    def current_index(self):
+    def get_current_index(self):
         return self._index
 
     def set_current_index(self, index):
@@ -1212,7 +1212,7 @@ class FolderData():
             return LibraryData().globals.FAV_BIG_ICON
         else:
             try:
-                return self.images_list[self._index()].get_thumbnail()
+                return self.images_list[self._index].get_thumbnail()
             except:
                 path = os.path.join(os.path.dirname(__file__), "missing.jpg")
                 ico = QIcon()

@@ -735,7 +735,7 @@ class ControlPanel(QWidget, UtilsMixin):
             return
         if isinstance(imgs_to_show, self.LibraryData.FolderData):
             folder_data = imgs_to_show
-            current_index = folder_data.current_index()
+            current_index = folder_data.get_current_index()
             overrided_current_index = False
             if not folder_data.images_list:
                 return
@@ -898,7 +898,7 @@ class ControlPanel(QWidget, UtilsMixin):
             cursor_pos += QPoint(THUMBNAIL_WIDTH//2, 0)
         for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
-            offset = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-folder.current_index())
+            offset = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-folder.get_current_index())
             d_rect = QRect(int(offset), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
             if get_index:
                 if d_rect.contains(cursor_pos):
