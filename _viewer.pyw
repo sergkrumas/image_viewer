@@ -1544,7 +1544,6 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         p1 = p1 - pivot
         p2 = p2 - pivot
-        # hcp = self.hint_center_position - pivot
         t1 = t1 - pivot
         t2 = t2 - pivot
 
@@ -1571,13 +1570,11 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         p1 = QPointF(p1.x()*factor, p1.y()*factor)
         p2 = QPointF(p2.x()*factor, p2.y()*factor)
-        # hcp = QPointF(hcp.x()*factor, hcp.y()*factor)
         t1 = QPointF(t1.x()*factor, t1.y()*factor)
         t2 = QPointF(t2.x()*factor, t2.y()*factor)
 
         p1 = p1 + pivot
         p2 = p2 + pivot
-        # hcp = hcp + pivot
         t1 = t1 + pivot
         t2 = t2 + pivot
 
@@ -1604,7 +1601,6 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.image_center_position = QPoint(QCursor().pos())
             else:
                 self.image_center_position = image_center_position.toPoint()
-            # self.hint_center_position = hcp
             self.hint_center_position = ((t1 + t2)/2).toPoint()
 
         self.activate_or_reset_secret_hint()
