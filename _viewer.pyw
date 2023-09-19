@@ -303,14 +303,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.frameless_mode = frameless_mode
         self.stay_on_top = False
         self.handling_input = False
-        self.show_startpage = True
+        self.show_startpage = False
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
         else:
             self.need_for_init_after_call_from_tray = False
         super().__init__(*args, **kwargs)
 
-        self.loading_text = random.choice(self.LOADING_TEXT)
+        self.set_loading_text()
 
         self.prepare_secret_hints()
 
@@ -802,10 +802,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.comment_data_candidate = None
         self.show_animated(None)
         if not simple:
-            self.loading_text = random.choice(self.LOADING_TEXT)
+            self.set_loading_text()
             main_window = Globals.main_window
             main_window.update()
             processAppEvents()
+
+    def set_loading_text(self):
+        # self.loading_text = random.choice(self.LOADING_TEXT)
+        self.loading_text = "   ".join(self.LOADING_TEXT)
 
     def show_image(self, image_data):
         # reset
@@ -1631,7 +1635,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             font = pr.font()
             old_font = pr.font() #copy
             if large:
-                font.setPixelSize(self.rect().height()//8)
+                # font.setPixelSize(self.rect().height()//8)
+                font.setPixelSize(40)
             else:
                 font.setPixelSize(17)
             font.setWeight(1900)
@@ -3238,7 +3243,7 @@ def _main():
     MW.setWindowIcon(app_icon)
     # Нужно для того, чтобы иконка показалась в таскбаре.
     # И нужно это делать до того как будет показана панель миниатюр.
-    if path:
+    if not os.path.exists(path):
         MW.show_startpage = False
         MW.update()
     app.processEvents()
