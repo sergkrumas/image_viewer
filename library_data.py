@@ -1038,11 +1038,13 @@ class LibraryData(object):
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
-            MW.show_image(fd.current_image())
+            MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
+            # MW.update_thumbnails_row_relative_offset(fd, only_set=True)
             fd.current_image().update_fav_button_state()
             if MW.isAnimationEffectsAllowed():
                 MW.animate_properties(
-                    [("image_scale", 0.01, MW.image_scale)]
+                    [(MW, "image_scale", 0.01, MW.image_scale, MW.update)],
+                    anim_id = "image_transform_start"
                 )
             MW.update()
             MW.activateWindow()
@@ -1114,10 +1116,12 @@ class FolderData():
         self.fav = fav
         self.comm = comm
         self._index = -1
+        self.before_index = -1
         self.images_list = []
         self.previews_done = False
         self.deep_scan = False
         self.viewed_list = []
+        self.relative_thumbnails_row_offset_x = 0
         self.init_images(files)
         if image_filepath:
             for n, image in enumerate(self.images_list):
@@ -1205,7 +1209,11 @@ class FolderData():
         return self._index
 
     def set_current_index(self, index):
+        self.before_index = self._index
         self._index = index
+        folder_data = self
+        mw = LibraryData.globals.main_window
+        # mw.update_thumbnails_row_relative_offset(folder_data)
 
     def get_current_thumbnail(self):
         if self.fav:
@@ -1321,9 +1329,10 @@ class ImageData():
             if cp and animation_needed:
                 MW.block_paginating = True
                 MW.animate_properties(
-                    [("image_center_position", cp, new_pos)],
+                    [(MW, "image_center_position", cp, new_pos, MW.update)],
                     duration=0.1,
-                    callback_on_finish=lambda: setattr(MW, "block_paginating", False)
+                    callback_on_finish=lambda: setattr(MW, "block_paginating", False),
+                    anim_id="paginating"
                 )
             else:
                 MW.image_center_position = new_pos

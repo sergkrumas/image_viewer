@@ -726,6 +726,29 @@ class ControlPanel(QWidget, UtilsMixin):
         y_coord = MW.rect().height() - MW.BOTTOM_PANEL_HEIGHT
         self.move(0, y_coord)
 
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        folder_data = self.LibraryData().current_folder()
+        main_window = self.globals.main_window
+        if main_window.show_backplate:
+            painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
+        self.thumbnails_row_drawing(painter, folder_data)
+        painter.end()
+
+    def mousePressEvent(self, event):
+        if self.globals.main_window.library_mode:
+            super().mousePressEvent(event)
+        else:
+            self.start_click_pos = event.pos()
+            self.start_click_index = self.thumbnails_row_clicked(get_index=True, shift_cursor=False)
+            return
+        # убрал здесь return, чтобы в режиме библиотеки нижняя плашка выделялась
+
+    def mouseMoveEvent(self, event):
+        # super().mouseMoveEvent(event)
+        return
+
     def thumbnails_row_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
                     library_mode_rect=None, current_index=None, draw_mirror=True,
                     additional_y_offset=30):
@@ -734,6 +757,7 @@ class ControlPanel(QWidget, UtilsMixin):
         if imgs_to_show is None:
             return
         if isinstance(imgs_to_show, self.LibraryData.FolderData):
+            # library folders rows and control panel row
             folder_data = imgs_to_show
             current_index = folder_data.get_current_index()
             overrided_current_index = False
@@ -741,6 +765,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 return
             images_list = imgs_to_show.images_list
         else:
+            # history row
             overrided_current_index = True
             images_list = imgs_to_show
 
@@ -778,8 +803,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         if overrided_current_index:
-            offset_x = r.width()/2-THUMBNAIL_WIDTH/2
-            current_thumb_rect = QRectF(int(offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+            main_frame_offset_x = r.width()/2-THUMBNAIL_WIDTH/2
+            current_thumb_rect = QRectF(int(main_frame_offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
             painter.setPen(QPen(Qt.red, 1))
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(current_thumb_rect)
@@ -791,15 +816,24 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.setBrush(QBrush(QColor(0, 0, 0)))
         painter.setPen(Qt.NoPen)
         saved_thumb_rect = None
-        for n, image_data in enumerate(images_list):
+        for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
             if not thumbnail:
                 continue
             offset_x = 0
             if pos_x:
-                offset_x = pos_x + THUMBNAIL_WIDTH*n
+                offset_x = pos_x + THUMBNAIL_WIDTH*image_index
             else:
-                offset_x = r.width()/2-THUMBNAIL_WIDTH/2 + THUMBNAIL_WIDTH*(n-current_index)
+                # ради анимационного эффекта пришлось разделить выражение
+                # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
+                # на зависимую и независимую от current_index части
+                if isinstance(imgs_to_show, self.LibraryData.FolderData):
+                    # control panel row
+                    relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                else:
+                    # history row
+                    relative_offset_x = -THUMBNAIL_WIDTH*current_index
+                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
             thumb_rect = QRectF(int(offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
             # если миниатюра помещается в отведённой зоне library_mode_rect
@@ -812,11 +846,11 @@ class ControlPanel(QWidget, UtilsMixin):
                 # draw thumbnail
                 if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                     painter.drawRect(thumb_rect)
-                if current_drag_and_drop_index == n: # and current_drag_and_drop_index != self.start_click_index:
+                if current_drag_and_drop_index == image_index: # and current_drag_and_drop_index != self.start_click_index:
                     saved_thumb_rect = QRect(thumb_rect)
                 painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
                 painter.setOpacity(1.0)
-                if isinstance(self, ControlPanel) and self.start_click_index == n:
+                if isinstance(self, ControlPanel) and self.start_click_index == image_index:
                     old_brush = painter.brush()
                     brush = QBrush(Qt.red)
                     brush.setStyle(Qt.Dense7Pattern)
@@ -859,37 +893,15 @@ class ControlPanel(QWidget, UtilsMixin):
             painter.drawLine(p + QPoint(-5, 3), p)
             painter.setPen(Qt.NoPen)
 
-    def paintEvent(self, event):
-        painter = QPainter()
-        painter.begin(self)
-        folder_data = self.LibraryData().current_folder()
-        main_window = self.globals.main_window
-        if main_window.show_backplate:
-            painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
-        self.thumbnails_row_drawing(painter, folder_data)
-        painter.end()
-
-    def mousePressEvent(self, event):
-        if self.globals.main_window.library_mode:
-            super().mousePressEvent(event)
-        else:
-            self.start_click_pos = event.pos()
-            self.start_click_index = self.thumbnails_row_clicked(get_index=True, shift_cursor=False)
-            return
-        # убрал здесь return, чтобы в режиме библиотеки нижняя плашка выделялась
-
-    def mouseMoveEvent(self, event):
-        # super().mouseMoveEvent(event)
-        return
-
     def thumbnails_row_clicked(self,
                                 define_cursor_shape=False,
                                 drag_and_drop=False,
                                 get_index=False,
                                 shift_cursor=True):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
-        folder = self.LibraryData().current_folder()
-        images_list = folder.images_list
+        folder_data = self.LibraryData().current_folder()
+        images_list = folder_data.images_list
+        current_index = folder_data.get_current_index()
         r = self.rect()
         check_rect = r.adjusted(-THUMBNAIL_WIDTH, -THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
         pos = QCursor().pos()
@@ -898,8 +910,15 @@ class ControlPanel(QWidget, UtilsMixin):
             cursor_pos += QPoint(THUMBNAIL_WIDTH//2, 0)
         for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
-            offset = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-folder.get_current_index())
-            d_rect = QRect(int(offset), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+            # ради анимационного эффекта пришлось разделить выражение
+            # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
+            # на зависимую и независимую от current_index части
+            if False:
+                relative_offset_x = -THUMBNAIL_WIDTH*current_index
+            else:
+                relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+            offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
+            d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
             if get_index:
                 if d_rect.contains(cursor_pos):
                     return image_index

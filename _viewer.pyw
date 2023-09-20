@@ -368,7 +368,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.setAcceptDrops(True)
 
         self.invert_image = False
-        self.animation_allowed = False
+
+        self.animation_timers = []
 
         self.block_paginating = False
 
@@ -427,7 +428,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     #             self.set_window_style()
 
     def interpolate_values(self, start_value, end_value, factor):
-        if isinstance(start_value, float):
+        if isinstance(start_value, (float, int)):
             value = fit(factor, 0.0, 1.0, start_value, end_value)
         elif isinstance(start_value, QPoint):
             value_x = fit(factor, 0.0, 1.0, start_value.x(), end_value.x())
@@ -448,56 +449,112 @@ class MainWindow(QMainWindow, UtilsMixin):
             value_g = fit(factor, 0.0, 1.0, start_value.green(), end_value.green())
             value_b = fit(factor, 0.0, 1.0, start_value.blue(), end_value.blue())
             value = QColor(int(value_r), int(value_g), int(value_b))
+        else:
+            raise Exception("type of 'start_value' is ", type(start_value))
         return value
 
-    def animate_property_on_timer(self):
-        if not self.animation_allowed:
-            return
-        if not self.at_first_timeout:
-            self.at_start_timestamp = time.time()
-            self.at_first_timeout = True
-            if self.property_animation_callback_on_start:
-                self.property_animation_callback_on_start()
-        t = fit(
-            time.time(),
-            self.at_start_timestamp,
-            self.at_start_timestamp + self.animation_duration,
-            0.0,
-            1.0
-        )
-        factor = self.a_easing.valueForProgress(min(1.0, max(0.0, t)))
-        for attr_name, start_value, end_value in self.property_animation_data:
-            value = self.interpolate_values(start_value, end_value, factor)
-            setattr(self, attr_name, value)
-            self.update()
-        if self.animation_duration < (time.time() - self.at_start_timestamp):
-            if self.property_animation_callback_on_finish:
-                self.property_animation_callback_on_finish()
-            self.animation_timer.stop()
-            self.animation_allowed = False
 
-    def animate_properties(
-            self,
-            anim_data,
-            callback_on_finish=None, callback_on_start=None,
-            duration=0.2,
-            easing=QEasingCurve.OutCubic):
-        self.a_easing = QEasingCurve(easing)
-        self.property_animation_callback_on_finish = callback_on_finish
-        self.property_animation_callback_on_start = callback_on_start
+    def get_animation_timer_class(self):
 
-        self.property_animation_data = anim_data
+        class AnimationTimer(QTimer):
 
-        self.animation_timer = QTimer()
-        self.animation_timer.setInterval(20)
-        self.animation_timer.timeout.connect(self.animate_property_on_timer)
-        self.at_first_timeout = False
-        self.animation_duration = duration
-        self.animation_allowed = True
-        # first call before timer starts!
-        self.animate_property_on_timer()
-        # ends
-        self.animation_timer.start()
+            def __init__(self, parent, interval, anim_id, is_timer_new, easing, duration, anim_data, callback_on_finish, callback_on_start):
+                super().__init__()
+                self.setInterval(interval)
+                self.main_window = parent
+                self.timeout.connect(self.do_properties_animation_on_timer)
+                self.anim_id = anim_id
+                self.anim_data = anim_data
+                self.is_timer_new = is_timer_new
+                self.easing = easing
+                self.on_finish_animation_callback = callback_on_finish
+                self.on_start_animation_callback = callback_on_start
+                self.animation_duration = duration
+
+                self.at_first_timeout = False
+                self.animation_allowed = True
+
+                self.main_window.animation_timers.append(self)
+
+            def do_properties_animation_on_timer(self):
+
+                if not self.animation_allowed:
+                    return
+                if not self.at_first_timeout:
+                    self.at_start_timestamp = time.time()
+                    self.at_first_timeout = True
+                    if self.on_start_animation_callback:
+                        self.on_start_animation_callback()
+                    if self.is_timer_new:
+                        old_anim_data = self.anim_data[:]
+                        self.anim_data.clear()
+                        # обновление значений на текущие, ведь удалённый ранее таймер с тем же anim_id уже изменил текущее значение
+                        for attr_host, attr_name, start_value, end_value, callback_func in old_anim_data:
+                            start_value = getattr(attr_host, attr_name)
+                            self.anim_data.append((attr_host, attr_name, start_value, end_value, callback_func))
+
+                t = fit(
+                    time.time(),
+                    self.at_start_timestamp,
+                    self.at_start_timestamp + self.animation_duration,
+                    0.0,
+                    1.0
+                )
+                factor = self.easing.valueForProgress(min(1.0, max(0.0, t)))
+                for attr_host, attr_name, start_value, end_value, callback_func in self.anim_data:
+                    value = self.main_window.interpolate_values(start_value, end_value, factor)
+                    setattr(attr_host, attr_name, value)
+                    callback_func()
+                if self.animation_duration < (time.time() - self.at_start_timestamp):
+                    if self.on_finish_animation_callback:
+                        self.on_finish_animation_callback()
+                    self.stop()
+                    self.animation_allowed = False
+                    self.main_window.animation_timers.remove(self)
+
+        return AnimationTimer
+
+    def animate_properties(self, anim_data, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
+        AnimationTimer = self.get_animation_timer_class()
+        ats = self.animation_timers
+        is_timer_new = False
+        if anim_id is not None:
+            for at in ats[:]:
+                if at.anim_id == anim_id:
+                    at.stop()
+                    at.animation_allowed = False
+                    # if at in self.animation_timers:
+                    self.animation_timers.remove(at)
+                    is_timer_new = True
+        animation_timer = AnimationTimer(self, 20, anim_id, is_timer_new, QEasingCurve(easing), duration, anim_data, callback_on_finish, callback_on_start)
+        animation_timer.do_properties_animation_on_timer() # first call before timer starts!
+        animation_timer.start()
+
+    def update_thumbnails_row_relative_offset(self, folder_data, only_set=False):
+
+        THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
+        before_index = folder_data.before_index
+        new_index = folder_data.get_current_index()
+
+        now_offset = folder_data.relative_thumbnails_row_offset_x
+
+        before_offset = -THUMBNAIL_WIDTH*before_index
+        new_offset = -THUMBNAIL_WIDTH*new_index
+        if self.isThumbnailsRowSlidingAnimationEffectAllowed() and (not only_set) and (not now_offset == new_offset):
+            self.animate_properties(
+                [
+                    (folder_data, "relative_thumbnails_row_offset_x", before_offset, new_offset, Globals.control_panel.update),
+                ],
+                anim_id="thumbnails_row",
+                duration=0.8,
+                # easing=QEasingCurve.OutQuad
+                # easing=QEasingCurve.OutQuart
+                # easing=QEasingCurve.OutQuint
+                easing=QEasingCurve.OutCubic
+            )
+        else:
+            relative_offset_x = -THUMBNAIL_WIDTH*new_index
+            folder_data.relative_thumbnails_row_offset_x = relative_offset_x
 
     def region_zoom_in_init(self):
         self.input_rect = None
@@ -514,9 +571,10 @@ class MainWindow(QMainWindow, UtilsMixin):
             if self.isAnimationEffectsAllowed():
                 self.animate_properties(
                     [
-                        ("image_center_position", self.image_center_position, self.orig_pos),
-                        ("image_scale", self.image_scale, self.orig_scale)
+                        (self, "image_center_position", self.image_center_position, self.orig_pos, self.update),
+                        (self, "image_scale", self.image_scale, self.orig_scale, self.update)
                     ],
+                    anim_id="region_zoomn",
                     duration=0.4,
                     easing=QEasingCurve.InOutCubic
                 )
@@ -559,10 +617,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             if self.isAnimationEffectsAllowed():
                 self.animate_properties(
                     [
-                        ("image_center_position", before_pos, center_pos),
-                        ("image_scale", self.image_scale, scale),
-                        ("input_rect_animated", self.input_rect_animated, self.projected_rect)
+                        (self, "image_center_position", before_pos, center_pos, self.update),
+                        (self, "image_scale", self.image_scale, scale, self.update),
+                        (self, "input_rect_animated", self.input_rect_animated, self.projected_rect, self.update)
                     ],
+                    anim_id="region_zoom",
                     duration=0.8,
                     easing=QEasingCurve.InOutCubic
                 )
@@ -811,7 +870,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         # self.loading_text = random.choice(self.LOADING_TEXT)
         self.loading_text = "   ".join(self.LOADING_TEXT)
 
-    def show_image(self, image_data):
+    def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
         self.rotated_pixmap = None
         self.image_data = image_data
@@ -853,6 +912,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
+        self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
         self.set_window_title(self.current_image_details())
         self.update()
 
@@ -2258,7 +2318,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     viewed_list,
                     pos_x=0,
                     pos_y=1,
-                    current_index = index,
+                    current_index=index,
                     draw_mirror=False,
                     additional_y_offset=0
                 )
@@ -2286,7 +2346,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         if self.isAnimationEffectsAllowed() and not self.library_mode:
             self.animate_properties(
-                [("image_scale", self.image_scale, 0.01)],
+                [(self, "image_scale", self.image_scale, 0.01, self.update)],
                 callback_on_finish=(lambda: self.close())
             )
         else:
@@ -2325,6 +2385,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def check_scroll_lock(self):
         return windll.user32.GetKeyState(VK_SCROLL)
+
+    def isThumbnailsRowSlidingAnimationEffectAllowed(self):
+        return self.isAnimationEffectsAllowed()
 
     def isAnimationEffectsAllowed(self):
         if self._key_unreleased:
@@ -2498,8 +2561,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             new_image_scale = self.image_scale + self.image_scale*0.5
             self.animate_properties(
                 [
-                    ("image_center_position", icp, icp+QPoint(100, 0)),
-                    ("image_scale", self.image_scale, new_image_scale),
+                    (self, "image_center_position", icp, icp+QPoint(100, 0), self.update),
+                    (self, "image_scale", self.image_scale, new_image_scale, self.update),
                 ]
             )
         else:

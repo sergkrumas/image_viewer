@@ -482,7 +482,7 @@ def fit01(t, output_a, output_b):
 def load_image_respect_orientation(filepath):
     if filepath.lower().endswith((".avif", ".heif", ".heic")):
         return read_AVIF_to_QPixmap(filepath)
-    else:        
+    else:
         imgReader = QImageReader(filepath)
         imgReader.setAutoTransform(True)
         img = imgReader.read()
