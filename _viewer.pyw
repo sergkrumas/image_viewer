@@ -1572,30 +1572,44 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         if not override_factor:
 
+            if not self.legacy_image_scaling:
+                # Здесь надо задавать image_scale в зависимости от
+                # новой ширины или длины картинки, высчитаннной в процентах
+                # от старой длины или ширины.
+                # Дельта колеса мыши будет определять лишь уменьшение или увеличение
 
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            # здесь надо задавать image_scale в зависимости от новой ширины или длины картинки,
-            # высчитаннной в процентах от старой длины или ширины. Колесо мыши определяет лишь
-            # уменьшение или увеличение
+                _pixmap_rect = self.get_rotated_pixmap().rect()
+                _viewport_rect = self.get_image_viewport_rect()
+                _width = _viewport_rect.width()
+                _height = _viewport_rect.height()
 
-
-            if self.image_scale > 1.0: # если масштаб больше нормального
-                factor = self.image_scale/self.UPPER_SCALE_LIMIT
+                # чем больше scale_speed, тем больше придётся крутить колесо мыши
+                scale_speed = 10
                 if scroll_value < 0.0:
-                    self.image_scale -= 0.1 + 8.5*factor #0.2
+                    _new_width = _width*(scale_speed-1)/scale_speed
+                    self.image_scale = _new_width/_pixmap_rect.width()
                 else:
-                    self.image_scale += 0.1 + 8.5*factor #0.2
+                    _new_width = _width*scale_speed/(scale_speed-1)
+                    # предохранитель от залипания
+                    if _new_width - float(_width) < 10.0:
+                        _new_width = float(_width) + 10.0
+                    self.image_scale = _new_width/_pixmap_rect.width()
 
-            else: # если масштаб меньше нормального
-                if scroll_value < 0.0:
-                    self.image_scale -= 0.05 #0.1
-                else:
-                    self.image_scale += 0.05 #0.1
+            else:
+                # старый глючный метод со скачками, но зато работает уже очень долго
+
+                if self.image_scale > 1.0: # если масштаб больше нормального
+                    factor = self.image_scale/self.UPPER_SCALE_LIMIT
+                    if scroll_value < 0.0:
+                        self.image_scale -= 0.1 + 8.5*factor #0.2
+                    else:
+                        self.image_scale += 0.1 + 8.5*factor #0.2
+
+                else: # если масштаб меньше нормального
+                    if scroll_value < 0.0:
+                        self.image_scale -= 0.05 #0.1
+                    else:
+                        self.image_scale += 0.05 #0.1
 
         delta = before_scale - self.image_scale
         self.image_scale = min(max(self.LOWER_SCALE_LIMIT, self.image_scale),

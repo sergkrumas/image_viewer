@@ -407,6 +407,7 @@ class SettingsWindow(QWidget):
         "show_noise_cells": (True, "Показывать анимированнную сетку"),
         "do_not_show_start_dialog": (True, "Запускать упрощённый режим сразу и без диалога"),
         "browse_images_only": (False, "Показывать только изображения"),
+        "legacy_image_scaling": (False, "Активировать прежний способ масштабирования изображений (раньшебылолучше)"),        
     }
     values = {
         "viewer_mode_transparency": (0.7, (0.0, 1.0), "Прозрачность режима вьювера"),
