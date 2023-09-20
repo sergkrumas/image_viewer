@@ -369,7 +369,11 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.invert_image = False
 
-        self.animation_timers = []
+        self.animation_tasks = []
+        self.animation_timer = QTimer()
+        self.animation_timer.setInterval(20)
+        self.animation_timer.timeout.connect(self.do_properties_animation_on_timer)
+        self.animation_timer_work_timestamp = time.time()
 
         self.block_paginating = False
 
@@ -453,45 +457,42 @@ class MainWindow(QMainWindow, UtilsMixin):
             raise Exception("type of 'start_value' is ", type(start_value))
         return value
 
+    def get_animation_task_class(self):
 
-    def get_animation_timer_class(self):
-
-        class AnimationTimer(QTimer):
-
-            def __init__(self, parent, interval, anim_id, is_timer_new, easing, duration, anim_data, callback_on_finish, callback_on_start):
+        class AnimationTask(QTimer):
+            def __init__(self, parent, anim_id, is_task_new, easing, duration, anim_tracks, callback_on_finish, callback_on_start):
                 super().__init__()
-                self.setInterval(interval)
+
                 self.main_window = parent
-                self.timeout.connect(self.do_properties_animation_on_timer)
                 self.anim_id = anim_id
-                self.anim_data = anim_data
-                self.is_timer_new = is_timer_new
+                self.anim_tracks = anim_tracks
+                self.is_task_new = is_task_new
                 self.easing = easing
                 self.on_finish_animation_callback = callback_on_finish
                 self.on_start_animation_callback = callback_on_start
                 self.animation_duration = duration
 
-                self.at_first_timeout = False
+                self._at_first_step = False
                 self.animation_allowed = True
 
-                self.main_window.animation_timers.append(self)
+                self.main_window.animation_tasks.append(self)
 
-            def do_properties_animation_on_timer(self):
+            def evaluation_step(self):
 
                 if not self.animation_allowed:
                     return
-                if not self.at_first_timeout:
+                if not self._at_first_step:
                     self.at_start_timestamp = time.time()
-                    self.at_first_timeout = True
+                    self._at_first_step = True
                     if self.on_start_animation_callback:
                         self.on_start_animation_callback()
-                    if self.is_timer_new:
-                        old_anim_data = self.anim_data[:]
-                        self.anim_data.clear()
+                    if self.is_task_new:
+                        old_anim_tracks = self.anim_tracks[:]
+                        self.anim_tracks.clear()
                         # обновление значений на текущие, ведь удалённый ранее таймер с тем же anim_id уже изменил текущее значение
-                        for attr_host, attr_name, start_value, end_value, callback_func in old_anim_data:
+                        for attr_host, attr_name, start_value, end_value, callback_func in old_anim_tracks:
                             start_value = getattr(attr_host, attr_name)
-                            self.anim_data.append((attr_host, attr_name, start_value, end_value, callback_func))
+                            self.anim_tracks.append((attr_host, attr_name, start_value, end_value, callback_func))
 
                 t = fit(
                     time.time(),
@@ -501,34 +502,41 @@ class MainWindow(QMainWindow, UtilsMixin):
                     1.0
                 )
                 factor = self.easing.valueForProgress(min(1.0, max(0.0, t)))
-                for attr_host, attr_name, start_value, end_value, callback_func in self.anim_data:
+                for attr_host, attr_name, start_value, end_value, callback_func in self.anim_tracks:
                     value = self.main_window.interpolate_values(start_value, end_value, factor)
                     setattr(attr_host, attr_name, value)
                     callback_func()
                 if self.animation_duration < (time.time() - self.at_start_timestamp):
                     if self.on_finish_animation_callback:
                         self.on_finish_animation_callback()
-                    self.stop()
                     self.animation_allowed = False
-                    self.main_window.animation_timers.remove(self)
+                    self.main_window.animation_tasks.remove(self)
+                    print("animation task closed")
 
-        return AnimationTimer
+        return AnimationTask
 
-    def animate_properties(self, anim_data, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
-        AnimationTimer = self.get_animation_timer_class()
-        ats = self.animation_timers
-        is_timer_new = False
+    def do_properties_animation_on_timer(self):
+        for animation_task in self.animation_tasks:
+            animation_task.evaluation_step()
+            self.animation_timer_work_timestamp = time.time()
+        if time.time() - self.animation_timer_work_timestamp > 10.0:
+            print("animation timer stopped")
+            self.animation_timer.stop()
+
+    def animate_properties(self, anim_tracks, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
+        AnimationTask = self.get_animation_task_class()
+        is_task_new = False
         if anim_id is not None:
-            for at in ats[:]:
-                if at.anim_id == anim_id:
-                    at.stop()
-                    at.animation_allowed = False
-                    # if at in self.animation_timers:
-                    self.animation_timers.remove(at)
-                    is_timer_new = True
-        animation_timer = AnimationTimer(self, 20, anim_id, is_timer_new, QEasingCurve(easing), duration, anim_data, callback_on_finish, callback_on_start)
-        animation_timer.do_properties_animation_on_timer() # first call before timer starts!
-        animation_timer.start()
+            for anim_task in self.animation_tasks[:]:
+                if anim_task.anim_id == anim_id:
+                    anim_task.stop()
+                    anim_task.animation_allowed = False
+                    # if anim_task in self.animation_tasks:
+                    self.animation_tasks.remove(anim_task)
+                    is_task_new = True
+        animation_task = AnimationTask(self, anim_id, is_task_new, QEasingCurve(easing), duration, anim_tracks, callback_on_finish, callback_on_start)
+        animation_task.evaluation_step() # first call before timer starts!
+        self.animation_timer.start()
 
     def update_thumbnails_row_relative_offset(self, folder_data, only_set=False):
 
