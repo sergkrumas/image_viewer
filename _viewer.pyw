@@ -2356,23 +2356,26 @@ class MainWindow(QMainWindow, UtilsMixin):
         super().close()
 
     def require_the_closing(self):
+
+        def animated_or_not_animated_close():
+            if self.isAnimationEffectsAllowed() and not self.library_mode:
+                self.animate_properties(
+                    [(self, "image_scale", self.image_scale, 0.01, self.update)],
+                    callback_on_finish=(lambda: self.close())
+                )
+            else:
+                self.close()
+
         if Globals.isolated_mode:
-            # self.close()
-            # return
+            animated_or_not_animated_close()
             app = QApplication.instance()
             app.exit()
-            pass
+
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
             return
 
-        if self.isAnimationEffectsAllowed() and not self.library_mode:
-            self.animate_properties(
-                [(self, "image_scale", self.image_scale, 0.01, self.update)],
-                callback_on_finish=(lambda: self.close())
-            )
-        else:
-            self.close()
+        animated_or_not_animated_close()
 
     def show_center_label(self, info_type):
         self.center_label_info_type = info_type
