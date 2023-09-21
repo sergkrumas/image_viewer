@@ -284,7 +284,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         painter.setOpacity(START_VALUE+factor*(END_VALUE-START_VALUE))
 
         hint_rect = self.get_secret_hint_rect()
-        painter.drawPixmap(hint_rect, self.secret_pic, self.secret_pic.rect())
+        painter.drawPixmap(hint_rect, self.secret_pic, QRectF(self.secret_pic.rect()))
         painter.setOpacity(1.0)
 
     def set_window_title(self, text):
@@ -980,7 +980,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         return self.rotated_pixmap
 
     def get_image_viewport_rect(self, debug=False, od=None):
-        im_rect = QRect()
+        im_rect = QRectF()
         if self.pixmap or self.invalid_movie or self.animated:
             if self.pixmap:
                 pixmap = self.get_rotated_pixmap()
@@ -1005,25 +1005,25 @@ class MainWindow(QMainWindow, UtilsMixin):
         icp = self.image_center_position
         if od is not None:
             icp = od[0]
-        pos = QPointF(icp).toPoint() - QPointF(new_width/2, new_height/2).toPoint()
+        pos = icp - QPointF(new_width/2, new_height/2)
         if debug:
             to_print = f'{pos} {new_width} {new_height}'
             print(to_print)
         im_rect.moveTo(pos)
-        im_rect.setWidth(int(new_width))
-        im_rect.setHeight(int(new_height))
+        im_rect.setWidth(new_width)
+        im_rect.setHeight(new_height)
         return im_rect
 
     def get_secret_hint_rect(self):
-        hint_rect = QRect()
+        hint_rect = QRectF()
         # new_width = self.secret_width/20*(self.image_scale - self.START_HINT_AT_SCALE_VALUE)
         # new_height = self.secret_height/20*(self.image_scale - self.START_HINT_AT_SCALE_VALUE)
         new_width = self.secret_width*self.image_scale/100
         new_height = self.secret_height*self.image_scale/100
-        pos = QPoint(self.hint_center_position) - QPoint(int(new_width/2), int(new_height/2))
+        pos = self.hint_center_position - QPointF(new_width/2, new_height/2)
         hint_rect.moveTo(pos)
-        hint_rect.setWidth(int(new_width))
-        hint_rect.setHeight(int(new_height))
+        hint_rect.setWidth(new_width)
+        hint_rect.setHeight(new_height)
         return hint_rect
 
     def resizeEvent(self, event):
@@ -1401,9 +1401,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.update()
 
     def get_center_position(self):
-        return QPoint(
-            int(self.frameGeometry().width()/2),
-            int(self.frameGeometry().height()/2)
+        return QPointF(
+            self.frameGeometry().width()/2,
+            self.frameGeometry().height()/2
         )
 
     def toggle_image_pos_and_scale(self):
@@ -1590,6 +1590,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         # эти значения должны быть вычислены до изменения self.image_scale
         r = self.get_image_viewport_rect()
+        now_image_rect = QRectF(r)
         p1 = r.topLeft()
         p2 = r.bottomRight()
 
@@ -1611,7 +1612,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 _height = _viewport_rect.height()
 
                 # чем больше scale_speed, тем больше придётся крутить колесо мыши
-                scale_speed = 10
+                scale_speed = 5
                 if scroll_value < 0.0:
                     _new_width = _width*(scale_speed-1)/scale_speed
                     self.image_scale = _new_width/_pixmap_rect.width()
@@ -1706,7 +1707,6 @@ class MainWindow(QMainWindow, UtilsMixin):
             if self.image_scale == 100.0 and image_scale < 100.0 and scroll_value > 0.0:
                 # Предохранитель от постепенного заплыва картинки в сторону верхнего левого угла
                 # из-за кручения колеса мыши в область ещё большего увеличения
-                # Так происходит, потому что переменная image_scale при этом чуть меньше 100.0
                 pass
             else:
                 self.image_scale = image_scale
@@ -1715,9 +1715,14 @@ class MainWindow(QMainWindow, UtilsMixin):
             is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
             if before_scale < self.image_scale and is_vr_small:
                 self.image_center_position = QPoint(QCursor().pos())
+                    # easing=QEasingCurve.OutQuint
             else:
                 self.image_center_position = image_center_position.toPoint()
             self.hint_center_position = ((t1 + t2)/2).toPoint()
+                else:
+                    self.image_center_position = image_center_position.toPoint()
+
+                self.hint_center_position = ((t1 + t2)/2).toPoint()
 
         self.activate_or_reset_secret_hint()
 
@@ -2193,7 +2198,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             # 1. DRAW SHADOW
             OFFSET = 15
-            shadow_rect = QRect(image_rect)
+            shadow_rect = QRectF(image_rect)
             shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
             draw_shadow(
                 self,
@@ -2221,7 +2226,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             # 3. DRAW IMAGE
             pixmap = self.get_rotated_pixmap()
-            painter.drawPixmap(image_rect, pixmap, pixmap.rect())
+            painter.drawPixmap(image_rect, pixmap, QRectF(pixmap.rect()))
             if self.invert_image:
                 cm = painter.compositionMode()
                 painter.setCompositionMode(QPainter.RasterOp_NotDestination)
