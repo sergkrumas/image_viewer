@@ -1152,7 +1152,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             return
         elif self.over_corner_button():
             main_window = Globals.main_window
-            main_window.require_the_closing()
+            main_window.require_window_closing()
             return
         else:
             path = input_path_dialog("", exit=False)
@@ -1183,7 +1183,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif event.button() == Qt.LeftButton:
                 if self.over_corner_button():
                     main_window = Globals.main_window
-                    main_window.require_the_closing()
+                    main_window.require_window_closing()
                     return
 
                 # этот же самый код прописан в eventFilter
@@ -2378,27 +2378,22 @@ class MainWindow(QMainWindow, UtilsMixin):
     def close(self):
         super().close()
 
-    def require_the_closing(self):
+    def animated_or_not_animated_close(self, callback_on_finish):
+        if self.isAnimationEffectsAllowed() and not self.library_mode:
+            self.animate_properties(
+                [(self, "image_scale", self.image_scale, 0.01, self.update)],
+                callback_on_finish=callback_on_finish
+            )
+        else:
+            self.close()
 
-        def animated_or_not_animated_close():
-            if self.isAnimationEffectsAllowed() and not self.library_mode:
-                self.animate_properties(
-                    [(self, "image_scale", self.image_scale, 0.01, self.update)],
-                    callback_on_finish=(lambda: self.close())
-                )
-            else:
-                self.close()
-
+    def require_window_closing(self):
         if Globals.isolated_mode:
-            animated_or_not_animated_close()
-            app = QApplication.instance()
-            app.exit()
-
+            self.animated_or_not_animated_close(QApplication.instance().exit)
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
-            return
-
-        animated_or_not_animated_close()
+        else:
+            self.animated_or_not_animated_close(self.close)
 
     def show_center_label(self, info_type):
         self.center_label_info_type = info_type
@@ -2526,7 +2521,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
             else:
-                self.require_the_closing()
+                self.require_window_closing()
         elif key == Qt.Key_F1:
             self.help_mode = not self.help_mode
         elif event.nativeScanCode() == 0x29:
