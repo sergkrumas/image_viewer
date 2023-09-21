@@ -857,6 +857,35 @@ class ControlPanel(QWidget, UtilsMixin):
                     painter.setBrush(brush)
                     painter.drawRect(thumb_rect)
                     painter.setBrush(old_brush)
+
+                if image_index == current_index and self.globals.DEBUG:
+                    old_pen = painter.pen()
+                    old_brush = painter.brush()
+                    offset = 4
+                    bigger_rect = thumb_rect.adjusted(-offset, -offset, offset, offset)
+                    points = [
+                        bigger_rect.topLeft() + QPoint(offset, 0),
+
+                        bigger_rect.topRight() + QPoint(-offset, 0),
+                        bigger_rect.topRight() + QPoint(0, offset),
+
+                        bigger_rect.bottomRight() + QPoint(0, -offset),
+                        bigger_rect.bottomRight() + QPoint(-offset, 0),
+
+                        bigger_rect.bottomLeft() + QPoint(offset, 0),
+                        bigger_rect.bottomLeft() + QPoint(0, -offset),
+
+                        bigger_rect.topLeft() + QPoint(0, offset),
+
+                        bigger_rect.topLeft() + QPoint(offset, 0),
+                    ]
+                    painter.setPen(QPen(Qt.red, 1))
+                    painter.setBrush(Qt.NoBrush)
+                    for n, point in enumerate(points[:-1]):
+                        painter.drawLine(point, points[n+1])
+                    painter.setPen(old_pen)
+                    painter.setBrush(old_brush)
+
                 # draw thumbnail mirrored copy
                 if draw_mirror:
                     thumb_rect = QRectF(
