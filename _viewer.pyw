@@ -2306,7 +2306,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.movie:
             r = self.get_image_viewport_rect()
             progress_width = r.width() * self.movie.currentFrameNumber()/self.movie.frameCount()
-            progress_bar_rect = QRect(r.left(), r.bottom(), int(progress_width), 10)
+            progress_bar_rect = QRectF(r.left(), r.bottom(), int(progress_width), 10)
             painter.setBrush(QBrush(Qt.green))
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
