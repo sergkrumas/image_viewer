@@ -390,6 +390,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.noise_time = 0.0
 
+        self.image_rect = QRectF()
+
         self.context_menu_stylesheet = """
         QMenu{
             padding: 0px;
@@ -1585,6 +1587,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             if scroll_value < 0.0:
                 return
 
+        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.animated_zoom
+
         before_scale = self.image_scale
 
         # эти значения должны быть вычислены до изменения self.image_scale
@@ -1611,7 +1615,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                 _height = _viewport_rect.height()
 
                 # чем больше scale_speed, тем больше придётся крутить колесо мыши
-                scale_speed = 5
+                if animated_zoom_enabled:
+                    scale_speed = 2.5
+                else:
+                    scale_speed = 5
+
                 if scroll_value < 0.0:
                     _new_width = _width*(scale_speed-1)/scale_speed
                     self.image_scale = _new_width/_pixmap_rect.width()
@@ -1703,21 +1711,45 @@ class MainWindow(QMainWindow, UtilsMixin):
         if override_factor:
             return image_scale, image_center_position.toPoint()
         else:
-            if self.image_scale == 100.0 and image_scale < 100.0 and scroll_value > 0.0:
-                # Предохранитель от постепенного заплыва картинки в сторону верхнего левого угла
-                # из-за кручения колеса мыши в область ещё большего увеличения
-                pass
-            else:
-                self.image_scale = image_scale
 
-            viewport_rect = self.get_image_viewport_rect()
-            is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
-            if before_scale < self.image_scale and is_vr_small:
-                self.image_center_position = QPoint(QCursor().pos())
+            if animated_zoom_enabled:
+
+                def update_function():
+                    self.image_scale = self.image_rect.width()/self.get_rotated_pixmap().width()
+                    self.image_center_position = QPointF(self.image_rect.center())
+                    self.update()
+
+                if (before_scale < 1.0 and image_scale > 1.0) or (before_scale > 1.0 and image_scale < 1.0):
+                    print("clamped to 100%")
+                    image_scale = 1.0
+
+                wanna_image_rect = self.get_image_viewport_rect(od=(image_center_position, image_scale))
+                self.animate_properties(
+                    [
+                        (self, "image_rect", now_image_rect, wanna_image_rect, update_function),
+                    ],
+                    anim_id="zoom",
+                    duration=0.7,
+                    # easing=QEasingCurve.OutQuad
+                    # easing=QEasingCurve.OutQuart
                     # easing=QEasingCurve.OutQuint
+                    easing=QEasingCurve.OutCubic
+                )
+
             else:
-                self.image_center_position = image_center_position.toPoint()
-            self.hint_center_position = ((t1 + t2)/2).toPoint()
+
+                if self.image_scale == 100.0 and image_scale < 100.0 and scroll_value > 0.0:
+                    # Предохранитель от постепенного заплыва картинки в сторону верхнего левого угла
+                    # из-за кручения колеса мыши в область ещё большего увеличения
+                    # Так происходит, потому что переменная image_scale при этом чуть меньше 100.0
+                    pass
+                else:
+                    self.image_scale = image_scale
+
+                viewport_rect = self.get_image_viewport_rect()
+                is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
+                if before_scale < self.image_scale and is_vr_small:
+                    self.image_center_position = QPoint(QCursor().pos())
                 else:
                     self.image_center_position = image_center_position.toPoint()
 
