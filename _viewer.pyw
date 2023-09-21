@@ -741,10 +741,14 @@ class MainWindow(QMainWindow, UtilsMixin):
                 ".txt",
                 ".url",
                 ".ini",
+                ".pyw",
+                ".py",
+                ".bat",
             )
             if self.image_data.filepath.lower().endswith(text_files):
                 with open(self.image_data.filepath, "r", encoding="unicode_escape") as file:
                     text = file.read(500)
+                    label = ""
 
         pxm = QPixmap(size, size)
         p = QPainter()
