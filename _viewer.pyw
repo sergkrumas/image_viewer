@@ -979,8 +979,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
 
-    def get_image_viewport_rect(self, debug=False):
-        image_rect = QRect()
+    def get_image_viewport_rect(self, debug=False, od=None):
+        im_rect = QRect()
         if self.pixmap or self.invalid_movie or self.animated:
             if self.pixmap:
                 pixmap = self.get_rotated_pixmap()
@@ -991,24 +991,28 @@ class MainWindow(QMainWindow, UtilsMixin):
         else:
             orig_width = 0
             orig_height = 0
-        image_rect.setLeft(0)
-        image_rect.setTop(0)
+        im_rect.setLeft(0)
+        im_rect.setTop(0)
         if self.error:
             image_scale = 1.0
             self.image_center_position = self.get_center_position()
         else:
             image_scale = self.image_scale
+            if od is not None:
+                image_scale = od[1]
         new_width = orig_width*image_scale
         new_height = orig_height*image_scale
         icp = self.image_center_position
+        if od is not None:
+            icp = od[0]
         pos = QPointF(icp).toPoint() - QPointF(new_width/2, new_height/2).toPoint()
         if debug:
             to_print = f'{pos} {new_width} {new_height}'
             print(to_print)
-        image_rect.moveTo(pos)
-        image_rect.setWidth(int(new_width))
-        image_rect.setHeight(int(new_height))
-        return image_rect
+        im_rect.moveTo(pos)
+        im_rect.setWidth(int(new_width))
+        im_rect.setHeight(int(new_height))
+        return im_rect
 
     def get_secret_hint_rect(self):
         hint_rect = QRect()
@@ -1094,15 +1098,15 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def get_comment_rect_info(self):
         rect = build_valid_rect(self.COMMENT_RECT_INPUT_POINT1, self.COMMENT_RECT_INPUT_POINT2)
-        image_rect = self.get_image_viewport_rect()
-        screen_delta1 = rect.topLeft() - image_rect.topLeft()
-        screen_delta2 = rect.bottomRight() - image_rect.topLeft()
+        im_rect = self.get_image_viewport_rect()
+        screen_delta1 = rect.topLeft() - im_rect.topLeft()
+        screen_delta2 = rect.bottomRight() - im_rect.topLeft()
 
-        left = screen_delta1.x()/image_rect.width()
-        top = screen_delta1.y()/image_rect.height()
+        left = screen_delta1.x()/im_rect.width()
+        top = screen_delta1.y()/im_rect.height()
 
-        right = screen_delta2.x()/image_rect.width()
-        bottom = screen_delta2.y()/image_rect.height()
+        right = screen_delta2.x()/im_rect.width()
+        bottom = screen_delta2.y()/im_rect.height()
 
         return left, top, right, bottom
 
