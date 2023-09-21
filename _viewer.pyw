@@ -1484,6 +1484,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
+        control_panel_undermouse = False
+        if Globals.control_panel is not None:
+            if Globals.control_panel.isVisible():
+                if Globals.control_panel.underMouse():
+                    control_panel_undermouse = True
         if self.pureref_mode:
             pureref.wheelEvent(self, event)
         else:
@@ -1503,7 +1508,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if shift and ctrl:
                     self.do_scroll_playspeed(scroll_value)
                     self.show_center_label("playspeed")
-                if no_mod and self.zoom_on_mousewheel and not self.left_button_pressed:
+                if no_mod and self.zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
                     self.do_scale_image(scroll_value)
                     self.show_center_label("scale")
                 elif no_mod and not self.left_button_pressed:
