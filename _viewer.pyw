@@ -157,7 +157,6 @@ class MainWindow(QMainWindow, UtilsMixin):
         top_right_corner = getattr(self.rect(), corner_attr)()
         diff = top_right_corner - self.mapped_cursor_pos()
         distance = math.sqrt(pow(diff.x(), 2) + pow(diff.y(), 2))
-        size = int(btn_rect.width()/2)
         client_area = self.rect().intersected(btn_rect)
         case1 = distance < self.CLOSE_BUTTON_RADIUS
         case2 = client_area.contains(self.mapped_cursor_pos())
