@@ -445,9 +445,15 @@ class MainWindow(QMainWindow, UtilsMixin):
         elif isinstance(start_value, QRect):
             value_x = fit(factor, 0.0, 1.0, start_value.left(), end_value.left())
             value_y = fit(factor, 0.0, 1.0, start_value.top(), end_value.top())
-            value_w = fit(factor, 0.0, 1.0, start_value.width(), end_value.width())
-            value_h = fit(factor, 0.0, 1.0, start_value.height(), end_value.height())
-            value = QRect(int(value_x), int(value_y), int(value_w), int(value_h))
+            value_r = fit(factor, 0.0, 1.0, start_value.right(), end_value.right())
+            value_b = fit(factor, 0.0, 1.0, start_value.bottom(), end_value.bottom())
+            value = QRect(QPoint(int(value_x), int(value_y)), QPoint(int(value_r), int(value_b)))
+        elif isinstance(start_value, QRectF):
+            value_x = fit(factor, 0.0, 1.0, start_value.left(), end_value.left())
+            value_y = fit(factor, 0.0, 1.0, start_value.top(), end_value.top())
+            value_r = fit(factor, 0.0, 1.0, start_value.right(), end_value.right())
+            value_b = fit(factor, 0.0, 1.0, start_value.bottom(), end_value.bottom())
+            value = QRectF(QPointF(value_x, value_y), QPointF(value_r, value_b))
         elif isinstance(start_value, QColor):
             value_r = fit(factor, 0.0, 1.0, start_value.red(), end_value.red())
             value_g = fit(factor, 0.0, 1.0, start_value.green(), end_value.green())
