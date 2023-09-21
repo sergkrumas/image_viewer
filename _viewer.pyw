@@ -100,6 +100,8 @@ class MainWindow(QMainWindow, UtilsMixin):
     secret_pic = None
     secret_p = None
 
+    LOADING_MULT = 1 #5
+
     LOADING_TEXT = (
         "ЗАГРУЗКА",       # RU
         "LADE DATEN",     # DE
@@ -107,7 +109,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         "CARICAMENTO",    # IT
         "LOADING",        # EN
         "CARGANDO",       # ES
-    )*5
+    )*LOADING_MULT 
 
     def dragEnterEvent(self, event):
             if event.mimeData().hasUrls:
@@ -887,7 +889,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def set_loading_text(self):
         # self.loading_text = random.choice(self.LOADING_TEXT)
-        self.loading_text = "   ".join(self.LOADING_TEXT)
+        self.loading_text = "\n".join(self.LOADING_TEXT)
 
     def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
@@ -1720,7 +1722,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     self.update()
 
                 if (before_scale < 1.0 and image_scale > 1.0) or (before_scale > 1.0 and image_scale < 1.0):
-                    print("clamped to 100%")
+                    print("scale is clamped to 100%")
                     image_scale = 1.0
 
                 wanna_image_rect = self.get_image_viewport_rect(od=(image_center_position, image_scale))
