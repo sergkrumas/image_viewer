@@ -648,7 +648,7 @@ class LibraryData(object):
 
     @staticmethod
     def load_session_file():
-        if LibraryData().globals.isolated_mode:
+        if LibraryData().globals.lite_mode:
             return
         data = []
         path = LibraryData().get_session_filepath()
@@ -689,7 +689,7 @@ class LibraryData(object):
 
     @staticmethod
     def store_session_file():
-        if LibraryData().globals.isolated_mode:
+        if LibraryData().globals.lite_mode:
             return
         # TODO здесь из-за f_d.current_image().filepath может быть баг,
         # когда папка не сохранится, потому что данных нет

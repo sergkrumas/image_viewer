@@ -47,7 +47,7 @@ class Globals():
     DEFAULT_THUMBNAIL = None
     FAV_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
-    isolated_mode = False # isolated aka упрощённый
+    lite_mode = False # упрощённый режим работы приложения
     force_extended_mode = False
     do_not_show_start_dialog = False
     NO_SOCKETS_SERVER_FILENAME = "server.data"
@@ -2308,7 +2308,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        if not Globals.isolated_mode:
+        if not Globals.lite_mode:
             self.draw_comments(painter)
 
         self.draw_view_history_row(painter)
@@ -2417,7 +2417,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.close()
 
     def require_window_closing(self):
-        if Globals.isolated_mode:
+        if Globals.lite_mode:
             self.animated_or_not_animated_close(QApplication.instance().exit)
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
@@ -2836,7 +2836,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                         text = "Развернуть окно на два монитора"
                     toggle_two_monitors_wide = contextMenu.addAction(text)
                 rerun_extended_mode = None
-                if not Globals.isolated_mode:
+                if not Globals.lite_mode:
                     rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
 
                 action = contextMenu.exec_(self.mapToGlobal(event.pos()))
@@ -2940,7 +2940,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 toggle_two_monitors_wide = contextMenu.addAction(text)
 
             if not self.pureref_mode:
-                if Globals.isolated_mode:
+                if Globals.lite_mode:
                     contextMenu.addSeparator()
                     rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
                 else:
@@ -3071,7 +3071,7 @@ def choose_start_option_callback(do_start_server, path):
                         )
     if ret == QMessageBox.Yes:
         print("Rerun from choose_start_option_callback...")
-        start_isolated_process(path)
+        start_lite_process(path)
         sys.exit(0)
     elif ret == QMessageBox.No:
         # finally start server
@@ -3184,12 +3184,12 @@ def exit_threads():
         thread.terminate()
         # нужно вызывать terminate вместо exit
 
-def start_isolated_process(path):
+def start_lite_process(path):
     if Globals.DEBUG:
         app_path = __file__
     else:
         app_path = sys.argv[0]
-    args = [sys.executable, app_path, path, "-isolated"]
+    args = [sys.executable, app_path, path, "-lite"]
     subprocess.Popen(args)
 
 def do_rerun_in_extended_mode(is_library_mode):
@@ -3217,7 +3217,7 @@ def open_in_separated_app_copy(folder_data):
                 r = desktop.screenGeometry(screen=i)
                 QCursor().setPos(r.center())
                 break
-        start_isolated_process(content_path)
+        start_lite_process(content_path)
     else:
         msg = "Ни изображение, ни папка, в которой оно находится, не существуют"
         QMessageBox.critical(None, "Отмена!", msg)
@@ -3316,7 +3316,7 @@ def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('path', nargs='?', default=None)
     parser.add_argument('-frame', help="", action="store_true")
-    parser.add_argument('-isolated', help="", action="store_true")
+    parser.add_argument('-lite', help="", action="store_true")
     parser.add_argument('-extended', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
     parser.add_argument('-aftercrash', help="", action="store_true")
@@ -3329,12 +3329,12 @@ def _main():
         frameless_mode = False
     if args.aftercrash:
         Globals.AFTERCRASH = True
-    Globals.isolated_mode = args.isolated
+    Globals.lite_mode = args.lite
     Globals.force_extended_mode = args.extended
 
-    if Globals.isolated_mode:
+    if Globals.lite_mode:
         app_icon = QIcon()
-        path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_isolated.ico")
+        path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_lite.ico")
         app_icon.addFile(path_icon)
         app.setWindowIcon(app_icon)
         app.setQuitOnLastWindowClosed(True)
@@ -3350,7 +3350,7 @@ def _main():
 
     ServerOrClient.globals = Globals
 
-    if not Globals.isolated_mode:
+    if not Globals.lite_mode:
         if Globals.USE_SOCKETS:
             path = ServerOrClient.server_or_client_via_sockets(
                 path,
@@ -3366,7 +3366,7 @@ def _main():
 
     # создание иконки в трее
     sti = None
-    if not Globals.isolated_mode:
+    if not Globals.lite_mode:
         sti = show_system_tray(app, app_icon)
 
     # инициализация библиотеки
