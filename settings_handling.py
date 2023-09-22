@@ -264,6 +264,44 @@ class CustomSlider(QWidget):
 
 class SettingsWindow(QWidget):
 
+
+    button_style = """QPushButton{
+        font-size: 20px;
+        color: #303940;
+        text-align: center;
+        border-radius: 5px;
+        background: rgb(220, 220, 220);
+        font-family: 'Consolas';
+        font-weight: bold;
+        border: 3px dashed #303940;
+        padding: 5px;
+        height: 40px;
+    }
+    QPushButton:hover{
+        background-color: rgb(253, 203, 54);
+        color: black;
+    }
+    QPushButton#exit, QPushButton#save{
+        color: rgb(210, 210, 210);
+        background-color: none;
+        border: none;
+    }
+    QPushButton#save{
+        color: rgb(70, 200, 70);
+    }
+    QPushButton#exit{
+        color: rgb(220, 70, 70);
+    }
+    QPushButton#exit:hover{
+        color: rgb(200, 0, 0);
+        background-color: rgba(220, 50, 50, 0.1);
+    }
+    QPushButton#save:hover{
+        color: rgb(0, 220, 0);
+        background-color: rgba(50, 220, 50, 0.1);
+    }
+    """
+
     def is_on(self, id):
         return self.checkboxes_widgets[id].isChecked()
 
@@ -419,7 +457,7 @@ class SettingsWindow(QWidget):
     }
 
     strings = {
-        "inframed_folderpath": (".", "Папка для кадрированных картинок (изменяется через Ctrl+R вне окна настроек)"),
+        "inframed_folderpath": (".", "Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)"),
     }
 
     isWindowVisible = False
@@ -554,12 +592,20 @@ class SettingsWindow(QWidget):
             layout.addWidget(label)
             main_layout.addLayout(layout)
 
-        save_button = QPushButton("Сохранить")
+        save_button = QPushButton("Закрыть и сохранить")
         save_button.clicked.connect(self.save_button_handler)
         save_button.setStyleSheet(main_style_button)
         exit_button = QPushButton("Закрыть")
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
+
+
+        save_button.setObjectName("save")
+        exit_button.setObjectName("exit")
+        for button in [save_button, exit_button]:
+            button.setStyleSheet(self.button_style)
+            button.setCursor(Qt.PointingHandCursor)
+
         buttons = QHBoxLayout()
         buttons.addWidget(save_button)
         buttons.addWidget(exit_button)
@@ -610,3 +656,12 @@ class SettingsWindow(QWidget):
             self.hide()
         if event.nativeScanCode() == 0x29:
             self.hide()
+
+
+
+
+# для запуска программы прямо из этого файла при разработке и отладке
+if __name__ == '__main__':
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()
