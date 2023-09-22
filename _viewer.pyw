@@ -78,7 +78,8 @@ class Globals():
 
     NULL_PIXMAP = None
 
-    app_title = "Krumaserg Image Viewer v0.90 Alpha"
+    app_title = "Krumaserg Image Viewer v0.90 Alpha by Sergei Krumas"
+    github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
 class MainWindow(QMainWindow, UtilsMixin):
@@ -1976,9 +1977,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             font.setFamily("Consolas")
             pr.setFont(font)
         set_font(painter)
-        hint_rect = self.rect().adjusted(200, 200, -100, -200)
+
+        info_rect = QRect(QPoint(200, 0), QPoint(self.rect().width(), self.rect().height()-100))
         painter.setPen(QPen(Qt.white))
-        painter.drawText(hint_rect, Qt.TextWordWrap | Qt.AlignBottom, help_info)
+        help_info_data = "\n".join((Globals.app_title, Globals.github_repo, "\n", help_info))
+        painter.drawText(info_rect, Qt.TextWordWrap | Qt.AlignBottom, help_info_data)
 
     def get_center_x_position(self):
         return int(self.rect().width()/2)
@@ -3131,7 +3134,7 @@ def show_system_tray(app, icon):
                 QMessageBox.critical(None, "NotImplemented", msg)
         return
     sti.activated.connect(on_trayicon_activated)
-    sti.setToolTip(Globals.app_title)
+    sti.setToolTip("\n".join((Globals.app_title, Globals.github_repo)))
     sti.show()
     return sti
 
