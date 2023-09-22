@@ -1164,6 +1164,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     def mousePressEvent(self, event):
         if self.is_startpage_activated():
             self.mousePressEventStartPage(event)
+            self.update()
             return
 
         if self.pureref_mode:
@@ -1216,6 +1217,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def mouseMoveEvent(self, event):
         if self.is_startpage_activated():
+            self.update()
             return
 
         if self.pureref_mode:
@@ -3328,7 +3330,7 @@ def _main():
     parser.add_argument('path', nargs='?', default=None)
     parser.add_argument('-frame', help="", action="store_true")
     parser.add_argument('-lite', help="", action="store_true")
-    parser.add_argument('-extended', help="", action="store_true")
+    parser.add_argument('-full', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
     parser.add_argument('-aftercrash', help="", action="store_true")
     parser.add_argument('-forcelibrarypage', help="", action="store_true")
@@ -3341,7 +3343,7 @@ def _main():
     if args.aftercrash:
         Globals.AFTERCRASH = True
     Globals.lite_mode = args.lite
-    Globals.force_extended_mode = args.extended
+    Globals.force_extended_mode = args.full
 
     if Globals.lite_mode:
         app_icon = QIcon()
@@ -3385,7 +3387,7 @@ def _main():
     LibraryData.FolderData = FolderData
     CommentWindow.globals = Globals
     CommentWindow.LibraryData = LibraryData
-    tagging.load_tags_info()
+    # загрузка данных библиотеки
     lib = LibraryData()
     # создание элементов интерфейса
     MainWindow.globals = Globals

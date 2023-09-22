@@ -25,6 +25,8 @@ import settings_handling
 from collections import defaultdict
 import datetime
 
+import tagging
+
 import locale
 locale.setlocale(locale.LC_ALL, "russian")
 
@@ -186,6 +188,7 @@ class LibraryData(object):
             i.fav_folder = None
             i.viewed_list = []
             i.from_library_mode = False
+            i.load_tagging_info()
             i.load_fav_list()
             i.load_comments_list()
             i.load_session_file()
@@ -210,6 +213,10 @@ class LibraryData(object):
 
     def get_comments_list_path(self):
         return os.path.join(os.path.dirname(__file__), self.globals.COMMENTS_FILENAME)
+
+    def load_tagging_info(self):
+        print('loading tags data')
+        tagging.load_tags_info()
 
     def load_comments_list(self):
         print("loading comment data")
@@ -676,6 +683,8 @@ class LibraryData(object):
                 # os.remove(path)
         for item in data:
             if os.path.exists(item.folder_path):
+                msg = f"LIBRARY LOADING: Reading folder data in {item.folder_path}"
+                print(msg)
                 LibraryData().handle_input_data(
                     item.folder_path,
                     pre_load=True,
