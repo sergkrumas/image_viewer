@@ -3364,18 +3364,19 @@ def _main():
 
     generate_pixmaps(Globals, SettingsWindow)
 
-    tagging.load_tags_info()
+    # создание иконки в трее
+    sti = None
+    if not Globals.isolated_mode:
+        sti = show_system_tray(app, app_icon)
 
     # инициализация библиотеки
     LibraryData.globals = Globals
     LibraryData.FolderData = FolderData
     CommentWindow.globals = Globals
     CommentWindow.LibraryData = LibraryData
+    tagging.load_tags_info()
     lib = LibraryData()
     # создание элементов интерфейса
-    sti = None
-    if not Globals.isolated_mode:
-        sti = show_system_tray(app, app_icon)
     MainWindow.globals = Globals
     MainWindow.LibraryData = LibraryData
     MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
