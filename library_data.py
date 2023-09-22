@@ -790,6 +790,19 @@ class LibraryData(object):
         return image_data.filepath in self.fav_list_filepaths()
 
     @staticmethod
+    def is_text_file(filepath):
+        exts = (
+            ".log",
+            ".txt",
+            ".url",
+            ".ini",
+            ".pyw",
+            ".py",
+            ".bat",
+        )
+        return filepath.lower().endswith(exts)
+
+    @staticmethod
     def is_interest_file(filepath):
         # поддерживаемые самим Qt форматы для чтения
             # >>> list(map(lambda x: x.data().decode(), QImageReader.supportedImageFormats()))

@@ -745,18 +745,9 @@ class MainWindow(QMainWindow, UtilsMixin):
     def generate_info_pixmap(self, label, text, size=1000, no_background=False):
 
         if not self.image_data.is_supported_filetype:
-            text_files = (
-                ".log",
-                ".txt",
-                ".url",
-                ".ini",
-                ".pyw",
-                ".py",
-                ".bat",
-            )
-            if self.image_data.filepath.lower().endswith(text_files):
-                with open(self.image_data.filepath, "r", encoding="unicode_escape") as file:
-                    text = file.read(500)
+            if LibraryData.is_text_file(self.image_data.filepath):
+                with open(self.image_data.filepath, "rb") as file:
+                    text = file.read(500).decode("utf-8", "ignore")
                     label = ""
 
         pxm = QPixmap(size, size)
