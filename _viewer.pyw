@@ -2427,7 +2427,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
         else:
-            self.animated_or_not_animated_close(self.close)
+            self.animated_or_not_animated_close(QApplication.instance().exit)
 
     def show_center_label(self, info_type):
         self.center_label_info_type = info_type
