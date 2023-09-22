@@ -1945,6 +1945,12 @@ class MainWindow(QMainWindow, UtilsMixin):
         set_font_size(25, False)
         text = "или кликни левой кнопкой мыши, чтобы открыть диалог"
         text += "\n\nКлик правой кнопкой — открыть окно настроек"
+
+        if Globals.lite_mode:
+            text += "\n\nпрограмма запущена в лайт-режиме"
+        else:
+            text += "\n\n\n\nпрограмма запущена в обычном режиме"
+
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, text)
 
     def draw_32bit_warning(self, painter):
