@@ -1156,13 +1156,22 @@ class Slideshow(QWidget):
 
     def get_cycled_pairs(self, input_list):
         elements = input_list[:]
-        l = len(elements)
-        elements.insert(0, elements[0])
+        count = len(elements)
+        # переставляем последний элемент на первое место,
+        # чтобы изначальная первая картинка показалась первой,
+        # а не так, чтобы вторая стала первой согласно текущему алгоритму смены слайдов
+        last_el = elements.pop(-1)
+        elements.insert(0, last_el)
+
+        # добавляем первый элемент в конец для получения всех паросочетаний,
+        # которые можно потом зациклить
+        elements.append(elements[0])
         pairs = []
-        i = 1
-        for n, el in enumerate(elements[:-1]):
-            pairs.append((el, elements[n+1], f"{i}/{l}"))
-            i += 1
+        number = 1
+        for index, el in enumerate(elements[:-1]):
+            pairs.append((el, elements[index+1], f"{number}/{count}"))
+            number += 1
+        print(pairs)
         return itertools.cycle(pairs)
 
     def keyReleaseEvent(self, event):
