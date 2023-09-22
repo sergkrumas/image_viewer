@@ -1171,6 +1171,8 @@ class FolderData():
         self.previews_done = False
         self.deep_scan = False
         self.viewed_list = []
+        self._touched = False               # обнуляется после отпускания кнопки мыши
+        self._selected = False              # обнуляется после каждого перемещения
         self.relative_thumbnails_row_offset_x = 0
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
