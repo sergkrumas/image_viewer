@@ -1947,9 +1947,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         text += "\n\nКлик правой кнопкой — открыть окно настроек"
 
         if Globals.lite_mode:
-            text += "\n\nпрограмма запущена в лайт-режиме"
+            text += "\n\n[программа запущена в лайтовом режиме]"
         else:
-            text += "\n\n\n\nпрограмма запущена в обычном режиме"
+            text += "\n\n\n\n[программа запущена в обычном режиме]"
 
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, text)
 
