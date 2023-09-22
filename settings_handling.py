@@ -399,6 +399,7 @@ class SettingsWindow(QWidget):
             json.dump(data, file, indent=True, ensure_ascii=False)
 
     matrix = {
+        'do_not_show_start_dialog': (True, 'Запускать упрощённый режим сразу, то есть без диалога'),
         'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
         'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
         'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
@@ -416,7 +417,6 @@ class SettingsWindow(QWidget):
         'hide_on_app_start': (False, 'Прятать окно в трей на старте'),
         'show_image_metadata': (True, 'Показывать метаданные изображения'),
         'show_noise_cells': (True, 'Показывать анимированнную сетку'),
-        'do_not_show_start_dialog': (True, 'Запускать упрощённый режим сразу и без диалога'),
         'browse_images_only': (False, 'Показывать только изображения'),
         'legacy_image_scaling': (False, 'Активировать прежний способ масштабирования изображений (раньшебылолучше)'),
         'effects': (True, 'Анимационные эффекты'),

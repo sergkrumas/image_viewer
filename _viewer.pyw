@@ -1152,10 +1152,14 @@ class MainWindow(QMainWindow, UtilsMixin):
             main_window.require_window_closing()
             return
         else:
-            path = input_path_dialog("", exit=False)
-            if path:
-                LibraryData().handle_input_data(path)
-                self.update()
+
+            if event.button() == Qt.LeftButton:
+                path = input_path_dialog("", exit=False)
+                if path:
+                    LibraryData().handle_input_data(path)
+                    self.update()
+            elif event.button() == Qt.RightButton:
+                self.open_settings_window()
 
     def mousePressEvent(self, event):
         if self.is_startpage_activated():
@@ -1940,6 +1944,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         set_font_size(25, False)
         text = "или кликни левой кнопкой мыши, чтобы открыть диалог"
+        text += "\n\nКлик правой кнопкой — открыть окно настроек"
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, text)
 
     def draw_32bit_warning(self, painter):
@@ -3391,7 +3396,7 @@ def _main():
     # Нужно для того, чтобы иконка показалась в таскбаре.
     # И нужно это делать до того как будет показана панель миниатюр.
     if not os.path.exists(path):
-        MW.show_startpage = False
+        MW.show_startpage = True
         MW.update()
     app.processEvents()
     # создание панели управления
