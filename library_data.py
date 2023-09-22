@@ -205,6 +205,20 @@ class LibraryData(object):
                 content_path = None
         return content_path
 
+    def update_progressbar(self):
+        app = QApplication.instance()
+        stray_icon = app.property("stray_icon")
+        tray_icon_animation_step = app.property('tray_icon_animation_step')
+        if stray_icon and tray_icon_animation_step:
+            tray_icon_animation_step()
+
+    def remove_progressbar(self):
+        app = QApplication.instance()
+        stray_icon = app.property("stray_icon")
+        tray_icon_animation_reset = app.property('tray_icon_animation_reset')
+        if stray_icon and tray_icon_animation_reset:
+            tray_icon_animation_reset()
+
     def any_content(self):
         return bool(self.folders)
 
@@ -310,11 +324,12 @@ class LibraryData(object):
         _id = get_id_from_image_data(ci)
         return LibraryData().comments_dict[_id]
 
-    def create_folder_data(self, folder_path, files, image_filepath=None, fav=False, comm=False):
+    def create_folder_data(self, folder_path, files, image_filepath=None, fav=False, comm=False, library_loading=False):
         folder_data = FolderData(folder_path, files,
             image_filepath=image_filepath,
             fav=fav,
-            comm=comm
+            comm=comm,
+            library_loading=library_loading,
         )
         self.folders.append(folder_data)
         if fav:
@@ -689,12 +704,14 @@ class LibraryData(object):
                     item.folder_path,
                     pre_load=True,
                     content_hash=item.content_hash,
-                    modifiers=item.modifiers
+                    modifiers=item.modifiers,
+                    library_loading=True,
                 )
         if LibraryData().globals.is_path_exists:
             # сохраняем заново, чтобы отвалилось всё то,
             # что корректно не открылось в handle_input_data
             LibraryData().store_session_file()
+
 
     @staticmethod
     def store_session_file():
@@ -1003,7 +1020,11 @@ class LibraryData(object):
         win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
 
     @staticmethod
-    def handle_input_data(input_path, pre_load=False, content_hash=None, modifiers=""):
+    def handle_input_data(input_path,
+                pre_load=False,
+                content_hash=None,
+                modifiers="",
+                library_loading=False):
 
         Globals = LibraryData().globals
         MW = Globals.main_window
@@ -1047,7 +1068,7 @@ class LibraryData(object):
 
         # creation
         if files:
-            fd = LibraryData().create_folder_data(folder_path, files, image_filepath=image_path)
+            fd = LibraryData().create_folder_data(folder_path, files, image_filepath=image_path, library_loading=library_loading)
             if modifiers:
                 fd.set_modifiers(modifiers)
         else:
@@ -1110,7 +1131,7 @@ class FolderData():
                 return image_data
         return None
 
-    def init_images(self, files, prev=None):
+    def init_images(self, files, prev=None, library_loading=False):
         for filepath in files:
             processAppEvents(_all=True)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
@@ -1119,6 +1140,7 @@ class FolderData():
                     im_data = self.find_in_prev(filepath, prev)
                 if not im_data:
                     im_data = ImageData(filepath, self)
+                LibraryData().update_progressbar()
                 self.images_list.append(im_data)
         self.original_list = self.images_list[:]
         self.sort_type = "original"
@@ -1129,10 +1151,16 @@ class FolderData():
                 for filename, value in items:
                     if os.path.basename(image_data.filepath) == filename:
                         image_data.image_rotation = value
+        LibraryData().remove_progressbar()
         for image_data in self.images_list:
             image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
 
-    def __init__(self, folder_path, files, image_filepath=None, fav=False, comm=False):
+    def __init__(self, folder_path, files,
+                    image_filepath=None,
+                    fav=False,
+                    comm=False,
+                    library_loading=False):
+
         super().__init__()
         self.folder_path = folder_path
         self.fav = fav
@@ -1144,7 +1172,7 @@ class FolderData():
         self.deep_scan = False
         self.viewed_list = []
         self.relative_thumbnails_row_offset_x = 0
-        self.init_images(files)
+        self.init_images(files, library_loading=library_loading)
         if image_filepath:
             for n, image in enumerate(self.images_list):
                 if os.path.normpath(image.filepath) == os.path.normpath(image_filepath):

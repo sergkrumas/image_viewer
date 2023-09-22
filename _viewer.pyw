@@ -34,6 +34,8 @@ from comments import CommentWindow
 from win32con import VK_CAPITAL, VK_NUMLOCK, VK_SCROLL
 from ctypes import windll
 
+import itertools
+
 try:
     noise = __import__("noise")
 except:
@@ -3118,6 +3120,31 @@ def show_system_tray(app, icon):
     sti = QSystemTrayIcon(app)
     sti.setIcon(icon)
     app.setProperty("stray_icon", sti)
+
+
+    ICON_HEIGHT = 32
+    # список оффестов иконки для получения для бесшовной анимации
+    offsets = list(range(0, ICON_HEIGHT+1))
+    offsets.extend(list(range(-ICON_HEIGHT, 0)))
+    opm = QPixmap(icon.pixmap(icon.actualSize(QSize(ICON_HEIGHT, ICON_HEIGHT))))
+    offsets = itertools.cycle(offsets)
+    def tray_icon_animation_step():
+        offset = next(offsets)
+        pm = QPixmap(opm.width(), opm.height())
+        pm.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(pm)
+        painter.drawPixmap(QPoint(offset, 0), opm)
+        painter.end()
+        icon_frame = QIcon(pm)
+        sti.setIcon(icon_frame)
+
+    def tray_icon_animation_reset():
+        sti.setIcon(icon)
+
+    app.setProperty('tray_icon_animation_step', tray_icon_animation_step)
+    app.setProperty('tray_icon_animation_reset', tray_icon_animation_reset)
+
     @pyqtSlot()
     def on_trayicon_activated(reason):
         MW = Globals.main_window
