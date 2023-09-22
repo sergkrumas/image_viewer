@@ -7,6 +7,43 @@ class CommentWindow(QWidget):
     isWindowVisible = False
     is_initialized = False
 
+    button_style = """QPushButton{
+        font-size: 20px;
+        color: #303940;
+        text-align: center;
+        border-radius: 5px;
+        background: rgb(220, 220, 220);
+        font-family: 'Consolas';
+        font-weight: bold;
+        border: 3px dashed #303940;
+        padding: 5px;
+        height: 40px;
+    }
+    QPushButton:hover{
+        background-color: rgb(253, 203, 54);
+        color: black;
+    }
+    QPushButton#exit, QPushButton#save{
+        color: rgb(210, 210, 210);
+        background-color: none;
+        border: none;
+    }
+    QPushButton#save{
+        color: rgb(70, 200, 70);
+    }
+    QPushButton#exit{
+        color: rgb(220, 70, 70);
+    }
+    QPushButton#exit:hover{
+        color: rgb(200, 0, 0);
+        background-color: rgba(220, 50, 50, 0.1);
+    }
+    QPushButton#save:hover{
+        color: rgb(0, 220, 0);
+        background-color: rgba(50, 220, 50, 0.1);
+    }
+    """
+
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(CommentWindow, cls).__new__(cls, *args, **kwargs)
@@ -86,6 +123,13 @@ class CommentWindow(QWidget):
         exit_button = QPushButton("Закрыть")
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
+
+        save_button.setStyleSheet(self.button_style)
+        save_button.setObjectName("save")
+
+        exit_button.setStyleSheet(self.button_style)
+        exit_button.setObjectName("exit")
+
         buttons = QHBoxLayout()
         buttons.addWidget(save_button)
         buttons.addWidget(exit_button)
