@@ -360,6 +360,7 @@ class ControlPanel(QWidget, UtilsMixin):
     def play(self):
         MW = self.globals.main_window
         Slideshow.globals = self.globals
+        Slideshow.LibraryData = self.LibraryData
         Slideshow.start_slideshow()
         MW.update()
 
@@ -1051,7 +1052,7 @@ class ControlPanel(QWidget, UtilsMixin):
 class Slideshow(QWidget):
     @classmethod
     def start_slideshow(cls):
-        main_window = self.globals.main_window
+        main_window = cls.globals.main_window
         slideshow = Slideshow(main_window)
         desktop = QDesktopWidget()
         screen_geometry = desktop.screenGeometry(slideshow)
@@ -1076,7 +1077,7 @@ class Slideshow(QWidget):
         painter.setFont(font)
         painter.drawText(QRectF(self.rect()), Qt.AlignCenter, self.text)
         main_window = self.globals.main_window
-        t = main_window.fit(
+        t = fit(
             time.time(),
             self.start_time,
             self.start_time+self.TRANSITION_DURATION,
@@ -1103,6 +1104,7 @@ class Slideshow(QWidget):
         self.timer.start()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         images_list = self.LibraryData().current_folder().images_list
+        images_list = [im for im in images_list if im.is_supported_filetype]
         self.pairs = self.get_cycled_pairs(images_list)
         self.opacity = 0.001
         self.increase_opacity = True
