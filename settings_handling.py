@@ -312,12 +312,19 @@ class SettingsWindow(QWidget):
         MW = self.globals.main_window
         cp = self.globals.control_panel
         cls = self.__class__
-        for id, (current_val, text) in cls.checkboxes.items():
-            setattr(MW, f'STNG_{id}', self.is_on(id))
-            cls.checkboxes[id] = (self.is_on(id), text)
-        for id, (current_val, range, text) in cls.values.items():
-            setattr(MW, f'STNG_{id}', self.get_value(id))
-            cls.values[id] = (self.get_value(id), range, text)
+        for id, params in cls.matrix.items():
+            current_val = params[0]
+            text = params[-1]
+            if isinstance(current_val, bool):
+                setattr(MW, f'STNG_{id}', self.is_on(id))
+                cls.matrix[id] = (self.is_on(id), text)
+            elif isinstance(current_val, float):
+                range = params[1]
+                setattr(MW, f'STNG_{id}', self.get_value(id))
+                cls.matrix[id] = (self.get_value(id), range, text)
+            elif isinstance(current_val, str):
+                pass
+
         self.load_settings_to_globals()
         MW.update()
         cp.update()
@@ -329,9 +336,7 @@ class SettingsWindow(QWidget):
 
     @classmethod
     def settings_init(cls, main_window):
-        for id, (current_value, text) in cls.checkboxes.items():
-            setattr(main_window, f'STNG_{id}', current_value)
-        for id, (current_value, params, text) in cls.values.items():
+        for id, (current_value, *_) in cls.matrix.items():
             setattr(main_window, f'STNG_{id}', current_value)
 
     @classmethod
@@ -340,31 +345,17 @@ class SettingsWindow(QWidget):
 
     @classmethod
     def get_setting_value(cls, setting_id):
-        if setting_id in cls.checkboxes.keys():
-            return cls.checkboxes[setting_id][0]
-        if setting_id in cls.values.keys():
-            return cls.values[setting_id][0]
-        if setting_id in cls.strings.keys():
-            return cls.strings[setting_id][0]
+        if setting_id in cls.matrix.keys():
+            return cls.matrix[setting_id][0]
         raise Exception('no setting with such ID', setting_id)
 
     @classmethod
     def set_setting_value(cls, setting_id, setting_value):
         valid = False
-        if setting_id in cls.checkboxes.keys():
-            setting_data = list(cls.checkboxes[setting_id])
+        if setting_id in cls.matrix.keys():
+            setting_data = list(cls.matrix[setting_id])
             setting_data[0] = setting_value
-            cls.checkboxes[setting_id] = tuple(setting_data)
-            valid = True
-        if setting_id in cls.values.keys():
-            setting_data = list(cls.values[setting_id])
-            setting_data[0] = setting_value
-            cls.values[setting_id] = tuple(setting_data)
-            valid = True
-        if setting_id in cls.strings.keys():
-            setting_data = list(cls.strings[setting_id])
-            setting_data[0] = setting_value
-            cls.strings[setting_id] = tuple(setting_data)
+            cls.matrix[setting_id] = tuple(setting_data)
             valid = True
         if valid:
             cls.store_to_disk()
@@ -382,89 +373,65 @@ class SettingsWindow(QWidget):
                 except:
                     data = {}
         if data:
-            if "checkboxes" in data.keys():
-                cls.checkboxes.update(data["checkboxes"])
-            if "values" in data.keys():
-                cls.values.update(data["values"])
-            if "strings" in data.keys():
-                cls.strings.update(data["strings"])
+            cls.matrix.update(data['settings'])
             # convert tuples to lists
-            for key in cls.checkboxes.keys():
-                cls.checkboxes[key] = list(cls.checkboxes[key])
-            for key in cls.values.keys():
-                cls.values[key] = list(cls.values[key])
-            for key in cls.strings.keys():
-                cls.strings[key] = list(cls.strings[key])
+            for key in cls.matrix.keys():
+                cls.matrix[key] = list(cls.matrix[key])
             # copy actual comments from program file, not from settings file
-            for key in cls.checkboxes.keys():
-                info = cls.backup_checkboxes[key][-1]
-                data = cls.checkboxes[key]
+            for key in cls.matrix.keys():
+                info = cls.backup_matrix[key][-1]
+                data = cls.matrix[key]
                 data[-1] = info
-                cls.checkboxes[key] = data
-            for key in cls.values.keys():
-                info = cls.backup_values[key][-1]
-                data = cls.values[key]
-                data[-1] = info
-                cls.values[key] = data
-            for key in cls.strings.keys():
-                info = cls.backup_strings[key][-1]
-                data = cls.strings[key]
-                data[-1] = info
+                cls.matrix[key] = data
+
             # apply settings to global variables
             cls.load_settings_to_globals()
 
     @classmethod
     def store_to_disk(cls):
         data = {
-            "values": cls.values,
-            "checkboxes": cls.checkboxes,
-            "strings": cls.strings,
+            'settings': cls.matrix,
         }
         if os.path.exists(cls.filepath()):
             os.remove(cls.filepath())
         with open(cls.filepath(), 'w+', encoding="utf8") as file:
             json.dump(data, file, indent=True, ensure_ascii=False)
 
-    checkboxes = {
-        "show_thirds": (False, "Показывать трети"),
-        "show_cyberpunk": (False, "Кибирпунк"),
-        "show_image_center": (False, "Показывать центр"),
-        "doubleclick_toggle": (True, "Переключение между оконным и полноэкранным режимом через двойной клик"),
-        "show_deep_secrets_at_zoom": (True, "Показывать рандомную вселенскую истину при сильном увеличении"),
-        "autohide_control_panel": (True, "Автоматически скрывать панель миниатюр и кнопок"),
-        "zoom_on_mousewheel": (True, "Зум с помощью колёсика мыши (для навигации удерживать Ctrl)"),
-        "draw_control_panel_backplate": (False, "Подложка под панель миниатюр и кнопок"),
-        "show_fullscreen": (True, "Открываться в полноэкранном режиме"),
-        "effects": (True, "Анимационные эффекты"),
-        "draw_default_thumbnail": (True, "Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая"),
-        "hide_to_tray_on_close": (True, "Прятаться в трей при закрытии окна"),
-        "show_console_output": (True, "Показывать поверх контента консольный вывод"),
-        "use_global_view_history": (False, "Выключить историю просмотра для каждой папки отдельно и включить глобальную"),
-        "hide_on_app_start": (False, "Прятать окно в трей на старте"),
-        "show_image_metadata": (True, "Показывать метаданные изображения"),
-        "show_noise_cells": (True, "Показывать анимированнную сетку"),
-        "do_not_show_start_dialog": (True, "Запускать упрощённый режим сразу и без диалога"),
-        "browse_images_only": (False, "Показывать только изображения"),
-        "legacy_image_scaling": (False, "Активировать прежний способ масштабирования изображений (раньшебылолучше)"),
-        "animated_zoom": (True, "Анимированный зум изображения"),
-    }
-    values = {
-        "viewer_mode_transparency": (0.7, (0.0, 1.0), "Прозрачность режима вьювера"),
-        "library_mode_transparency": (0.9, (0.0, 1.0), "Прозрачность режима библиотеки"),
-        "slides_transition_duration": (1.0, (0.1, 10.0), "Длительность перехода в сек (для слайдшоу)"),
-        "slides_delay_duration": (2.0, (0.1, 240.0), "Длительность удержания в сек (для слайдшоу)"),
-        "thumbnail_width": (50.0, (30.0, 100.0), "Размер миниатюр в режиме просмотра"),
-    }
+    matrix = {
+        'show_thirds': (False, 'Показывать трети'),
+        'show_cyberpunk': (False, 'Кибирпунк'),
+        'show_image_center': (False, 'Показывать центр'),
+        'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
+        'show_deep_secrets_at_zoom': (True, 'Показывать рандомную вселенскую истину при сильном увеличении'),
+        'autohide_control_panel': (True, 'Автоматически скрывать панель миниатюр и кнопок'),
+        'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
+        'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
+        'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
+        'effects': (True, 'Анимационные эффекты'),
+        'draw_default_thumbnail': (True, 'Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая'),
+        'hide_to_tray_on_close': (True, 'Прятаться в трей при закрытии окна'),
+        'show_console_output': (True, 'Показывать поверх контента консольный вывод'),
+        'use_global_view_history': (False, 'Выключить историю просмотра для каждой папки отдельно и включить глобальную'),
+        'hide_on_app_start': (False, 'Прятать окно в трей на старте'),
+        'show_image_metadata': (True, 'Показывать метаданные изображения'),
+        'show_noise_cells': (True, 'Показывать анимированнную сетку'),
+        'do_not_show_start_dialog': (True, 'Запускать упрощённый режим сразу и без диалога'),
+        'browse_images_only': (False, 'Показывать только изображения'),
+        'legacy_image_scaling': (False, 'Активировать прежний способ масштабирования изображений (раньшебылолучше)'),
+        'animated_zoom': (True, 'Анимированный зум изображения'),
 
-    strings = {
-        "inframed_folderpath": (".", "Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)"),
+        'viewer_mode_transparency': (0.7, (0.0, 1.0), 'Прозрачность режима вьювера'),
+        'library_mode_transparency': (0.9, (0.0, 1.0), 'Прозрачность режима библиотеки'),
+        'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
+        'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
+        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в режиме просмотра'),
+
+        'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
     }
 
     isWindowVisible = False
 
-    backup_checkboxes = dict(checkboxes)
-    backup_values = dict(values)
-    backup_strings = dict(strings)
+    backup_matrix = dict(matrix)
 
     is_initialized = False
 
@@ -511,9 +478,7 @@ class SettingsWindow(QWidget):
         # layout почему-то не задаёт высоту, приходится делать это вручную
         # и даже поправлять, когда настроек становится слишком много
         WINDOW_HEIGHT = 0
-        WINDOW_HEIGHT += 40*len(self.checkboxes)
-        WINDOW_HEIGHT += 50*len(self.values)
-        WINDOW_HEIGHT += 40*len(self.strings)
+        WINDOW_HEIGHT += 40*len(self.matrix)
         WINDOW_HEIGHT += 50 #buttons
         self.resize(1000, WINDOW_HEIGHT)
         # show at center
@@ -552,13 +517,6 @@ class SettingsWindow(QWidget):
         main_layout.addWidget(label)
         self.checkboxes_widgets = {}
         self.values_widgets = {}
-        for id, (current_val, text) in self.checkboxes.items():
-            chb = QCheckBox(text)
-            self.checkboxes_widgets[id] = chb
-            chb.setChecked(current_val)
-            chb.setStyleSheet(checkbox_style)
-            chb.stateChanged.connect(self.on_change_handler)
-            main_layout.addWidget(chb)
 
         chb = QCheckBox("Запускать при старте Windows")
         self.checkboxes_widgets['run_on_windows_startup'] = chb
@@ -567,30 +525,42 @@ class SettingsWindow(QWidget):
         chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
         main_layout.addWidget(chb)
 
-        for id, (current_val, range, text) in self.values.items():
-            a, b = range
-            val = (current_val-a)/(b-a)
-            sb = CustomSlider("SCALAR", 400, val)
-            sb.setFixedHeight(50)
-            sb.setRange(*range)
-            self.values_widgets[id] = sb
-            sb.value_changed.connect(self.on_change_handler)
-            label = QLabel()
-            label.setText(f"{text}:")
-            label.setStyleSheet(style)
-            layout = QHBoxLayout()
-            layout.addWidget(label)
-            layout.addWidget(sb)
-            main_layout.addLayout(layout)
-            main_layout.addSpacing(20)
+        for id, params in self.matrix.items():
 
-        for id, (current_val, text) in self.strings.items():
-            label = QLabel()
-            label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
-            label.setStyleSheet(style)
-            layout = QHBoxLayout()
-            layout.addWidget(label)
-            main_layout.addLayout(layout)
+            current_val = params[0]
+            text = params[-1]
+
+            if isinstance(current_val, bool):
+                chb = QCheckBox(text)
+                self.checkboxes_widgets[id] = chb
+                chb.setChecked(current_val)
+                chb.setStyleSheet(checkbox_style)
+                chb.stateChanged.connect(self.on_change_handler)
+                main_layout.addWidget(chb)
+            elif isinstance(current_val, float):
+                range = params[1]
+                a, b = range
+                val = (current_val-a)/(b-a)
+                sb = CustomSlider("SCALAR", 400, val)
+                sb.setFixedHeight(50)
+                sb.setRange(*range)
+                self.values_widgets[id] = sb
+                sb.value_changed.connect(self.on_change_handler)
+                label = QLabel()
+                label.setText(f"{text}:")
+                label.setStyleSheet(style)
+                layout = QHBoxLayout()
+                layout.addWidget(label)
+                layout.addWidget(sb)
+                main_layout.addLayout(layout)
+                main_layout.addSpacing(20)
+            elif isinstance(current_val, str):
+                label = QLabel()
+                label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
+                label.setStyleSheet(style)
+                layout = QHBoxLayout()
+                layout.addWidget(label)
+                main_layout.addLayout(layout)
 
         save_button = QPushButton("Закрыть и сохранить")
         save_button.clicked.connect(self.save_button_handler)
@@ -598,7 +568,6 @@ class SettingsWindow(QWidget):
         exit_button = QPushButton("Закрыть")
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
-
 
         save_button.setObjectName("save")
         exit_button.setObjectName("exit")
@@ -609,7 +578,7 @@ class SettingsWindow(QWidget):
         buttons = QHBoxLayout()
         buttons.addWidget(save_button)
         buttons.addWidget(exit_button)
-        main_layout.addSpacing(100)
+        main_layout.addSpacing(50)
         main_layout.addLayout(buttons)
         self.setLayout(main_layout)
         # если задавать родителя в super().__init__(parent), то форма становится модальной.
