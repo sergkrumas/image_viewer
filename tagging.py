@@ -465,6 +465,43 @@ class TextEdit(QPlainTextEdit):
 
 class TaggingForm(QWidget):
 
+    button_style = """QPushButton{
+        font-size: 20px;
+        color: #303940;
+        text-align: center;
+        border-radius: 5px;
+        background: rgb(220, 220, 220);
+        font-family: 'Consolas';
+        font-weight: bold;
+        border: 3px dashed #303940;
+        padding: 5px;
+        height: 40px;
+    }
+    QPushButton:hover{
+        background-color: rgb(253, 203, 54);
+        color: black;
+    }
+    QPushButton#exit, QPushButton#save{
+        color: rgb(210, 210, 210);
+        background-color: none;
+        border: none;
+    }
+    QPushButton#save{
+        color: rgb(70, 200, 70);
+    }
+    QPushButton#exit{
+        color: rgb(220, 70, 70);
+    }
+    QPushButton#exit:hover{
+        color: rgb(200, 0, 0);
+        background-color: rgba(220, 50, 50, 0.1);
+    }
+    QPushButton#save:hover{
+        color: rgb(0, 220, 0);
+        background-color: rgba(50, 220, 50, 0.1);
+    }
+    """
+
     def updateClickableLables(self):
         tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
 
@@ -525,7 +562,7 @@ class TaggingForm(QWidget):
 
 
 
-        def createClicableLabelsGrid(_list):
+        def createClickableLabelsGrid(_list):
             elems = []
             for tag_elem in _list:
                 cl = ClickableLabel(tag_elem, label_type="tags")
@@ -543,7 +580,7 @@ class TaggingForm(QWidget):
                 elem.setXYvalues(x, y)
             return layout
 
-        self.existing_tags_layout = createClicableLabelsGrid(get_base_tags())
+        self.existing_tags_layout = createClickableLabelsGrid(get_base_tags())
 
         style = """
         QWidget{
@@ -559,6 +596,8 @@ class TaggingForm(QWidget):
 
         save_btn = QPushButton("Сохранить")
         save_btn.clicked.connect(self.save_handler)
+        save_btn.setStyleSheet(self.button_style)
+        save_btn.setObjectName("save")
 
         vl.addLayout(self.existing_tags_layout)
         vl.addWidget(self.tagslist_edit)
