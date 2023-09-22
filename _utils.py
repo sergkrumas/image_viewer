@@ -317,11 +317,11 @@ def draw_thirds(self, painter, image_rect):
     w = image_rect.width()
     h = image_rect.height()
     # vertical
-    painter.drawLine(QPoint(w//3, 0)+offset, QPoint(w//3, h)+offset)
-    painter.drawLine(QPoint(w//3*2, 0)+offset, QPoint(w//3*2, h)+offset)
+    painter.drawLine(QPointF(w/3, 0)+offset, QPointF(w/3, h)+offset)
+    painter.drawLine(QPointF(w/3*2, 0)+offset, QPointF(w/3*2, h)+offset)
     # horizontal
-    painter.drawLine(QPoint(0, h//3)+offset, QPoint(w, h//3)+offset)
-    painter.drawLine(QPoint(0, h//3*2)+offset, QPoint(w, h//3*2)+offset)
+    painter.drawLine(QPointF(0, h/3)+offset, QPointF(w, h/3)+offset)
+    painter.drawLine(QPointF(0, h/3*2)+offset, QPointF(w, h/3*2)+offset)
 
 @lru_cache(maxsize=8)
 def generate_gradient(type, shadow_size, color1_hex, color2_hex):

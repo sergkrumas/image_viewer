@@ -236,7 +236,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     def activate_or_reset_secret_hint(self):
         if not self.secret_hints_list:
             raise "no data"
-        if not self.show_secrets_at_zoom:
+        if not self.STNG_show_deep_secrets_at_zoom:
             return
 
         if self.image_scale > self.START_HINT_AT_SCALE_VALUE:
@@ -356,8 +356,6 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.previews_list = None
 
         self.region_zoom_in_init()
-
-        self.show_center_point = False
 
         self.contextMenuActivated = False
 
@@ -1057,7 +1055,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         if not Globals.USE_SOCKETS:
             ServerOrClient.retrieve_server_data(open_request)
         self.control_panel_visibility()
-        if self.show_noise_cells and noise:
+        if self.STNG_show_noise_cells and noise:
             self.noise_time += 0.005
             self.update()
         if self.animated:
@@ -1200,7 +1198,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     viewer_mode,
                     cursor_not_over_image,
                     self.frameless_mode,
-                    self.doubleclick_toggle,
+                    self.STNG_doubleclick_toggle,
 
                 )
                 if all(cases):
@@ -1287,7 +1285,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if self.is_cursor_over_image():
                 if self.frameless_mode:
                     self.toggle_image_pos_and_scale()
-                elif self.doubleclick_toggle:
+                elif self.STNG_doubleclick_toggle:
                     self.toggle_to_frameless_mode()
 
     def eventFilter(self, obj, event):
@@ -1509,7 +1507,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if self.library_mode:
                 self.wheelEventLibraryMode(scroll_value, event)
             else:
-                if ctrl and (not shift) and self.zoom_on_mousewheel:
+                if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
                     self.do_scroll_images_list(scroll_value)
                 if self.left_button_pressed:
                     self.do_scroll_playbar(scroll_value)
@@ -1517,7 +1515,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if shift and ctrl:
                     self.do_scroll_playspeed(scroll_value)
                     self.show_center_label("playspeed")
-                if no_mod and self.zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
+                if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
                     self.do_scale_image(scroll_value)
                     self.show_center_label("scale")
                 elif no_mod and not self.left_button_pressed:
@@ -1581,7 +1579,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if scroll_value < 0.0:
                 return
 
-        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.animated_zoom
+        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG_animated_zoom
 
         before_scale = self.image_scale
 
@@ -1597,7 +1595,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         if not override_factor:
 
-            if not self.legacy_image_scaling:
+            if not self.STNG_legacy_image_scaling:
                 # Здесь надо задавать image_scale в зависимости от
                 # новой ширины или длины картинки, высчитаннной в процентах
                 # от старой длины или ширины.
@@ -1849,9 +1847,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         # draw darkened translucent background
         if self.frameless_mode:
             if self.library_mode:
-                painter.setOpacity(self.library_mode_transparency)
+                painter.setOpacity(self.STNG_library_mode_transparency)
             else:
-                painter.setOpacity(self.viewer_mode_transparency)
+                painter.setOpacity(self.STNG_viewer_mode_transparency)
             painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
             painter.drawRect(self.rect())
             painter.setOpacity(1.0)
@@ -1897,7 +1895,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         painter.end()
 
     def draw_noise_cells(self, painter):
-        if noise and self.show_noise_cells:
+        if noise and self.STNG_show_noise_cells:
             SIZE = 150
             x_num = math.ceil(self.rect().width() / SIZE)
             y_num = math.ceil(self.rect().height() / SIZE)
@@ -2267,13 +2265,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                 painter.setCompositionMode(cm)
 
             # draw cyberpunk
-            if self.show_cyberpunk:
+            if self.STNG_show_cyberpunk:
                 draw_cyberpunk_corners(self, painter, image_rect)
             # draw thirds
-            if self.show_thirds:
+            if self.STNG_show_thirds:
                 draw_thirds(self, painter, image_rect)
             # draw image center
-            if self.show_image_center or self.show_center_point:
+            if self.STNG_show_image_center:
                 self.draw_center_point(painter, self.image_center_position)
             # draw scale label
             if self.image_center_position:
@@ -2467,7 +2465,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             # print('отмена анимации', time.time())
             return False
         # print('продолжение анимации')
-        return self.effects
+        return self.STNG_effects
 
     def isBlockedByAnimation(self):
         return self.isAnimationEffectsAllowed() and self.block_paginating
@@ -2600,10 +2598,10 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif check_scancode_for(event, "F"):
                 Globals.control_panel.manage_favorite_list()
             elif check_scancode_for(event, "C"):
-                self.show_center_point = not self.show_center_point
+                self.show_image_center = not self.show_image_center
                 self.update()
             elif check_scancode_for(event, "D"):
-                self.show_thirds = not self.show_thirds
+                self.STNG_show_thirds = not self.STNG_show_thirds
                 self.update()
             elif check_scancode_for(event, "T"):
                 tagging.toggle_overlay(self)

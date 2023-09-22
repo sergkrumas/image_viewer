@@ -313,10 +313,10 @@ class SettingsWindow(QWidget):
         cp = self.globals.control_panel
         cls = self.__class__
         for id, (current_val, text) in cls.checkboxes.items():
-            setattr(MW, id, self.is_on(id))
+            setattr(MW, f'STNG_{id}', self.is_on(id))
             cls.checkboxes[id] = (self.is_on(id), text)
         for id, (current_val, range, text) in cls.values.items():
-            setattr(MW, id, self.get_value(id))
+            setattr(MW, f'STNG_{id}', self.get_value(id))
             cls.values[id] = (self.get_value(id), range, text)
         self.load_settings_to_globals()
         MW.update()
@@ -330,9 +330,9 @@ class SettingsWindow(QWidget):
     @classmethod
     def settings_init(cls, main_window):
         for id, (current_value, text) in cls.checkboxes.items():
-            setattr(main_window, id, current_value)
+            setattr(main_window, f'STNG_{id}', current_value)
         for id, (current_value, params, text) in cls.values.items():
-            setattr(main_window, id, current_value)
+            setattr(main_window, f'STNG_{id}', current_value)
 
     @classmethod
     def filepath(cls):
@@ -430,10 +430,10 @@ class SettingsWindow(QWidget):
         "show_cyberpunk": (False, "Кибирпунк"),
         "show_image_center": (False, "Показывать центр"),
         "doubleclick_toggle": (True, "Переключение между оконным и полноэкранным режимом через двойной клик"),
-        "show_secrets_at_zoom": (True, "Показывать рандомную вселенскую истину при сильном увеличении"),
-        "autohide_control_panel": (True, "Автоматически скрывать панель с действиями"),
-        "zoom_on_mousewheel": (True, "Мастабирование с помощью колёсика мыши (для навигации удерживать Ctrl)"),
-        "show_backplate": (False, "Подложка под миниатюры и кнопки"),
+        "show_deep_secrets_at_zoom": (True, "Показывать рандомную вселенскую истину при сильном увеличении"),
+        "autohide_control_panel": (True, "Автоматически скрывать панель миниатюр и кнопок"),
+        "zoom_on_mousewheel": (True, "Зум с помощью колёсика мыши (для навигации удерживать Ctrl)"),
+        "draw_control_panel_backplate": (False, "Подложка под панель миниатюр и кнопок"),
         "show_fullscreen": (True, "Открываться в полноэкранном режиме"),
         "effects": (True, "Анимационные эффекты"),
         "draw_default_thumbnail": (True, "Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая"),

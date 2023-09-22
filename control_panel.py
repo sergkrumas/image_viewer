@@ -652,7 +652,7 @@ class ControlPanel(QWidget, UtilsMixin):
             setOpacity(self.window_opacity)
             return
 
-        if not main_window.autohide_control_panel:
+        if not main_window.STNG_autohide_control_panel:
             self.window_opacity = 1.0
             setOpacity(self.window_opacity)
             return
@@ -732,7 +732,7 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.begin(self)
         folder_data = self.LibraryData().current_folder()
         main_window = self.globals.main_window
-        if main_window.show_backplate:
+        if main_window.STNG_draw_control_panel_backplate:
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
         self.thumbnails_row_drawing(painter, folder_data)
         painter.end()
@@ -1113,8 +1113,8 @@ class Slideshow(QWidget):
         self.p2 = None
         self.set_pics()
         main_window = self.globals.main_window
-        self.TRANSITION_DURATION = main_window.slides_transition_duration
-        self.DELAY_DURATION = main_window.slides_delay_duration
+        self.TRANSITION_DURATION = main_window.STNG_slides_transition_duration
+        self.DELAY_DURATION = main_window.STNG_slides_delay_duration
 
     def set_pics(self):
         pair = next(self.pairs)
