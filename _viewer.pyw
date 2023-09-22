@@ -548,6 +548,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def update_thumbnails_row_relative_offset(self, folder_data, only_set=False):
 
+        if folder_data is None:
+            folder_data = LibraryData().current_folder()
+
         THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
         before_index = folder_data.before_index
         new_index = folder_data.get_current_index()

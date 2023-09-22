@@ -326,6 +326,7 @@ class SettingsWindow(QWidget):
                 pass
 
         self.load_settings_to_globals()
+        MW.update_thumbnails_row_relative_offset(None, only_set=True)
         MW.update()
         cp.update()
 
@@ -398,17 +399,17 @@ class SettingsWindow(QWidget):
             json.dump(data, file, indent=True, ensure_ascii=False)
 
     matrix = {
+        'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
+        'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
+        'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
+        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в режиме просмотра'),
+        'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
+        'draw_default_thumbnail': (True, 'Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая'),
         'show_thirds': (False, 'Показывать трети'),
         'show_cyberpunk': (False, 'Кибирпунк'),
         'show_image_center': (False, 'Показывать центр'),
-        'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
         'show_deep_secrets_at_zoom': (True, 'Показывать рандомную вселенскую истину при сильном увеличении'),
         'autohide_control_panel': (True, 'Автоматически скрывать панель миниатюр и кнопок'),
-        'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
-        'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
-        'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
-        'effects': (True, 'Анимационные эффекты'),
-        'draw_default_thumbnail': (True, 'Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая'),
         'hide_to_tray_on_close': (True, 'Прятаться в трей при закрытии окна'),
         'show_console_output': (True, 'Показывать поверх контента консольный вывод'),
         'use_global_view_history': (False, 'Выключить историю просмотра для каждой папки отдельно и включить глобальную'),
@@ -418,13 +419,13 @@ class SettingsWindow(QWidget):
         'do_not_show_start_dialog': (True, 'Запускать упрощённый режим сразу и без диалога'),
         'browse_images_only': (False, 'Показывать только изображения'),
         'legacy_image_scaling': (False, 'Активировать прежний способ масштабирования изображений (раньшебылолучше)'),
+        'effects': (True, 'Анимационные эффекты'),
         'animated_zoom': (True, 'Анимированный зум изображения'),
 
         'viewer_mode_transparency': (0.7, (0.0, 1.0), 'Прозрачность режима вьювера'),
         'library_mode_transparency': (0.9, (0.0, 1.0), 'Прозрачность режима библиотеки'),
         'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
         'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
-        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в режиме просмотра'),
 
         'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
     }
