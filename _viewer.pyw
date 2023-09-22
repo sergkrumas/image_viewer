@@ -622,8 +622,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             # 0. подготовка
             input_center = self.input_rect.center()
             self.input_rect_animated = QRect(self.input_rect)
-            before_pos = QPoint(self.image_center_position)
-            image_center = QPoint(self.image_center_position)
+            before_pos = QPointF(self.image_center_position)
+            image_center = QPointF(self.image_center_position)
 
             # 1. сдвинуть изображение так, чтобы позиция input_center оказалась в центре окна
             diff = self.rect().center() - input_center
