@@ -47,7 +47,7 @@ class Globals():
     DEFAULT_THUMBNAIL = None
     FAV_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
-    lite_mode = False # упрощённый режим работы приложения
+    lite_mode = False # лайтовый (упрощённый) режим работы приложения
     force_extended_mode = False
     do_not_show_start_dialog = False
     NO_SOCKETS_SERVER_FILENAME = "server.data"
@@ -1320,7 +1320,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if self.folders_list:
                     for item_rect, item_data in self.folders_list:
                         if item_rect.contains(event.pos()):
-                            # здесь выходим из режима библиотеки
+                            # здесь выходим со страницы библиотеки
                             self.toggle_viewer_library_mode()
                             self.update()
                             # break
@@ -1947,7 +1947,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         text += "\n\nКлик правой кнопкой — открыть окно настроек"
 
         if Globals.lite_mode:
-            text += "\n\n[программа запущена в лайтовом режиме]"
+            text += "\n\n[программа запущена в лайтовом (упрощённом) режиме]"
         else:
             text += "\n\n\n\n[программа запущена в обычном режиме]"
 
@@ -2893,7 +2893,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             contextMenu.addSeparator()
 
-            pureref_mode_chb = contextMenu.addAction("Режим PureRef")
+            pureref_mode_chb = contextMenu.addAction("Перейти на страницу PureRef")
             if pureref_mode_chb:
                 pureref_mode_chb.setCheckable(True)
                 pureref_mode_chb.setChecked(self.pureref_mode)
@@ -2953,7 +2953,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             if not self.pureref_mode:
                 if Globals.lite_mode:
                     contextMenu.addSeparator()
-                    rerun_in_extended_mode = contextMenu.addAction("Перезапустить в расширенном режиме")
+                    rerun_in_extended_mode = contextMenu.addAction("Перезапустить в обычном режиме")
                 else:
                     contextMenu.addSeparator()
                     rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
@@ -3067,7 +3067,7 @@ def choose_start_option_callback(do_start_server, path):
         ret = QMessageBox.No
     else:
         if Globals.do_not_show_start_dialog:
-            # запускаем упрощённый режим
+            # запускаем лайтоый (упрощённый) режим
             ret = QMessageBox.Yes
         else:
             # иначе по дефолту не запускаем, но обязательно спрашиваем
@@ -3077,7 +3077,7 @@ def choose_start_option_callback(do_start_server, path):
                     ret = QMessageBox.question(None,
                         "Вопрос",
                         'Не обнаружено запущенной копии приложения.\n\n'
-                        f"Запуститься в упрощённом режиме?",
+                        f"Запуститься в лайтовом (упрощённом) режиме?",
                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
                         )
     if ret == QMessageBox.Yes:

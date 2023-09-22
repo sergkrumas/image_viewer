@@ -399,11 +399,11 @@ class SettingsWindow(QWidget):
             json.dump(data, file, indent=True, ensure_ascii=False)
 
     matrix = {
-        'do_not_show_start_dialog': (True, 'Запускать упрощённый режим сразу, то есть без диалога'),
+        'do_not_show_start_dialog': (True, 'Запускать лайтовый (упрощённый) режим сразу, то есть без диалога'),
         'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
         'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
         'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
-        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в режиме просмотра'),
+        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в нижней панели вьювера'),
         'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
         'draw_default_thumbnail': (True, 'Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая'),
         'show_thirds': (False, 'Показывать трети'),
@@ -422,8 +422,8 @@ class SettingsWindow(QWidget):
         'effects': (True, 'Анимационные эффекты'),
         'animated_zoom': (True, 'Анимированный зум изображения'),
 
-        'viewer_mode_transparency': (0.7, (0.0, 1.0), 'Прозрачность режима вьювера'),
-        'library_mode_transparency': (0.9, (0.0, 1.0), 'Прозрачность режима библиотеки'),
+        'viewer_mode_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),
+        'library_mode_transparency': (0.9, (0.0, 1.0), 'Прозрачность страницы библиотеки'),
         'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
         'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
 

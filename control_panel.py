@@ -744,7 +744,7 @@ class ControlPanel(QWidget, UtilsMixin):
             self.start_click_pos = event.pos()
             self.start_click_index = self.thumbnails_row_clicked(get_index=True, shift_cursor=False)
             return
-        # убрал здесь return, чтобы в режиме библиотеки нижняя плашка выделялась
+        # убрал здесь return, чтобы на странице библиотеки нижняя плашка выделялась
 
     def mouseMoveEvent(self, event):
         # super().mouseMoveEvent(event)
