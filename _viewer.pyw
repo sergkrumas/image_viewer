@@ -757,7 +757,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         size_rect = self.get_rotated_pixmap(force_update=True).rect()
         target_rect = self.rect()
         target_rect.adjust(0, 50, 0, -50)
-        projected_rect = fit_rect_into_rect(size_rect, target_rect)
+        projected_rect = QRectF(fit_rect_into_rect(size_rect, target_rect))
         self.image_scale = projected_rect.width()/size_rect.width()
 
     def restore_image_transformations(self, correct=True):
@@ -2642,7 +2642,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif check_scancode_for(event, "K"):
                 pass
             elif check_scancode_for(event, "R"):
-                self.start_inframed_image_saving()
+                self.start_inframed_image_saving(event)
             elif check_scancode_for(event, "M"):
                 self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
             elif check_scancode_for(event, "P"):
@@ -2675,7 +2675,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.rotated_pixmap = self.get_rotated_pixmap().transformed(tm)
             self.update()
 
-    def start_inframed_image_saving(self):
+    def start_inframed_image_saving(self, event):
         shift_pressed = event.modifiers() & Qt.ShiftModifier
         ctrl_pressed = event.modifiers() & Qt.ControlModifier
         self.save_inframed_image(shift_pressed, ctrl_pressed)
@@ -2689,14 +2689,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         save_pixmap = QPixmap(self.size())
         save_pixmap.fill(Qt.transparent)
         painter = QPainter()
+        painter.begin(save_pixmap)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.begin(save_pixmap)
         im_rect = self.get_image_viewport_rect()
-        painter.drawPixmap(im_rect, pixmap)
+        painter.drawPixmap(im_rect.toRect(), pixmap)
         painter.end()
         if self.zoom_region_defined:
-            zoomed_region = self.projected_rect.intersected(im_rect)
+            zoomed_region = self.projected_rect.intersected(im_rect.toRect())
             save_pixmap = save_pixmap.copy(zoomed_region)
         name, ext = os.path.splitext(os.path.basename(path))
         if not ext.lower().endswith((".png", ".jpg", ".jpeg",)):
