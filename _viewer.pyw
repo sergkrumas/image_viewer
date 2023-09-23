@@ -50,7 +50,7 @@ class Globals():
     FAV_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
-    force_extended_mode = False
+    force_full_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
     NO_SOCKETS_SERVER_FILENAME = "server.data"
     NO_SOCKETS_CLIENT_DATA_FILENAME = "dat.data"
@@ -3068,7 +3068,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
 
 def choose_start_option_callback(do_start_server, path):
-    if Globals.force_extended_mode:
+    if Globals.force_full_mode:
         ret = QMessageBox.No
     else:
         if Globals.do_not_show_start_dialog:
@@ -3388,7 +3388,7 @@ def _main():
     if args.aftercrash:
         Globals.AFTERCRASH = True
     Globals.lite_mode = args.lite
-    Globals.force_extended_mode = args.full
+    Globals.force_full_mode = args.full
 
     if Globals.lite_mode:
         app_icon = QIcon()
