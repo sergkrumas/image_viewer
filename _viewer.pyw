@@ -3338,6 +3338,9 @@ def _main():
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
+        # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
+        # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
+        # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
         if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
             subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
             sys.exit()
@@ -3373,12 +3376,12 @@ def _main():
     # разбор аргументов
     parser = argparse.ArgumentParser()
     parser.add_argument('path', nargs='?', default=None)
-    parser.add_argument('-frame', help="", action="store_true")
     parser.add_argument('-lite', help="", action="store_true")
     parser.add_argument('-full', help="", action="store_true")
+    parser.add_argument('-frame', help="", action="store_true")
+    parser.add_argument('-forcelibrarypage', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
     parser.add_argument('-aftercrash', help="", action="store_true")
-    parser.add_argument('-forcelibrarypage', help="", action="store_true")
     args = parser.parse_args(sys.argv[1:])
     # print(args)
     if args.path:
