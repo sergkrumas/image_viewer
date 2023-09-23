@@ -424,8 +424,8 @@ class SettingsWindow(QWidget):
         'effects': (True, 'Анимационные эффекты'),
         'animated_zoom': (True, 'Анимированный зум изображения'),
 
-        'viewer_mode_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),
-        'library_mode_transparency': (0.9, (0.0, 1.0), 'Прозрачность страницы библиотеки'),
+        'viewer_page_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),
+        'library_page_transparency': (0.9, (0.0, 1.0), 'Прозрачность страницы библиотеки'),
         'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
         'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
 

@@ -617,7 +617,7 @@ class ControlPanel(QWidget, UtilsMixin):
                                         and SettingsWindow.instance.underMouse()
         if settings_win_under_mouse:
             MW.setCursor(Qt.PointingHandCursor)
-        elif MW.library_mode:
+        elif MW.is_library_page_active():
             if MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
                 MW.setCursor(Qt.PointingHandCursor)
             elif MW.previews_list_active_item:
@@ -634,7 +634,7 @@ class ControlPanel(QWidget, UtilsMixin):
             elif self.thumbnails_row_clicked(define_cursor_shape=True):
                 MW.setCursor(Qt.PointingHandCursor)
             elif MW.is_cursor_over_image() and \
-                    (not MW.library_mode) and \
+                    (not MW.is_library_page_active()) and \
                     (not self.globals.control_panel.underMouse()):
                 MW.setCursor(Qt.SizeAllCursor)
             else:
@@ -647,7 +647,7 @@ class ControlPanel(QWidget, UtilsMixin):
             self.opacity_effect.setOpacity(safe_value)
 
         main_window = self.globals.main_window
-        if main_window.library_mode:
+        if main_window.is_library_page_active():
             self.window_opacity = 0.0
             setOpacity(self.window_opacity)
             return
@@ -738,7 +738,7 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.end()
 
     def mousePressEvent(self, event):
-        if self.globals.main_window.library_mode:
+        if self.globals.main_window.is_library_page_active():
             super().mousePressEvent(event)
         else:
             self.start_click_pos = event.pos()
@@ -751,7 +751,7 @@ class ControlPanel(QWidget, UtilsMixin):
         return
 
     def thumbnails_row_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
-                    library_mode_rect=None, current_index=None, draw_mirror=True,
+                    library_page_rect=None, current_index=None, draw_mirror=True,
                     additional_y_offset=30):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
 
@@ -783,12 +783,12 @@ class ControlPanel(QWidget, UtilsMixin):
         #     return
 
         mouse_over_control_button = False
-        if library_mode_rect:
-            library_mode_rect = QRect(library_mode_rect)
-            r = QRect(library_mode_rect)
+        if library_page_rect:
+            library_page_rect = QRect(library_page_rect)
+            r = QRect(library_page_rect)
         else:
             r = self.rect()
-            library_mode_rect = r.adjusted(
+            library_page_rect = r.adjusted(
                 -THUMBNAIL_WIDTH,
                 -THUMBNAIL_WIDTH,
                 THUMBNAIL_WIDTH,
@@ -837,8 +837,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
             thumb_rect = QRectF(int(offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
-            # если миниатюра помещается в отведённой зоне library_mode_rect
-            if library_mode_rect.contains(thumb_rect.center()):
+            # если миниатюра помещается в отведённой зоне library_page_rect
+            if library_page_rect.contains(thumb_rect.center()):
                 highlighted = thumb_rect.contains(cursor_pos)
                 if (highlighted or pos_x) and not mouse_over_control_button:
                     painter.setOpacity(1.0)
@@ -989,7 +989,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def contextMenuEvent(self, event):
         MW = self.globals.main_window
-        if MW.show_startpage:
+        if MW.is_start_page_active():
             return
         CM = QMenu()
         CM.setStyleSheet(self.parent().context_menu_stylesheet)

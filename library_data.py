@@ -82,7 +82,7 @@ class LibraryData(object):
             i.folderslist_scroll_offset = 0
             i.fav_folder = None
             i.viewed_list = []
-            i.from_library_mode = False
+            i.on_library_page = False
             tagging.load_tags(i)
             i.load_fav_list()
             comments.load_comments_list(i)
@@ -249,15 +249,15 @@ class LibraryData(object):
             LibraryData.update_current_folder_columns()
             MW.update()
 
-    def show_that_preview_in_viewer_mode(self, image_data):
+    def show_that_preview_on_viewer_page(self, image_data):
         fd = image_data.folder_data
         self._index = self.folders.index(fd)
         self._current_folder = self.folders[self._index]
         fd._index = fd.images_list.index(image_data)
         # change mode to preview
         MW = self.globals.main_window
-        MW.toggle_viewer_library_mode()
-        self.from_library_mode = True
+        MW.toggle_viewer_library_page()
+        self.on_library_page = True
 
     def show_next_image(self):
         MW = self.globals.main_window
@@ -887,9 +887,9 @@ class LibraryData(object):
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
-            if MW.library_mode:
+            if MW.is_library_page_active():
                 # выходим из страницы библиотеки для показа картинки
-                MW.toggle_viewer_library_mode()
+                MW.toggle_viewer_library_page()
             MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
             # MW.update_thumbnails_row_relative_offset(fd, only_set=True)
             fd.current_image().update_fav_button_state()
@@ -901,8 +901,8 @@ class LibraryData(object):
             MW.update()
             MW.activateWindow()
 
-            if MW.show_startpage:
-                MW.show_startpage = False
+            if MW.is_start_page_active():
+                MW.current_page = MW.pages.VIEWER_PAGE
 
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()

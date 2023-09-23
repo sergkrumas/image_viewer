@@ -117,6 +117,15 @@ class MainWindow(QMainWindow, UtilsMixin):
         "CARGANDO",       # ES
     )*LOADING_MULT
 
+    class pages():
+        LIBRARY_PAGE = 'LIBRARYPAGE'
+        VIEWER_PAGE = 'VIEWERPAGE'
+        START_PAGE = 'STARTPAGE'
+        PUREREF_PAGE = 'PUREREFPAGE'
+
+    class center_label_type():
+        pass
+
     def dragEnterEvent(self, event):
             if event.mimeData().hasUrls:
                 event.accept()
@@ -221,9 +230,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         font.setWeight(1900)
         painter.setFont(font)
         # код для отрисовки левой кнопки
-        char = "L" if self.library_mode else "V"
+        corner_char = self.current_page[0]
         r = QRect(QPoint(0, 0), btn_rect.bottomRight()-QPoint(20, 20))
-        painter.drawText(r, Qt.AlignBottom | Qt.AlignRight, char)
+        painter.drawText(r, Qt.AlignBottom | Qt.AlignRight, corner_char)
         painter.setFont(oldfont)
 
     def prepare_secret_hints(self):
@@ -314,7 +323,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.frameless_mode = frameless_mode
         self.stay_on_top = False
         self.handling_input = False
-        self.show_startpage = False
+
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
         else:
@@ -327,6 +336,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.set_window_title("")
         self.set_window_style()
+
+        self.current_page = self.pages.VIEWER_PAGE
 
         self.tranformations_allowed = True
         self.animated = False
@@ -356,10 +367,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         SettingsWindow.settings_init(self)
 
         self.setMouseTracking(True)
-
-        self.library_mode = False
-
         self.installEventFilter(self)
+        self.setAcceptDrops(True)
 
         self.previews_list_active_item = None
         self.previews_list = None
@@ -368,13 +377,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.contextMenuActivated = False
 
-        self.property_animation_attr_name = ""
-
         self.help_infopanel = False
 
         self.error = False
-
-        self.setAcceptDrops(True)
 
         self.invert_image = False
 
@@ -441,6 +446,18 @@ class MainWindow(QMainWindow, UtilsMixin):
     #         else:
     #             self.frameless_mode = True
     #             self.set_window_style()
+
+    def is_viewer_page_active(self):
+        return self.current_page == self.pages.VIEWER_PAGE
+
+    def is_library_page_active(self):
+        return self.current_page == self.pages.LIBRARY_PAGE
+
+    def is_start_page_active(self):
+        return self.current_page == self.pages.START_PAGE
+
+    def is_pureref_page_active(self):
+        return self.current_page == self.pages.PUREREF_PAGE
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
@@ -1039,7 +1056,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             (event.oldSize().height() - event.size().height())/2,
         ).toPoint()
 
-        if self.library_mode or True:
+        if self.is_library_page_active() or True:
             LibraryData().update_current_folder_columns()
 
         SettingsWindow.center_if_on_screen()
@@ -1076,7 +1093,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     def control_panel_visibility(self):
         CP = Globals.control_panel
         if CP:
-            if self.show_startpage:
+            if self.is_start_page_active():
                 if CP.isVisible():
                     CP.setVisible(False)
             else:
@@ -1086,20 +1103,20 @@ class MainWindow(QMainWindow, UtilsMixin):
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())
 
-    def toggle_viewer_library_mode(self):
-        self.library_mode = not self.library_mode
-        self.tranformations_allowed = not self.library_mode
-        if self.library_mode:
-            self.enter_library_mode()
+    def toggle_viewer_library_page(self):
+        if not self.is_library_page_active():
+            self.current_page = self.pages.LIBRARY_PAGE
         else:
-            self.enter_viewer_mode()
+            self.current_page = self.pages.VIEWER_PAGE
+        self.tranformations_allowed = not self.is_library_page_active()
+        if self.is_library_page_active():
+            self.prepare_library_page()
+        else:
+            self.prepare_viewer_page()
 
         # event = QKeyEvent(QEvent.KeyRelease, Qt.Key_Tab, Qt.NoModifier, 0, 0, 0)
         # app = QApplication.instance()
         # app.sendEvent(self, event)
-
-    def is_startpage_activated(self):
-        return self.show_startpage and not self.library_mode
 
     def isLeftClickAndCtrl(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ControlModifier
@@ -1161,7 +1178,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def mousePressEventStartPage(self, event):
         if self.over_corner_button(corner_attr="topLeft"):
-            self.toggle_viewer_library_mode()
+            self.toggle_viewer_library_page()
             return
         elif self.over_corner_button():
             main_window = Globals.main_window
@@ -1178,7 +1195,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.open_settings_window()
 
     def mousePressEvent(self, event):
-        if self.is_startpage_activated():
+        if self.is_start_page_active():
             self.mousePressEventStartPage(event)
             self.update()
             return
@@ -1206,7 +1223,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 # этот же самый код прописан в eventFilter
                 elif self.over_corner_button(corner_attr="topLeft"):
-                    self.toggle_viewer_library_mode()
+                    self.toggle_viewer_library_page()
                     return
 
                 if self.tranformations_allowed:
@@ -1216,10 +1233,10 @@ class MainWindow(QMainWindow, UtilsMixin):
                         self.oldElementPos = self.image_center_position
                         self.update()
 
-                viewer_mode = not self.library_mode and not self.handling_input
+                ready_to_view = self.is_viewer_page_active() and not self.handling_input
                 cursor_not_over_image = not self.is_cursor_over_image()
                 cases = (
-                    viewer_mode,
+                    ready_to_view,
                     cursor_not_over_image,
                     self.frameless_mode,
                     self.STNG_doubleclick_toggle,
@@ -1232,7 +1249,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.is_startpage_activated():
+        if self.is_start_page_active():
             self.update()
             return
 
@@ -1260,7 +1277,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     old = self.image_center_position
                     self.hint_center_position += new-old
                     self.image_center_position = new
-            elif event.buttons() == Qt.NoButton and self.library_mode:
+            elif event.buttons() == Qt.NoButton and self.is_library_page_active():
                 if self.previews_list:
                     ai = self.previews_list_active_item
                     over_active_item = False
@@ -1276,7 +1293,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.is_startpage_activated():
+        if self.is_start_page_active():
             return
 
         if self.pureref_mode:
@@ -1302,11 +1319,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        if self.library_mode:
+        if self.is_library_page_active():
             pass
+        elif self.is_start_page_active():
+            return
         else:
-            if self.is_startpage_activated():
-                return
             if self.is_cursor_over_image():
                 if self.frameless_mode:
                     self.toggle_image_pos_and_scale()
@@ -1314,11 +1331,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                     self.toggle_to_frameless_mode()
 
     def eventFilter(self, obj, event):
-        if self.library_mode:
+        if self.is_library_page_active():
             if event.type() == QEvent.MouseButtonPress:
                 if event.button() == Qt.LeftButton:
                     if self.over_corner_button(corner_attr="topLeft"):
-                        self.toggle_viewer_library_mode()
+                        self.toggle_viewer_library_page()
                         return True
                     if self.folders_list:
                         for item_rect, item_data in self.folders_list:
@@ -1331,7 +1348,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     if self.previews_list:
                         for item_rect, item_data in self.previews_list:
                             if item_rect.contains(event.pos()):
-                                LibraryData().show_that_preview_in_viewer_mode(item_data)
+                                LibraryData().show_that_preview_on_viewer_page(item_data)
                                 return True
 
             elif event.type() == QEvent.MouseButtonDblClick:
@@ -1339,7 +1356,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     for item_rect, item_data in self.folders_list:
                         if item_rect.contains(event.pos()):
                             # здесь выходим со страницы библиотеки
-                            self.toggle_viewer_library_mode()
+                            self.toggle_viewer_library_page()
                             self.update()
                             # break
                             return True
@@ -1510,7 +1527,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.previews_list_active_item = None
 
     def wheelEvent(self, event):
-        if self.is_startpage_activated():
+        if self.is_start_page_active():
             return
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -1529,7 +1546,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 tagging.main_wheelEvent(self, event)
                 return
 
-            if self.library_mode:
+            if self.is_library_page_active():
                 self.wheelEventLibraryMode(scroll_value, event)
             else:
                 if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
@@ -1871,10 +1888,10 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         # draw darkened translucent background
         if self.frameless_mode:
-            if self.library_mode:
-                painter.setOpacity(self.STNG_library_mode_transparency)
+            if self.is_library_page_active():
+                painter.setOpacity(self.STNG_library_page_transparency)
             else:
-                painter.setOpacity(self.STNG_viewer_mode_transparency)
+                painter.setOpacity(self.STNG_viewer_page_transparency)
             painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
             painter.drawRect(self.rect())
             painter.setOpacity(1.0)
@@ -1882,19 +1899,19 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setBrush(QBrush(Qt.gray, Qt.SolidPattern))
             painter.drawRect(self.rect())
 
-        if self.pureref_mode:
+        # draw current page
+        if self.is_library_page_active():
+            self.draw_library(painter)
+
+        elif self.is_start_page_active():
+            self.draw_startpage(painter)
+
+        elif self.is_viewer_page_active():
+            self.draw_content(painter)
+            self.region_zoom_in_draw(painter)
+
+        elif self.is_pureref_page_active():
             pureref.draw(self, painter)
-        else:
-            # draw modes
-            if self.library_mode:
-                self.draw_library(painter)
-            else:
-                # viewer mode
-                if self.show_startpage:
-                    self.draw_startpage(painter)
-                else:
-                    self.draw_content(painter)
-                    self.region_zoom_in_draw(painter)
 
         # draw close button
         self.draw_corner_button(painter)
@@ -2052,7 +2069,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     self, painter, folder_data,
                     pos_x=50+thumb_ui_size,
                     pos_y=scroll_offset + 50+n*H,
-                    library_mode_rect=left_col_check_rect,
+                    library_page_rect=left_col_check_rect,
                     draw_mirror=False
                 )
             source = QRect(0, 0, tw, tw)
@@ -2236,11 +2253,11 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         # draw image
         if self.pixmap or self.invalid_movie:
-            image_rect = self.get_image_viewport_rect()
+            im_rect = self.get_image_viewport_rect()
 
             # 1. DRAW SHADOW
             OFFSET = 15
-            shadow_rect = QRectF(image_rect)
+            shadow_rect = QRectF(im_rect)
             shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
             draw_shadow(
                 self,
@@ -2263,12 +2280,12 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter_.end()
             checkerboard_br.setTexture(pixmap)
             painter.setBrush(checkerboard_br)
-            painter.drawRect(image_rect)
+            painter.drawRect(im_rect)
             painter.setBrush(Qt.NoBrush)
 
             # 3. DRAW IMAGE
             pixmap = self.get_rotated_pixmap()
-            painter.drawPixmap(image_rect, pixmap, QRectF(pixmap.rect()))
+            painter.drawPixmap(im_rect, pixmap, QRectF(pixmap.rect()))
             if self.invert_image:
                 cm = painter.compositionMode()
                 painter.setCompositionMode(QPainter.RasterOp_NotDestination)
@@ -2278,15 +2295,15 @@ class MainWindow(QMainWindow, UtilsMixin):
                 # painter.setBrush(Qt.red)
                 # painter.setBrush(Qt.yellow)
                 painter.setBrush(Qt.white)
-                painter.drawRect(image_rect)
+                painter.drawRect(im_rect)
                 painter.setCompositionMode(cm)
 
             # draw cyberpunk
             if self.STNG_show_cyberpunk:
-                draw_cyberpunk_corners(self, painter, image_rect)
+                draw_cyberpunk_corners(self, painter, im_rect)
             # draw thirds
             if self.STNG_show_thirds:
-                draw_thirds(self, painter, image_rect)
+                draw_thirds(self, painter, im_rect)
             # draw image center
             if self.STNG_show_image_center:
                 self.draw_center_point(painter, self.image_center_position)
@@ -2339,16 +2356,16 @@ class MainWindow(QMainWindow, UtilsMixin):
         for comment in comments.get_comments_for_image():
             painter.setPen(QPen(Qt.yellow, 1))
             painter.setBrush(Qt.NoBrush)
-            image_rect = self.get_image_viewport_rect()
+            im_rect = self.get_image_viewport_rect()
 
-            base_point = image_rect.topLeft()
+            base_point = im_rect.topLeft()
 
             # abs is for backwards compatibility
-            screen_left = base_point.x() + image_rect.width()*abs(comment.left)
-            screen_top = base_point.y() + image_rect.height()*abs(comment.top)
+            screen_left = base_point.x() + im_rect.width()*abs(comment.left)
+            screen_top = base_point.y() + im_rect.height()*abs(comment.top)
 
-            screen_right = base_point.x() + image_rect.width()*abs(comment.right)
-            screen_bottom = base_point.y() + image_rect.height()*abs(comment.bottom)
+            screen_right = base_point.x() + im_rect.width()*abs(comment.right)
+            screen_bottom = base_point.y() + im_rect.height()*abs(comment.bottom)
 
             comment_rect = QRectF(
                 QPointF(screen_left, screen_top),
@@ -2421,7 +2438,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         super().close()
 
     def animated_or_not_animated_close(self, callback_on_finish):
-        if self.isAnimationEffectsAllowed() and not self.library_mode:
+        if self.isAnimationEffectsAllowed() and not self.is_library_page_active():
             self.animate_properties(
                 [(self, "image_scale", self.image_scale, 0.01, self.update)],
                 callback_on_finish=callback_on_finish
@@ -2445,11 +2462,11 @@ class MainWindow(QMainWindow, UtilsMixin):
     def hide_center_label(self):
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT
 
-    def enter_viewer_mode(self):
+    def prepare_viewer_page(self):
         MW = Globals.main_window
-        start_page_was_activated = MW.show_startpage
+        start_page_was_activated = MW.is_start_page_active()
         if start_page_was_activated:
-            MW.show_startpage = False
+            MW.current_page = MW.pages.VIEWER_PAGE
         MW.viewer_reset() # для показа сообщения о загрузке
         LibraryData().post_choose()
         Globals.control_panel.setVisible(True)
@@ -2457,7 +2474,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         if start_page_was_activated:
             MW.restore_image_transformations()
 
-    def enter_library_mode(self):
+    def prepare_library_page(self):
         self.region_zoom_in_cancel()
         LibraryData().update_current_folder_columns()
         self.autoscroll_set_or_reset()
@@ -2495,14 +2512,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         # print('keyReleaseEvent')
         key = event.key()
         if key == Qt.Key_Tab:
-            self.toggle_viewer_library_mode()
-        if self.library_mode:
+            self.toggle_viewer_library_page()
+        if self.is_library_page_active():
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
             elif key == Qt.Key_Down:
                 LibraryData().choose_next_folder()
         else:
-            if self.is_startpage_activated():
+            if self.is_start_page_active():
                 return
             if self.check_scroll_lock():
                 if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
@@ -2564,7 +2581,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         elif event.nativeScanCode() == 0x29:
             self.open_settings_window()
 
-        if self.library_mode:
+        if self.is_library_page_active():
             if key == Qt.Key_Backtab:
                 LibraryData().choose_doom_scroll()
             elif key == Qt.Key_Delete:
@@ -2572,7 +2589,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif check_scancode_for(event, "U"):
                 LibraryData().update_current_folder()
         else:
-            if self.is_startpage_activated():
+            if self.is_start_page_active():
                 return
             if key == Qt.Key_Backtab:
                 LibraryData().choose_doom_scroll()
@@ -2675,11 +2692,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         painter.setRenderHint(QPainter.Antialiasing, True)
         painter.begin(save_pixmap)
-        image_rect = self.get_image_viewport_rect()
-        painter.drawPixmap(image_rect, pixmap)
+        im_rect = self.get_image_viewport_rect()
+        painter.drawPixmap(im_rect, pixmap)
         painter.end()
         if self.zoom_region_defined:
-            zoomed_region = self.projected_rect.intersected(image_rect)
+            zoomed_region = self.projected_rect.intersected(im_rect)
             save_pixmap = save_pixmap.copy(zoomed_region)
         name, ext = os.path.splitext(os.path.basename(path))
         if not ext.lower().endswith((".png", ".jpg", ".jpeg",)):
@@ -2827,7 +2844,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
 
         self.contextMenuActivated = True
-        if self.library_mode:
+        if self.is_library_page_active():
             folder_data = None
             if self.folders_list:
                 for item_rect, item_data in self.folders_list:
@@ -2855,8 +2872,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     elif action == toggle_two_monitors_wide:
                         self.do_toggle_two_monitors_wide()
                     elif action == rerun_extended_mode:
-                        is_library_mode = self.library_mode
-                        do_rerun_in_extended_mode(is_library_mode)
+                        do_rerun_in_extended_mode(self.is_library_page_active())
         else:
             show_in_gchrome = None
             show_in_explorer = None
@@ -3040,8 +3056,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 elif action == rerun_in_extended_mode:
                     do_rerun_in_extended_mode(False)
                 elif action == rerun_extended_mode:
-                    is_library_mode = self.library_mode
-                    do_rerun_in_extended_mode(is_library_mode)
+                    do_rerun_in_extended_mode(self.is_library_page_active())
 
     def closeEvent(self, event):
         if Globals.DEBUG:
@@ -3242,14 +3257,14 @@ def start_lite_process(path):
     args = [sys.executable, app_path, path, "-lite"]
     subprocess.Popen(args)
 
-def do_rerun_in_extended_mode(is_library_mode):
+def do_rerun_in_extended_mode(is_on_library_page):
     path = LibraryData.get_content_path(LibraryData().current_folder())
     if Globals.DEBUG:
         app_path = __file__
     else:
         app_path = sys.argv[0]
     args = [sys.executable, app_path, path, "-extended"]
-    if is_library_mode:
+    if is_on_library_page:
         args.append("-forcelibrarypage")
     subprocess.Popen(args)
     app = QApplication.instance()
@@ -3443,7 +3458,7 @@ def _main():
     # Нужно для того, чтобы иконка показалась в таскбаре.
     # И нужно это делать до того как будет показана панель миниатюр.
     if not os.path.exists(path):
-        MW.show_startpage = True
+        MW.current_page = MW.pages.START_PAGE
         MW.update()
     app.processEvents()
     # создание панели управления
@@ -3456,7 +3471,7 @@ def _main():
     if path:
         LibraryData().handle_input_data(path)
     if args.forcelibrarypage:
-        MW.toggle_viewer_library_mode()
+        MW.toggle_viewer_library_page()
 
     # вход в петлю обработки сообщений
     exit_code = app.exec()
