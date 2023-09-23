@@ -342,7 +342,9 @@ class SettingsWindow(QWidget):
 
     @classmethod
     def filepath(cls):
-        return os.path.join(os.path.dirname(__file__), "settings.json")
+        filepath = os.path.join(os.path.dirname(__file__), 'user_data', "settings.json")
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
+        return filepath
 
     @classmethod
     def get_setting_value(cls, setting_id):

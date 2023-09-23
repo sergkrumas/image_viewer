@@ -226,7 +226,9 @@ class LibraryData(object):
         return self.fav_folder
 
     def get_comments_list_path(self):
-        return os.path.join(os.path.dirname(__file__), self.globals.COMMENTS_FILENAME)
+        filepath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.COMMENTS_FILENAME)
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
+        return filepath
 
     def load_tagging_info(self):
         print('loading tags data')
@@ -666,7 +668,9 @@ class LibraryData(object):
 
     @staticmethod
     def get_session_filepath():
-        return os.path.join(os.path.dirname(__file__), LibraryData().globals.SESSION_FILENAME)
+        filepath = os.path.join(os.path.dirname(__file__), "user_data", LibraryData().globals.SESSION_FILENAME)
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
+        return filepath
 
     @staticmethod
     def load_session_file():
@@ -735,7 +739,9 @@ class LibraryData(object):
             session_file.write(data_to_write)
 
     def get_fav_list_path(self):
-        return os.path.join(os.path.dirname(__file__), self.globals.FAV_FILENAME)
+        filepath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.FAV_FILENAME)
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))        
+        return filepath
 
     def load_fav_list(self):
         print("loading favourite data")
@@ -981,10 +987,10 @@ class LibraryData(object):
     @classmethod
     def read_user_rotations_for_folder(cls, folder_data):
         filepath = cls.get_user_rotations_filepath(folder_data)
-        to_print = f"reading image rotations in {filepath}"
-        print(to_print)
         data = []
         if os.path.exists(filepath):
+            to_print = f"\treading image rotations in {filepath}"
+            print(to_print)
             with open(filepath, "r", encoding="utf8") as f:
                 txt_data = f.read()
                 elements = txt_data.split("\n")
@@ -1006,16 +1012,16 @@ class LibraryData(object):
         filepath = cls.get_user_rotations_filepath(cf)
         if os.path.exists(filepath):
             os.remove(filepath)
+        data = []
+        for image_data in cf.images_list:
+            rotation = image_data.image_rotation
+            if rotation != 0:
+                dir_path = os.path.basename(image_data.filepath)
+                imd_r_str = f"{dir_path}\n{rotation}\n"
+                data.append(imd_r_str)
         with open(filepath, "w+", encoding="utf8") as f:
-            data = []
-            for image_data in cf.images_list:
-                rotation = image_data.image_rotation
-                if rotation != 0:
-                    dir_path = os.path.basename(image_data.filepath)
-                    imd_r_str = f"{dir_path}\n{rotation}\n"
-                    data.append(imd_r_str)
             f.write("\n".join(data))
-            to_print = f'Rotations written to: {filepath}'
+            to_print = f'rotations written to: {filepath}'
             print(to_print)
         win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
 
@@ -1124,7 +1130,8 @@ class LibraryData(object):
     @staticmethod
     def write_history_file(path):
         root = os.path.dirname(__file__)
-        history_file_path = os.path.join(root, "history.log")
+        history_file_path = os.path.join(root, "user_data", "history.log")
+        create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))        
         date = datetime.datetime.now().strftime("%d %b %Y %X")
         with open(history_file_path, "a+", encoding="utf8") as file:
             record = "%s %s\n" % (date, path)
@@ -1365,6 +1372,11 @@ class ImageData():
             self.image_metadata = dict()
             self.tags_list = ImageData.get_tags_function()(self)
             self.disk_size = self.get_disk_size(self.filepath)
+        else:
+            self.creation_date = 0
+            self.md5, self.md5_tuple = "", ()
+            self.image_metadata = dict()
+            self.disk_size = 0
 
     def save_data(self):
         MW = LibraryData().globals.main_window

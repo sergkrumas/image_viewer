@@ -226,13 +226,17 @@ class MainWindow(QMainWindow, UtilsMixin):
     def prepare_secret_hints(self):
         if not self.secret_hints_list:
             data = ""
-            with open(Globals.SECRET_HINTS_FILEPATH, encoding="utf8") as file:
-                data = file.read()
+            root = os.path.dirname(__file__)
+            filepath = os.path.join(root, "user_data", Globals.SECRET_HINTS_FILEPATH)
+            create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
             out = []
-            for data_item in data.split("\n\n"):
-                data_item = data_item.strip()
-                if data_item:
-                    out.append(data_item)
+            if os.path.exists(filepath):
+                with open(filepath, encoding="utf8") as file:
+                    data = file.read()
+                for data_item in data.split("\n\n"):
+                    data_item = data_item.strip()
+                    if data_item:
+                        out.append(data_item)
             self.secret_hints_list = out
 
     def activate_or_reset_secret_hint(self):
@@ -3273,8 +3277,9 @@ def get_predefined_path_if_started_from_sublimeText():
         print('started from sublime text')
         # run from sublime_text
         Globals.started_from_sublime_text = True
-        default_paths_txt = os.path.join(os.path.dirname(__file__),
+        default_paths_txt = os.path.join(os.path.dirname(__file__), "user_data",
                                                         Globals.DEFAULT_PATHS_FILENAME)
+        create_pathsubfolders_if_not_exist(os.path.dirname(default_paths_txt))
         if os.path.exists(default_paths_txt):
             with open(default_paths_txt, "r", encoding="utf8") as file:
                 data = file.read() or None

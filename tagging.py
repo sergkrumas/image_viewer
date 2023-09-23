@@ -34,7 +34,10 @@ HTML_FILEPATH = "generated.html"
 HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)
 
 
-TAGGING_FOLDERPATH = os.path.join(os.path.dirname(__file__), "tagging")
+def get_tagging_folderpath():
+    filepath = os.path.join(os.path.dirname(__file__), "user_data", "tagging")
+    create_pathsubfolders_if_not_exist(os.path.dirname(filepath))    
+    return filepath
 
 TAGS_BASE = dict()
 CURRENT_MAX_TAG_ID = 0
@@ -122,12 +125,12 @@ class Tag():
         return self.id
 
     def store_to_disk(self):
-        if not os.path.exists(TAGGING_FOLDERPATH):
-            os.mkdir(TAGGING_FOLDERPATH)
+        if not os.path.exists(get_tagging_folderpath()):
+            os.mkdir(get_tagging_folderpath())
 
         filename = f"ID{self.id:04}"
-        info_filepath = os.path.join(TAGGING_FOLDERPATH, "%s.info" % filename)
-        list_filepath = os.path.join(TAGGING_FOLDERPATH, "%s.list" % filename)
+        info_filepath = os.path.join(get_tagging_folderpath(), "%s.info" % filename)
+        list_filepath = os.path.join(get_tagging_folderpath(), "%s.list" % filename)
 
         info_data = "\n".join([str(self.name), self.description])
         list_data = "\n".join([f"{r.md5_str} {r.filepath}" for r in self.records])
@@ -143,12 +146,12 @@ def load_tags_info():
     global TAGS_BASE
     global CURRENT_MAX_TAG_ID
 
-    if not os.path.exists(TAGGING_FOLDERPATH):
-        print('load_tags_info::', TAGGING_FOLDERPATH, "doesn't exist! Abort")
+    if not os.path.exists(get_tagging_folderpath()):
+        print('load_tags_info::', get_tagging_folderpath(), "doesn't exist! Abort")
         return
 
-    for filename in os.listdir(TAGGING_FOLDERPATH):
-        filepath = os.path.join(TAGGING_FOLDERPATH, filename)
+    for filename in os.listdir(get_tagging_folderpath()):
+        filepath = os.path.join(get_tagging_folderpath(), filename)
 
         # файлы в папке должны быть либо так
         #       `IDxxxx.info`
@@ -174,7 +177,7 @@ def load_tags_info():
             tag = Tag(id_int, name, description)
             # print("\tTAG INFO:", id_int, name, description)
 
-            list_path = os.path.join(TAGGING_FOLDERPATH, f"ID{id_}.list")
+            list_path = os.path.join(get_tagging_folderpath(), f"ID{id_}.list")
 
             # чтение списка
             if os.path.exists(list_path):

@@ -90,6 +90,22 @@ def read_AVIF_to_QPixmap(filepath):
         pass 
     return pm
 
+def create_pathsubfolders_if_not_exist(folder_path):
+    prev = ""
+    cur = folder_path
+    folders_to_create = []
+    while True:
+        folders_to_create.append(cur)
+        prev = cur
+        cur = os.path.dirname(cur)
+        if os.path.exists(cur):
+            break
+    folders_to_create = list(reversed(folders_to_create))
+    for folder in folders_to_create:
+        if not os.path.exists(folder):
+            os.mkdir(folder)
+
+
 def get_index_centered_list(listed_data, value_in_list_to_start_from):
     if len(listed_data) == 0:
         return []
