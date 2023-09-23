@@ -36,7 +36,7 @@ HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)
 
 def get_tagging_folderpath():
     filepath = os.path.join(os.path.dirname(__file__), "user_data", "tagging")
-    create_pathsubfolders_if_not_exist(os.path.dirname(filepath))    
+    create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
     return filepath
 
 TAGS_BASE = dict()
@@ -150,6 +150,7 @@ def load_tags_info():
         print('load_tags_info::', get_tagging_folderpath(), "doesn't exist! Abort")
         return
 
+    print('loading tags data')
     for filename in os.listdir(get_tagging_folderpath()):
         filepath = os.path.join(get_tagging_folderpath(), filename)
 

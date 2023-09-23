@@ -22,14 +22,15 @@ from _utils import *
 
 import pureref, tagging, help_text
 
-from library_data import (CommentData, LibraryData, FolderData, ImageData, LibraryModeImageColumn,
+from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
+import comments
+
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
 from control_panel import ControlPanel
 from app_copy_prevention import ServerOrClient
-from comments import CommentWindow
 
 from win32con import VK_CAPITAL, VK_NUMLOCK, VK_SCROLL
 from ctypes import windll
@@ -112,7 +113,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         "CARICAMENTO",    # IT
         "LOADING",        # EN
         "CARGANDO",       # ES
-    )*LOADING_MULT 
+    )*LOADING_MULT
 
     def dragEnterEvent(self, event):
             if event.mimeData().hasUrls:
@@ -1040,7 +1041,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             LibraryData().update_current_folder_columns()
 
         SettingsWindow.center_if_on_screen()
-        CommentWindow.center_if_on_screen()
+        comments.CommentWindow.center_if_on_screen()
 
         self.update()
         # здесь по возможности ещё должен быть и скейл относительно центра.
@@ -1130,7 +1131,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.image_comment_update_rect(event)
             else:
                 left, top, right, bottom = self.get_comment_rect_info()
-                self.comment_data = CommentData.create_comment(ci, left, top, right, bottom)
+                self.comment_data = comments.CommentData.create_comment(ci, left, top, right, bottom)
         self.update()
 
     def image_comment_update_rect(self, event):
@@ -1149,9 +1150,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def image_comment_mouseReleaseEvent(self, event):
         self.image_comment_update_rect(event)
-        LibraryData().store_comments_list()
+        comments.store_comments_list()
         if self.comment_data_candidate is None:
-            CommentWindow().show(self.comment_data, 'new')
+            comments.CommentWindow().show(self.comment_data, 'new')
         self.comment_data = None
         self.comment_data_candidate = None
         self.update()
@@ -2123,7 +2124,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                         painter.drawPixmap(projected, cached, source_rect)
                     else:
                         painter.setPen(QPen(Qt.white))
-                        error_msg = f'Ошибка\n {item_data.filename}' 
+                        error_msg = f'Ошибка\n {item_data.filename}'
                         painter.drawText(main_rect, Qt.AlignCenter, error_msg)
         else:
             painter.setPen(QPen(QColor(Qt.white)))
@@ -2319,8 +2320,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        if not Globals.lite_mode:
-            self.draw_comments(painter)
+        self.draw_comments(painter)
 
         self.draw_view_history_row(painter)
 
@@ -2334,7 +2334,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         old_pen = painter.pen()
         old_brush = painter.brush()
 
-        for comment in LibraryData().get_comments_for_image():
+        for comment in comments.get_comments_for_image():
             painter.setPen(QPen(Qt.yellow, 1))
             painter.setBrush(Qt.NoBrush)
             image_rect = self.get_image_viewport_rect()
@@ -2785,10 +2785,10 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.update()
 
     def get_selected_comment(self, event):
-        comments = LibraryData().get_comments_for_image()
+        image_comments = comments.get_comments_for_image()
         selected_comment = None
-        if comments and hasattr(comments[0], "screen_rect"):
-            for comment in comments:
+        if image_comments and hasattr(image_comments[0], "screen_rect"):
+            for comment in image_comments:
                 if comment.screen_rect.contains(event.pos()):
                     selected_comment = comment
                     break
@@ -3021,12 +3021,12 @@ class MainWindow(QMainWindow, UtilsMixin):
                 elif action == delete_comment:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
-                        LibraryData().delete_comment(sel_comment)
+                        comments.delete_comment(sel_comment)
                         self.update()
                 elif action == change_comment_text:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
-                        CommentWindow().show(sel_comment, 'edit')
+                        comments.CommentWindow().show(sel_comment, 'edit')
                 elif action == change_comment_borders:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
@@ -3424,8 +3424,6 @@ def _main():
     # инициализация библиотеки
     LibraryData.globals = Globals
     LibraryData.FolderData = FolderData
-    CommentWindow.globals = Globals
-    CommentWindow.LibraryData = LibraryData
     # загрузка данных библиотеки
     lib = LibraryData()
     # создание элементов интерфейса

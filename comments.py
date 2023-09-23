@@ -1,5 +1,234 @@
-from _utils import *
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+#  Author: Sergei Krumas (github.com/sergkrumas)
+#
+# ##### END GPL LICENSE BLOCK #####
 
+from _utils import *
+from collections import defaultdict
+
+
+class Vars():
+    LibraryData = None
+    Globals = None
+
+
+def get_comments_list_path():
+    filepath = os.path.join(os.path.dirname(__file__), "user_data", Vars.Globals.COMMENTS_FILENAME)
+    create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
+    return filepath
+
+def load_comments_list(libdata):
+    libdata.comments_storage = defaultdict(list)
+    Vars.LibraryData = libdata
+    Vars.Globals = libdata.globals
+    ItemRecord = namedtuple("ItemRecord", CommentData.fields)
+    files = []
+    if os.path.exists(get_comments_list_path()):
+        print("loading comment data")
+        errors = False
+        with open(get_comments_list_path(), "r", encoding="utf8") as comments_file:
+            txt_data = comments_file.read()
+        try:
+            elements = txt_data.split("\n")
+            fields_count = ItemRecord._fields.__len__()
+            data = itertools.zip_longest(*(iter(elements),)*fields_count)
+            for item in data:
+                item = ItemRecord(*item)
+                if item.filepath is None:
+                    continue
+                files.append(item.filepath)
+                comment = CommentData()
+                for attr_name in ItemRecord._fields:
+                    setattr(comment, attr_name, getattr(item, attr_name))
+                comment.decode_data()
+                comment_id = (comment.md5, comment.disk_size)
+                libdata.comments_storage[comment_id].append(comment)
+        except Exception as e:
+            # raise
+            errors = True
+        if errors:
+            _path = get_comments_list_path()
+            to_print = f"Ошибки при чтении файла {_path}"
+            print(to_print)
+    files = list(set(files))
+    libdata.create_folder_data("С комментариями", files, image_filepath=None, comm=True)
+
+def store_comments_list():
+    elements = []
+    for img_id, comments_list in Vars.LibraryData.comments_storage.items():
+        for comment in comments_list:
+            elements.append(comment)
+    data_to_out = []
+    for el in elements:
+        encoded_text = repr(el.text).strip("'")
+        info_lines = (
+            f"{el.md5}",
+            f"{el.disk_size}",
+            f"{el.filepath}",
+            f"{el.date}",
+            f"{el.date_str}",
+            f"{el.date_edited}",
+            f"{el.date_edited_str}",
+            f"{el.left}",
+            f"{el.top}",
+            f"{el.right}",
+            f"{el.bottom}",
+            f"{encoded_text}",
+            f"{el.separator_field}"
+        )
+        comment_data = "\n".join(info_lines)
+        data_to_out.append(f'{comment_data}')
+    data_to_write = "\n".join(data_to_out)
+    with open(get_comments_list_path(), "w+", encoding="utf8") as comments_file:
+        comments_file.write(data_to_write)
+
+def image_data_comment_id(image_data):
+    return (image_data.md5, image_data.disk_size)
+
+def delete_comment(comment):
+    ret = QMessageBox.question(None,'',
+        f'Комент "{comment.get_title()}". Удалить его?',
+        QMessageBox.Yes | QMessageBox.No)
+    if ret == QMessageBox.No:
+        return
+
+    ci = Vars.LibraryData.current_folder().current_image()
+    _id = image_data_comment_id(ci)
+    try:
+        Vars.LibraryData.comments_storage[_id].remove(comment)
+    except:
+        pass
+    # удаляем из папки, если коментов нет
+    if not Vars.LibraryData.comments_storage[_id]:
+        comments_folder = Vars.LibraryData.comments_folder
+        for image in comments_folder.images_list:
+            if image.md5 == ci.md5 and image.disk_size == ci.disk_size:
+                comments_folder.images_list.remove(image)
+    store_comments_list()
+
+def get_comments_for_image():
+    ci = Vars.LibraryData.current_folder().current_image()
+    _id = image_data_comment_id(ci)
+    return Vars.LibraryData.comments_storage[_id]
+
+
+
+class CommentData(object):
+
+    fields = [
+        "md5",
+        "disk_size",
+        "filepath",
+        "date",
+        "date_str",
+        "date_edited",
+        "date_edited_str",
+        "left",
+        "top",
+        "right",
+        "bottom",
+        "text",
+        "separator_field",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        self.date = None
+        self.date_edited = None
+
+    def decode_data(self):
+
+        self.disk_size = int(self.disk_size)
+
+        self.date = float(self.date)
+        try:
+            self.date_edited = float(self.date_edited)
+        except:
+            self.date_edited = None
+
+        self.left = float(self.left)
+        self.top = float(self.top)
+        self.right = float(self.right)
+        self.bottom = float(self.bottom)
+
+        self.text = self.text.replace("\\n", "\n").replace("\\t", "\t")
+
+        self.update_strings()
+
+    def update_strings(self):
+        if self.date is not None:
+            date_time = datetime.datetime.fromtimestamp( float(self.date) )
+            self.date_str = date_time.strftime("%d %B %Y %X")
+        else:
+            self.date_str = ""
+
+        if self.date_edited is not None:
+            date_time = datetime.datetime.fromtimestamp( float(self.date_edited) )
+            self.date_edited_str = date_time.strftime("%d %B %Y %X")
+        else:
+            self.date_edited_str = ""
+
+    def encode_data(self):
+        comm = CommentData()
+        for attr_name in CommentData.fields:
+            setattr(comm, attr_name, getattr(self, attr_name))
+
+        return comm
+
+    def get_title(self):
+        SIZE_LIMIT = 10
+        if len(self.text) > SIZE_LIMIT:
+            return f'{self.text[:SIZE_LIMIT]}...'
+        else:
+            return self.text
+
+    @classmethod
+    def create_comment(cls, image_data, left, top, right, bottom):
+        comm = CommentData()
+
+        comm.md5 = image_data.md5
+        comm.disk_size = int(image_data.disk_size)
+
+        comm.filepath = image_data.filepath
+        comm.date = time.time()
+        comm.date_edited = None
+        comm.update_strings()
+
+        comm.left = left
+        comm.top = top
+        comm.right = right
+        comm.bottom = bottom
+        comm.text = ""
+
+        comm.separator_field = ""
+
+        _id = image_data_comment_id(image_data)
+        Vars.LibraryData.comments_storage[_id].append(comm)
+
+        # добавление в папку
+        comments_folder = Vars.LibraryData.comments_folder
+        found = False
+        for image in comments_folder.images_list:
+            if image.md5 == image_data.md5 and image.disk_size == image_data.disk_size:
+                found = True
+        if not found:
+            comments_folder.images_list.append(image_data)
+
+        return comm
 
 
 class CommentWindow(QWidget):
@@ -70,7 +299,7 @@ class CommentWindow(QWidget):
 
     @classmethod
     def pos_at_center(cls, self):
-        MW = self.globals.main_window
+        MW = Vars.Globals.main_window
         cp = QDesktopWidget().availableGeometry().center()
         cp = MW.rect().center()
         qr = self.frameGeometry()
@@ -81,7 +310,7 @@ class CommentWindow(QWidget):
     def __init__(self):
         if self.is_initialized:
             return
-        parent = self.globals.main_window
+        parent = Vars.Globals.main_window
         super().__init__(parent)
 
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
@@ -136,7 +365,7 @@ class CommentWindow(QWidget):
         # main_layout.addSpacing(0)
         main_layout.addLayout(buttons)
         self.setLayout(main_layout)
-        # self.setParent(self.globals.main_window)
+        # self.setParent(Vars.Globals.main_window)
 
         CommentWindow.isWindowVisible = True
         self.is_initialized = True
@@ -146,7 +375,7 @@ class CommentWindow(QWidget):
 
     def save_button_handler(self):
         self.comment.text = self.editfield.toPlainText()
-        CommentWindow.LibraryData().store_comments_list()
+        store_comments_list()
         self.hide()
 
     def hide(self):
@@ -184,3 +413,11 @@ class CommentWindow(QWidget):
         key = event.key()
         if key == Qt.Key_Escape:
             self.exit_button_handler()
+
+
+
+# для запуска программы прямо из этого файла при разработке и отладке
+if __name__ == '__main__':
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()

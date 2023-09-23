@@ -21,14 +21,14 @@
 from _utils import *
 
 import settings_handling
+import tagging
+import comments
 
 from collections import defaultdict
 import datetime
-
-import tagging
-
 import locale
-locale.setlocale(locale.LC_ALL, "russian")
+
+
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 
@@ -60,8 +60,6 @@ class ThumbnailsThread(QThread):
         if self.needed_thread:
             LibraryData().make_viewer_thumbnails_and_library_previews(self.folder_data, self)
 
-
-
 class LibraryModeImageColumn():
     def __init__(self):
         self.images = []
@@ -71,115 +69,11 @@ class LibraryModeImageColumn():
         self.images.append(image_data)
         self.height += image_data.preview_size.height()
 
-def get_id_from_image_data(image_data):
-    return (image_data.md5, image_data.disk_size)
-
-class CommentData(object):
-
-    fields = [
-        "md5",
-        "disk_size",
-        "filepath",
-        "date",
-        "date_str",
-        "date_edited",
-        "date_edited_str",
-        "left",
-        "top",
-        "right",
-        "bottom",
-        "text",
-        "separator_field",
-    ]
-
-    def __init__(self, *args, **kwargs):
-        self.date = None
-        self.date_edited = None
-
-    def decode_data(self):
-
-        self.disk_size = int(self.disk_size)
-
-        self.date = float(self.date)
-        try:
-            self.date_edited = float(self.date_edited)
-        except:
-            self.date_edited = None
-
-        self.left = float(self.left)
-        self.top = float(self.top)
-        self.right = float(self.right)
-        self.bottom = float(self.bottom)
-
-        self.text = self.text.replace("\\n", "\n").replace("\\t", "\t")
-
-        self.update_strings()
-
-    def update_strings(self):
-        if self.date is not None:
-            date_time = datetime.datetime.fromtimestamp( float(self.date) )
-            self.date_str = date_time.strftime("%d %B %Y %X")
-        else:
-            self.date_str = ""
-
-        if self.date_edited is not None:
-            date_time = datetime.datetime.fromtimestamp( float(self.date_edited) )
-            self.date_edited_str = date_time.strftime("%d %B %Y %X")
-        else:
-            self.date_edited_str = ""
-
-    def encode_data(self):
-        comm = CommentData()
-        for attr_name in CommentData.fields:
-            setattr(comm, attr_name, getattr(self, attr_name))
-
-        return comm
-
-    def get_title(self):
-        SIZE_LIMIT = 10
-        if len(self.text) > SIZE_LIMIT:
-            return f'{self.text[:SIZE_LIMIT]}...'
-        else:
-            return self.text
-
-    @classmethod
-    def create_comment(cls, image_data, left, top, right, bottom):
-        comm = CommentData()
-
-        comm.md5 = image_data.md5
-        comm.disk_size = int(image_data.disk_size)
-
-        comm.filepath = image_data.filepath
-        comm.date = time.time()
-        comm.date_edited = None
-        comm.update_strings()
-
-        comm.left = left
-        comm.top = top
-        comm.right = right
-        comm.bottom = bottom
-        comm.text = ""
-
-        comm.separator_field = ""
-
-        _id = get_id_from_image_data(image_data)
-        LibraryData().comments_dict[_id].append(comm)
-
-        # добавление в папку
-        comments_folder = LibraryData().comments_folder
-        found = False
-        for image in comments_folder.images_list:
-            if image.md5 == image_data.md5 and image.disk_size == image_data.disk_size:
-                found = True
-        if not found:
-            comments_folder.images_list.append(image_data)
-
-        return comm
-
 class LibraryData(object):
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
+            locale.setlocale(locale.LC_ALL, "russian")
             i = cls.instance
             i._current_folder = None
             i.folders = []
@@ -188,9 +82,9 @@ class LibraryData(object):
             i.fav_folder = None
             i.viewed_list = []
             i.from_library_mode = False
-            i.load_tagging_info()
+            tagging.load_tags_info()
             i.load_fav_list()
-            i.load_comments_list()
+            comments.load_comments_list(i)
             i.load_session_file()
         return cls.instance
 
@@ -224,107 +118,6 @@ class LibraryData(object):
 
     def get_fav_folder(self):
         return self.fav_folder
-
-    def get_comments_list_path(self):
-        filepath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.COMMENTS_FILENAME)
-        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
-        return filepath
-
-    def load_tagging_info(self):
-        print('loading tags data')
-        tagging.load_tags_info()
-
-    def load_comments_list(self):
-        print("loading comment data")
-        self.comments_dict = defaultdict(list)
-        ItemRecord = namedtuple("ItemRecord", CommentData.fields)
-        files = []
-        if os.path.exists(self.get_comments_list_path()):
-            errors = False
-            with open(self.get_comments_list_path(), "r", encoding="utf8") as comments_file:
-                txt_data = comments_file.read()
-            try:
-                elements = txt_data.split("\n")
-                fields_count = ItemRecord._fields.__len__()
-                data = itertools.zip_longest(*(iter(elements),)*fields_count)
-                for item in data:
-                    item = ItemRecord(*item)
-                    if item.filepath is None:
-                        continue
-                    files.append(item.filepath)
-                    comment = CommentData()
-                    for attr_name in ItemRecord._fields:
-                        setattr(comment, attr_name, getattr(item, attr_name))
-                    comment.decode_data()
-                    comment_id = (comment.md5, comment.disk_size)
-                    self.comments_dict[comment_id].append(comment)
-            except Exception as e:
-                # raise
-                errors = True
-            if errors:
-                _path = self.get_comments_list_path()
-                to_print = f"Ошибки при чтении файла {_path}"
-                print(to_print)
-        files = list(set(files))
-        self.create_folder_data("С комментариями", files, image_filepath=None, comm=True)
-
-    def store_comments_list(self):
-        elements = []
-        for img_id, comments_list in self.comments_dict.items():
-            for comment in comments_list:
-                elements.append(comment)
-        data_to_out = []
-        for el in elements:
-            encoded_text = repr(el.text).strip("'")
-            info_lines = (
-                f"{el.md5}",
-                f"{el.disk_size}",
-                f"{el.filepath}",
-                f"{el.date}",
-                f"{el.date_str}",
-                f"{el.date_edited}",
-                f"{el.date_edited_str}",
-                f"{el.left}",
-                f"{el.top}",
-                f"{el.right}",
-                f"{el.bottom}",
-                f"{encoded_text}",
-                f"{el.separator_field}"
-            )
-            comment_data = "\n".join(info_lines)
-            data_to_out.append(f'{comment_data}')
-        data_to_write = "\n".join(data_to_out)
-        with open(self.get_comments_list_path(), "w+", encoding="utf8") as comments_file:
-            comments_file.write(data_to_write)
-
-    @classmethod
-    def delete_comment(cls, comment):
-
-        ret = QMessageBox.question(None,'',
-            f'Комент "{comment.get_title()}". Удалить его?',
-            QMessageBox.Yes | QMessageBox.No)
-        if ret == QMessageBox.No:
-            return
-
-        ci = LibraryData().current_folder().current_image()
-        _id = get_id_from_image_data(ci)
-        try:
-            LibraryData().comments_dict[_id].remove(comment)
-        except:
-            pass
-        # удаляем из папки, если коментов нет
-        if not LibraryData().comments_dict[_id]:
-            comments_folder = LibraryData().comments_folder
-            for image in comments_folder.images_list:
-                if image.md5 == ci.md5 and image.disk_size == ci.disk_size:
-                    comments_folder.images_list.remove(image)
-        LibraryData().store_comments_list()
-
-    @classmethod
-    def get_comments_for_image(cls):
-        ci = LibraryData().current_folder().current_image()
-        _id = get_id_from_image_data(ci)
-        return LibraryData().comments_dict[_id]
 
     def create_folder_data(self, folder_path, files, image_filepath=None, fav=False, comm=False, library_loading=False):
         folder_data = FolderData(folder_path, files,
@@ -687,6 +480,7 @@ class LibraryData(object):
         SR = namedtuple("SessionRecord", fields)
         if os.path.exists(path):
             errors = False
+            print("loading session data")
             with open(path, "r", encoding="utf8") as session_file:
                 txt_data = session_file.read()
                 try:
@@ -740,14 +534,14 @@ class LibraryData(object):
 
     def get_fav_list_path(self):
         filepath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.FAV_FILENAME)
-        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))        
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
         return filepath
 
     def load_fav_list(self):
-        print("loading favourite data")
         ItemRecord = namedtuple("ItemRecord", "md5 filepath disk_size separator_field")
         files = []
         if os.path.exists(self.get_fav_list_path()):
+            print("loading favourite data")
             errors = False
             with open(self.get_fav_list_path(), "r", encoding="utf8") as fav_file:
                 txt_data = fav_file.read()
@@ -1131,7 +925,7 @@ class LibraryData(object):
     def write_history_file(path):
         root = os.path.dirname(__file__)
         history_file_path = os.path.join(root, "user_data", "history.log")
-        create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))        
+        create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))
         date = datetime.datetime.now().strftime("%d %b %Y %X")
         with open(history_file_path, "a+", encoding="utf8") as file:
             record = "%s %s\n" % (date, path)

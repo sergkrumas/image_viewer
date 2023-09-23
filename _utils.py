@@ -87,7 +87,7 @@ def read_AVIF_to_QPixmap(filepath):
     try:
         pm = PIL_to_QPixmap(Image.open(filepath))
     except PIL.UnidentifiedImageError:
-        pass 
+        pass
     return pm
 
 def create_pathsubfolders_if_not_exist(folder_path):
