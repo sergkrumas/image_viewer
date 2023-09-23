@@ -20,11 +20,11 @@
 
 from _utils import *
 
-import pureref, tagging
+import pureref, tagging, help_text
 
 from library_data import (CommentData, LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
-from help_text import help_info
+
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
 from control_panel import ControlPanel
@@ -363,7 +363,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.property_animation_attr_name = ""
 
-        self.help_mode = False
+        self.help_infopanel = False
 
         self.error = False
 
@@ -1080,9 +1080,16 @@ class MainWindow(QMainWindow, UtilsMixin):
         return self.cursor_in_rect(self.get_image_viewport_rect())
 
     def toggle_viewer_library_mode(self):
-        event = QKeyEvent(QEvent.KeyRelease, Qt.Key_Tab, Qt.NoModifier, 0, 0, 0)
-        app = QApplication.instance()
-        app.sendEvent(self, event)
+        self.library_mode = not self.library_mode
+        self.tranformations_allowed = not self.library_mode
+        if self.library_mode:
+            self.enter_library_mode()
+        else:
+            self.enter_viewer_mode()
+
+        # event = QKeyEvent(QEvent.KeyRelease, Qt.Key_Tab, Qt.NoModifier, 0, 0, 0)
+        # app = QApplication.instance()
+        # app.sendEvent(self, event)
 
     def is_startpage_activated(self):
         return self.show_startpage and not self.library_mode
@@ -1872,9 +1879,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             pureref.draw(self, painter)
         else:
             # draw modes
-            if self.help_mode:
-                self.draw_help(painter)
-            elif self.library_mode:
+            if self.library_mode:
                 self.draw_library(painter)
             else:
                 # viewer mode
@@ -1984,20 +1989,6 @@ class MainWindow(QMainWindow, UtilsMixin):
         if SettingsWindow.get_setting_value('show_console_output'):
             for n, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
                 painter.drawText(QPoint(50, 50+10*n), message)
-
-    def draw_help(self, painter):
-        def set_font(pr):
-            font = pr.font()
-            font.setPixelSize(20)
-            font.setWeight(1900)
-            font.setFamily("Consolas")
-            pr.setFont(font)
-        set_font(painter)
-
-        info_rect = QRect(QPoint(200, 0), QPoint(self.rect().width(), self.rect().height()-100))
-        painter.setPen(QPen(Qt.white))
-        help_info_data = "\n".join((Globals.app_title, Globals.github_repo, "\n", help_info))
-        painter.drawText(info_rect, Qt.TextWordWrap | Qt.AlignBottom, help_info_data)
 
     def get_center_x_position(self):
         return int(self.rect().width()/2)
@@ -2498,12 +2489,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         # print('keyReleaseEvent')
         key = event.key()
         if key == Qt.Key_Tab:
-            self.library_mode = not self.library_mode
-            self.tranformations_allowed = not self.library_mode
-            if self.library_mode:
-                self.enter_library_mode()
-            else:
-                self.enter_viewer_mode()
+            self.toggle_viewer_library_mode()
         if self.library_mode:
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
@@ -2568,7 +2554,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 self.require_window_closing()
         elif key == Qt.Key_F1:
-            self.help_mode = not self.help_mode
+            help_text.toggle_infopanel(self)
         elif event.nativeScanCode() == 0x29:
             self.open_settings_window()
 
@@ -3367,7 +3353,7 @@ def _main():
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     app_icon = QIcon()
     path_icon = os.path.abspath(os.path.join(".", "..", "icons/image_viewer.ico"))
-    if not os.path.exists(path_icon):
+    if not os.path.exists(path_icon) or True:
         path_icon = os.path.join(os.path.dirname(__file__), "image_viewer.ico")
     app_icon.addFile(path_icon)
     app.setWindowIcon(app_icon)

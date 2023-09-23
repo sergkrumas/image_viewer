@@ -333,6 +333,7 @@ class ClickableLabel(QLabel):
         self.setFont(QFont("Times", self.font_size, QFont.Bold))
         self.mousePressEvent = self.mouseHandler
         self.tag_string = tag.name
+        self.setMaximumHeight(50)
         self.setText(tag.name)
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
 
@@ -607,7 +608,7 @@ class TaggingForm(QWidget):
 
         self.setLayout(vl)
 
-        self.resize(parent.width()-100, self.height())
+        self.resize(parent.width()-100, parent.height())
 
         desktop_rect = QDesktopWidget().screenGeometry(screen=0)
         x = (desktop_rect.width() - self.frameSize().width()) // 2

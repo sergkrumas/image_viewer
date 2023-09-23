@@ -20,6 +20,9 @@
 
 
 
+
+from _utils import *
+
 help_info = """
 ➜ ДЛЯ ВСЕХ СТРАНИЦ
     Esc - Закрытие программы
@@ -57,6 +60,211 @@ help_info = """
     Shift+Tab - Переключение на следующую по порядку папку в библиотеке
     Delete - Удаляет текущую папку из сессии
     U - Обновить список изображений для текущей папки
+
 ➜ СТРАНИЦА PUREREF
     В разработке
+
+
+
 """
+
+
+
+def toggle_infopanel(parent):
+    parent.help_infopanel = not parent.help_infopanel
+    if parent.help_infopanel:
+        # enter
+        parent.help_form = HelpForm(parent, )
+        parent.help_form.show()
+        parent.help_form.activateWindow()
+        parent.help_form.setFocus()
+    else:
+        # leave
+        if parent.help_form:
+            parent.help_form.close()
+            parent.help_form.setParent(None)
+        parent.help_form = None
+
+class HelpForm(QWidget):
+
+    button_style = """QPushButton{
+        font-size: 20px;
+        color: #303940;
+        text-align: center;
+        border-radius: 5px;
+        background: rgb(220, 220, 220);
+        font-family: 'Consolas';
+        font-weight: bold;
+        border: 3px dashed #303940;
+        padding: 5px;
+        height: 40px;
+    }
+    QPushButton:hover{
+        background-color: rgb(253, 203, 54);
+        color: black;
+    }
+    QPushButton#exit, QPushButton#save{
+        color: rgb(210, 210, 210);
+        background-color: none;
+        border: none;
+    }
+    QPushButton#save{
+        color: rgb(70, 200, 70);
+    }
+    QPushButton#exit{
+        color: rgb(220, 70, 70);
+    }
+    QPushButton#exit:hover{
+        color: rgb(200, 0, 0);
+        background-color: rgba(220, 50, 50, 0.1);
+    }
+    QPushButton#save:hover{
+        color: rgb(0, 220, 0);
+        background-color: rgba(50, 220, 50, 0.1);
+    }
+    """
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+        painter = QPainter()
+        painter.begin(self)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+        painter.setOpacity(0.5)
+        painter.setBrush(QBrush(Qt.black))
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.rect()), 10, 10)
+        painter.drawPath(path)
+
+        painter.end()
+
+    def __init__(self, *args):
+
+        parent = args[0]
+        super().__init__(parent)
+
+        self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.setWindowModality(Qt.WindowModal)
+
+
+        style = """
+        QWidget{
+            font-size: 14pt;
+        };
+        QLabel {
+            color: white;
+        };
+
+        """
+        self.setStyleSheet(style)
+
+        vl = QVBoxLayout()
+
+        exit_btn = QPushButton("Закрыть")
+        exit_btn.clicked.connect(lambda: toggle_infopanel(parent))
+        exit_btn.setStyleSheet(self.button_style)
+        exit_btn.setObjectName("exit")
+
+
+        tb_style = """
+        QPlainTextEdit {
+            background-color: transparent;
+            color: white;
+            border: none;
+            font-size: 15pt;
+        }
+
+        QScrollBar:vertical {
+            border: 1px solid #999999;
+            border-radius: 5px;
+            background: gray;
+            width:10px;
+            margin: 0px 0px 0px 0px;
+        }
+        QScrollBar::handle:vertical {
+            background: black;
+            min-height: 0px;
+            border-radius: 5px;
+        }
+
+        QScrollBar::add-line:vertical {
+            background: black;
+            height: 0px;
+            subcontrol-position: bottom;
+            subcontrol-origin: margin;
+            border-radius: 5px;
+        }
+        QScrollBar::sub-line:vertical {
+            background: black;
+            height: 0 px;
+            subcontrol-position: top;
+            subcontrol-origin: margin;
+            border-radius: 5px;
+        }
+
+        """
+
+
+
+        text_browser = QPlainTextEdit()
+
+        text_browser.setStyleSheet(tb_style)
+        help_info_data = "\n".join((parent.globals.app_title, parent.globals.github_repo, "\n", help_info))
+        text_browser.insertPlainText(f'{help_info_data}')
+        font = text_browser.font()
+        font.setPixelSize(20)
+        font.setWeight(1900)
+        font.setFamily("Consolas")
+        text_browser.setFont(font)
+        text_browser.moveCursor(QTextCursor.Start)
+        text_browser.ensureCursorVisible()
+        text_browser.move(0, 0)
+        text_browser.resize(parent.width()-100, parent.height()-50)
+
+        vl.addWidget(text_browser)
+        vl.addWidget(exit_btn)
+        self.setLayout(vl)
+
+        self.resize(parent.width()-100, parent.height())
+
+        desktop_rect = QDesktopWidget().screenGeometry(screen=0)
+        x = (desktop_rect.width() - self.frameSize().width()) // 2
+        y = (desktop_rect.height() - self.frameSize().height()) // 2
+        self.move(x,y)
+
+
+    def closeEvent(self, event):
+        pass
+
+        # self.destroy() #если раскоментировать, то процесс будет висеть вечно после закрытия главного окна
+
+    def keyReleaseEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            toggle_infopanel(self.parent())
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            toggle_infopanel(self.parent())
+
+    def mousePressEvent(self, event):
+        pass
+
+    def mouseMoveEvent(self, event):
+        pass
+
+    def mouseReleaseEvent(self, event):
+        pass
+
+
+# для запуска программы прямо из этого файла при разработке и отладке
+if __name__ == '__main__':
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()

@@ -340,7 +340,7 @@ class LibraryData(object):
 
         # удаление дубликатов и копирование модификаторов с них
         for fd in LibraryData().folders:
-            if fd.folder_path == folder_path:
+            if os.path.normpath(fd.folder_path) == os.path.normpath(folder_path):
                 if fd != folder_data:
                     # folder_data.set_modifiers(fd.get_modifiers())
                     LibraryData().folders.remove(fd)
@@ -1026,6 +1026,10 @@ class LibraryData(object):
                 modifiers="",
                 library_loading=False):
 
+        # все пути приводим к единому виду, чтобы не было разных слэшей в путях,
+        # из-за которых в библиотеке могут ходить разные дубликаты одной и той же папки
+        input_path = os.path.normpath(input_path)
+
         Globals = LibraryData().globals
         MW = Globals.main_window
         if not pre_load:
@@ -1081,6 +1085,9 @@ class LibraryData(object):
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
+            if MW.library_mode:
+                # выходим из страницы библиотеки для показа картинки
+                MW.toggle_viewer_library_mode()
             MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
             # MW.update_thumbnails_row_relative_offset(fd, only_set=True)
             fd.current_image().update_fav_button_state()
