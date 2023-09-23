@@ -21,9 +21,29 @@
 from _utils import *
 
 
+class Vars():
+
+    Globals = None
+    LibraryData = None
+
+
+
+def get_pureref_boards_root():
+    rootpath = os.path.join(os.path.dirname(__file__), "user_data", Vars.Globals.PUREREF_BOARDS_ROOT)
+    create_pathsubfolders_if_not_exist(rootpath)
+    return rootpath
+
+def load_pureref_boards(libdata):
+
+    Vars.Globals = libdata.globals
+    Vars.LibraryData = libdata
+
+    if os.path.exists(get_pureref_boards_root()):
+        print("loading pureRef boards data")
+
+
 def init(self):
     self.pureref_mode = False
-
 
 
 def draw(self, painter):
@@ -34,7 +54,7 @@ def draw(self, painter):
     painter.setFont(font)
     pen = QPen(QColor(180, 180, 180), 1)
     painter.setPen(pen)
-    painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "PUREREF MODE")
+    painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "PUREREF BOARDS")
     painter.setFont(old_font)
 
 def mousePressEvent(self, event):

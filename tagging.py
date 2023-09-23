@@ -21,7 +21,6 @@
 from _utils import *
 
 import re
-from library_data import LibraryData
 from collections import namedtuple
 
 
@@ -33,14 +32,19 @@ import tempfile
 HTML_FILEPATH = "generated.html"
 HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)
 
+class Vars():
+
+    TAGS_BASE = dict()
+    CURRENT_MAX_TAG_ID = 0
+
+    Globals = None
+    LibraryData = None
 
 def get_tagging_folderpath():
-    filepath = os.path.join(os.path.dirname(__file__), "user_data", "tagging")
-    create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
-    return filepath
+    folderpath = os.path.join(os.path.dirname(__file__), "user_data", Vars.Globals.TAGS_ROOT)
+    create_pathsubfolders_if_not_exist(folderpath)
+    return folderpath
 
-TAGS_BASE = dict()
-CURRENT_MAX_TAG_ID = 0
 
 
 UI_TAGGING_ELEMENTS_IN_A_ROW = 14
@@ -63,7 +67,7 @@ TagListRecord = namedtuple('TagListRecord' , 'md5_str md5_tuple filepath')
 
 def get_tags_for_image_data(image_data):
     return_list = list()
-    for key, tag in TAGS_BASE.items():
+    for key, tag in Vars.TAGS_BASE.items():
         for record in tag.records:
             if record.md5_str == image_data.md5:
                 return_list.append(tag)
@@ -141,10 +145,11 @@ class Tag():
         with open(list_filepath, "w+", encoding="utf8") as file:
             file.write(list_data)
 
-def load_tags_info():
+def load_tags(libdata):
 
-    global TAGS_BASE
-    global CURRENT_MAX_TAG_ID
+
+    Vars.LibraryData = libdata
+    Vars.Globals = libdata.globals
 
     if not os.path.exists(get_tagging_folderpath()):
         print('load_tags_info::', get_tagging_folderpath(), "doesn't exist! Abort")
@@ -191,17 +196,17 @@ def load_tags_info():
                             filepath = parts[1]
                             tag.records.append(TagListRecord(md5_str, convert_md5_to_int_tuple(md5_str), filepath))
 
-            TAGS_BASE[id_int] = tag
+            Vars.TAGS_BASE[id_int] = tag
         else:
             print(f"\t ERROR {filepath}")
 
-        CURRENT_MAX_TAG_ID = max(CURRENT_MAX_TAG_ID, id_int)
+        Vars.CURRENT_MAX_TAG_ID = max(Vars.CURRENT_MAX_TAG_ID, id_int)
 
 
 
 
 def get_base_tags():
-    return list(TAGS_BASE.values())
+    return list(Vars.TAGS_BASE.values())
 
 def get_base_tag(tag_name):
     for tag in get_base_tags():
@@ -306,7 +311,7 @@ def draw_tags_sidebar_overlay(self, painter):
         painter.setPen(QPen(Qt.gray))
         painter.drawText(QPoint(50, 150), "Теги изображения")
 
-        tags_list = LibraryData().current_folder().current_image().tags_list
+        tags_list = Vars.LibraryData.current_folder().current_image().tags_list
         for i, tag in enumerate(tags_list):
             tag_text = f"#{tag.name} ({len(tag.records)})"
             test_rect = test_painter.drawText(QRect(0, 0, 1000, 1000),
@@ -630,7 +635,7 @@ class TaggingForm(QWidget):
 
         tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
         base_tags_list = [tag.name for tag in get_base_tags()]
-        im_data = LibraryData().current_folder().current_image()
+        im_data = Vars.LibraryData.current_folder().current_image()
         before_tags_list = im_data.tags_list
         # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
         im_data.tags_list = []
@@ -671,11 +676,9 @@ class TaggingForm(QWidget):
 
             else:
                 # создаём новый тег в базе и тоже отмечаем
-                global CURRENT_MAX_TAG_ID
-                global TAGS_BASE
-                CURRENT_MAX_TAG_ID += 1
-                tag = Tag(CURRENT_MAX_TAG_ID, tag_text, "")
-                TAGS_BASE[CURRENT_MAX_TAG_ID] = tag
+                Vars.CURRENT_MAX_TAG_ID += 1
+                tag = Tag(Vars.CURRENT_MAX_TAG_ID, tag_text, "")
+                Vars.TAGS_BASE[Vars.CURRENT_MAX_TAG_ID] = tag
 
                 # сохранение в данных изображения и в базе
                 im_data.tags_list.append(tag)
@@ -703,7 +706,7 @@ class TaggingForm(QWidget):
         toggle_overlay(self.parent())
 
     def init_tagging_UI(self):
-        TAGS = LibraryData().current_folder().current_image().tags_list
+        TAGS = Vars.LibraryData.current_folder().current_image().tags_list
         BASE_TAGS = get_base_tags()
 
         found_tags = []

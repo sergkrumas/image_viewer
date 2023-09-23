@@ -76,6 +76,8 @@ class Globals():
     SESSION_FILENAME = "session.txt"
     FAV_FILENAME = "fav.txt"
     COMMENTS_FILENAME = "comments.txt"
+    PUREREF_BOARDS_ROOT = "pureref_boards"
+    TAGS_ROOT = "tags"
     USERROTATIONS_FILENAME = "viewer.ini"
     DEFAULT_PATHS_FILENAME = "default_paths.txt"
 

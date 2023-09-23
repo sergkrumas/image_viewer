@@ -8,6 +8,7 @@
 /user_data/session_old.txt
 /user_data/settings.json
 /user_data/history.log
-/user_data/tagging/*.*
+/user_data/tags/*.*
+/user_data/pureref_boards/*.*
 register_image_viewer.reg
 default_register_image_viewer.reg

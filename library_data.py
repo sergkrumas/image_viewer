@@ -23,6 +23,7 @@ from _utils import *
 import settings_handling
 import tagging
 import comments
+import pureref
 
 from collections import defaultdict
 import datetime
@@ -82,9 +83,10 @@ class LibraryData(object):
             i.fav_folder = None
             i.viewed_list = []
             i.from_library_mode = False
-            tagging.load_tags_info()
+            tagging.load_tags(i)
             i.load_fav_list()
             comments.load_comments_list(i)
+            pureref.load_pureref_boards(i)
             i.load_session_file()
         return cls.instance
 
