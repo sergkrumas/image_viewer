@@ -2115,7 +2115,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 if not hasattr(item_data, "library_cache_version"):
                     item_data.library_cache_version = load_image_respect_orientation(
-                                                                            item_data.filepath)
+                                                                        item_data.filepath)
                 cached = item_data.library_cache_version
                 if cached:
                     source_rect = cached.rect()
@@ -2128,7 +2128,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                         painter.drawPixmap(projected, cached, source_rect)
                     else:
                         painter.setPen(QPen(Qt.white))
-                        painter.drawText(main_rect, Qt.AlignCenter, "Ошибка")
+                        error_msg = f'Ошибка\n {item_data.filename}' 
+                        painter.drawText(main_rect, Qt.AlignCenter, error_msg)
         else:
             painter.setPen(QPen(QColor(Qt.white)))
             if LibraryData().current_folder().images_list:

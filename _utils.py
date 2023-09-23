@@ -83,7 +83,12 @@ def PIL_to_QPixmap(im):
 
 def read_AVIF_to_QPixmap(filepath):
     # `pip install pillow-avif-plugin` required for reading
-    return PIL_to_QPixmap(Image.open(filepath))
+    pm = QPixmap(0, 0)
+    try:
+        pm = PIL_to_QPixmap(Image.open(filepath))
+    except PIL.UnidentifiedImageError:
+        pass 
+    return pm
 
 def get_index_centered_list(listed_data, value_in_list_to_start_from):
     if len(listed_data) == 0:
