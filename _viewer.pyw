@@ -93,7 +93,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     LOWER_SCALE_LIMIT = 0.01
     BOTTOM_PANEL_HEIGHT = 160 - 40
     LIMIT_SECONDS = 1.1
-    CLOSE_BUTTON_RADIUS = 50
+    CORNER_BUTTON_RADIUS = 50
 
     LIBRARY_FOLDER_ITEM_HEIGHT = 140
     TOP_FIELD_HEIGHT = BOTTOM_FIELD_HEIGHT = 0
@@ -118,10 +118,19 @@ class MainWindow(QMainWindow, UtilsMixin):
     )*LOADING_MULT
 
     class pages():
-        LIBRARY_PAGE = 'LIBRARYPAGE'
-        VIEWER_PAGE = 'VIEWERPAGE'
         START_PAGE = 'STARTPAGE'
+        VIEWER_PAGE = 'VIEWERPAGE'
         PUREREF_PAGE = 'PUREREFPAGE'
+        LIBRARY_PAGE = 'LIBRARYPAGE'
+
+        @classmethod
+        def all(cls):
+            return [
+                cls.START_PAGE,
+                cls.VIEWER_PAGE,
+                cls.PUREREF_PAGE,
+                cls.LIBRARY_PAGE
+            ]
 
     class label_type():
         FRAME_NUMBER = 'FRAMENUMBER'
@@ -171,24 +180,43 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
         self.update()
 
-    def over_corner_button(self, corner_attr="topRight"):
-        btn_rect = self.get_corner_button_rect(corner_attr=corner_attr)
+    def over_corner_button(self, corner_attr="topRight", big=False):
+        btn_rect = self.get_corner_button_rect(corner_attr=corner_attr, big=big)
         top_right_corner = getattr(self.rect(), corner_attr)()
         diff = top_right_corner - self.mapped_cursor_pos()
         distance = math.sqrt(pow(diff.x(), 2) + pow(diff.y(), 2))
         client_area = self.rect().intersected(btn_rect)
-        case1 = distance < self.CLOSE_BUTTON_RADIUS
+        n = 4 if big else 1
+        case1 = distance < self.CORNER_BUTTON_RADIUS*n
         case2 = client_area.contains(self.mapped_cursor_pos())
         return case2 and case1
 
-    def get_corner_button_rect(self, corner_attr="topRight"):
+    def handle_menu_item_click(self):
+        curpos = self.mapFromGlobal(QCursor().pos())
+        for page, rect in self.corner_menu_items:
+            if rect.contains(curpos):
+                self.change_page(page)
+
+    def over_corner_menu_item(self, corner_attr="topRight"):
+        curpos = self.mapFromGlobal(QCursor().pos())
+        for page, rect in self.corner_menu_items:
+            if rect.contains(curpos):
+                return True
+        return False
+
+    def over_corner_menu(self, corner_attr="topRight"):
+        return self.over_corner_button(corner_attr=corner_attr, big=True)
+
+    def get_corner_button_rect(self, corner_attr="topRight", big=False):
         top_right_corner = getattr(self.rect(), corner_attr)()
-        btn_rect = QRect(
-            top_right_corner.x() - self.CLOSE_BUTTON_RADIUS,
-            top_right_corner.y() - self.CLOSE_BUTTON_RADIUS,
-            self.CLOSE_BUTTON_RADIUS * 2,
-            self.CLOSE_BUTTON_RADIUS * 2,
-        )
+        n = 4 if big else 1
+        radius = self.CORNER_BUTTON_RADIUS*n
+        btn_rect = QRectF(
+            top_right_corner.x() - radius,
+            top_right_corner.y() - radius,
+            radius*2,
+            radius*2,
+        ).toRect()
         return btn_rect
 
     def draw_corner_button(self, painter, corner_attr="topRight"):
@@ -206,13 +234,13 @@ class MainWindow(QMainWindow, UtilsMixin):
         painter.drawEllipse(btn_rect)
 
         # код для отрисовки креста правой кнопки
-        _value = self.CLOSE_BUTTON_RADIUS/2-5
+        _value = self.CORNER_BUTTON_RADIUS/2-5
         cross_pos = top_right_corner + QPointF(-_value, _value).toPoint()
 
         painter.setPen(QPen(Qt.white, 4, Qt.SolidLine))
         painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
         painter.setOpacity(1.0)
-        _value = int(self.CLOSE_BUTTON_RADIUS/8)
+        _value = int(self.CORNER_BUTTON_RADIUS/8)
         painter.drawLine(
             cross_pos.x()-_value,
             cross_pos.y()-_value,
@@ -231,11 +259,86 @@ class MainWindow(QMainWindow, UtilsMixin):
         font.setPixelSize(20)
         font.setWeight(1900)
         painter.setFont(font)
-        # код для отрисовки левой кнопки
+        # код для отрисовки угловой кнопки
         corner_char = self.current_page[0]
         r = QRect(QPoint(0, 0), btn_rect.bottomRight()-QPoint(20, 20))
         painter.drawText(r, Qt.AlignBottom | Qt.AlignRight, corner_char)
         painter.setFont(oldfont)
+
+    def draw_corner_menu(self, painter, corner_attr="topRight"):
+        self.corner_menu_items = []
+
+        btn_rect = self.get_corner_button_rect(corner_attr=corner_attr, big=True)
+        top_right_corner = getattr(self.rect(), corner_attr)()
+        diff = top_right_corner - self.mapped_cursor_pos()
+
+        if self.over_corner_button(corner_attr=corner_attr):
+            self.corner_menu[corner_attr] = True
+        elif not self.over_corner_button(corner_attr=corner_attr, big=True):
+            self.corner_menu[corner_attr] = False
+
+        if self.corner_menu.get(corner_attr, False):
+            painter.setOpacity(.5)
+        else:
+            # painter.setOpacity(.0)
+            return
+
+        painter.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(btn_rect)
+
+        painter.setOpacity(.8)
+
+        points = []
+        r = self.CORNER_BUTTON_RADIUS*3
+        for i in range(3):
+            degree90 = math.pi/2
+            step = degree90*1/3
+            angle = step*i
+            add = step/2
+            # add = step/4
+            x = r*math.cos(angle+add)
+            y = r*math.sin(angle+add)
+            point = QPointF(x, y).toPoint()
+            points.append(point)
+
+        painter.setPen(QPen(Qt.white, 5))
+        painter.setBrush(Qt.NoBrush)
+
+        oldfont = painter.font()
+        font = QFont(painter.font())
+        font.setPixelSize(20)
+        font.setWeight(1900)
+        painter.setFont(font)
+
+        pages = self.pages.all()
+        pages.remove(self.current_page)
+        points = reversed(points)
+
+        for page, point in zip(pages, points):
+            # painter.drawPoint(point)
+            # код для отрисовки угловой кнопки
+            r = QRect(QPoint(0, 0), QPoint(50, 30))
+            r.moveCenter(point)
+            self.corner_menu_items.append((page, r))
+
+            cursor_pos = self.mapFromGlobal(QCursor().pos())
+            if r.contains(cursor_pos):
+                painter.setOpacity(1.0)
+                label_rect = QRect(r.topLeft(), r.bottomRight() + QPoint())
+                label_rect.setWidth(200)
+                text = page
+                text_rect = label_rect
+            else:
+                painter.setOpacity(.8)
+                text = page[0]
+                text_rect = r
+            # painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, text)
+            painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, text)
+
+        painter.setFont(oldfont)
+
+        painter.setOpacity(1.0)
 
     def prepare_secret_hints(self):
         if not self.secret_hints_list:
@@ -410,6 +513,9 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.image_rect = QRectF()
 
+        self.corner_menu = dict()
+        self.corner_menu_items = []
+
         self.context_menu_stylesheet = """
         QMenu{
             padding: 0px;
@@ -461,6 +567,27 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def is_pureref_page_active(self):
         return self.current_page == self.pages.PUREREF_PAGE
+
+    def cycle_change_page(self):
+        pages = self.pages.all()
+        pages_shifted = self.pages.all()
+        pages_shifted.append(pages_shifted.pop(0))
+        for page, next_page in itertools.cycle(zip(pages, pages_shifted)):
+            if page == self.current_page:
+                break
+        self.change_page(next_page)
+
+    def change_page(self, page):
+        # if self.is_viewer_page_active() and page == self.pages.LIBRARY_PAGE:
+        #     self.prepare_library_page()
+        # if self.is_library_page_active() and page == self.pages.VIEWER_PAGE:
+        #     self.prepare_viewer_page()
+        if page == self.pages.LIBRARY_PAGE:
+            self.prepare_library_page()
+        if page == self.pages.VIEWER_PAGE:
+            self.prepare_viewer_page()
+        self.tranformations_allowed = not self.is_library_page_active()
+        self.current_page = page
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
@@ -1106,17 +1233,6 @@ class MainWindow(QMainWindow, UtilsMixin):
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())
 
-    def toggle_viewer_library_page(self):
-        if not self.is_library_page_active():
-            self.current_page = self.pages.LIBRARY_PAGE
-        else:
-            self.current_page = self.pages.VIEWER_PAGE
-        self.tranformations_allowed = not self.is_library_page_active()
-        if self.is_library_page_active():
-            self.prepare_library_page()
-        else:
-            self.prepare_viewer_page()
-
         # event = QKeyEvent(QEvent.KeyRelease, Qt.Key_Tab, Qt.NoModifier, 0, 0, 0)
         # app = QApplication.instance()
         # app.sendEvent(self, event)
@@ -1180,35 +1296,32 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.update()
 
     def mousePressEventStartPage(self, event):
-        if self.over_corner_button(corner_attr="topLeft"):
-            self.toggle_viewer_library_page()
-            return
-        elif self.over_corner_button():
-            main_window = Globals.main_window
-            main_window.require_window_closing()
-            return
-        else:
 
-            if event.button() == Qt.LeftButton:
-                path = input_path_dialog("", exit=False)
-                if path:
-                    LibraryData().handle_input_data(path)
-                    self.update()
-            elif event.button() == Qt.RightButton:
-                self.open_settings_window()
+        if event.button() == Qt.LeftButton:
+            path = input_path_dialog("", exit=False)
+            if path:
+                LibraryData().handle_input_data(path)
+                self.update()
+        elif event.button() == Qt.RightButton:
+            self.open_settings_window()
 
     def mousePressEvent(self, event):
 
         if event.button() == Qt.LeftButton:
             if self.over_corner_button():
-                main_window = Globals.main_window
-                main_window.require_window_closing()
+                self.require_window_closing()
                 return
 
-            # этот же самый код прописан в eventFilter
             elif self.over_corner_button(corner_attr="topLeft"):
-                self.toggle_viewer_library_page()
+                self.cycle_change_page()
                 return
+
+            elif self.over_corner_menu(corner_attr="topLeft"):
+                self.handle_menu_item_click()
+                return
+
+
+
 
         if self.is_pureref_page_active():
             pureref.mousePressEvent(self, event)
@@ -1216,6 +1329,19 @@ class MainWindow(QMainWindow, UtilsMixin):
         elif self.is_start_page_active():
             self.mousePressEventStartPage(event)
             self.update()
+
+        elif self.is_library_page_active():
+            if self.folders_list:
+                for item_rect, item_data in self.folders_list:
+                    if item_rect.contains(event.pos()):
+                        # здесь устанавливаем текующую папку
+                        LibraryData().choose_that_folder(item_data)
+
+            if self.previews_list:
+                for item_rect, item_data in self.previews_list:
+                    if item_rect.contains(event.pos()):
+                        LibraryData().show_that_preview_on_viewer_page(item_data)
+
 
         elif self.is_viewer_page_active():
             if self.tagging_overlay_mode:
@@ -1227,6 +1353,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             if self.isLeftClickAndCtrl(event):
                 self.region_zoom_in_mousePressEvent(event)
+
             elif self.isLeftClickAndCtrlShift(event):
                 self.image_comment_mousePressEvent(event)
 
@@ -1247,6 +1374,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             )
             if all(cases):
                 self.toggle_to_frame_mode()
+
+
+
 
         self.update()
         super().mousePressEvent(event)
@@ -1338,31 +1468,12 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def eventFilter(self, obj, event):
         if self.is_library_page_active():
-            if event.type() == QEvent.MouseButtonPress:
-                if event.button() == Qt.LeftButton:
-                    if self.over_corner_button(corner_attr="topLeft"):
-                        self.toggle_viewer_library_page()
-                        return True
-                    if self.folders_list:
-                        for item_rect, item_data in self.folders_list:
-                            if item_rect.contains(event.pos()):
-                                # здесь устанавливаем текующую папку
-                                LibraryData().choose_that_folder(item_data)
-                                self.update()
-                                # break
-                                return True
-                    if self.previews_list:
-                        for item_rect, item_data in self.previews_list:
-                            if item_rect.contains(event.pos()):
-                                LibraryData().show_that_preview_on_viewer_page(item_data)
-                                return True
-
-            elif event.type() == QEvent.MouseButtonDblClick:
+            if event.type() == QEvent.MouseButtonDblClick:
                 if self.folders_list:
                     for item_rect, item_data in self.folders_list:
                         if item_rect.contains(event.pos()):
                             # здесь выходим со страницы библиотеки
-                            self.toggle_viewer_library_page()
+                            self.change_page(self.pages.VIEWER_PAGE)
                             self.update()
                             # break
                             return True
@@ -1931,6 +2042,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         elif self.is_pureref_page_active():
             pureref.draw(self, painter)
 
+        # draw page menu
+        self.draw_corner_menu(painter, corner_attr="topLeft")
         # draw close button
         self.draw_corner_button(painter)
         # draw page button
@@ -2030,7 +2143,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         painter.setFont(font)
         if SettingsWindow.get_setting_value('show_console_output'):
             for n, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
-                painter.drawText(QPoint(50, 50+10*n), message)
+                painter.drawText(QPoint(255, 50+10*n), message)
 
     def get_center_x_position(self):
         return int(self.rect().width()/2)
@@ -2531,7 +2644,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         # print('keyReleaseEvent')
         key = event.key()
         if key == Qt.Key_Tab:
-            self.toggle_viewer_library_page()
+            self.cycle_change_page()
         if self.is_library_page_active():
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
@@ -3474,7 +3587,7 @@ def _main():
     if path:
         LibraryData().handle_input_data(path)
     if args.forcelibrarypage:
-        MW.toggle_viewer_library_page()
+        MW.change_page(MW.pages.LIBRARY_PAGE)
 
     # вход в петлю обработки сообщений
     exit_code = app.exec()

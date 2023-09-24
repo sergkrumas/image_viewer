@@ -309,7 +309,7 @@ def draw_tags_sidebar_overlay(self, painter):
         test_painter.setFont(font)
 
         painter.setPen(QPen(Qt.gray))
-        painter.drawText(QPoint(50, 150), "Теги изображения")
+        painter.drawText(QPoint(50, 250), "Теги изображения")
 
         tags_list = Vars.LibraryData.current_folder().current_image().tags_list
         for i, tag in enumerate(tags_list):
@@ -317,7 +317,7 @@ def draw_tags_sidebar_overlay(self, painter):
             test_rect = test_painter.drawText(QRect(0, 0, 1000, 1000),
                                                 Qt.AlignCenter | Qt.AlignVCenter, tag_text)
             # back_rect = QRect(40, 50*(i+3), self.TAGS_SIDEBAR_WIDTH, 40)
-            back_rect = QRect(40, 50*(i+4), test_rect.width()+50, test_rect.height()+10)
+            back_rect = QRect(40, 50*(i+6), test_rect.width()+50, test_rect.height()+10)
             text_rect = back_rect.adjusted(-10, -5, 10, 5)
             painter.setPen(Qt.NoPen)
             painter.setBrush(QBrush(Qt.white))

@@ -612,25 +612,27 @@ class ControlPanel(QWidget, UtilsMixin):
             MW.update()
 
         # global cursor
-        SettingsWindow = self.SettingsWindow
-        settings_win_under_mouse = hasattr(SettingsWindow, 'instance') \
-                                        and SettingsWindow.instance.isVisible() \
-                                        and SettingsWindow.instance.underMouse()
-        if settings_win_under_mouse:
+        # SettingsWindow = self.SettingsWindow
+        # settings_win_under_mouse = hasattr(SettingsWindow, 'instance') \
+        #                                 and SettingsWindow.instance.isVisible() \
+        #                                 and SettingsWindow.instance.underMouse()
+        # if settings_win_under_mouse:
+        #     MW.setCursor(Qt.PointingHandCursor)
+
+        if MW.over_corner_menu_item():
+            MW.setCursor(Qt.PointingHandCursor)
+        elif MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
             MW.setCursor(Qt.PointingHandCursor)
         elif MW.is_library_page_active():
-            if MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
-                MW.setCursor(Qt.PointingHandCursor)
-            elif MW.previews_list_active_item:
+            if MW.previews_list_active_item:
                 MW.setCursor(Qt.PointingHandCursor)
             else:
                 MW.setCursor(Qt.ArrowCursor)
-        else:
+
+        elif MW.is_viewer_page_active():
             if MW.region_zoom_in_input_started:
                 MW.setCursor(Qt.CrossCursor)
             elif any(btn.underMouse() for btn in self.buttons_list):
-                MW.setCursor(Qt.PointingHandCursor)
-            elif MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
                 MW.setCursor(Qt.PointingHandCursor)
             elif self.thumbnails_row_clicked(define_cursor_shape=True):
                 MW.setCursor(Qt.PointingHandCursor)
@@ -640,6 +642,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 MW.setCursor(Qt.SizeAllCursor)
             else:
                 MW.setCursor(Qt.ArrowCursor)
+        else:
+            MW.setCursor(Qt.ArrowCursor)
         self.update()
 
     def opacity_handler(self):

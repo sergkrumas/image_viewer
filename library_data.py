@@ -256,7 +256,8 @@ class LibraryData(object):
         fd._index = fd.images_list.index(image_data)
         # change mode to preview
         MW = self.globals.main_window
-        MW.toggle_viewer_library_page()
+        MW.change_page(MW.pages.VIEWER_PAGE)
+
         self.on_library_page = True
 
     def show_next_image(self):
@@ -889,7 +890,7 @@ class LibraryData(object):
             MW = Globals.main_window
             if MW.is_library_page_active():
                 # выходим из страницы библиотеки для показа картинки
-                MW.toggle_viewer_library_page()
+                MW.change_page(MW.pages.VIEWER_PAGE)
             MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
             # MW.update_thumbnails_row_relative_offset(fd, only_set=True)
             fd.current_image().update_fav_button_state()
