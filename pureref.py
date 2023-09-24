@@ -44,6 +44,7 @@ def load_pureref_boards(libdata):
 
 def init(self):
     self.pureref_mode = False
+    pass
 
 
 def draw(self, painter):

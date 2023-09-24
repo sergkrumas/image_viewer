@@ -23,6 +23,7 @@
 
 
 from _utils import *
+import help_text
 
 
 class ControlPanelButton(QPushButton):
@@ -348,7 +349,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def toggle_help(self):
         MW = self.globals.main_window
-        MW.help_mode = not MW.help_mode
+        help_text.toggle_infopanel(self.globals.main_window)
         MW.update()
 
     def quick_show(self):
