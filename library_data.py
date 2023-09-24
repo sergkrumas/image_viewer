@@ -424,7 +424,7 @@ class LibraryData(object):
         MW = self.globals.main_window
         cf = LibraryData().current_folder()
         if cf.fav:
-            MW.show_center_label('Нельзя удалять изображение находясь в папке Избранное')
+            MW.show_center_label('Нельзя удалять изображение находясь в папке Избранное', error=True)
             return
         else:
             LibraryData().choose_previous_folder()

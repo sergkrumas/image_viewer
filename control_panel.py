@@ -433,7 +433,7 @@ class ControlPanel(QWidget, UtilsMixin):
         elif status == "rejected":
             self.favorite_btn.setText("+")
             self.favorite_btn.id = "favorite"
-            MW.show_center_label("Файлы с таким расширением нельзя добавлять в избранное!")
+            MW.show_center_label("Файлы с таким расширением нельзя добавлять в избранное!", error=True)
         MW.update()
 
     def show_in_folder(self):

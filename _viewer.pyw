@@ -364,7 +364,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.CENTER_LABEL_TIME_LIMIT = 2
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT - 1
-        self.center_label_info_type = "scale" #["scale", "playspeed", "framenumber"]
+        self.center_label_info_type = self.label_type.SCALE
+        self.center_label_error = False
 
         SettingsWindow.settings_init(self)
 
@@ -1567,7 +1568,6 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.show_center_label(self.label_type.PLAYSPEED)
             if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
                 self.do_scale_image(scroll_value)
-                self.show_center_label(self.label_type.SCALE)
             elif no_mod and not self.left_button_pressed:
                 self.do_scroll_images_list(scroll_value)
 
@@ -1797,6 +1797,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 self.hint_center_position = ((t1 + t2)/2).toPoint()
 
+        self.show_center_label(self.label_type.SCALE)
+
         self.activate_or_reset_secret_hint()
 
         self.update()
@@ -1846,6 +1848,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         del p
         del pic
 
+        # backplate
         opacity = self.scale_label_opacity()
         if not large:
             painter.setOpacity(0.6*opacity)
@@ -1857,7 +1860,10 @@ class MainWindow(QMainWindow, UtilsMixin):
             r = QRectF(r)
             path.addRoundedRect(r, RADIUS, RADIUS)
             # draw rounded backplate
-            c = QColor(80, 80, 80)
+            if self.center_label_error:
+                c = QColor(0, 0, 0)
+            else:
+                c = QColor(80, 80, 80)
             painter.setPen(Qt.NoPen)
             painter.setBrush(QBrush(c))
             painter.drawPath(path)
@@ -1874,9 +1880,13 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.setPen(QPen(c))
             painter.setOpacity(1.0)
         else:
+            if self.center_label_error:
+                end_value = QColor(QColor(200, 0, 0))
+            else:
+                end_value = QColor(Qt.white)
             color = self.interpolate_values(
                 QColor(0xFF, 0xA0, 0x00),
-                QColor(Qt.white),
+                end_value,
                 self.scale_label_color()
             )
             painter.setPen(color)
@@ -2462,7 +2472,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         else:
             self.animated_or_not_animated_close(QApplication.instance().exit)
 
-    def show_center_label(self, info_type):
+    def show_center_label(self, info_type, error=False):
+        self.center_label_error = error
         self.center_label_info_type = info_type
         # show center label on screen
         self.center_label_time = time.time()
@@ -2548,11 +2559,9 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if key == Qt.Key_Up:
                     main_window = Globals.main_window
                     main_window.do_scale_image(0.05, cursor_pivot=False)
-                    self.show_center_label(MW.label_type.SCALE)
                 elif key == Qt.Key_Down:
                     main_window = Globals.main_window
                     main_window.do_scale_image(-0.05, cursor_pivot=False)
-                    self.show_center_label(MW.label_type.SCALE)
                 elif key == Qt.Key_Right:
                     if event.modifiers() & Qt.AltModifier:
                         LibraryData().show_viewed_image_next()
@@ -2671,7 +2680,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 ]
             )
         else:
-            self.show_center_label('Отмена!\nАнимационные эффекты отключены в настройках')
+            self.show_center_label('Отмена!\nАнимационные эффекты отключены в настройках', error=True)
 
     def mirror_current_image(self, ctrl_pressed):
         if self.pixmap:
@@ -2690,7 +2699,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def save_inframed_image(self, use_screen_scale, reset_path):
         if not self.image_data.filepath or self.error:
-            self.show_center_label("Невозможно сохранить: нет файла или файл не найден")
+            self.show_center_label("Невозможно сохранить: нет файла или файл не найден", error=True)
             return
         path = self.image_data.filepath
         pixmap = self.get_rotated_pixmap()
@@ -2798,7 +2807,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             QApplication.clipboard().setPixmap(pixmap)
         else:
             label_msg = 'Отмена! Функция не реализована для анимационного контента'
-            self.show_center_label(label_msg)
+            self.show_center_label(label_msg, error=True)
 
     def paste_from_clipboard(self):
         if self.pixmap:
