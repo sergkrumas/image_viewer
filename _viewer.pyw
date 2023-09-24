@@ -123,8 +123,10 @@ class MainWindow(QMainWindow, UtilsMixin):
         START_PAGE = 'STARTPAGE'
         PUREREF_PAGE = 'PUREREFPAGE'
 
-    class center_label_type():
-        pass
+    class label_type():
+        FRAME_NUMBER = 'FRAMENUMBER'
+        PLAYSPEED = 'PLAYSPEED'
+        SCALE = 'SCALE'
 
     def dragEnterEvent(self, event):
             if event.mimeData().hasUrls:
@@ -628,7 +630,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.image_center_position = self.orig_pos
             self.region_zoom_in_init()
             self.update()
-            self.show_center_label("scale")
+            self.show_center_label(MW.label_type.SCALE)
             # self.setCursor(Qt.ArrowCursor)
 
     def build_input_rect(self):
@@ -673,7 +675,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 self.image_center_position = center_pos
                 self.image_scale = scale
-            self.show_center_label("scale")
+            self.show_center_label(MW.label_type.SCALE)
 
     def region_zoom_in_mousePressEvent(self, event):
         if not self.zoom_region_defined:
@@ -1551,15 +1553,15 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
                     self.do_scroll_images_list(scroll_value)
-                if self.left_button_pressed:
+                if self.left_button_pressed and self.animated:
                     self.do_scroll_playbar(scroll_value)
-                    self.show_center_label("framenumber")
-                if shift and ctrl:
+                    self.show_center_label(self.label_type.FRAME_NUMBER)
+                if shift and ctrl and self.animated:
                     self.do_scroll_playspeed(scroll_value)
-                    self.show_center_label("playspeed")
+                    self.show_center_label(self.label_type.PLAYSPEED)
                 if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
                     self.do_scale_image(scroll_value)
-                    self.show_center_label("scale")
+                    self.show_center_label(self.label_type.SCALE)
                 elif no_mod and not self.left_button_pressed:
                     self.do_scroll_images_list(scroll_value)
 
@@ -2309,14 +2311,14 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.draw_center_point(painter, self.image_center_position)
             # draw scale label
             if self.image_center_position:
-                if self.center_label_info_type == "scale":
+                if self.center_label_info_type == self.label_type.SCALE:
                     value = math.ceil(self.image_scale*100)
                     # "{:.03f}"
                     text = f"{value:,}%".replace(',', ' ')
-                elif self.center_label_info_type == "playspeed":
+                elif self.center_label_info_type == self.label_type.PLAYSPEED and self.animated:
                     speed = self.movie.speed()
                     text = f"speed {speed}%"
-                elif self.center_label_info_type == "framenumber":
+                elif self.center_label_info_type == self.label_type.FRAME_NUMBER and self.animated:
                     frame_num = self.movie.currentFrameNumber()+1
                     frame_count = self.movie.frameCount()
                     text = f"frame {frame_num}/{frame_count}"
@@ -2540,11 +2542,11 @@ class MainWindow(QMainWindow, UtilsMixin):
                 if key == Qt.Key_Up:
                     main_window = Globals.main_window
                     main_window.do_scale_image(0.05, cursor_pivot=False)
-                    self.show_center_label("scale")
+                    self.show_center_label(MW.label_type.SCALE)
                 elif key == Qt.Key_Down:
                     main_window = Globals.main_window
                     main_window.do_scale_image(-0.05, cursor_pivot=False)
-                    self.show_center_label("scale")
+                    self.show_center_label(MW.label_type.SCALE)
                 elif key == Qt.Key_Right:
                     if event.modifiers() & Qt.AltModifier:
                         LibraryData().show_viewed_image_next()

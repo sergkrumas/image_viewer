@@ -330,17 +330,17 @@ class ControlPanel(QWidget, UtilsMixin):
     def zoom_in(self):
         MW = self.globals.main_window
         MW.do_scale_image(0.05, cursor_pivot=False)
-        MW.show_center_label("scale")
+        MW.show_center_label(MW.label_type.SCALE)
 
     def zoom_out(self):
         MW = self.globals.main_window
         MW.do_scale_image(-0.05, cursor_pivot=False)
-        MW.show_center_label("scale")
+        MW.show_center_label(MW.label_type.SCALE)
 
     def set_original_scale(self):
         MW = self.globals.main_window
         MW.set_original_scale()
-        MW.show_center_label("scale")
+        MW.show_center_label(MW.label_type.SCALE)
 
     def show_settings_window(self):
         MW = self.globals.main_window
