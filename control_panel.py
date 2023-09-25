@@ -589,8 +589,9 @@ class ControlPanel(QWidget, UtilsMixin):
         self.touched = 0
 
         self.quick_show_flag = False
-        self.start_click_index = -1
-        self.start_click_pos = None
+
+        self.group_selecting = False
+        self.cursor_rect_index = None
 
     def control_panel_timer_handler(self):
         self.opacity_handler()
@@ -658,6 +659,13 @@ class ControlPanel(QWidget, UtilsMixin):
             return
 
         if not main_window.STNG_autohide_control_panel:
+            self.window_opacity = 1.0
+            setOpacity(self.window_opacity)
+            return
+
+        # для поддержки UX-фичи, которая даёт возможность начать выделение миниатюрок
+        # на территории главного окна, а не на территории окна миниатюрок
+        if self.group_selecting:
             self.window_opacity = 1.0
             setOpacity(self.window_opacity)
             return
@@ -737,21 +745,66 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.begin(self)
         folder_data = self.LibraryData().current_folder()
         main_window = self.globals.main_window
-        if main_window.STNG_draw_control_panel_backplate:
+        if main_window.STNG_draw_control_panel_backplate or self.group_selecting:
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
+
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
         self.thumbnails_row_drawing(painter, folder_data)
         painter.end()
 
+    def selection_MousePressEvent(self, event, override=False):
+        if event.buttons() == Qt.LeftButton:
+            if event.modifiers() & Qt.ControlModifier:
+                folder_data = self.LibraryData().current_folder()
+                for image_data in folder_data.images_list:
+                    image_data._touched = False
+
+                self.group_selecting = True
+                pos = self.mapped_cursor_pos()
+                if override:
+                    pos = self.mapFromGlobal(override)
+                    pos.setY(2) # для отрисовки, чтобы рамка выделения не вываливалась одной своей стороной
+                self.oldCursorPos = pos
+        self.update()
+
+    def selection_MouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            if self.group_selecting:
+                selection_rect = build_valid_rect(self.oldCursorPos, self.mapped_cursor_pos())
+                self.thumbnails_row_clicked(selection_rect=selection_rect)
+        self.update()
+
+    def selection_MouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if self.group_selecting:
+                self.group_selecting = False
+                selection_rect = build_valid_rect(self.oldCursorPos, self.mapped_cursor_pos())
+                self.thumbnails_row_clicked(selection_rect=selection_rect)
+
+                folder_data = self.LibraryData().current_folder()
+                for image_data in folder_data.images_list:
+                    image_data._touched = False
+
+        self.update()
+
     def mousePressEvent(self, event):
-        if self.globals.main_window.is_library_page_active():
+        MW = self.globals.main_window
+        if MW.is_library_page_active():
             super().mousePressEvent(event)
-        else:
-            self.start_click_pos = event.pos()
-            self.start_click_index = self.thumbnails_row_clicked(get_index=True, shift_cursor=False)
+        elif MW.is_viewer_page_active():
+            self.selection_MousePressEvent(event)
             return
-        # убрал здесь return, чтобы на странице библиотеки нижняя плашка выделялась
+        # убрал здесь return, чтобы на странице библиотеки мышкой можно быдо выделить папку, находящаяся с самом низу на месте панели управления
 
     def mouseMoveEvent(self, event):
+        MW = self.globals.main_window
+        if MW.is_library_page_active():
+            super().mouseMoveEvent(event)
+        elif MW.is_viewer_page_active():
+            self.selection_MouseMoveEvent(event)
         # super().mouseMoveEvent(event)
         return
 
@@ -759,10 +812,13 @@ class ControlPanel(QWidget, UtilsMixin):
                     library_page_rect=None, current_index=None, draw_mirror=True,
                     additional_y_offset=30):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
+        AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+
+        is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
 
         if imgs_to_show is None:
             return
-        if isinstance(imgs_to_show, self.LibraryData.FolderData):
+        elif isinstance(imgs_to_show, self.LibraryData.FolderData):
             # library folders rows and control panel row
             folder_data = imgs_to_show
             current_index = folder_data.get_current_index()
@@ -770,9 +826,11 @@ class ControlPanel(QWidget, UtilsMixin):
             if not folder_data.images_list:
                 return
             images_list = imgs_to_show.images_list
+            _images_list_selected = folder_data._images_list_selected
         else:
             # history row
             overrided_current_index = True
+            _images_list_selected = None
             images_list = imgs_to_show
 
         # закомментировано из-за вызова get_index_centered_list в модуле LibraryData,
@@ -786,6 +844,7 @@ class ControlPanel(QWidget, UtilsMixin):
         # first_thm = images_list[0].get_thumbnail()
         # if not first_thm:
         #     return
+
 
         mouse_over_control_button = False
         if library_page_rect:
@@ -804,7 +863,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     if btn.underMouse():
                         mouse_over_control_button = True
                         break
-        # нужно для того, чтобы не было искажений
+        # нужно для того, чтобы не было искажений картинки
         s_thumb_rect = QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
 
         cursor_pos = self.mapFromGlobal(QCursor().pos())
@@ -815,13 +874,10 @@ class ControlPanel(QWidget, UtilsMixin):
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(current_thumb_rect)
 
-        current_drag_and_drop_index = -1
-        if isinstance(self, ControlPanel) and self.start_click_pos:
-            current_drag_and_drop_index = self.thumbnails_row_clicked(get_index=True)
 
         painter.setBrush(QBrush(QColor(0, 0, 0)))
         painter.setPen(Qt.NoPen)
-        saved_thumb_rect = None
+
         for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
             if not thumbnail:
@@ -842,27 +898,45 @@ class ControlPanel(QWidget, UtilsMixin):
                 offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
             thumb_rect = QRectF(int(offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
+            if image_data._selected and not is_call_from_main_window:
+                thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+                # специальные параметры, чтобы увеличенное изоражение не косоёбило
+                # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
+                percentage = AUGMENTED_THUBNAIL_INCREMENT/(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+                _offset = percentage*THUMBNAIL_WIDTH
+                x = _offset/2
+                y = 0
+                w = THUMBNAIL_WIDTH - _offset
+                h = THUMBNAIL_WIDTH
+                s_thumb_rect_ = QRectF(x, y, w, h).toRect()
+
+            else:
+                thumb_rect_ = thumb_rect
+                s_thumb_rect_ = s_thumb_rect
+
             # если миниатюра помещается в отведённой зоне library_page_rect
-            if library_page_rect.contains(thumb_rect.center()):
+            if library_page_rect.contains(thumb_rect_.center()):
                 highlighted = thumb_rect.contains(cursor_pos)
-                if (highlighted or pos_x) and not mouse_over_control_button:
+                if (highlighted or is_call_from_main_window or _images_list_selected) and not mouse_over_control_button:
                     painter.setOpacity(1.0)
                 else:
                     painter.setOpacity(0.5)
                 # draw thumbnail
                 if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                     painter.drawRect(thumb_rect)
-                if current_drag_and_drop_index == image_index: # and current_drag_and_drop_index != self.start_click_index:
-                    saved_thumb_rect = QRect(thumb_rect)
-                painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
+
+                if image_data._selected:
+                    painter.setOpacity(1.0)
+
+                painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
                 painter.setOpacity(1.0)
-                if isinstance(self, ControlPanel) and self.start_click_index == image_index:
-                    old_brush = painter.brush()
-                    brush = QBrush(Qt.red)
-                    brush.setStyle(Qt.Dense7Pattern)
-                    painter.setBrush(brush)
-                    painter.drawRect(thumb_rect)
-                    painter.setBrush(old_brush)
+                # if isinstance(self, ControlPanel) and self.start_click_index == image_index:
+                #     old_brush = painter.brush()
+                #     brush = QBrush(Qt.red)
+                #     brush.setStyle(Qt.Dense7Pattern)
+                #     painter.setBrush(brush)
+                #     painter.drawRect(thumb_rect)
+                #     painter.setBrush(old_brush)
 
                 if image_index == current_index and self.globals.DEBUG:
                     old_pen = painter.pen()
@@ -916,33 +990,95 @@ class ControlPanel(QWidget, UtilsMixin):
                     painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
                     painter.resetTransform()
                     painter.setOpacity(1.0)
-        if saved_thumb_rect:
-            # рисовании линии и усиков для неё снизу и сверху
-            painter.setPen(QPen(QColor(200, 0, 0), 2))
-            painter.drawLine(saved_thumb_rect.topLeft(), saved_thumb_rect.bottomLeft())
-            p = saved_thumb_rect.topLeft()
+
+        if isinstance(self, ControlPanel) and self.group_selecting:
+            painter.setPen(QPen(Qt.green))
+            painter.setBrush(Qt.NoBrush)
+            rect = QRect(self.oldCursorPos, self.mapped_cursor_pos())
+            painter.drawRect(rect)
+
+        if is_call_from_main_window:
+            return
+
+        cursor_rect = None
+        self.cursor_rect_index = None
+
+        for image_index, image_data in enumerate(itertools.chain(images_list, [self.LibraryData().phantom_image])):
+
+            relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+            offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
+            sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+
+            sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+
+
+            if sel_rect.contains(self.mapped_cursor_pos()):
+
+                if folder_data.check_insert_position(image_index):
+                    cursor_rect = sel_rect
+                    self.cursor_rect_index = image_index
+
+                painter.setOpacity(1.0)
+            else:
+                painter.setOpacity(0.3)
+
+
+
+            if self.globals.DEBUG:
+                painter.setPen(QPen(Qt.green))
+                painter.setBrush(Qt.NoBrush)
+                painter.drawRect(sel_rect)
+
+            painter.setOpacity(1.0)
+
+        if cursor_rect and _images_list_selected:
+            # отрисовка курсора для вставки
+            painter.setPen(QPen(QColor(200, 0, 0), 4))
+            a = cursor_rect.center() - QPoint(0, cursor_rect.height()//2)
+            b = cursor_rect.center() + QPoint(0, cursor_rect.height()//2)
+            painter.drawLine(a, b)
+            p = a
             painter.drawLine(p + QPoint(5, -3), p)
             painter.drawLine(p + QPoint(-5, -3), p)
-            p = saved_thumb_rect.bottomLeft()
+            p = b
             painter.drawLine(p + QPoint(5, 3), p)
             painter.drawLine(p + QPoint(-5, 3), p)
-            painter.setPen(Qt.NoPen)
 
-    def thumbnails_row_clicked(self,
-                                define_cursor_shape=False,
-                                drag_and_drop=False,
-                                get_index=False,
-                                shift_cursor=True):
+            if self.globals.DEBUG:
+                pp = a + QPoint(0, -15)
+                pp_rect = QRect(0, 0, 20, 20)
+                pp_rect.moveCenter(pp)
+                painter.fillRect(pp_rect, QBrush(Qt.black))
+                painter.drawText(pp_rect, Qt.AlignCenter | Qt.AlignVCenter, str(self.cursor_rect_index))
+
+    def thumbnails_row_clicked(
+                    self,
+                    define_cursor_shape=False,
+                    # select=False,
+                    selection_rect=None,
+                    click=False
+            ):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
+        AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+
         folder_data = self.LibraryData().current_folder()
+        _images_list_selected = folder_data._images_list_selected
         images_list = folder_data.images_list
         current_index = folder_data.get_current_index()
         r = self.rect()
         check_rect = r.adjusted(-THUMBNAIL_WIDTH, -THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
         pos = QCursor().pos()
         cursor_pos = self.mapFromGlobal(pos)
-        if get_index and shift_cursor:
-            cursor_pos += QPoint(THUMBNAIL_WIDTH//2, 0)
+
+        def toggle_selection_flag(im_data, rect_select=False):
+
+            im_data._selected = not im_data._selected
+            if im_data._selected:
+                _images_list_selected.append(im_data)
+            else:
+                _images_list_selected.remove(im_data)
+
+
         for image_index, image_data in enumerate(images_list):
             thumbnail = image_data.get_thumbnail()
             # ради анимационного эффекта пришлось разделить выражение
@@ -954,39 +1090,55 @@ class ControlPanel(QWidget, UtilsMixin):
                 relative_offset_x = folder_data.relative_thumbnails_row_offset_x
             offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
             d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
-            if get_index:
-                if d_rect.contains(cursor_pos):
-                    return image_index
-                    break
-            if drag_and_drop:
-                if d_rect.contains(cursor_pos):
-                    dec_index = not d_rect.contains(cursor_pos - QPoint(THUMBNAIL_WIDTH//2, 0))
-                    self.LibraryData().move_image(self.start_click_index, image_index, dec_index)
-                    break
-            if not (get_index or drag_and_drop) and check_rect.contains(d_rect.center()):
-                if d_rect.contains(cursor_pos):
+
+            if image_data._selected:
+                AUGMENTED_THUBNAIL_INCREMENT = 20
+                d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+
+            if check_rect.contains(d_rect.center()):
+                if (d_rect.contains(cursor_pos) and selection_rect is None) or \
+                            (selection_rect is not None and not selection_rect.intersected(d_rect).isNull()):
                     if define_cursor_shape:
                         return True
-                    else:
+                    # elif select:
+                    #     pass
+                    #     # не нужно, потому что прямоугольное выделение решает и этот частный случай
+                    #     # toggle_selection_flag(image_data, rect_select=False)
+                    #     return
+                    elif selection_rect:
+                        if not image_data._touched:
+                            image_data._touched = True
+                            toggle_selection_flag(image_data, rect_select=True)
+                    elif click:
                         self.LibraryData().jump_to_image(image_index)
-                    break
-        if get_index:
-            return None
+                        return
+
 
     def mouseReleaseEvent(self, event):
-        if event.button() != Qt.LeftButton:
-            return
-        if self.distance(event.pos(), self.start_click_pos) > self.globals.THUMBNAIL_WIDTH//2:
-            # перетаскивание миниатюрок
-            self.thumbnails_row_clicked(drag_and_drop=True, shift_cursor=False)
-        else:
-            # обычный клик по иконке
-            self.thumbnails_row_clicked()
+
+        MW = self.globals.main_window
+
+        cf = self.LibraryData().current_folder()
+
+        if MW.is_library_page_active():
+            super().mouseReleaseEvent(event)
+        elif MW.is_viewer_page_active():
+            if event.button() == Qt.LeftButton:
+                self.selection_MouseReleaseEvent(event)
+
+                if self.group_selecting:
+                    pass
+
+                elif (not event.modifiers() & Qt.ControlModifier) and cf._images_list_selected and self.cursor_rect_index is not None:
+                    cf.do_rearrangement(self.cursor_rect_index)
+                    MW.update_thumbnails_row_relative_offset(cf)
+
+                elif event.modifiers() == Qt.NoModifier and not cf._images_list_selected:
+                    self.thumbnails_row_clicked(click=True)
+
         self.update()
-        main_window = self.globals.main_window
-        main_window.update()
-        self.start_click_pos = None
-        self.start_click_index = -1
+        MW.update()
+
         return
 
     def distance(self, p1, p2):

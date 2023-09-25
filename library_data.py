@@ -83,6 +83,8 @@ class LibraryData(object):
             i.fav_folder = None
             i.viewed_list = []
             i.on_library_page = False
+            i.phantom_image = ImageData("", None)
+            i.phantom_image._is_phantom = True
             tagging.load_tags(i)
             i.load_fav_list()
             comments.load_comments_list(i)
@@ -301,24 +303,6 @@ class LibraryData(object):
         if old_current == cf.current_image():
             self.globals.control_panel.quick_show()
         self.add_current_image_to_view_history()
-
-    def move_image(self, before_index, after_index, dec_index):
-        if before_index is None:
-            return
-
-        cf = self.current_folder()
-        # получаем сначала текущее изображение
-        current_image = cf.current_image()
-
-        if dec_index:
-            after_index -=1
-        after_index = max(0, after_index)
-        the_image = cf.images_list[before_index]
-        self.current_folder().images_list.remove(the_image)
-        self.current_folder().images_list.insert(after_index, the_image)
-
-        # оставляем текущую картинку текущей
-        cf.set_current_index(cf.images_list.index(current_image))
 
     def jump_to_image(self, index, leave_history_record=True):
         MW = self.globals.main_window
@@ -936,6 +920,86 @@ class LibraryData(object):
 
 class FolderData():
 
+    def check_insert_position(self, index):
+        cf = self
+        if index == 0:
+            return True
+        if index == len(cf.images_list):
+            return True
+        if cf.images_list[index]._selected:
+            if index > 0 and not cf.images_list[index-1]._selected:
+                return True
+            else:
+                return False
+        return True
+
+    def do_rearrangement(self, insert_index):
+
+        # всегда првоеряемся перед делом
+        if not self.check_insert_position(insert_index):
+            return False
+
+        length = len(self._images_list_selected)
+        msg = f'{insert_index} {length}'
+        # print(msg)
+
+        insert_at_head = insert_index == 0
+        insert_at_tail = insert_index == len(self.images_list)
+
+        # special case handling
+        if not insert_at_tail:
+            special_case = False
+            if self.images_list[insert_index]._selected:
+                if insert_index > 0 and not self.images_list[insert_index-1]._selected:
+                    insert_index -= 1
+                    special_case = True
+        # сначала запоминаем текущее изображение
+        current_image = self.current_image()
+
+        if insert_at_head or insert_at_tail:
+            insert_index_element = None
+        else:
+            # надо запомнить позицию куда (около которой) будет вставка,
+            # и на этой позиции надо найти элемент и запомнить его
+            insert_index_element = self.images_list[insert_index]
+
+        # все отмеченные элементы удалить из списка
+        self.images_list = [im_data for im_data in self.images_list if not im_data._selected]
+
+        if insert_index_element:
+            # найти теперь новый индекс элемента, который запоминали
+            insert_position = self.images_list.index(insert_index_element)
+
+            if special_case:
+                insert_position += 1
+            a = self.images_list[:insert_position]
+            b = self.images_list[insert_position:]
+
+        result = []
+        if insert_index_element:
+            # добавить в этот индекс все удалённые элементы
+            result.extend(a)
+            result.extend(self._images_list_selected)
+            result.extend(b)
+        elif insert_at_head:
+            result.extend(self._images_list_selected)
+            result.extend(self.images_list)
+        elif insert_at_tail:
+            result.extend(self.images_list)
+            result.extend(self._images_list_selected)
+
+        for im_data in self._images_list_selected:
+            im_data._selected = False
+            im_data._touched = False
+        self._images_list_selected.clear()
+
+        self.images_list = result
+
+        # текущей картинке восстанавливаем её статус текущей картинки
+        self.set_current_index(self.images_list.index(current_image))
+
+        return True
+
     def find_in_prev(self, filepath, prev):
         for image_data in prev:
             if os.path.normpath(filepath) == os.path.normpath(image_data.filepath):
@@ -982,8 +1046,7 @@ class FolderData():
         self.previews_done = False
         self.deep_scan = False
         self.viewed_list = []
-        self._touched = False               # обнуляется после отпускания кнопки мыши
-        self._selected = False              # обнуляется после каждого перемещения
+        self._images_list_selected = []
         self.relative_thumbnails_row_offset_x = 0
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
@@ -1174,6 +1237,11 @@ class ImageData():
             self.md5, self.md5_tuple = "", ()
             self.image_metadata = dict()
             self.disk_size = 0
+
+        # UI
+        self._touched = False               # обнуляется после отпускания кнопки мыши
+        self._selected = False              # обнуляется после каждого перемещения
+        self._is_phantom = False
 
     def save_data(self):
         MW = LibraryData().globals.main_window

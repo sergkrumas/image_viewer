@@ -57,6 +57,7 @@ class Globals():
     NO_SOCKETS_CLIENT_DATA_FILENAME = "dat.data"
 
     THUMBNAIL_WIDTH = 50
+    AUGMENTED_THUBNAIL_INCREMENT = 20
     PREVIEW_WIDTH = 200
     USE_SOCKETS = True
     DEBUG = True
@@ -731,7 +732,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             relative_offset_x = -THUMBNAIL_WIDTH*new_index
             folder_data.relative_thumbnails_row_offset_x = relative_offset_x
 
-    def region_zoom_in_init(self):
+    def region_zoom_in_init(self, full=True):
         self.input_rect = None
         self.projected_rect = None
         self.orig_scale = None
@@ -740,6 +741,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.zoom_level = 1.0
         self.region_zoom_in_input_started = False
         self.input_rect_animated = None
+        if full:
+            self.region_zoom_break_activated = False
 
     def region_zoom_in_cancel(self):
         if self.input_rect:
@@ -758,7 +761,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                 self.image_center_position = self.orig_pos
             self.region_zoom_in_init()
             self.update()
-            self.show_center_label(MW.label_type.SCALE)
+            self.show_center_label(self.label_type.SCALE)
             # self.setCursor(Qt.ArrowCursor)
 
     def build_input_rect(self):
@@ -803,7 +806,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 self.image_center_position = center_pos
                 self.image_scale = scale
-            self.show_center_label(MW.label_type.SCALE)
+            self.show_center_label(self.label_type.SCALE)
 
     def region_zoom_in_mousePressEvent(self, event):
         if not self.zoom_region_defined:
@@ -814,13 +817,27 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.orig_pos = self.image_center_position
             # self.setCursor(Qt.CrossCursor)
 
+    def region_zoom_in_UX_breaker_start(self, event):
+        if Globals.control_panel:
+            if Globals.control_panel.frameGeometry().contains(event.pos()):
+                self.region_zoom_in_init(full=False)
+                if not self.region_zoom_break_activated:
+                    self.region_zoom_break_activated = True
+                    pos = self.mapToGlobal(self.INPUT_POINT1)
+                    Globals.control_panel.selection_MousePressEvent(event, override=pos)
+                else:
+                    Globals.control_panel.selection_MouseMoveEvent(event)
+
     def region_zoom_in_mouseMoveEvent(self, event):
-        if not self.zoom_region_defined:
+        if (not self.zoom_region_defined) and not self.region_zoom_break_activated:
             self.INPUT_POINT2 = event.pos()
             self.build_input_rect()
+            self.region_zoom_in_UX_breaker_start(event)
+        if self.region_zoom_break_activated:
+            self.region_zoom_in_UX_breaker_start(event)
 
     def region_zoom_in_mouseReleaseEvent(self, event):
-        if not self.zoom_region_defined:
+        if (not self.zoom_region_defined) and not self.region_zoom_break_activated:
             self.INPUT_POINT2 = event.pos()
             self.build_input_rect()
             if self.INPUT_POINT1 and self.INPUT_POINT2:
@@ -829,6 +846,12 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 self.region_zoom_in_cancel()
             self.region_zoom_in_input_started = False
+
+    def region_zoom_in_UX_breaker_finish(self, event):
+        if self.region_zoom_break_activated:
+            self.region_zoom_break_activated = False
+            Globals.control_panel.selection_MouseReleaseEvent(event)
+            self.region_zoom_in_init()
 
     def region_zoom_in_draw(self, painter):
         if self.input_rect:
@@ -1366,11 +1389,14 @@ class MainWindow(QMainWindow, UtilsMixin):
 
             ready_to_view = self.is_viewer_page_active() and not self.handling_input
             cursor_not_over_image = not self.is_cursor_over_image()
+            not_ctrl_pressed = not self.isLeftClickAndCtrl(event)
+
             cases = (
                 ready_to_view,
                 cursor_not_over_image,
                 self.frameless_mode,
                 self.STNG_doubleclick_toggle,
+                not self.isLeftClickAndCtrl(event),
             )
             if all(cases):
                 self.toggle_to_frame_mode()
@@ -1477,6 +1503,12 @@ class MainWindow(QMainWindow, UtilsMixin):
                             self.update()
                             # break
                             return True
+        elif self.is_viewer_page_active():
+            if event.type() in [QEvent.MouseButtonRelease] and obj is self:
+                # в region_zoom_in_mouseReleaseEvent это не срабатывает,
+                # видимо потому, что кнопка мыши отпущена над окном-ребёнком
+                self.region_zoom_in_UX_breaker_finish(event)
+                return False
         return False
 
     def toggle_to_frame_mode(self):
