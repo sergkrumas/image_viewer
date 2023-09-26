@@ -445,7 +445,9 @@ class ControlPanel(QWidget, UtilsMixin):
     def update_folder_list(self):
         self.LibraryData().update_current_folder()
         MW = self.globals.main_window
+        MW.update_thumbnails_row_relative_offset(self.LibraryData().current_folder(), only_set=True)
         MW.show_center_label("Обновлено")
+        self.update()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1164,6 +1166,9 @@ class ControlPanel(QWidget, UtilsMixin):
         sort_filename_incr = CM.addAction("Сортировать по имени (по возрастанию)")
         sort_cdate_desc = CM.addAction("Сортировать по дате создания (по убыванию)")
         sort_cdate_incr = CM.addAction("Сортировать по дате создания (по возрастанию)")
+        CM.addSeparator()
+        save_images_order = CM.addAction("Сохранить порядок изображений в файл")
+
         checkable_actions = (
             original_order,
             sort_filename_desc,
@@ -1204,6 +1209,8 @@ class ControlPanel(QWidget, UtilsMixin):
             MW.open_settings_window()
         elif action == deep_scan:
             cf.deep_scan = not cf.deep_scan
+        elif action == save_images_order:
+            cf.save_images_order()
         self.globals.control_panel.update()
         MW.update()
 

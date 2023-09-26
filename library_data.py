@@ -802,6 +802,10 @@ class LibraryData(object):
                 dir_path = os.path.basename(image_data.filepath)
                 imd_r_str = f"{dir_path}\n{rotation}\n"
                 data.append(imd_r_str)
+        if os.path.exists(filepath):
+            # приходится вызвать, чтобы не было Permission Denied
+            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL) 
+
         with open(filepath, "w+", encoding="utf8") as f:
             f.write("\n".join(data))
             to_print = f'rotations written to: {filepath}'
@@ -935,6 +939,29 @@ class FolderData():
                 return False
         return True
 
+    def get_images_order_filepath(self):
+        return os.path.normpath(os.path.join(self.folder_path, "viewer_order.ini"))
+
+    def save_images_order(self):
+        data_to_write = []
+        for image_data in self.images_list:
+            if image_data.md5:
+                data_to_write.append(image_data.md5)
+        data_to_write = "\n".join(data_to_write)
+        filepath = self.get_images_order_filepath()
+
+        if os.path.exists(filepath):
+            # приходится вызвать, чтобы не было Permission Denied
+            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL) 
+
+        with open(filepath, "w+", encoding="utf8") as file:
+            file.write(data_to_write)
+
+
+        win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
+        MW = LibraryData().globals.main_window
+        MW.show_center_label('Порядок изображений сохранён в файл')
+
     def do_rearrangement(self, insert_index):
 
         # всегда првоеряемся перед делом
@@ -1002,6 +1029,10 @@ class FolderData():
 
         self.sort_type = 'reordered'
 
+        if settings_handling.SettingsWindow.get_setting_value("autosave_on_reordering"):
+            self.save_images_order()
+
+
         return True
 
     def find_in_prev(self, filepath, prev):
@@ -1033,6 +1064,31 @@ class FolderData():
         LibraryData().remove_progressbar()
         for image_data in self.images_list:
             image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
+
+        images_order_filepath = self.get_images_order_filepath()
+        if os.path.exists(images_order_filepath):
+            hashes = []
+            with open(images_order_filepath, "r", encoding="utf8") as file:
+                hashes = file.read().split("\n")
+            if hashes:
+                found_images = []
+                for hash_value in hashes:
+                    self._find_image_by_hash_and_retrieve(hash_value, found_images)
+
+                images_left_list = self.images_list[:]
+                result = []
+                result.extend(found_images)
+                result.extend(images_left_list)
+
+                self.images_list = result
+                self.sort_type = 'reordered'
+
+    def _find_image_by_hash_and_retrieve(self, hash_value, temp_list):        
+        for image_data in self.images_list:
+            if image_data.md5 == hash_value:
+                temp_list.append(image_data)
+                self.images_list.remove(image_data)
+                break
 
     def __init__(self, folder_path, files,
                     image_filepath=None,
