@@ -121,6 +121,30 @@ def delete_comment(comment):
                 comments_folder.images_list.remove(image)
     store_comments_list()
 
+
+def add_image_to_comments_folder(image_data):
+    comments_folder = None
+    for folder_data in Vars.LibraryData.folders:
+        if folder_data.comm:
+            comments_folder = folder_data
+            break
+    comments_folder.images_list.append(image_data)
+
+def check_lost_image_and_update_base(image_data):
+    _id = image_data_comment_id(image_data)
+    comments = Vars.LibraryData.comments_storage[_id]
+
+    any_changed = False
+    for comment in comments:
+        if not os.path.exists(comment.filepath):
+            comment.filepath = image_data.filepath
+            any_changed = True
+
+    if any_changed:
+        store_comments_list()
+        add_image_to_comments_folder(image_data)
+        Vars.Globals.main_window.show_center_label("Найдено потерянное изображение в базе комментариев!\nБаза обновлена.")
+
 def get_comments_for_image():
     ci = Vars.LibraryData.current_folder().current_image()
     _id = image_data_comment_id(ci)

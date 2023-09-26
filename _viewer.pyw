@@ -1107,6 +1107,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.restore_image_transformations()
         self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
         self.set_window_title(self.current_image_details())
+        if not self.error:
+            comments.check_lost_image_and_update_base(image_data)
         self.update()
 
     def read_image_metadata(self, image_data):
