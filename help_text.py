@@ -23,14 +23,16 @@
 
 from _utils import *
 
-help_info = """
+INFO_ALL_PAGES = """
 ➜ ДЛЯ ВСЕХ СТРАНИЦ
     Esc - Закрытие программы
     Tab - Переход из вьювера на страницу библиотеки и обратно
     Ё - Показать/скрыть настройки
     P - Включает и выключает отображение окна поверх всех окон
     Ctrl+ →/← перенос полноэкранного окна между доступными мониторами
+"""
 
+INFO_VIEWER_PAGE = """
 ➜ СТРАНИЦА ВЬЮВЕРА
     ↑ - Увеличение масштаба текущей картинки
     ↓ - Уменьшение масштаба текущей картинки
@@ -53,19 +55,25 @@ help_info = """
            + Shift - вместо масштаба исходной картинки будет задан масштаб окна
     M - Отразить картинку по горизонтальной оси, + Ctrl - по вертикали
     Alt + →/← - Навигация по истории просмотра
+"""
 
+INFO_LIBRARY_PAGE = """
 ➜ СТРАНИЦА БИБЛИОТЕКИ
     ↑ - Выбор предыдущей папки в библиотеке
     ↓ - Выбор следующей папки в библиотеке
     Shift+Tab - Переключение на следующую по порядку папку в библиотеке
     Delete - Удаляет текущую папку из сессии
     U - Обновить список изображений для текущей папки
+"""
 
+INFO_PUREREF_PAGE = """
 ➜ СТРАНИЦА PUREREF
     В разработке
+"""
 
-
-
+INFO_START_PAGE = """
+➜ СТАРТОВАЯ СТРАНИЦА
+    Не прописано
 """
 
 
@@ -214,6 +222,28 @@ class HelpForm(QWidget):
         text_browser = QPlainTextEdit()
 
         text_browser.setStyleSheet(tb_style)
+
+
+        # сортировка частей документации по порядку:
+        # сначала идёт страница для всех
+        # потом идёт текущая страница
+        # потом все остальные
+        def page_type_to_info(page):
+            return {
+                'STARTPAGE': INFO_START_PAGE,
+                'VIEWERPAGE': INFO_VIEWER_PAGE,
+                'PUREREFPAGE': INFO_PUREREF_PAGE,
+                'LIBRARYPAGE': INFO_LIBRARY_PAGE,
+            }[page]            
+        all_pages = parent.pages.all()
+        pages_to_render = all_pages[:]
+        cur_page = pages_to_render.pop(pages_to_render.index(parent.current_page))
+        pages_to_render.insert(0, cur_page)
+        pages_to_render = [page_type_to_info(page) for page in pages_to_render]
+        pages_to_render.insert(0, INFO_ALL_PAGES)
+
+        help_info = "\n\n".join(pages_to_render)
+
         help_info_data = "\n".join((parent.globals.app_title, parent.globals.github_repo, "\n", help_info))
         text_browser.insertPlainText(f'{help_info_data}')
         font = text_browser.font()
