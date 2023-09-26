@@ -28,7 +28,7 @@ import pureref
 from collections import defaultdict
 import datetime
 import locale
-
+import operator
 
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
@@ -1000,6 +1000,8 @@ class FolderData():
         # текущей картинке восстанавливаем её статус текущей картинки
         self.set_current_index(self.images_list.index(current_image))
 
+        self.sort_type = 'reordered'
+
         return True
 
     def find_in_prev(self, filepath, prev):
@@ -1049,6 +1051,10 @@ class FolderData():
         self.deep_scan = False
         self.viewed_list = []
         self._images_list_selected = []
+
+        self.sort_type = "original"
+        self.sort_type_reversed = False
+
         self.relative_thumbnails_row_offset_x = 0
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
@@ -1086,7 +1092,6 @@ class FolderData():
             # print(to_print)
 
     def do_sort(self, sort_type, reversed=False):
-        import operator
         image_data = self.current_image()
         key_function = None
         if sort_type != "original":

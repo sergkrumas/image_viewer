@@ -1174,18 +1174,19 @@ class ControlPanel(QWidget, UtilsMixin):
         )
         for action in checkable_actions:
             action.setCheckable(True)
-        if current_sort_type == "original":
-            original_order.setChecked(True)
-        elif current_sort_type == "filename" and current_reversed:
-            sort_filename_desc.setChecked(True)
-        elif current_sort_type == "filename" and not current_reversed:
-            sort_filename_incr.setChecked(True)
-        elif current_sort_type == "creation_date" and current_reversed:
-            sort_cdate_desc.setChecked(True)
-        elif current_sort_type == "creation_date" and not current_reversed:
-            sort_cdate_incr.setChecked(True)
-        if cf.deep_scan:
-            deep_scan.setChecked(cf.deep_scan)
+        if current_sort_type != "reordered":
+            if current_sort_type == "original":
+                original_order.setChecked(True)
+            elif current_sort_type == "filename" and current_reversed:
+                sort_filename_desc.setChecked(True)
+            elif current_sort_type == "filename" and not current_reversed:
+                sort_filename_incr.setChecked(True)
+            elif current_sort_type == "creation_date" and current_reversed:
+                sort_cdate_desc.setChecked(True)
+            elif current_sort_type == "creation_date" and not current_reversed:
+                sort_cdate_incr.setChecked(True)
+            if cf.deep_scan:
+                deep_scan.setChecked(cf.deep_scan)
 
         action = CM.exec_(self.mapToGlobal(event.pos()))
         self.contextMenuActivated = False
