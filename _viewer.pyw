@@ -84,7 +84,7 @@ class Globals():
 
     NULL_PIXMAP = None
 
-    app_title = "Krumaserg Image Viewer v0.90 Alpha by Sergei Krumas"
+    app_title = "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 

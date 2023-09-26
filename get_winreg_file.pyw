@@ -16,7 +16,7 @@ data = r"""Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Applications\viewer.pyw\shell\open]
 @="View"
-"FriendlyAppName"="Krumaserg Image Viewer"
+"FriendlyAppName"="Krumassan Image Viewer"
 
 [HKEY_CLASSES_ROOT\Applications\viewer.pyw\shell\open\command]
 @="%s \"%s\\viewer.pyw\" \"%%1\""
