@@ -36,7 +36,7 @@ ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 class ThumbnailsThread(QThread):
     update_signal = pyqtSignal(object)
     threads_pool = []
-    def __init__(self, folder_data, _globals):
+    def __init__(self, folder_data, _globals, run_from_library=False):
         QThread.__init__(self)
         self.needed_thread = True
         self.ui_name = folder_data.folder_path
@@ -44,6 +44,7 @@ class ThumbnailsThread(QThread):
         images_data = folder_data.images_list
         in_process = images_data in [thread.images_data for thread in self.threads_pool]
         previews_done = folder_data.previews_done
+        self.run_from_library = run_from_library
         if in_process or previews_done:
             # предотвращаем запуск второй копии треда
             self.images_data = []
@@ -679,7 +680,7 @@ class LibraryData(object):
     def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance):
 
         current_image = folder_data.current_image()
-        if current_image in folder_data.images_list:
+        if not thread_instance.run_from_library:
             images_list = list(get_index_centered_list(folder_data.images_list,
                                                                       folder_data.current_image()))
         else:
@@ -694,12 +695,13 @@ class LibraryData(object):
             if thread_instance:
                 # switch to main thread
                 thread_instance.msleep(1)
+
             try:
                 # try only for .avif-files
                 source = load_image_respect_orientation(image_data.filepath)
             except:
                 source = QPixmap()
-            if source.width() == 0 or source.height() == 0:
+            if source.isNull():
                 source = Globals.ERROR_PREVIEW_PIXMAP
             if not image_data.is_supported_filetype:
                 source = Globals.NOT_SUPPORTED_PIXMAP

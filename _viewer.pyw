@@ -2647,7 +2647,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.previews_list_active_item = None
         for folder_data in LibraryData().folders:
             images_data = folder_data.images_list
-            ThumbnailsThread(folder_data, Globals).start()
+            ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
 
     def check_scroll_lock(self):
         return windll.user32.GetKeyState(VK_SCROLL)
