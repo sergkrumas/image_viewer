@@ -165,15 +165,15 @@ class LibraryData(object):
     def current_folder(self):
         return self._current_folder
 
-    def pre_choose(self):
+    def before_current_image_changed(self):
         im = LibraryData().current_folder().current_image()
-        im.save_data()
+        im.store_ui_data()
 
-    def post_choose(self):
+    def after_current_image_changed(self):
         MW = self.globals.main_window
         im = LibraryData().current_folder().current_image()
         MW.show_image(im)
-        im.load_data()
+        im.load_ui_data()
         MW.set_window_title(MW.current_image_details())
         MW.update()
 
@@ -192,13 +192,13 @@ class LibraryData(object):
         LibraryData().handle_input_data(path)
 
     def choose_previous_folder(self):
-        # self.pre_choose()
+        # self.before_current_image_changed()
         if self._index > 0:
             self._index -= 1
         else:
             self._index = len(self.folders)-1
         self._current_folder = self.folders[self._index]
-        # self.post_choose()
+        # self.after_current_image_changed()
         MW = self.globals.main_window
         MW.previews_list_active_item = None
         MW.autoscroll_set_or_reset()
@@ -206,13 +206,13 @@ class LibraryData(object):
         MW.update()
 
     def choose_next_folder(self):
-        # self.pre_choose()
+        # self.before_current_image_changed()
         if self._index < len(self.folders)-1:
             self._index += 1
         else:
             self._index = 0
         self._current_folder = self.folders[self._index]
-        # self.post_choose()
+        # self.after_current_image_changed()
         MW = self.globals.main_window
         MW.previews_list_active_item = None
         MW.autoscroll_set_or_reset()
@@ -222,14 +222,14 @@ class LibraryData(object):
     def choose_doom_scroll(self):
         if len(self.folders) == [0, 1]:
             return
-        self.pre_choose()
+        self.before_current_image_changed()
         indexes_it = itertools.cycle(range(len(self.folders)))
         index_ = None
         while index_ != self._index:
             index_ = next(indexes_it)
         self._index = next(indexes_it)
         self._current_folder = self.folders[self._index]
-        self.post_choose()
+        self.after_current_image_changed()
         ThumbnailsThread(self._current_folder, self.globals).start()
         MW = self.globals.main_window
         MW.update()
@@ -247,7 +247,7 @@ class LibraryData(object):
             # show next
             im_data = self.current_folder().current_image()
             MW.show_image(im_data)
-            cf.current_image().load_data()
+            cf.current_image().load_ui_data()
             MW.set_window_title(MW.current_image_details())
             LibraryData.update_current_folder_columns()
             MW.update()
@@ -270,14 +270,14 @@ class LibraryData(object):
         MW.hide_center_label()
         cf = LibraryData().current_folder()
         old_current = cf.current_image()
-        cf.current_image().save_data()
+        cf.current_image().store_ui_data()
         old_center_pos = MW.image_center_position
         im_data = cf.next_image()
         MW.show_image(im_data)
         if MW.isAnimationEffectsAllowed():
-            cf.current_image().load_data(cp=old_center_pos)
+            cf.current_image().load_ui_data(cp=old_center_pos)
         else:
-            cf.current_image().load_data()
+            cf.current_image().load_ui_data()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if old_current == cf.current_image():
@@ -291,14 +291,14 @@ class LibraryData(object):
         MW.hide_center_label()
         cf = LibraryData().current_folder()
         old_current = cf.current_image()
-        cf.current_image().save_data()
+        cf.current_image().store_ui_data()
         old_center_pos = MW.image_center_position
         im_data = cf.previous_image()
         MW.show_image(im_data)
         if MW.isAnimationEffectsAllowed():
-            cf.current_image().load_data(cp=old_center_pos)
+            cf.current_image().load_ui_data(cp=old_center_pos)
         else:
-            cf.current_image().load_data()
+            cf.current_image().load_ui_data()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if old_current == cf.current_image():
@@ -311,15 +311,15 @@ class LibraryData(object):
             return
         MW.hide_center_label()
         cf = LibraryData().current_folder()
-        cf.current_image().save_data()
+        cf.current_image().store_ui_data()
         old_center_pos = MW.image_center_position
         cf.set_current_index(index)
         im_data = cf.current_image()
         MW.show_image(im_data)
         if MW.isAnimationEffectsAllowed():
-            cf.current_image().load_data(cp=old_center_pos)
+            cf.current_image().load_ui_data(cp=old_center_pos)
         else:
-            cf.current_image().load_data()
+            cf.current_image().load_ui_data()
         MW.set_window_title(MW.current_image_details())
         MW.update()
         if leave_history_record:
@@ -366,11 +366,11 @@ class LibraryData(object):
 
         # change folder if needed
         if cf is not selected_im.folder_data:
-            self.pre_choose()
+            self.before_current_image_changed()
             new_fd = selected_im.folder_data
             self._current_folder = new_fd
             self._index = self.folders.index(new_fd)
-            self.post_choose()
+            self.after_current_image_changed()
 
         self.jump_to_image(index, leave_history_record=False)
 
@@ -1250,7 +1250,7 @@ class ImageData():
         self._selected = False              # обнуляется после каждого перемещения
         self._is_phantom = False
 
-    def save_data(self):
+    def store_ui_data(self):
         MW = LibraryData().globals.main_window
         self.scale = MW.image_scale
         self.position = MW.image_center_position - QPointF(MW.width()/2, MW.height()/2).toPoint()
@@ -1259,7 +1259,7 @@ class ImageData():
         if MW.animated:
             self.anim_cur_frame = MW.movie.currentFrameNumber()
 
-    def load_data(self, cp=None):
+    def load_ui_data(self, cp=None):
         MW = LibraryData().globals.main_window
         if self.scale:
             MW.image_scale = self.scale

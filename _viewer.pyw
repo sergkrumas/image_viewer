@@ -578,17 +578,51 @@ class MainWindow(QMainWindow, UtilsMixin):
                 break
         self.change_page(next_page)
 
-    def change_page(self, page):
+    def change_page(self, requested_page):
         # if self.is_viewer_page_active() and page == self.pages.LIBRARY_PAGE:
         #     self.prepare_library_page()
         # if self.is_library_page_active() and page == self.pages.VIEWER_PAGE:
         #     self.prepare_viewer_page()
-        if page == self.pages.LIBRARY_PAGE:
-            self.prepare_library_page()
-        if page == self.pages.VIEWER_PAGE:
-            self.prepare_viewer_page()
+
+        if self.current_page == requested_page:
+            return
+
+        if self.current_page == self.pages.VIEWER_PAGE:
+            self.region_zoom_in_cancel()
+            LibraryData().before_current_image_changed()
+
+
+
+        if requested_page == self.pages.LIBRARY_PAGE:    
+            LibraryData().update_current_folder_columns()
+            self.autoscroll_set_or_reset()
+            Globals.control_panel.setVisible(False)
+            self.previews_list_active_item = None
+            for folder_data in LibraryData().folders:
+                images_data = folder_data.images_list
+                ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
+
+        elif requested_page == self.pages.VIEWER_PAGE:
+            self.viewer_reset() # для показа сообщения о загрузке
+            LibraryData().after_current_image_changed()
+            Globals.control_panel.setVisible(True)
+            LibraryData().add_current_image_to_view_history()
+
+        elif requested_page == self.pages.START_PAGE:
+            pass
+
+        elif requested_page == self.pages.PUREREF_PAGE:
+            pass
+
+
+        if self.current_page == self.pages.START_PAGE and requested_page == self.pages.VIEWER_PAGE:
+            self.restore_image_transformations()
+
+
+
+
         self.tranformations_allowed = not self.is_library_page_active()
-        self.current_page = page
+        self.current_page = requested_page
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
@@ -2627,29 +2661,6 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def hide_center_label(self):
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT
-
-    def prepare_viewer_page(self):
-        MW = Globals.main_window
-        start_page_was_activated = MW.is_start_page_active()
-        if start_page_was_activated:
-            MW.current_page = MW.pages.VIEWER_PAGE
-        MW.viewer_reset() # для показа сообщения о загрузке
-        LibraryData().post_choose()
-        Globals.control_panel.setVisible(True)
-        LibraryData().add_current_image_to_view_history()
-        if start_page_was_activated:
-            MW.restore_image_transformations()
-
-    def prepare_library_page(self):
-        self.region_zoom_in_cancel()
-        LibraryData().update_current_folder_columns()
-        self.autoscroll_set_or_reset()
-        LibraryData().pre_choose()
-        Globals.control_panel.setVisible(False)
-        self.previews_list_active_item = None
-        for folder_data in LibraryData().folders:
-            images_data = folder_data.images_list
-            ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
 
     def check_scroll_lock(self):
         return windll.user32.GetKeyState(VK_SCROLL)
