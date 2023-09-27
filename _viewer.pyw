@@ -607,6 +607,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             LibraryData().after_current_image_changed()
             Globals.control_panel.setVisible(True)
             LibraryData().add_current_image_to_view_history()
+            cf = LibraryData().current_folder()
+            ThumbnailsThread(cf, Globals).start()            
 
         elif requested_page == self.pages.START_PAGE:
             pass
