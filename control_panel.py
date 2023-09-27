@@ -904,7 +904,8 @@ class ControlPanel(QWidget, UtilsMixin):
         multirow = not is_call_from_main_window and self.fullscreen_flag
         draw_mirror = draw_mirror and (not is_call_from_main_window) and (not self.fullscreen_flag)
 
-        ROW_LENGTH = self.calculate_row_length()
+        if not is_call_from_main_window:
+            ROW_LENGTH = self.calculate_row_length()
 
         if imgs_to_show is None:
             return
