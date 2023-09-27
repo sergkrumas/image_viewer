@@ -758,7 +758,7 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
-        self.thumbnails_row_drawing(painter, folder_data)
+        self.thumbnails_drawing(painter, folder_data)
         painter.end()
 
     def selection_MousePressEvent(self, event, override=False):
@@ -814,7 +814,7 @@ class ControlPanel(QWidget, UtilsMixin):
         # super().mouseMoveEvent(event)
         return
 
-    def thumbnails_row_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
+    def thumbnails_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
                     library_page_rect=None, current_index=None, draw_mirror=True,
                     additional_y_offset=30):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH

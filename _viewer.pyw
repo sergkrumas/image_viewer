@@ -2262,7 +2262,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.drawText(text_rect, Qt.AlignLeft, text)
 
             if folder_data.images_list:
-                ControlPanel.thumbnails_row_drawing(
+                ControlPanel.thumbnails_drawing(
                     self, painter, folder_data,
                     pos_x=50+thumb_ui_size,
                     pos_y=scroll_offset + 50+n*H,
@@ -2609,11 +2609,14 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def draw_view_history_row(self, painter):
         viewed_list = LibraryData().get_viewed_list()
-        if viewed_list:
+        offset = 5
+        padding = self.CORNER_BUTTON_RADIUS*2
+        rect = QRect(QPoint(padding, 0), QPoint(self.rect().width()-padding, Globals.THUMBNAIL_WIDTH+20+offset))
+        if viewed_list and rect.contains(self.mapFromGlobal(QCursor().pos())):
             cur_image = LibraryData().current_folder().current_image()
             if cur_image in viewed_list:
                 index = viewed_list.index(cur_image)
-                ControlPanel.thumbnails_row_drawing(
+                ControlPanel.thumbnails_drawing(
                     self,
                     painter,
                     viewed_list,
@@ -2621,8 +2624,12 @@ class MainWindow(QMainWindow, UtilsMixin):
                     pos_y=1,
                     current_index=index,
                     draw_mirror=False,
-                    additional_y_offset=0
+                    additional_y_offset=offset
                 )
+            old_pen = painter.pen()
+            painter.setPen(QPen(Qt.white))
+            painter.drawText(rect, Qt.AlignCenter | Qt.AlignBottom, "история просмотра")
+            painter.setPen(old_pen)
 
     def draw_center_point(self, painter, pos):
         painter.setPen(QPen(Qt.green, 5, Qt.SolidLine))
