@@ -138,6 +138,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         PLAYSPEED = 'PLAYSPEED'
         SCALE = 'SCALE'
 
+        @classmethod
+        def all(cls):
+            return [
+                cls.FRAME_NUMBER,
+                cls.PLAYSPEED,
+                cls.SCALE,
+            ]
+
     def dragEnterEvent(self, event):
             if event.mimeData().hasUrls:
                 event.accept()
@@ -2645,6 +2653,11 @@ class MainWindow(QMainWindow, UtilsMixin):
     def show_center_label(self, info_type, error=False):
         self.center_label_error = error
         self.center_label_info_type = info_type
+        if info_type not in self.label_type.all():
+            # текстовые сообщения показываем дольше
+            self.CENTER_LABEL_TIME_LIMIT = 5
+        else:
+            self.CENTER_LABEL_TIME_LIMIT = 2
         # show center label on screen
         self.center_label_time = time.time()
 
