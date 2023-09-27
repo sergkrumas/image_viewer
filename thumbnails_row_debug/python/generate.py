@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    for i in range(99):
+    for i in range(1500):
 
         i += 1
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         painter.drawRect(pixmap.rect())
         painter.setPen(QPen(Qt.white))
         font = painter.font()
-        font.setPixelSize(150)
+        font.setPixelSize(80)
         painter.setFont(font)
 
         rect = QRect(0, 0, pixmap.width(), pixmap.height())
@@ -52,7 +52,8 @@ if __name__ == "__main__":
 
         painter.end()
 
-        pixmap.save(f"{i:02}.jpeg")
+
+        pixmap.save(f"imgs/{i:05}.jpeg")
 
     # QMessageBox.information(None, "Сообщение", "Выполнено")
     sys.exit()

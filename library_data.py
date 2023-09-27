@@ -804,7 +804,7 @@ class LibraryData(object):
                 data.append(imd_r_str)
         if os.path.exists(filepath):
             # приходится вызвать, чтобы не было Permission Denied
-            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL) 
+            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL)
 
         with open(filepath, "w+", encoding="utf8") as f:
             f.write("\n".join(data))
@@ -952,7 +952,7 @@ class FolderData():
 
         if os.path.exists(filepath):
             # приходится вызвать, чтобы не было Permission Denied
-            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL) 
+            win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_NORMAL)
 
         with open(filepath, "w+", encoding="utf8") as file:
             file.write(data_to_write)
@@ -1083,7 +1083,7 @@ class FolderData():
                 self.images_list = result
                 self.sort_type = 'reordered'
 
-    def _find_image_by_hash_and_retrieve(self, hash_value, temp_list):        
+    def _find_image_by_hash_and_retrieve(self, hash_value, temp_list):
         for image_data in self.images_list:
             if image_data.md5 == hash_value:
                 temp_list.append(image_data)
@@ -1129,6 +1129,19 @@ class FolderData():
     modifiers_attrs = [
         'deep_scan',
     ]
+
+    def get_phantomed_image_list(self):
+        phantom_image = LibraryData().phantom_image
+        return itertools.chain(self.images_list, [phantom_image])
+
+    def get_phantomed_image_rows(self, count):
+        rows = []
+        images = self.images_list
+        for i in range(0, len(images), count):
+            row = images[i:i+count]
+            row.append(LibraryData().phantom_image)
+            rows.append(row)
+        return rows
 
     def get_modifiers(self):
         modifiers = []

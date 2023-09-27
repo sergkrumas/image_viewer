@@ -12,3 +12,4 @@
 /user_data/pureref_boards/*.*
 register_image_viewer.reg
 default_register_image_viewer.reg
+thumbnails_row_debug/python/imgs/*

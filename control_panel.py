@@ -503,7 +503,7 @@ class ControlPanel(QWidget, UtilsMixin):
         effect.setYOffset(0)
         self.control_panel_label.setGraphicsEffect(effect)
 
-        self.buttons_list = [
+        self.all_buttons = [
             self.original_scale_btn,
             self.zoom_out_btn,
             self.zoom_in_btn,
@@ -523,6 +523,8 @@ class ControlPanel(QWidget, UtilsMixin):
             self.update_list_btn,
             self.space_btn_generator(),
         ]
+
+        self.buttons_list = self.all_buttons[:]
 
         style = """
             QPushButton {
@@ -559,7 +561,7 @@ class ControlPanel(QWidget, UtilsMixin):
             _buttons_layout.addWidget(button)
         _buttons_layout.addStretch()
 
-        self.buttons_list =  [but for but in self.buttons_list if but.id != "space"]
+        self.buttons_list = [but for but in self.buttons_list if but.id != "space"]
 
         _main_layout.addLayout(_label_layout)
         _main_layout.addLayout(_buttons_layout)
@@ -574,6 +576,8 @@ class ControlPanel(QWidget, UtilsMixin):
         # _main_layout.setSpacing(10)
 
         self.setLayout(_main_layout)
+
+        self.fullscreen_flag = False
 
         self.place_and_resize()
 
@@ -598,6 +602,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.group_selecting = False
         self.cursor_rect_index = None
+
+        self.multirow_scroll_y = 0
 
     def control_panel_timer_handler(self):
         self.opacity_handler()
@@ -641,7 +647,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 MW.setCursor(Qt.CrossCursor)
             elif any(btn.underMouse() for btn in self.buttons_list):
                 MW.setCursor(Qt.PointingHandCursor)
-            elif self.thumbnails_row_clicked(define_cursor_shape=True):
+            elif self.thumbnails_click(define_cursor_shape=True):
                 MW.setCursor(Qt.PointingHandCursor)
             elif MW.is_cursor_over_image() and \
                     (not MW.is_library_page_active()) and \
@@ -741,17 +747,32 @@ class ControlPanel(QWidget, UtilsMixin):
     def place_and_resize(self):
         MW = self.globals.main_window
         new_width = MW.rect().width()
-        new_height = MW.BOTTOM_PANEL_HEIGHT
+        if self.fullscreen_flag:
+            new_height = MW.rect().height()
+            y_coord = 0
+            self.control_panel_label.setVisible(False)
+            self.buttons_visibility(False)
+        else:
+            new_height = MW.BOTTOM_PANEL_HEIGHT
+            y_coord = MW.rect().height() - MW.BOTTOM_PANEL_HEIGHT
+            self.control_panel_label.setVisible(True)
+            self.buttons_visibility(True)
         self.resize(new_width, new_height)
-        y_coord = MW.rect().height() - MW.BOTTOM_PANEL_HEIGHT
         self.move(0, y_coord)
+
+    def buttons_visibility(self, visibilty):
+        for button in self.all_buttons:
+            button.setVisible(visibilty)
 
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
         folder_data = self.LibraryData().current_folder()
         main_window = self.globals.main_window
-        if main_window.STNG_draw_control_panel_backplate or self.group_selecting:
+
+        if self.fullscreen_flag:
+            painter.fillRect(self.rect(), QBrush(QColor(10, 10, 10)))
+        elif main_window.STNG_draw_control_panel_backplate or self.group_selecting:
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
 
         painter.setRenderHint(QPainter.Antialiasing, True)
@@ -780,7 +801,7 @@ class ControlPanel(QWidget, UtilsMixin):
         if event.buttons() == Qt.LeftButton:
             if self.group_selecting:
                 selection_rect = build_valid_rect(self.oldCursorPos, self.mapped_cursor_pos())
-                self.thumbnails_row_clicked(selection_rect=selection_rect)
+                self.thumbnails_click(selection_rect=selection_rect)
         self.update()
 
     def selection_MouseReleaseEvent(self, event):
@@ -788,13 +809,45 @@ class ControlPanel(QWidget, UtilsMixin):
             if self.group_selecting:
                 self.group_selecting = False
                 selection_rect = build_valid_rect(self.oldCursorPos, self.mapped_cursor_pos())
-                self.thumbnails_row_clicked(selection_rect=selection_rect)
+                self.thumbnails_click(selection_rect=selection_rect)
 
                 folder_data = self.LibraryData().current_folder()
                 for image_data in folder_data.images_list:
                     image_data._touched = False
 
         self.update()
+
+    def wheelEvent(self, event):
+        scroll_value = event.angleDelta().y()/240
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
+        if self.fullscreen_flag:
+            THUMBNAIL_WIDTH = step_value = self.globals.THUMBNAIL_WIDTH
+            AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+            MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
+
+            if scroll_value > 0:
+                self.multirow_scroll_y -= step_value*3
+            else:
+                self.multirow_scroll_y += step_value*3
+
+            cf = self.LibraryData().current_folder()
+            images_list_count = len(cf.images_list)
+
+            count = images_list_count // self.calculate_row_length()
+            # добавляем 2=1+1:
+            # первая 1 это необходимая высота для вычисления общей высоты всех рядов
+            # и ещё одна 1 добавлена для того, чтобы прокручивая было наглядно видно,
+            # что мы докрутили до конца списка при полностью заполненных рядах
+            content_height = (count+2)*(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+            viewer_height = self.rect().height()
+
+            max_value =  (content_height - viewer_height) + MULTIROW_THUMBNAILS_PADDING
+            min_value = - MULTIROW_THUMBNAILS_PADDING
+
+            self.multirow_scroll_y = min(max_value, max(self.multirow_scroll_y, min_value))
 
     def mousePressEvent(self, event):
         MW = self.globals.main_window
@@ -814,13 +867,44 @@ class ControlPanel(QWidget, UtilsMixin):
         # super().mouseMoveEvent(event)
         return
 
+    def multirow_area_width(self):
+        return self.rect().width() - 100
+
+    def calculate_row_length(self):
+        THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
+
+        min_count = 10
+        calculated = (self.multirow_area_width() // THUMBNAIL_WIDTH)-5
+        return max(min_count, calculated)
+
+    def get_multirow_thumbnail_pos(self, index, count):
+
+        THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
+        MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
+        AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+
+        horizontal_offset = (self.rect().width() - THUMBNAIL_WIDTH*count)/2
+
+        x = (index % count)*THUMBNAIL_WIDTH
+        y = (index // count)*(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+
+        x_offset = horizontal_offset + x
+        y_offset = y + MULTIROW_THUMBNAILS_PADDING - self.multirow_scroll_y
+
+        return QPointF(x_offset, y_offset)
+
     def thumbnails_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
                     library_page_rect=None, current_index=None, draw_mirror=True,
                     additional_y_offset=30):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+        MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
 
         is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
+        multirow = not is_call_from_main_window and self.fullscreen_flag
+        draw_mirror = draw_mirror and (not is_call_from_main_window) and (not self.fullscreen_flag)
+
+        ROW_LENGTH = self.calculate_row_length()
 
         if imgs_to_show is None:
             return
@@ -875,7 +959,7 @@ class ControlPanel(QWidget, UtilsMixin):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         if overrided_current_index:
             main_frame_offset_x = r.width()/2-THUMBNAIL_WIDTH/2
-            current_thumb_rect = QRectF(int(main_frame_offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+            current_thumb_rect = QRectF(main_frame_offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
             painter.setPen(QPen(Qt.red, 1))
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(current_thumb_rect)
@@ -884,124 +968,156 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.setBrush(QBrush(QColor(0, 0, 0)))
         painter.setPen(Qt.NoPen)
 
-        for image_index, image_data in enumerate(images_list):
-            thumbnail = image_data.get_thumbnail()
-            if not thumbnail:
-                continue
-            offset_x = 0
-            if pos_x:
-                offset_x = pos_x + THUMBNAIL_WIDTH*image_index
-            else:
-                # ради анимационного эффекта пришлось разделить выражение
-                # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
-                # на зависимую и независимую от current_index части
-                if isinstance(imgs_to_show, self.LibraryData.FolderData):
-                    # control panel row
-                    relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-                else:
-                    # history row
-                    relative_offset_x = -THUMBNAIL_WIDTH*current_index
-                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
-            thumb_rect = QRectF(int(offset_x), additional_y_offset+int(pos_y), THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+        if multirow:
 
-            if image_data._selected and not is_call_from_main_window:
-                thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
-                # специальные параметры, чтобы увеличенное изоражение не косоёбило
-                # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
-                percentage = AUGMENTED_THUBNAIL_INCREMENT/(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
-                _offset = percentage*THUMBNAIL_WIDTH
-                x = _offset/2
-                y = 0
-                w = THUMBNAIL_WIDTH - _offset
-                h = THUMBNAIL_WIDTH
-                s_thumb_rect_ = QRectF(x, y, w, h).toRect()
+            # отрисовка рядов в полноэкранном режиме
+            for image_index, image_data in enumerate(images_list):
+                thumbnail = image_data.get_thumbnail()
+                if not thumbnail:
+                    continue
 
-            else:
-                thumb_rect_ = thumb_rect
-                s_thumb_rect_ = s_thumb_rect
-
-            # если миниатюра помещается в отведённой зоне library_page_rect
-            if library_page_rect.contains(thumb_rect_.center()):
-                highlighted = thumb_rect.contains(cursor_pos)
-                if (highlighted or is_call_from_main_window or _images_list_selected) and not mouse_over_control_button:
-                    painter.setOpacity(1.0)
-                else:
-                    painter.setOpacity(0.5)
-                # draw thumbnail
-                if thumbnail != self.globals.DEFAULT_THUMBNAIL:
-                    painter.drawRect(thumb_rect)
+                thumb_rect = QRectF(
+                        self.get_multirow_thumbnail_pos(image_index, ROW_LENGTH),
+                        QSizeF(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+                    ).toRect()
 
                 if image_data._selected:
-                    painter.setOpacity(1.0)
+                    thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+                    # специальные параметры, чтобы увеличенное изоражение не косоёбило
+                    # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
+                    percentage = AUGMENTED_THUBNAIL_INCREMENT/(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+                    _offset = percentage*THUMBNAIL_WIDTH
+                    x = _offset/2
+                    y = 0
+                    w = THUMBNAIL_WIDTH - _offset
+                    h = THUMBNAIL_WIDTH
+                    s_thumb_rect_ = QRectF(x, y, w, h).toRect()
 
-                painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
-                painter.setOpacity(1.0)
-                # if isinstance(self, ControlPanel) and self.start_click_index == image_index:
-                #     old_brush = painter.brush()
-                #     brush = QBrush(Qt.red)
-                #     brush.setStyle(Qt.Dense7Pattern)
-                #     painter.setBrush(brush)
-                #     painter.drawRect(thumb_rect)
-                #     painter.setBrush(old_brush)
+                else:
+                    thumb_rect_ = thumb_rect
+                    s_thumb_rect_ = s_thumb_rect
 
-                if image_index == current_index and self.globals.DEBUG:
-                    old_pen = painter.pen()
-                    old_brush = painter.brush()
-                    offset = 4
-                    bigger_rect = thumb_rect.adjusted(-offset, -offset, offset, offset)
-                    points = [
-                        bigger_rect.topLeft() + QPoint(offset, 0),
+                if library_page_rect.contains(thumb_rect_.center()):
+                    if thumbnail != self.globals.DEFAULT_THUMBNAIL:
+                        painter.drawRect(thumb_rect_)
+                    painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
 
-                        bigger_rect.topRight() + QPoint(-offset, 0),
-                        bigger_rect.topRight() + QPoint(0, offset),
+        else:
 
-                        bigger_rect.bottomRight() + QPoint(0, -offset),
-                        bigger_rect.bottomRight() + QPoint(-offset, 0),
-
-                        bigger_rect.bottomLeft() + QPoint(offset, 0),
-                        bigger_rect.bottomLeft() + QPoint(0, -offset),
-
-                        bigger_rect.topLeft() + QPoint(0, offset),
-
-                        bigger_rect.topLeft() + QPoint(offset, 0),
-                    ]
-                    painter.setPen(QPen(Qt.red, 1))
-                    painter.setBrush(Qt.NoBrush)
-                    for n, point in enumerate(points[:-1]):
-                        painter.drawLine(point, points[n+1])
-                    painter.setPen(old_pen)
-                    painter.setBrush(old_brush)
-
-                # draw thumbnail mirrored copy
-                if draw_mirror:
-                    thumb_rect = QRectF(
-                        offset_x,
-                        30+THUMBNAIL_WIDTH,
-                        THUMBNAIL_WIDTH,
-                        THUMBNAIL_WIDTH
-                    ).toRect()
-                    if highlighted and not mouse_over_control_button:
-                        painter.setOpacity(0.5)
+            # отрисовка одного ряда в панели управления, в истории прсмотров и в папках библиотеки
+            for image_index, image_data in enumerate(images_list):
+                thumbnail = image_data.get_thumbnail()
+                if not thumbnail:
+                    continue
+                offset_x = 0
+                if pos_x:
+                    offset_x = pos_x + THUMBNAIL_WIDTH*image_index
+                else:
+                    # ради анимационного эффекта пришлось разделить выражение
+                    # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
+                    # на зависимую и независимую от current_index части
+                    if isinstance(imgs_to_show, self.LibraryData.FolderData):
+                        # control panel row
+                        relative_offset_x = folder_data.relative_thumbnails_row_offset_x
                     else:
-                        painter.setOpacity(0.2)
-                    center = thumb_rect.center()
-                    painter.translate(center)
-                    painter.rotate(180)
-                    thumb_rect = QRectF(
-                        -THUMBNAIL_WIDTH+THUMBNAIL_WIDTH/2+1,
-                        -THUMBNAIL_WIDTH+THUMBNAIL_WIDTH/2,
-                        THUMBNAIL_WIDTH, THUMBNAIL_WIDTH
-                    ).toRect()
-                    painter.scale(-1.0, 1.0)
-                    painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
-                    painter.resetTransform()
+                        # history row
+                        relative_offset_x = -THUMBNAIL_WIDTH*current_index
+                    offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
+                thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+
+                if image_data._selected and not is_call_from_main_window:
+                    thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+                    # специальные параметры, чтобы увеличенное изоражение не косоёбило
+                    # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
+                    percentage = AUGMENTED_THUBNAIL_INCREMENT/(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+                    _offset = percentage*THUMBNAIL_WIDTH
+                    x = _offset/2
+                    y = 0
+                    w = THUMBNAIL_WIDTH - _offset
+                    h = THUMBNAIL_WIDTH
+                    s_thumb_rect_ = QRectF(x, y, w, h).toRect()
+
+                else:
+                    thumb_rect_ = thumb_rect
+                    s_thumb_rect_ = s_thumb_rect
+
+                # если миниатюра помещается в отведённой зоне library_page_rect
+                if library_page_rect.contains(thumb_rect_.center()):
+                    highlighted = thumb_rect.contains(cursor_pos)
+                    cases = (
+                                highlighted,
+                                is_call_from_main_window,
+                                _images_list_selected,
+                                not is_call_from_main_window and self.fullscreen_flag,
+                            )
+                    if any(cases) and not mouse_over_control_button:
+                        painter.setOpacity(1.0)
+                    else:
+                        painter.setOpacity(0.5)
+                    # draw thumbnail
+                    if thumbnail != self.globals.DEFAULT_THUMBNAIL:
+                        painter.drawRect(thumb_rect)
+
+                    if image_data._selected:
+                        painter.setOpacity(1.0)
+
+                    painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
                     painter.setOpacity(1.0)
 
-        if isinstance(self, ControlPanel) and self.group_selecting:
-            painter.setPen(QPen(Qt.green))
-            painter.setBrush(Qt.NoBrush)
-            rect = QRect(self.oldCursorPos, self.mapped_cursor_pos())
-            painter.drawRect(rect)
+                    if image_index == current_index and self.globals.DEBUG:
+                        old_pen = painter.pen()
+                        old_brush = painter.brush()
+                        offset = 4
+                        bigger_rect = thumb_rect.adjusted(-offset, -offset, offset, offset)
+                        points = [
+                            bigger_rect.topLeft() + QPoint(offset, 0),
+
+                            bigger_rect.topRight() + QPoint(-offset, 0),
+                            bigger_rect.topRight() + QPoint(0, offset),
+
+                            bigger_rect.bottomRight() + QPoint(0, -offset),
+                            bigger_rect.bottomRight() + QPoint(-offset, 0),
+
+                            bigger_rect.bottomLeft() + QPoint(offset, 0),
+                            bigger_rect.bottomLeft() + QPoint(0, -offset),
+
+                            bigger_rect.topLeft() + QPoint(0, offset),
+
+                            bigger_rect.topLeft() + QPoint(offset, 0),
+                        ]
+                        painter.setPen(QPen(Qt.red, 1))
+                        painter.setBrush(Qt.NoBrush)
+                        for n, point in enumerate(points[:-1]):
+                            painter.drawLine(point, points[n+1])
+                        painter.setPen(old_pen)
+                        painter.setBrush(old_brush)
+
+                    # draw thumbnail mirrored copy
+                    if draw_mirror:
+                        thumb_rect = QRectF(
+                            offset_x,
+                            30+THUMBNAIL_WIDTH,
+                            THUMBNAIL_WIDTH,
+                            THUMBNAIL_WIDTH
+                        ).toRect()
+                        if highlighted and not mouse_over_control_button:
+                            painter.setOpacity(0.5)
+                        else:
+                            painter.setOpacity(0.2)
+                        center = thumb_rect.center()
+                        painter.translate(center)
+                        painter.rotate(180)
+                        thumb_rect = QRectF(
+                            -THUMBNAIL_WIDTH+THUMBNAIL_WIDTH/2+1,
+                            -THUMBNAIL_WIDTH+THUMBNAIL_WIDTH/2,
+                            THUMBNAIL_WIDTH, THUMBNAIL_WIDTH
+                        ).toRect()
+                        painter.scale(-1.0, 1.0)
+                        painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
+                        painter.resetTransform()
+                        painter.setOpacity(1.0)
+
+
 
         if is_call_from_main_window:
             return
@@ -1009,36 +1125,69 @@ class ControlPanel(QWidget, UtilsMixin):
         cursor_rect = None
         self.cursor_rect_index = None
 
-        for image_index, image_data in enumerate(itertools.chain(images_list, [self.LibraryData().phantom_image])):
+        # positions to insert cursor
+        if multirow:
+            image_index = -1
+            image_index_draw = -1
+            image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
+            for ri, image_row in enumerate(image_rows):
+                for iri, image_data in enumerate(image_row):
 
-            relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-            offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
-            sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+                    _ROW_LENGTH = ROW_LENGTH + 1
+                    image_index_draw += 1
+                    image_index += 1
 
-            sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+                    sel_rect = QRectF(
+                            self.get_multirow_thumbnail_pos(image_index_draw, _ROW_LENGTH),
+                            QSizeF(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+                        ).toRect()
+
+                    sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+
+                    if sel_rect.contains(self.mapped_cursor_pos()):
+                        if folder_data.check_insert_position(image_index):
+                            cursor_rect = sel_rect
+                            self.cursor_rect_index = image_index
+                        painter.setOpacity(1.0)
+                    else:
+                        painter.setOpacity(0.3)
+
+                    if self.globals.DEBUG:
+                        painter.setPen(QPen(Qt.green))
+                        painter.setBrush(Qt.NoBrush)
+                        painter.drawRect(sel_rect)
+                    painter.setOpacity(1.0)
 
 
-            if sel_rect.contains(self.mapped_cursor_pos()):
+                image_index -= 1
 
-                if folder_data.check_insert_position(image_index):
-                    cursor_rect = sel_rect
-                    self.cursor_rect_index = image_index
+        else:
+
+            for image_index, image_data in enumerate(folder_data.get_phantomed_image_list()):
+
+                relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
+                sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+
+                sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+
+                if sel_rect.contains(self.mapped_cursor_pos()):
+                    if folder_data.check_insert_position(image_index):
+                        cursor_rect = sel_rect
+                        self.cursor_rect_index = image_index
+                    painter.setOpacity(1.0)
+                else:
+                    painter.setOpacity(0.3)
+
+                if self.globals.DEBUG:
+                    painter.setPen(QPen(Qt.green))
+                    painter.setBrush(Qt.NoBrush)
+                    painter.drawRect(sel_rect)
 
                 painter.setOpacity(1.0)
-            else:
-                painter.setOpacity(0.3)
 
-
-
-            if self.globals.DEBUG:
-                painter.setPen(QPen(Qt.green))
-                painter.setBrush(Qt.NoBrush)
-                painter.drawRect(sel_rect)
-
-            painter.setOpacity(1.0)
-
+        # отрисовка курсора для визуализации места вставки
         if cursor_rect and _images_list_selected:
-            # отрисовка курсора для вставки
             painter.setPen(QPen(QColor(200, 0, 0), 4))
             a = cursor_rect.center() - QPoint(0, cursor_rect.height()//2)
             b = cursor_rect.center() + QPoint(0, cursor_rect.height()//2)
@@ -1057,15 +1206,27 @@ class ControlPanel(QWidget, UtilsMixin):
                 painter.fillRect(pp_rect, QBrush(Qt.black))
                 painter.drawText(pp_rect, Qt.AlignCenter | Qt.AlignVCenter, str(self.cursor_rect_index))
 
-    def thumbnails_row_clicked(
+        # отрисовка прямоугольника выделения
+        if self.group_selecting:
+            painter.setPen(QPen(Qt.green))
+            painter.setBrush(Qt.NoBrush)
+            rect = QRect(self.oldCursorPos, self.mapped_cursor_pos())
+            painter.drawRect(rect)
+
+
+    def thumbnails_click(
                     self,
                     define_cursor_shape=False,
-                    # select=False,
+                    select=False,
                     selection_rect=None,
                     click=False
             ):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+        MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
+
+
+        ROW_LENGTH = self.calculate_row_length()
 
         folder_data = self.LibraryData().current_folder()
         _images_list_selected = folder_data._images_list_selected
@@ -1076,8 +1237,9 @@ class ControlPanel(QWidget, UtilsMixin):
         pos = QCursor().pos()
         cursor_pos = self.mapFromGlobal(pos)
 
-        def toggle_selection_flag(im_data, rect_select=False):
-
+        def toggle_selection_flag(im_data):
+            if not im_data._is_phantom:
+                pass
             im_data._selected = not im_data._selected
             if im_data._selected:
                 _images_list_selected.append(im_data)
@@ -1085,40 +1247,89 @@ class ControlPanel(QWidget, UtilsMixin):
                 _images_list_selected.remove(im_data)
 
 
-        for image_index, image_data in enumerate(images_list):
-            thumbnail = image_data.get_thumbnail()
-            # ради анимационного эффекта пришлось разделить выражение
-            # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
-            # на зависимую и независимую от current_index части
-            if False:
-                relative_offset_x = -THUMBNAIL_WIDTH*current_index
-            else:
-                relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-            offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
-            d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+        is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
+        multirow = not is_call_from_main_window and self.fullscreen_flag
 
-            if image_data._selected:
-                AUGMENTED_THUBNAIL_INCREMENT = 20
-                d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+        if multirow:
 
-            if check_rect.contains(d_rect.center()):
-                if (d_rect.contains(cursor_pos) and selection_rect is None) or \
-                            (selection_rect is not None and not selection_rect.intersected(d_rect).isNull()):
-                    if define_cursor_shape:
-                        return True
-                    # elif select:
-                    #     pass
-                    #     # не нужно, потому что прямоугольное выделение решает и этот частный случай
-                    #     # toggle_selection_flag(image_data, rect_select=False)
-                    #     return
-                    elif selection_rect:
-                        if not image_data._touched:
-                            image_data._touched = True
-                            toggle_selection_flag(image_data, rect_select=True)
-                    elif click:
-                        self.LibraryData().jump_to_image(image_index)
-                        return
+            image_index = -1
+            image_index_draw = -1
+            image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
+            for ri, image_row in enumerate(image_rows):
+                for iri, image_data in enumerate(image_row):
 
+                    # обратить внимание, что именно здесь фантомный элемент в рачёт не берём,
+                    # поэтому здесь единица не прибавляется
+                    _ROW_LENGTH = ROW_LENGTH
+                    image_index_draw += 1
+                    image_index += 1
+
+
+                    d_rect = QRectF(
+                            self.get_multirow_thumbnail_pos(image_index_draw, _ROW_LENGTH),
+                            QSizeF(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+                        ).toRect()
+
+                    d_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+
+                    if image_data._selected:
+                        d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+
+                    case1 = d_rect.contains(cursor_pos) and selection_rect is None
+                    case2 = (selection_rect is not None and not selection_rect.intersected(d_rect).isNull())
+
+                    if case1 or case2:
+                        if define_cursor_shape:
+                            return True
+                        elif select:
+                            # не нужно, потому что прямоугольное выделение решает и этот частный случай
+                            toggle_selection_flag(image_data)
+                            return
+                        elif selection_rect:
+                            if not image_data._touched:
+                                image_data._touched = True
+                                toggle_selection_flag(image_data)
+                        elif click:
+                            self.LibraryData().jump_to_image(image_index)
+                            return
+
+
+                image_index_draw -= 1
+                image_index -= 1
+
+        else:
+
+            for image_index, image_data in enumerate(images_list):
+                thumbnail = image_data.get_thumbnail()
+                # ради анимационного эффекта пришлось разделить выражение
+                # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
+                # на зависимую и независимую от current_index части
+                if False:
+                    relative_offset_x = -THUMBNAIL_WIDTH*current_index
+                else:
+                    relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
+                d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+
+                if image_data._selected:
+                    d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
+
+                case1 = d_rect.contains(cursor_pos) and selection_rect is None
+                case2 = selection_rect is not None and not selection_rect.intersected(d_rect).isNull()
+                if check_rect.contains(d_rect.center()):
+                    if case1 or case2:
+                        if define_cursor_shape:
+                            return True
+                        # elif select:
+                        #     toggle_selection_flag(image_data)
+                        #     return
+                        elif selection_rect:
+                            if not image_data._touched:
+                                image_data._touched = True
+                                toggle_selection_flag(image_data)
+                        elif click:
+                            self.LibraryData().jump_to_image(image_index)
+                            return
 
     def mouseReleaseEvent(self, event):
 
@@ -1140,15 +1351,22 @@ class ControlPanel(QWidget, UtilsMixin):
                     MW.update_thumbnails_row_relative_offset(cf)
 
                 elif event.modifiers() == Qt.NoModifier and not cf._images_list_selected:
-                    self.thumbnails_row_clicked(click=True)
+                    self.thumbnails_click(click=True)
+
+
 
         self.update()
         MW.update()
 
         return
 
-    def distance(self, p1, p2):
-        return math.sqrt((p1.x()-p2.x())**2 + (p1.y()-p2.y())**2)
+    def do_toggle_fullscreen(self):
+        self.fullscreen_flag = not self.fullscreen_flag
+        self.place_and_resize()
+        # if self.fullscreen_flag:
+        #     self.activateWindow()
+        # else:
+        #     self.parent().activateWindow()
 
     def contextMenuEvent(self, event):
         MW = self.globals.main_window
@@ -1170,8 +1388,9 @@ class ControlPanel(QWidget, UtilsMixin):
         sort_filename_incr = CM.addAction("Сортировать по имени (по возрастанию)")
         sort_cdate_desc = CM.addAction("Сортировать по дате создания (по убыванию)")
         sort_cdate_incr = CM.addAction("Сортировать по дате создания (по возрастанию)")
-        CM.addSeparator()
         save_images_order = CM.addAction("Сохранить порядок изображений в файл")
+        CM.addSeparator()
+        toggle_fullscreen = CM.addAction("Отобразить панель во весь экран")
 
         checkable_actions = (
             original_order,
@@ -1180,6 +1399,7 @@ class ControlPanel(QWidget, UtilsMixin):
             sort_cdate_desc,
             sort_cdate_incr,
             deep_scan,
+            toggle_fullscreen,
         )
         for action in checkable_actions:
             action.setCheckable(True)
@@ -1196,10 +1416,14 @@ class ControlPanel(QWidget, UtilsMixin):
                 sort_cdate_incr.setChecked(True)
             if cf.deep_scan:
                 deep_scan.setChecked(cf.deep_scan)
+        toggle_fullscreen.setChecked(self.fullscreen_flag)
+
 
         action = CM.exec_(self.mapToGlobal(event.pos()))
         self.contextMenuActivated = False
-        if action == sort_filename_desc:
+        if action == None:
+            pass
+        elif action == sort_filename_desc:
             cf.do_sort("filename", reversed=True)
         elif action == sort_filename_incr:
             cf.do_sort("filename")
@@ -1215,6 +1439,8 @@ class ControlPanel(QWidget, UtilsMixin):
             cf.deep_scan = not cf.deep_scan
         elif action == save_images_order:
             cf.save_images_order()
+        elif toggle_fullscreen:
+            self.do_toggle_fullscreen()
         self.globals.control_panel.update()
         MW.update()
 

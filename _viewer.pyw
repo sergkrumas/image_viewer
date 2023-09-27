@@ -82,6 +82,8 @@ class Globals():
     USERROTATIONS_FILENAME = "viewer.ini"
     DEFAULT_PATHS_FILENAME = "default_paths.txt"
 
+    MULTIROW_THUMBNAILS_PADDING = 30
+
     NULL_PIXMAP = None
 
     app_title = "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
@@ -591,6 +593,13 @@ class MainWindow(QMainWindow, UtilsMixin):
         #     self.prepare_library_page()
         # if self.is_library_page_active() and page == self.pages.VIEWER_PAGE:
         #     self.prepare_viewer_page()
+        CP = Globals.control_panel
+
+        def cancel_fullscreen_on_control_panel():
+            if CP is not None:
+                if CP.fullscreen_flag:
+                    CP.do_toggle_fullscreen()
+
 
         if self.current_page == requested_page:
             return
@@ -598,10 +607,13 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.current_page == self.pages.VIEWER_PAGE:
             self.region_zoom_in_cancel()
             LibraryData().before_current_image_changed()
+            cancel_fullscreen_on_control_panel()
+
+        elif self.current_page == self.pages.PUREREF_PAGE:
+            cancel_fullscreen_on_control_panel()
 
 
-
-        if requested_page == self.pages.LIBRARY_PAGE:    
+        if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_columns()
             self.autoscroll_set_or_reset()
             Globals.control_panel.setVisible(False)
@@ -616,7 +628,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             Globals.control_panel.setVisible(True)
             LibraryData().add_current_image_to_view_history()
             cf = LibraryData().current_folder()
-            ThumbnailsThread(cf, Globals).start()            
+            ThumbnailsThread(cf, Globals).start()
 
         elif requested_page == self.pages.START_PAGE:
             Globals.control_panel.setVisible(False)
@@ -1252,7 +1264,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.image_center_position -= QPointF(
             (event.oldSize().width() - event.size().width())/2,
             (event.oldSize().height() - event.size().height())/2,
-        ).toPoint()
+        )
 
         if self.is_library_page_active() or True:
             LibraryData().update_current_folder_columns()
@@ -1710,6 +1722,10 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.previews_list_active_item = None
 
     def wheelEvent(self, event):
+
+        if self.check_thumbnails_fullscreen():
+            self.update()
+            return
 
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -2612,7 +2628,10 @@ class MainWindow(QMainWindow, UtilsMixin):
         offset = 5
         padding = self.CORNER_BUTTON_RADIUS*2
         rect = QRect(QPoint(padding, 0), QPoint(self.rect().width()-padding, Globals.THUMBNAIL_WIDTH+20+offset))
-        if viewed_list and rect.contains(self.mapFromGlobal(QCursor().pos())):
+        CP = Globals.control_panel
+        c1 = CP is not None and not CP.fullscreen_flag
+        c2 = rect.contains(self.mapFromGlobal(QCursor().pos()))
+        if all((c1, c2, viewed_list)):
             cur_image = LibraryData().current_folder().current_image()
             if cur_image in viewed_list:
                 index = viewed_list.index(cur_image)
@@ -2693,6 +2712,10 @@ class MainWindow(QMainWindow, UtilsMixin):
     def keyReleaseEvent(self, event):
         # isAutoRepeat даёт отфильтровать ненужные срабатывания
         # иначе при зажатой клавише keyReleaseEvent будет генерироваться без конца
+
+        if self.check_thumbnails_fullscreen():
+            return
+
         if not event.isAutoRepeat():
             self._key_pressed = False
             self._key_unreleased = False
@@ -2746,8 +2769,27 @@ class MainWindow(QMainWindow, UtilsMixin):
                         LibraryData().show_previous_image()
         self.update()
 
+    def check_thumbnails_fullscreen(self):
+        CP = Globals.control_panel
+        if CP is not None and CP.fullscreen_flag:
+            return True
+        return False
+
+    def cancel_thumbnails_fullscreen(self):
+        CP = Globals.control_panel
+        if CP is not None and CP.fullscreen_flag:
+            CP.do_toggle_fullscreen()
+
     def keyPressEvent(self, event):
         key = event.key()
+
+        if self.check_thumbnails_fullscreen():
+            if key == Qt.Key_Escape:
+                self.cancel_thumbnails_fullscreen()
+                self.update()
+
+            return
+
         if self._key_pressed:
             self._key_unreleased = True # зажата
         self._key_pressed = True # нажата
