@@ -864,7 +864,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 THUMBNAIL_WIDTH,
                 THUMBNAIL_WIDTH
             )
-            if (pos_x != 0 and pos_y != 0):
+            if not is_call_from_main_window:
                 for btn in self.buttons_list:
                     if btn.underMouse():
                         mouse_over_control_button = True
