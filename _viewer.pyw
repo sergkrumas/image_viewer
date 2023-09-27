@@ -611,16 +611,14 @@ class MainWindow(QMainWindow, UtilsMixin):
             ThumbnailsThread(cf, Globals).start()            
 
         elif requested_page == self.pages.START_PAGE:
-            pass
+            Globals.control_panel.setVisible(False)
 
         elif requested_page == self.pages.PUREREF_PAGE:
-            pass
+            Globals.control_panel.setVisible(True)
 
 
         if self.current_page == self.pages.START_PAGE and requested_page == self.pages.VIEWER_PAGE:
             self.restore_image_transformations()
-
-
 
 
         self.tranformations_allowed = not self.is_library_page_active()
@@ -1274,22 +1272,11 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.threads_info_watcher()
         if not Globals.USE_SOCKETS:
             ServerOrClient.retrieve_server_data(open_request)
-        self.control_panel_visibility()
         if self.STNG_show_noise_cells and noise:
             self.noise_time += 0.005
             self.update()
         if self.animated:
             self.tick_animation()
-
-    def control_panel_visibility(self):
-        CP = Globals.control_panel
-        if CP:
-            if self.is_start_page_active():
-                if CP.isVisible():
-                    CP.setVisible(False)
-            else:
-                if not CP.isVisible():
-                    CP.setVisible(True)
 
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())
