@@ -453,7 +453,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         self.current_page = self.pages.VIEWER_PAGE
 
-        self.tranformations_allowed = True
+        self.transformations_allowed = True
         self.animated = False
         self.image_translating = False
         self.image_center_position = QPointF(0, 0)
@@ -629,8 +629,9 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.restore_image_transformations()
 
 
-        self.tranformations_allowed = not self.is_library_page_active()
         self.current_page = requested_page
+        # обязательно после задания страницы!
+        self.transformations_allowed = not (self.is_library_page_active() or self.is_start_page_active())
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
@@ -1037,7 +1038,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.movie = QMovie(filepath)
             self.movie.setCacheMode(QMovie.CacheAll)
             self.image_filepath = filepath
-            self.tranformations_allowed = True
+            self.transformations_allowed = True
             self.is_animated_file_valid()
         else:
             if self.movie:
@@ -1065,7 +1066,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         if pixmap and not (pixmap.width() == 0 or pixmap.height() == 0):
             self.pixmap = pixmap
             self.image_filepath = filepath
-            self.tranformations_allowed = True
+            self.transformations_allowed = True
         else:
             if pass_ == 2:
                 raise Exception("Error during openning")
@@ -1080,14 +1081,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.error = True
         self.pixmap = self.generate_info_pixmap(title, msg, no_background=no_background)
         self.image_filepath = None
-        self.tranformations_allowed = False
+        self.transformations_allowed = False
         self.animated = False
         self.restore_image_transformations(correct=False)
 
     def viewer_reset(self, simple=False):
         self.pixmap = None
         self.image_filepath = None
-        self.tranformations_allowed = False
+        self.transformations_allowed = False
         self.animated = False
         self.svg_rendered = False
         self.rotated_pixmap = None
@@ -1135,7 +1136,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                         self.animated = True
                     elif is_svg_file(filepath):
                         self.image_filepath = filepath
-                        self.tranformations_allowed = True
+                        self.transformations_allowed = True
                         self.pixmap = load_svg(filepath,
                                                     scale_factor=self.image_data.svg_scale_factor)
                         self.svg_rendered = True
@@ -1413,7 +1414,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif self.isLeftClickAndCtrlShift(event):
                 self.image_comment_mousePressEvent(event)
 
-            if self.tranformations_allowed:
+            if self.transformations_allowed:
                 if self.is_cursor_over_image():
                     self.image_translating = True
                     self.oldCursorPos = self.mapped_cursor_pos()
@@ -1465,7 +1466,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif self.isLeftClickAndCtrlShift(event) or self.comment_data:
                 self.image_comment_mouseMoveEvent(event)
             elif event.buttons() == Qt.LeftButton:
-                if self.tranformations_allowed and self.image_translating:
+                if self.transformations_allowed and self.image_translating:
                     new =  self.oldElementPos - (self.oldCursorPos - self.mapped_cursor_pos())
                     old = self.image_center_position
                     self.hint_center_position += new-old
@@ -1506,7 +1507,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             elif self.isLeftClickAndCtrlShift(event) or self.comment_data is not None:
                 self.image_comment_mouseReleaseEvent(event)
             elif event.button() == Qt.LeftButton:
-                if self.tranformations_allowed:
+                if self.transformations_allowed:
                     self.image_translating = False
                     self.update()
 
@@ -1791,7 +1792,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         # if not self.is_cursor_over_image():
         #   return
 
-        if not self.tranformations_allowed:
+        if not self.transformations_allowed:
             return
 
         if not override_factor:
