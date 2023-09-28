@@ -19,7 +19,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 from _utils import *
-
+import math
 
 class Vars():
 
@@ -44,19 +44,108 @@ def load_pureref_boards(libdata):
 
 def init(self):
     self.pureref_mode = False
-    pass
 
 
-def draw(self, painter):
-    old_font = painter.font()
-    font = QFont(old_font)
+def draw_stub(self, painter):
     font.setPixelSize(250)
     font.setWeight(1900)
     painter.setFont(font)
     pen = QPen(QColor(180, 180, 180), 1)
     painter.setPen(pen)
     painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "PUREREF BOARDS")
+
+
+def calculate_text_rect(font, max_rect, text, alignment):
+    pic = QPicture()
+    painter = QPainter(pic)
+    painter.setFont(font)
+    text_rect = painter.drawText(max_rect, alignment, text)
+    painter.end()
+    del painter
+    del pic
+    return text_rect
+
+def draw(self, painter):
+    old_font = painter.font()
+    font = QFont(old_font)
+
+    draw_main(self, painter)
+    # draw_stub(self, painter)
+
     painter.setFont(old_font)
+
+def draw_main(self, painter):
+
+    if Vars.Globals.DEBUG:
+        draw_board_origin(self, painter)
+        draw_origin_compass(self, painter)
+
+def draw_origin_compass(self, painter):
+    
+    curpos = self.mapFromGlobal(QCursor().pos())
+
+    pos = self.image_center_position
+
+    def distance(p1, p2):
+        return math.sqrt((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2) 
+
+    # self.image_center_position
+
+    painter.setPen(QPen(QColor(200, 200, 200), 1))
+    painter.drawLine(QPointF(pos).toPoint(), curpos)
+
+    dist = distance(pos, curpos)
+    text = f'{dist:.2f}'
+    font = painter.font()
+    font.setPixelSize(10)
+    painter.setFont(font)
+    max_rect = self.rect()
+    alignment = Qt.AlignCenter
+
+    painter.setPen(QPen(Qt.red))
+
+    text_rect = calculate_text_rect(font, max_rect, text, alignment)
+
+    text_rect.moveCenter(QPointF(curpos).toPoint() + QPoint(0, -10))
+    painter.drawText(text_rect, alignment, text)
+
+
+
+
+
+def draw_board_origin(self, painter):
+    pos = self.image_center_position
+    pen = QPen(QColor(220, 220, 220, 200), 5)
+    painter.setPen(pen)
+    painter.setBrush(Qt.NoBrush)
+
+    offset = QPoint(50, 50)
+    center_rect = QRect(QPointF(pos).toPoint() - offset, QPointF(pos).toPoint() + offset)
+    painter.drawEllipse(center_rect)
+
+    # offset = QPoint(10, 10)
+    # rect = QRect(QPointF(pos).toPoint() - offset, QPointF(pos).toPoint() + offset)
+    # painter.drawRect(rect)
+
+    painter.drawLine(QPointF(pos).toPoint() + QPoint(0, -20), QPointF(pos).toPoint() + QPoint(0, 20))
+    painter.drawLine(QPointF(pos).toPoint() + QPoint(-20, 0), QPointF(pos).toPoint() + QPoint(20, 0))
+
+    font = painter.font()
+    font.setPixelSize(30)
+    font.setWeight(1900)
+    painter.setFont(font)
+    max_rect = self.rect()
+    alignment = Qt.AlignCenter
+
+    text = "НАЧАЛО КООРДИНАТ"
+    text_rect = calculate_text_rect(font, max_rect, text, alignment)
+    text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, -80))
+    painter.drawText(text_rect, alignment, text)
+
+    text = "ЭТОЙ ДОСКИ"
+    text_rect = calculate_text_rect(font, max_rect, text, alignment)
+    text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
+    painter.drawText(text_rect, alignment, text)
 
 def mousePressEvent(self, event):
     pass
