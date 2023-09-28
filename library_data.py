@@ -720,8 +720,8 @@ class LibraryData(object):
                 )
                 thread_instance.update_signal.emit(data)
             # preview
-            ow = source.width()
-            oh = source.height()
+            image_data.source_width = ow = source.width()
+            image_data.source_height = oh = source.height()
             preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
             image_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
             if ow != 0:
@@ -1313,6 +1313,9 @@ class ImageData():
             self.md5, self.md5_tuple = "", ()
             self.image_metadata = dict()
             self.disk_size = 0
+
+        self.source_width = 0
+        self.source_height = 0
 
         # UI
         self._touched = False               # обнуляется после отпускания кнопки мыши

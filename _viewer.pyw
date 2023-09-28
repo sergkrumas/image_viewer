@@ -990,7 +990,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         if not self.image_data.is_supported_filetype:
             if LibraryData.is_text_file(self.image_data.filepath):
                 with open(self.image_data.filepath, "rb") as file:
-                    text = file.read(500).decode("utf-8", "ignore")
+                    text = file.read(500).decode("utf-8", "ignore") + "..."
+
                     label = ""
 
         pxm = QPixmap(size, size)
