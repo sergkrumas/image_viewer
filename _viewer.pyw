@@ -1813,8 +1813,6 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.update()
 
     def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None):
-        # if not self.is_cursor_over_image():
-        #   return
 
         if not self.transformations_allowed:
             return
