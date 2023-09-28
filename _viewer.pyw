@@ -149,10 +149,11 @@ class MainWindow(QMainWindow, UtilsMixin):
             ]
 
     def dragEnterEvent(self, event):
-            if event.mimeData().hasUrls:
-                event.accept()
-            else:
-                event.ignore()
+        mime_data = event.mimeData()
+        if mime_data.hasUrls() or mime_data.hasImage():
+            event.accept()
+        else:
+            event.ignore()
 
     # def dragMoveEvent(self, event):
     #     if event.mimeData().hasUrls():
@@ -162,7 +163,11 @@ class MainWindow(QMainWindow, UtilsMixin):
     #         event.ignore()
 
     def dropEvent(self, event):
-        if event.mimeData().hasUrls():
+        mime_data = event.mimeData()
+        if mime_data.hasImage():
+            image = QImage(event.mimeData().imageData())
+            image.save("data.png")
+        elif event.mimeData().hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
 
@@ -173,6 +178,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                     # if not os.path.isdir(path):
                     #     path = os.path.dirname(path)
                     paths.append(path)
+                else:
+                    print(url.url())
             all_but_last = paths[:-1]
             last_path = paths[-1:]
             to_print = f'Drop Event Data {paths}'
