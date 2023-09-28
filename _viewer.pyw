@@ -1844,35 +1844,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         if not override_factor:
 
-            if not self.STNG_legacy_image_scaling:
-                # Здесь надо задавать image_scale в зависимости от
-                # новой ширины или длины картинки, высчитаннной в процентах
-                # от старой длины или ширины.
-                # Дельта колеса мыши будет определять лишь уменьшение или увеличение
-
-                _pixmap_rect = self.get_rotated_pixmap().rect()
-                _viewport_rect = self.get_image_viewport_rect()
-                _width = _viewport_rect.width()
-                _height = _viewport_rect.height()
-
-                # чем больше scale_speed, тем больше придётся крутить колесо мыши
-                if animated_zoom_enabled:
-                    scale_speed = 2.5
-                else:
-                    scale_speed = 5
-
-                if scroll_value < 0.0:
-                    _new_width = _width*(scale_speed-1)/scale_speed
-                    self.image_scale = _new_width/_pixmap_rect.width()
-                else:
-                    _new_width = _width*scale_speed/(scale_speed-1)
-                    # предохранитель от залипания
-                    if _new_width - float(_width) < 10.0:
-                        _new_width = float(_width) + 10.0
-                    self.image_scale = _new_width/_pixmap_rect.width()
-
-            else:
-                # старый глючный метод со скачками, но зато работает уже очень долго
+            if self.STNG_legacy_image_scaling:
+                # старый глючный метод со скачками зума, но зато работает уже очень долго
 
                 if self.image_scale > 1.0: # если масштаб больше нормального
                     factor = self.image_scale/self.UPPER_SCALE_LIMIT
@@ -1887,12 +1860,40 @@ class MainWindow(QMainWindow, UtilsMixin):
                     else:
                         self.image_scale += 0.05 #0.1
 
-        delta = before_scale - self.image_scale
+            else:
+                # Здесь надо задавать image_scale в зависимости от
+                # новой ширины или длины картинки, высчитаннной в процентах
+                # от старой длины или ширины.
+                # Дельта колеса мыши будет определять лишь уменьшение или увеличение
+
+                _pixmap_rect = self.get_rotated_pixmap().rect()
+                _viewport_rect = self.get_image_viewport_rect()
+                viewport_width = _viewport_rect.width()
+                _height = _viewport_rect.height()
+
+                # чем больше scale_speed, тем больше придётся крутить колесо мыши
+                if animated_zoom_enabled:
+                    scale_speed = 2.5
+                else:
+                    scale_speed = 5
+
+                if scroll_value < 0.0:
+                    _new_width = viewport_width*(scale_speed-1)/scale_speed
+                    self.image_scale = _new_width/_pixmap_rect.width()
+                else:
+                    _new_width = viewport_width*scale_speed/(scale_speed-1)
+                    # предохранитель от залипания
+                    if _new_width - float(viewport_width) < 10.0:
+                        _new_width = float(viewport_width) + 10.0
+                    self.image_scale = _new_width/_pixmap_rect.width()
+
         self.image_scale = min(max(self.LOWER_SCALE_LIMIT, self.image_scale),
                                                                     self.UPPER_SCALE_LIMIT)
+        delta = before_scale - self.image_scale
+
         pixmap_rect = self.get_rotated_pixmap().rect()
-        width = pixmap_rect.width()
-        height = pixmap_rect.height()
+        orig_width = pixmap_rect.width()
+        orig_height = pixmap_rect.height()
 
         if override_factor:
             pivot = QPointF(self.rect().center())
@@ -1925,8 +1926,36 @@ class MainWindow(QMainWindow, UtilsMixin):
             # что не нужно создавать хитровыебанные дельты с множителями,
             # как это сделано чуть выше.
         else:
-            w = p2.x() - p1.x()
-            factor = 1.0 - (before_scale - self.image_scale)*width/w
+            # x от p2 будет всегда больше, чем x от p1 в силу того,
+            # что p1 это верхний левый угол прямоугольника, а p2 это нижний правый угол того же прямоугольника,
+            # и начало системы координат всегда находится ближе к p1
+            current_width = abs(p2.x() - p1.x())
+            # предохранитель на всякий случай
+            current_width = max(1.0, current_width)
+
+            # Переменную factor стоило бы называть delta_factor,
+            # потому что увеличение или уменьшение масштаба всегда идёт от текущего значения масштабирования;
+            # здесь image_scale содержит уже новое значение;
+            factor = 1.0 - (before_scale - self.image_scale)*orig_width/current_width
+            # переменная factor используется как множитель. Если множитель больше 1.0, то будет увеличение,
+            # а если меньше 1.0 и не меньше, и не равен 0.0, то будет уменьшение.
+            # 1.0 в начале выражения выстален именно для того, чтобы определить начальное значение,
+            # которое либо уменьшается стремясь к 0.0, либо увеличивается до бесконечности.
+            # Но как правило, благодаря print(factor) удалось узнать, что
+            # в factor оказываются только значения 1.6 и 0.6 для увеличения и уменьшения соответственно
+            # и проще можно было бы написать
+            # if scroll_value > 0:
+            #     factor = 1.6
+            # else:
+            #     factor = 0.6
+            # главное чтобы эти значения были обратными друг другу. И наверно так и стоило написать,
+            # но в самом начале разработки, торопясь, я изменял image_scale напрямую,
+            # а не задавал image_scale как отношение новой длины к старой длине,
+            # отсюда и ненужные усложнения в коде
+
+            if Globals.DEBUG:
+                scale_delta_factor = factor
+                print(f'scale_delta_factor = {scale_delta_factor:.2f}')
 
         if override_factor:
             factor = override_factor
@@ -1945,7 +1974,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         new_width = abs(p2.x() - p1.x())
         new_height = abs(p2.y() - p1.y())
 
-        image_scale = new_width / width
+        image_scale = new_width / orig_width
         image_center_position = (p1 + p2)/2
 
         # end
