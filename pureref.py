@@ -45,6 +45,9 @@ def load_pureref_boards(libdata):
 def init(self):
     self.pureref_mode = False
 
+    self.board_origin = self.get_center_position()
+    self.board_scale = 1.0
+
 
 def draw_stub(self, painter):
     font.setPixelSize(250)
@@ -84,12 +87,12 @@ def draw_origin_compass(self, painter):
     
     curpos = self.mapFromGlobal(QCursor().pos())
 
-    pos = self.image_center_position
+    pos = self.board_origin
 
     def distance(p1, p2):
         return math.sqrt((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2) 
 
-    # self.image_center_position
+    # self.board_origin
 
     painter.setPen(QPen(QColor(200, 200, 200), 1))
     painter.drawLine(QPointF(pos).toPoint(), curpos)
@@ -114,7 +117,7 @@ def draw_origin_compass(self, painter):
 
 
 def draw_board_origin(self, painter):
-    pos = self.image_center_position
+    pos = self.board_origin
     pen = QPen(QColor(220, 220, 220, 200), 5)
     painter.setPen(pen)
     painter.setBrush(Qt.NoBrush)
@@ -137,12 +140,12 @@ def draw_board_origin(self, painter):
     max_rect = self.rect()
     alignment = Qt.AlignCenter
 
-    text = "НАЧАЛО КООРДИНАТ"
+    text = "НАЧАЛО"
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
     text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, -80))
     painter.drawText(text_rect, alignment, text)
 
-    text = "ЭТОЙ ДОСКИ"
+    text = "КООРДИНАТ"
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
     text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
     painter.drawText(text_rect, alignment, text)
