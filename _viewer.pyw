@@ -611,6 +611,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         if self.current_page == requested_page:
             return
 
+        if self.handling_input:
+            return
+
         if self.current_page == self.pages.VIEWER_PAGE:
             self.region_zoom_in_cancel()
             LibraryData().before_current_image_changed()
