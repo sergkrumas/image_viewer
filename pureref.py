@@ -48,6 +48,8 @@ def init(self):
     self.board_origin = self.get_center_position()
     self.board_scale = 1.0
 
+    self.board_translating = True
+
 
 def draw_stub(self, painter):
     font.setPixelSize(250)
@@ -84,13 +86,13 @@ def draw_main(self, painter):
         draw_origin_compass(self, painter)
 
 def draw_origin_compass(self, painter):
-    
+
     curpos = self.mapFromGlobal(QCursor().pos())
 
     pos = self.board_origin
 
     def distance(p1, p2):
-        return math.sqrt((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2) 
+        return math.sqrt((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2)
 
     # self.board_origin
 
@@ -111,9 +113,6 @@ def draw_origin_compass(self, painter):
 
     text_rect.moveCenter(QPointF(curpos).toPoint() + QPoint(0, -10))
     painter.drawText(text_rect, alignment, text)
-
-
-
 
 
 def draw_board_origin(self, painter):
@@ -151,13 +150,51 @@ def draw_board_origin(self, painter):
     painter.drawText(text_rect, alignment, text)
 
 def mousePressEvent(self, event):
-    pass
+
+    if event.buttons() == Qt.LeftButton:
+        if self.transformations_allowed:
+            self.board_translating = True
+            self.start_cursor_pos = self.mapped_cursor_pos()
+            self.start_origin_pos = self.board_origin
+            self.update()
 
 def mouseMoveEvent(self, event):
-    pass
+
+    if event.buttons() == Qt.LeftButton:
+        if self.transformations_allowed and self.board_translating:
+            end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
+            start_value = self.board_origin
+            # delta = end_value-start_value
+            self.board_origin = end_value
+            self.update()
 
 def mouseReleaseEvent(self, event):
-    pass
+
+    if event.button() == Qt.LeftButton:
+        if self.transformations_allowed:
+            self.board_translating = False
+            self.update()
+
+def do_scale_board(self, scroll_value, ctrl, shift, no_mod):
+
+    curpos = self.mapped_cursor_pos()
+    pivot = curpos
+
+    _board_origin = self.board_origin
+
+    scale_speed = 10.0
+    if scroll_value > 0:
+        factor = scale_speed/(scale_speed-1)
+    else:
+        factor = (scale_speed-1)/scale_speed
+
+
+    _board_origin -= pivot
+    _board_origin = QPointF(_board_origin.x()*factor, _board_origin.y()*factor)
+    _board_origin += pivot
+
+    self.board_origin  = _board_origin
+
 
 def wheelEvent(self, event):
     scroll_value = event.angleDelta().y()/240
@@ -165,6 +202,7 @@ def wheelEvent(self, event):
     shift = event.modifiers() & Qt.ShiftModifier
     no_mod = event.modifiers() == Qt.NoModifier
 
+    do_scale_board(self, scroll_value, ctrl, shift, no_mod)
 
 def mode_enter(self):
     self.pureref_mode = True
