@@ -128,7 +128,7 @@ def draw_content(self, painter, folder_data):
 
             painter.drawRect(image_rect)
 
-            text = f'{image_data.source_width} x {image_data.source_height}'
+            text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
             max_rect = self.rect()
             alignment = Qt.AlignCenter
 
