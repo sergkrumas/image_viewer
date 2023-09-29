@@ -24,7 +24,7 @@
 
 from _utils import *
 import help_text
-
+import pureref
 
 class ControlPanelButton(QPushButton):
     def __init__(self, id, *args, callback=None):
@@ -817,56 +817,6 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.update()
 
-    def wheelEvent(self, event):
-        scroll_value = event.angleDelta().y()/240
-        ctrl = event.modifiers() & Qt.ControlModifier
-        shift = event.modifiers() & Qt.ShiftModifier
-        no_mod = event.modifiers() == Qt.NoModifier
-
-        if self.fullscreen_flag:
-            THUMBNAIL_WIDTH = step_value = self.globals.THUMBNAIL_WIDTH
-            AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
-            MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
-
-            if scroll_value > 0:
-                self.multirow_scroll_y -= step_value*3
-            else:
-                self.multirow_scroll_y += step_value*3
-
-            cf = self.LibraryData().current_folder()
-            images_list_count = len(cf.images_list)
-
-            count = images_list_count // self.calculate_row_length()
-            # добавляем 2=1+1:
-            # первая 1 это необходимая высота для вычисления общей высоты всех рядов
-            # и ещё одна 1 добавлена для того, чтобы прокручивая было наглядно видно,
-            # что мы докрутили до конца списка при полностью заполненных рядах
-            content_height = (count+2)*(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
-            viewer_height = self.rect().height()
-
-            max_value =  (content_height - viewer_height) + MULTIROW_THUMBNAILS_PADDING
-            min_value = - MULTIROW_THUMBNAILS_PADDING
-
-            self.multirow_scroll_y = min(max_value, max(self.multirow_scroll_y, min_value))
-
-    def mousePressEvent(self, event):
-        MW = self.globals.main_window
-        if MW.is_library_page_active():
-            super().mousePressEvent(event)
-        elif MW.is_viewer_page_active():
-            self.selection_MousePressEvent(event)
-            return
-        # убрал здесь return, чтобы на странице библиотеки мышкой можно быдо выделить папку, находящаяся с самом низу на месте панели управления
-
-    def mouseMoveEvent(self, event):
-        MW = self.globals.main_window
-        if MW.is_library_page_active():
-            super().mouseMoveEvent(event)
-        elif MW.is_viewer_page_active():
-            self.selection_MouseMoveEvent(event)
-        # super().mouseMoveEvent(event)
-        return
-
     def multirow_area_width(self):
         return self.rect().width() - 100
 
@@ -1220,7 +1170,8 @@ class ControlPanel(QWidget, UtilsMixin):
                     define_cursor_shape=False,
                     select=False,
                     selection_rect=None,
-                    click=False
+                    click=False,
+                    click_hanlder=None,
             ):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
@@ -1293,6 +1244,8 @@ class ControlPanel(QWidget, UtilsMixin):
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
+                        elif click_hanlder:
+                            click_hanlder(image_data)
 
 
                 image_index_draw -= 1
@@ -1331,6 +1284,62 @@ class ControlPanel(QWidget, UtilsMixin):
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
+                        elif click_hanlder:
+                            click_hanlder(image_data)
+
+
+    def wheelEvent(self, event):
+        scroll_value = event.angleDelta().y()/240
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
+        if self.fullscreen_flag:
+            THUMBNAIL_WIDTH = step_value = self.globals.THUMBNAIL_WIDTH
+            AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
+            MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
+
+            if scroll_value > 0:
+                self.multirow_scroll_y -= step_value*3
+            else:
+                self.multirow_scroll_y += step_value*3
+
+            cf = self.LibraryData().current_folder()
+            images_list_count = len(cf.images_list)
+
+            count = images_list_count // self.calculate_row_length()
+            # добавляем 2=1+1:
+            # первая 1 это необходимая высота для вычисления общей высоты всех рядов
+            # и ещё одна 1 добавлена для того, чтобы прокручивая было наглядно видно,
+            # что мы докрутили до конца списка при полностью заполненных рядах
+            content_height = (count+2)*(THUMBNAIL_WIDTH+AUGMENTED_THUBNAIL_INCREMENT)
+            viewer_height = self.rect().height()
+
+            max_value =  (content_height - viewer_height) + MULTIROW_THUMBNAILS_PADDING
+            min_value = - MULTIROW_THUMBNAILS_PADDING
+
+            self.multirow_scroll_y = min(max_value, max(self.multirow_scroll_y, min_value))
+
+    def mousePressEvent(self, event):
+        MW = self.globals.main_window
+        if MW.is_library_page_active():
+            super().mousePressEvent(event)
+
+        elif MW.is_viewer_page_active():
+            self.selection_MousePressEvent(event)
+            return
+        # убрал здесь return, чтобы на странице библиотеки мышкой можно быдо выделить папку, находящаяся с самом низу на месте панели управления
+
+    def mouseMoveEvent(self, event):
+        MW = self.globals.main_window
+        if MW.is_library_page_active():
+            super().mouseMoveEvent(event)
+
+        elif MW.is_viewer_page_active():
+            self.selection_MouseMoveEvent(event)
+
+        # super().mouseMoveEvent(event)
+        return
 
     def mouseReleaseEvent(self, event):
 
@@ -1338,8 +1347,10 @@ class ControlPanel(QWidget, UtilsMixin):
 
         cf = self.LibraryData().current_folder()
 
+
         if MW.is_library_page_active():
             super().mouseReleaseEvent(event)
+
         elif MW.is_viewer_page_active():
             if event.button() == Qt.LeftButton:
                 self.selection_MouseReleaseEvent(event)
@@ -1354,7 +1365,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 elif event.modifiers() == Qt.NoModifier and not cf._images_list_selected:
                     self.thumbnails_click(click=True)
 
-
+        elif MW.is_pureref_page_active():
+            self.thumbnails_click(click_hanlder=pureref.thumbnails_click_handler)
 
         self.update()
         MW.update()

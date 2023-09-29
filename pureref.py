@@ -147,6 +147,9 @@ def draw_main(self, painter):
     else:
         draw_wait_label(self, painter)
 
+
+    self.draw_center_label_main(painter)
+
 def draw_origin_compass(self, painter):
 
     curpos = self.mapFromGlobal(QCursor().pos())
@@ -240,18 +243,20 @@ def mouseReleaseEvent(self, event):
             self.board_translating = False
             self.update()
 
-def do_scale_board(self, scroll_value, ctrl, shift, no_mod):
+def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor=None):
 
     curpos = self.mapped_cursor_pos()
-    pivot = curpos
+    if pivot is None:
+        pivot = curpos
 
     _board_origin = self.board_origin
 
-    scale_speed = 10.0
-    if scroll_value > 0:
-        factor = scale_speed/(scale_speed-1)
-    else:
-        factor = (scale_speed-1)/scale_speed
+    if factor is None:
+        scale_speed = 10.0
+        if scroll_value > 0:
+            factor = scale_speed/(scale_speed-1)
+        else:
+            factor = (scale_speed-1)/scale_speed
 
     self.board_scale *= factor
 
@@ -273,6 +278,29 @@ def wheelEvent(self, event):
     do_scale_board(self, scroll_value, ctrl, shift, no_mod)
 
 
+def thumbnails_click_handler(image_data):
+
+    self = Vars.Globals.main_window
+    if image_data.board_position is None:
+        Vars.Globals.main_window.show_center_label("Этот элемент не представлен на доске", error=True)
+    else:
+        board_scale = self.board_scale
+
+        image_pos = QPointF(image_data.board_position.x()*board_scale, image_data.board_position.y()*board_scale)
+        viewport_center_pos = self.get_center_position()
+
+        self.board_origin = self.board_origin - image_pos + viewport_center_pos - self.board_origin 
+
+        image_width = image_data.source_width*image_data.board_scale*self.board_scale
+        image_height = image_data.source_height*image_data.board_scale*self.board_scale
+        image_rect = QRect(0, 0, int(image_width), int(image_height))
+        fitted_rect = fit_rect_into_rect(image_rect, self.rect())
+        do_scale_board(self, 0, False, False, False,
+            pivot=viewport_center_pos,
+            factor=fitted_rect.width()/image_rect.width()
+        )
+
+    self.update()
 
 def set_default_viewport_scale(self):
     self.board_scale = 1.0

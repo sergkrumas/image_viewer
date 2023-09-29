@@ -2560,24 +2560,12 @@ class MainWindow(QMainWindow, UtilsMixin):
             # draw image center
             if self.STNG_show_image_center:
                 self.draw_center_point(painter, self.image_center_position)
-            # draw scale label
-            if self.image_center_position:
-                if self.center_label_info_type == self.label_type.SCALE:
-                    value = math.ceil(self.image_scale*100)
-                    # "{:.03f}"
-                    text = f"{value:,}%".replace(',', ' ')
-                elif self.center_label_info_type == self.label_type.PLAYSPEED and self.animated:
-                    speed = self.movie.speed()
-                    text = f"speed {speed}%"
-                elif self.center_label_info_type == self.label_type.FRAME_NUMBER and self.animated:
-                    frame_num = self.movie.currentFrameNumber()+1
-                    frame_count = self.movie.frameCount()
-                    text = f"frame {frame_num}/{frame_count}"
-                else:
-                    text = self.center_label_info_type
-                self.draw_center_label(painter, text)
 
             self.draw_secret_hint(painter)
+
+            # draw center label
+            self.draw_center_label_main(painter)
+
         elif self.movie:
             pass
         else:
@@ -2600,6 +2588,23 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         tagging.draw_tags_sidebar_overlay(self, painter)
         tagging.draw_main(self, painter)
+
+    def draw_center_label_main(self, painter):
+        if self.image_center_position:
+            if self.center_label_info_type == self.label_type.SCALE:
+                value = math.ceil(self.image_scale*100)
+                # "{:.03f}"
+                text = f"{value:,}%".replace(',', ' ')
+            elif self.center_label_info_type == self.label_type.PLAYSPEED and self.animated:
+                speed = self.movie.speed()
+                text = f"speed {speed}%"
+            elif self.center_label_info_type == self.label_type.FRAME_NUMBER and self.animated:
+                frame_num = self.movie.currentFrameNumber()+1
+                frame_count = self.movie.frameCount()
+                text = f"frame {frame_num}/{frame_count}"
+            else:
+                text = self.center_label_info_type
+            self.draw_center_label(painter, text)        
 
     def draw_comments(self, painter):
 
