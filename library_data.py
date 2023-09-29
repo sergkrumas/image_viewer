@@ -223,6 +223,7 @@ class LibraryData(object):
         if len(self.folders) == [0, 1]:
             return
         self.before_current_image_changed()
+        self.save_board_data()
         indexes_it = itertools.cycle(range(len(self.folders)))
         index_ = None
         while index_ != self._index:
@@ -230,9 +231,28 @@ class LibraryData(object):
         self._index = next(indexes_it)
         self._current_folder = self.folders[self._index]
         self.after_current_image_changed()
+        self.load_board_data()
         ThumbnailsThread(self._current_folder, self.globals).start()
         MW = self.globals.main_window
         MW.update()
+
+    def save_board_data(self):
+        cf = self.current_folder()
+        MW = self.globals.main_window
+        cf.board_scale = MW.board_scale
+        cf.board_origin = MW.board_origin
+
+    def load_board_data(self):
+        cf = self.current_folder()
+        MW = self.globals.main_window
+        if cf.board_scale is None:
+            pureref.set_default_viewport_scale(MW)
+        else:
+            MW.board_scale = cf.board_scale
+        if cf.board_origin is None:
+            pureref.set_default_viewport_origin(MW)
+        else:
+            MW.board_origin = cf.board_origin
 
     def delete_current_image(self):
         cf = self.current_folder()

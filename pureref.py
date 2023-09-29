@@ -135,8 +135,6 @@ def draw_content(self, painter, folder_data):
             painter.drawText(image_rect, alignment, text)
 
 
-
-
 def draw_main(self, painter):
 
     if Vars.Globals.DEBUG:
@@ -264,6 +262,8 @@ def do_scale_board(self, scroll_value, ctrl, shift, no_mod):
     self.board_origin  = _board_origin
     # print(self.board_scale)
 
+    self.update()
+
 def wheelEvent(self, event):
     scroll_value = event.angleDelta().y()/240
     ctrl = event.modifiers() & Qt.ControlModifier
@@ -272,17 +272,13 @@ def wheelEvent(self, event):
 
     do_scale_board(self, scroll_value, ctrl, shift, no_mod)
 
-def mode_enter(self):
-    self.pureref_mode = True
-    # тут можно стопать таймеры анимации и прочее
-
-    self.update()
-
-def mode_leave(self):
-    self.pureref_mode = False
 
 
-    self.update()
+def set_default_viewport_scale(self):
+    self.board_scale = 1.0
+
+def set_default_viewport_origin(self):
+    self.board_origin = QPointF(300, 300)
 
 
 

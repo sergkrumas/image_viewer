@@ -618,6 +618,8 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         elif self.current_page == self.pages.PUREREF_PAGE:
             cancel_fullscreen_on_control_panel()
+            LibraryData().save_board_data()
+
 
 
         if requested_page == self.pages.LIBRARY_PAGE:
@@ -628,6 +630,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
                 ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
+            self.transformations_allowed = False
 
         elif requested_page == self.pages.VIEWER_PAGE:
             self.viewer_reset() # для показа сообщения о загрузке
@@ -636,21 +639,23 @@ class MainWindow(QMainWindow, UtilsMixin):
             LibraryData().add_current_image_to_view_history()
             cf = LibraryData().current_folder()
             ThumbnailsThread(cf, Globals).start()
+            self.transformations_allowed = True
 
         elif requested_page == self.pages.START_PAGE:
             Globals.control_panel.setVisible(False)
+            self.transformations_allowed = False
 
         elif requested_page == self.pages.PUREREF_PAGE:
             Globals.control_panel.setVisible(True)
+            self.transformations_allowed = True
+            LibraryData().load_board_data()
+
 
 
         if self.current_page == self.pages.START_PAGE and requested_page == self.pages.VIEWER_PAGE:
             self.restore_image_transformations()
 
-
         self.current_page = requested_page
-        # обязательно после задания страницы!
-        self.transformations_allowed = not (self.is_library_page_active() or self.is_start_page_active())
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
