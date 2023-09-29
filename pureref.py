@@ -165,9 +165,37 @@ def draw_origin_compass(self, painter):
     old_pen = painter.pen()
 
     painter.setPen(QPen(QColor(200, 200, 200), 1))
-    painter.drawLine(QPointF(pos).toPoint(), curpos)
+    # painter.drawLine(QPointF(pos).toPoint(), curpos)
+
+    radius = 40
+    delta = curpos - QPointF(pos).toPoint() 
+    radians_angle = math.atan2(delta.y(), delta.x())
+    # painter.translate(curpos)
+    # painter.rotate(180/3.14*radians_angle-180)
+    # painter.drawLine(QPoint(0, 0), QPoint(radius-40, 0))
+    # painter.resetTransform()
+
+
+
+
+    ellipse_rect = QRect(0, 0, radius*2, radius*2)
+    ellipse_rect.moveCenter(curpos)
+    painter.drawEllipse(ellipse_rect)
 
     dist = distance(pos, curpos)
+    radius += 10
+    radians_angle += math.pi
+    if dist < radius:
+        point = pos
+    else:
+        point = QPointF(curpos) + QPointF(math.cos(radians_angle)*radius, math.sin(radians_angle)*radius)
+
+    # painter.setPen(QPen(Qt.red, 5))
+    # painter.drawPoint(point)
+
+    # text_rect_center = QPointF(curpos).toPoint() + QPoint(0, -10)
+    text_rect_center = point.toPoint()
+
     text = f'{dist:.2f}'
     font = painter.font()
     font.setPixelSize(10)
@@ -179,7 +207,7 @@ def draw_origin_compass(self, painter):
 
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
 
-    text_rect.moveCenter(QPointF(curpos).toPoint() + QPoint(0, -10))
+    text_rect.moveCenter(text_rect_center)
     painter.drawText(text_rect, alignment, text)
 
     painter.setPen(old_pen)
