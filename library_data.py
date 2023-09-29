@@ -1111,6 +1111,10 @@ class FolderData():
         self.sort_type = "original"
         self.sort_type_reversed = False
 
+        self.board_origin = None
+        self.board_scale = None
+        self.board_ready = False
+
         self.relative_thumbnails_row_offset_x = 0
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
@@ -1316,6 +1320,10 @@ class ImageData():
 
         self.source_width = 0
         self.source_height = 0
+
+        self.board_position = None
+        self.board_scale = None
+        self.board_rotation = None
 
         # UI
         self._touched = False               # обнуляется после отпускания кнопки мыши

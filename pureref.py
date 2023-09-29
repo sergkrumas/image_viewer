@@ -79,11 +79,75 @@ def draw(self, painter):
 
     painter.setFont(old_font)
 
+def draw_wait_label(self, painter):
+    font = painter.font()
+    font.setPixelSize(30)
+    font.setWeight(1900)
+    painter.setFont(font)
+    max_rect = self.rect()
+    alignment = Qt.AlignCenter
+
+    text = "подождите"
+    text_rect = calculate_text_rect(font, max_rect, text, alignment)
+    text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
+    painter.drawText(text_rect, alignment, text)
+
+def prepare_board(self, folder_data):
+
+    offset = QPointF(0, 0)
+    for image_data in folder_data.images_list:
+        if image_data.is_supported_filetype:
+            image_data.board_scale = 1.0
+            image_data.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+            offset += QPointF(image_data.source_width, 0)
+
+    folder_data.board_ready = True
+
+def draw_content(self, painter, folder_data):
+    
+    if not folder_data.board_ready:
+        prepare_board(self, folder_data)
+    else:
+
+        painter.setPen(QPen(Qt.white, 1))
+        font = painter.font()
+        font.setWeight(300)
+        font.setPixelSize(12)
+        painter.setFont(font)
+        for image_data in folder_data.images_list:
+            if not image_data.board_position:
+                continue
+            image_scale = image_data.board_scale
+            board_scale = self.board_scale
+            w = image_data.source_width*image_scale*board_scale
+            h = image_data.source_height*image_scale*board_scale
+            image_rect = QRectF(0, 0, w, h)
+            pos = QPointF(self.board_origin)
+            pos += QPointF(image_data.board_position.x()*board_scale, image_data.board_position.y()*board_scale)
+            image_rect.moveCenter(pos)
+
+            painter.drawRect(image_rect)
+
+            text = f'{image_data.source_width} x {image_data.source_height}'
+            max_rect = self.rect()
+            alignment = Qt.AlignCenter
+
+            painter.drawText(image_rect, alignment, text)
+
+
+
+
 def draw_main(self, painter):
 
     if Vars.Globals.DEBUG:
         draw_board_origin(self, painter)
         draw_origin_compass(self, painter)
+
+    cf = Vars.LibraryData.current_folder()
+    if cf.previews_done:
+        draw_content(self, painter, cf)
+    else:
+        draw_wait_label(self, painter)
 
 def draw_origin_compass(self, painter):
 
@@ -95,6 +159,7 @@ def draw_origin_compass(self, painter):
         return math.sqrt((p1.x() - p2.x())**2 + (p1.y() - p2.y())**2)
 
     # self.board_origin
+    old_pen = painter.pen()
 
     painter.setPen(QPen(QColor(200, 200, 200), 1))
     painter.drawLine(QPointF(pos).toPoint(), curpos)
@@ -113,6 +178,8 @@ def draw_origin_compass(self, painter):
 
     text_rect.moveCenter(QPointF(curpos).toPoint() + QPoint(0, -10))
     painter.drawText(text_rect, alignment, text)
+
+    painter.setPen(old_pen)
 
 
 def draw_board_origin(self, painter):
@@ -166,7 +233,7 @@ def mouseMoveEvent(self, event):
             start_value = self.board_origin
             # delta = end_value-start_value
             self.board_origin = end_value
-            self.update()
+    self.update()
 
 def mouseReleaseEvent(self, event):
 
@@ -188,13 +255,14 @@ def do_scale_board(self, scroll_value, ctrl, shift, no_mod):
     else:
         factor = (scale_speed-1)/scale_speed
 
+    self.board_scale *= factor
 
     _board_origin -= pivot
     _board_origin = QPointF(_board_origin.x()*factor, _board_origin.y()*factor)
     _board_origin += pivot
 
     self.board_origin  = _board_origin
-
+    # print(self.board_scale)
 
 def wheelEvent(self, event):
     scroll_value = event.angleDelta().y()/240
