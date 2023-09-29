@@ -605,21 +605,37 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.multirow_scroll_y = 0
 
+        self.underMouseImageData = None
+
     def control_panel_timer_handler(self):
         self.opacity_handler()
         MW = self.globals.main_window
         if MW.handling_input:
             return
 
-        # label
-        text = None
-        for btn in self.buttons_list:
-            if btn.underMouse():
-                text = btn.property("tooltip_text")
-        text = text or MW.current_image_details()
-        text = text.replace("\n", " ")
-        self.control_panel_label.setText(text)
+        # control panel label
+        if MW.is_viewer_page_active():
+            text = None
+            for btn in self.buttons_list:
+                if btn.underMouse():
+                    text = btn.property("tooltip_text").replace("\n", " ")
+                    break
+            text = text or MW.current_image_details()
+        elif MW.is_pureref_page_active():
 
+            if self.underMouseImageData is not None:
+                image_data = self.underMouseImageData
+
+                w = image_data.source_width
+                h = image_data.source_height
+                filename = image_data.filename
+                foldername = image_data.folder_data.folder_name
+                
+                text = f"{foldername} \\ {filename} {w} x {h}"
+            else:
+                text = "страница PureRef"
+
+        self.control_panel_label.setText(text)
         # movie progress bar
         if MW.animated:
             MW.update()
@@ -955,6 +971,9 @@ class ControlPanel(QWidget, UtilsMixin):
 
         else:
 
+            if not is_call_from_main_window:
+                self.underMouseImageData = None
+
             # отрисовка одного ряда в панели управления, в истории прсмотров и в папках библиотеки
             for image_index, image_data in enumerate(images_list):
                 thumbnail = image_data.get_thumbnail()
@@ -995,6 +1014,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 # если миниатюра помещается в отведённой зоне library_page_rect
                 if library_page_rect.contains(thumb_rect_.center()):
                     highlighted = thumb_rect.contains(cursor_pos)
+                    if highlighted and not is_call_from_main_window:
+                        self.underMouseImageData = image_data
                     cases = (
                                 highlighted,
                                 is_call_from_main_window,

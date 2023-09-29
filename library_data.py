@@ -1118,6 +1118,7 @@ class FolderData():
 
         super().__init__()
         self.folder_path = folder_path
+        self.folder_name = os.path.basename(folder_path)
         self.fav = fav
         self.comm = comm
         self._index = -1
