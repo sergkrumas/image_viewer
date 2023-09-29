@@ -81,13 +81,14 @@ def draw(self, painter):
 
 def draw_wait_label(self, painter):
     font = painter.font()
-    font.setPixelSize(30)
+    font.setPixelSize(100)
     font.setWeight(1900)
     painter.setFont(font)
     max_rect = self.rect()
     alignment = Qt.AlignCenter
 
-    text = "подождите"
+    painter.setPen(QPen(Qt.yellow, 1))
+    text = "  ".join("ПОДОЖДИ")
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
     text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
     painter.drawText(text_rect, alignment, text)
@@ -126,6 +127,7 @@ def draw_content(self, painter, folder_data):
             pos += QPointF(image_data.board_position.x()*board_scale, image_data.board_position.y()*board_scale)
             image_rect.moveCenter(pos)
 
+            painter.setBrush(Qt.NoBrush)
             painter.drawRect(image_rect)
 
             text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
@@ -275,7 +277,11 @@ def wheelEvent(self, event):
     shift = event.modifiers() & Qt.ShiftModifier
     no_mod = event.modifiers() == Qt.NoModifier
 
-    do_scale_board(self, scroll_value, ctrl, shift, no_mod)
+    control_panel_undermouse = self.is_control_panel_under_mouse()
+    if control_panel_undermouse:
+        return
+    elif no_mod:
+        do_scale_board(self, scroll_value, ctrl, shift, no_mod)
 
 
 def thumbnails_click_handler(image_data):

@@ -1137,6 +1137,8 @@ class FolderData():
         self.board_ready = False
 
         self.relative_thumbnails_row_offset_x = 0
+        self.absolute_pureref_thumbnails_row_offset_x = 0
+
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
             for n, image in enumerate(self.images_list):

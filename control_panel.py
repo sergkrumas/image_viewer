@@ -869,6 +869,7 @@ class ControlPanel(QWidget, UtilsMixin):
         is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
         multirow = not is_call_from_main_window and self.fullscreen_flag
         draw_mirror = draw_mirror and (not is_call_from_main_window) and (not self.fullscreen_flag)
+        is_pureref_page_active = self.globals.main_window.is_pureref_page_active()
 
         if not is_call_from_main_window:
             ROW_LENGTH = self.calculate_row_length()
@@ -992,7 +993,11 @@ class ControlPanel(QWidget, UtilsMixin):
                     else:
                         # history row
                         relative_offset_x = -THUMBNAIL_WIDTH*current_index
-                    offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
+
+                    if is_pureref_page_active and not is_call_from_main_window:
+                        offset_x = THUMBNAIL_WIDTH*(image_index + 1) + folder_data.absolute_pureref_thumbnails_row_offset_x
+                    else:
+                        offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
                 if image_data._selected and not is_call_from_main_window:
@@ -1138,7 +1143,11 @@ class ControlPanel(QWidget, UtilsMixin):
             for image_index, image_data in enumerate(folder_data.get_phantomed_image_list()):
 
                 relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
+
+                if is_pureref_page_active and not is_call_from_main_window:
+                    offset_x = THUMBNAIL_WIDTH*(image_index + 1) - THUMBNAIL_WIDTH/2 + folder_data.absolute_pureref_thumbnails_row_offset_x
+                else:
+                    offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
                 sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
                 sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
@@ -1198,6 +1207,8 @@ class ControlPanel(QWidget, UtilsMixin):
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
         MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
 
+        is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
+        is_pureref_page_active = self.globals.main_window.is_pureref_page_active()
 
         ROW_LENGTH = self.calculate_row_length()
 
@@ -1267,6 +1278,7 @@ class ControlPanel(QWidget, UtilsMixin):
                             return
                         elif click_hanlder:
                             click_hanlder(image_data)
+                            return
 
 
                 image_index_draw -= 1
@@ -1283,7 +1295,11 @@ class ControlPanel(QWidget, UtilsMixin):
                     relative_offset_x = -THUMBNAIL_WIDTH*current_index
                 else:
                     relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-                offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
+                if is_pureref_page_active and not is_call_from_main_window:
+                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + folder_data.absolute_pureref_thumbnails_row_offset_x
+                else:
+
+                    offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
 
                 if image_data._selected:
@@ -1307,6 +1323,7 @@ class ControlPanel(QWidget, UtilsMixin):
                             return
                         elif click_hanlder:
                             click_hanlder(image_data)
+                            return
 
 
     def wheelEvent(self, event):
@@ -1315,8 +1332,10 @@ class ControlPanel(QWidget, UtilsMixin):
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
+        MW = self.globals.main_window
+
+        THUMBNAIL_WIDTH = step_value = self.globals.THUMBNAIL_WIDTH
         if self.fullscreen_flag:
-            THUMBNAIL_WIDTH = step_value = self.globals.THUMBNAIL_WIDTH
             AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
             MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
 
@@ -1340,6 +1359,32 @@ class ControlPanel(QWidget, UtilsMixin):
             min_value = - MULTIROW_THUMBNAILS_PADDING
 
             self.multirow_scroll_y = min(max_value, max(self.multirow_scroll_y, min_value))
+
+        elif MW.is_pureref_page_active() and not self.fullscreen_flag:
+            libdata = self.LibraryData()
+            cf = libdata.current_folder()
+            if scroll_value > 0:
+                step = THUMBNAIL_WIDTH
+            else:
+                step = -THUMBNAIL_WIDTH
+            cf.absolute_pureref_thumbnails_row_offset_x -= step
+
+            cf = self.LibraryData().current_folder()
+            images_list_count = len(cf.images_list)
+
+            content_width = images_list_count*THUMBNAIL_WIDTH
+            viewer_width = self.rect().width() - THUMBNAIL_WIDTH*2
+
+            max_value = 0
+            min_value = viewer_width - content_width
+
+            cf.absolute_pureref_thumbnails_row_offset_x = min(max_value, max(cf.absolute_pureref_thumbnails_row_offset_x, min_value))
+
+            status = f'{max_value}, {min_value}'
+            # print(status)
+
+        MW.update()
+
 
     def mousePressEvent(self, event):
         MW = self.globals.main_window

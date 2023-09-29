@@ -1734,6 +1734,13 @@ class MainWindow(QMainWindow, UtilsMixin):
             # если под мышкой уже находится другая превьюшка
             self.previews_list_active_item = None
 
+    def is_control_panel_under_mouse(self):
+        if Globals.control_panel is not None:
+            if Globals.control_panel.isVisible():
+                if Globals.control_panel.underMouse():
+                    return True
+        return False
+
     def wheelEvent(self, event):
 
         if self.check_thumbnails_fullscreen():
@@ -1744,11 +1751,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
-        control_panel_undermouse = False
-        if Globals.control_panel is not None:
-            if Globals.control_panel.isVisible():
-                if Globals.control_panel.underMouse():
-                    control_panel_undermouse = True
+        control_panel_undermouse = self.is_control_panel_under_mouse()
+
         if self.is_pureref_page_active():
             pureref.wheelEvent(self, event)
 
