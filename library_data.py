@@ -1070,7 +1070,7 @@ class FolderData():
 
     def init_images(self, files, prev=None, library_loading=False):
         for filepath in files:
-            processAppEvents(_all=True)
+            processAppEvents(update_only=False)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
                 im_data = None
                 if prev:

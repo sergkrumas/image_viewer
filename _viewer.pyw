@@ -3765,7 +3765,7 @@ def _main():
     if not os.path.exists(path):
         MW.current_page = MW.pages.START_PAGE
         MW.update()
-    app.processEvents()
+    processAppEvents()
     # создание панели управления
     ControlPanel.globals = Globals
     ControlPanel.LibraryData = LibraryData

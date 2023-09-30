@@ -523,12 +523,12 @@ def load_svg(path, scale_factor=20):
     painter.end()
     return QPixmap.fromImage(rastered_image)
 
-def processAppEvents(_all=False):
+def processAppEvents(update_only=True):
     app = QApplication.instance()
-    if _all:
-        app.processEvents()
-    else:
+    if update_only:
         app.processEvents(QEventLoop.ExcludeUserInputEvents)
+    else:
+        app.processEvents()
 
 class UtilsMixin:
     def set_window_style(self):

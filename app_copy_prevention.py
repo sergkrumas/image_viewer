@@ -196,7 +196,7 @@ class ServerOrClient():
 
         app = QApplication.instance()
         while not SERVER_STARTED:
-            app.processEvents()
+            processAppEvents(update_only=False)
 
         print("end of server_or_client_via_sockets")
         return path
