@@ -614,6 +614,7 @@ class ControlPanel(QWidget, UtilsMixin):
             return
 
         # control panel label
+        text = ""
         if MW.is_viewer_page_active():
             text = None
             for btn in self.buttons_list:
