@@ -2738,7 +2738,10 @@ class MainWindow(QMainWindow, UtilsMixin):
     def animated_or_not_animated_close(self, callback_on_finish):
         if self.isAnimationEffectsAllowed() and not self.is_library_page_active():
             self.animate_properties(
-                [(self, "image_scale", self.image_scale, 0.01, self.update)],
+                [
+                    (self, "image_scale", self.image_scale, 0.01, self.update),
+                    (self, "image_center_position", self.image_center_position, self.get_center_position(), self.update)
+                ],
                 callback_on_finish=callback_on_finish
             )
         else:
