@@ -431,6 +431,7 @@ class SettingsWindow(QWidget):
         'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
 
         'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
+
     }
 
     isWindowVisible = False
@@ -479,12 +480,8 @@ class SettingsWindow(QWidget):
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        # layout почему-то не задаёт высоту, приходится делать это вручную
-        # и даже поправлять, когда настроек становится слишком много
-        WINDOW_HEIGHT = 0
-        WINDOW_HEIGHT += 40*len(self.matrix)
-        WINDOW_HEIGHT += 50 #buttons
-        self.resize(1000, WINDOW_HEIGHT)
+
+        self.resize(1000, 700)
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init
@@ -512,22 +509,65 @@ class SettingsWindow(QWidget):
                 color: gray;
             }
         """
-        main_layout = QVBoxLayout()
-        label = QLabel()
-        label.setText("Настройки")
-        label.setFixedHeight(50)
-        label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet(style)
-        main_layout.addWidget(label)
+
+
         self.checkboxes_widgets = {}
         self.values_widgets = {}
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.verticalScrollBar().setStyleSheet("""
+            QScrollBar {
+                border-radius: 5px;
+                background: rgb(40, 50, 60);
+            }
+            QScrollBar:vertical {
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle {
+                background: rgb(210, 210, 210);
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                width: 10px;
+                min-height: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical {
+                 background: transparent;
+            }
+            QScrollBar::sub-line:vertical {
+                 background: transparent;
+            }
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                 background: transparent;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                 background: transparent;
+            }
+
+            """)
+
+        self.scroll_area.setStyleSheet("""
+            QScrollArea:vertical {
+                height: 15px;
+                background-color: transparent;
+                border: none;
+            }
+            """)
+
+        self.central_widget = QWidget()
+        self.central_widget.setStyleSheet("QWidget#central {background-color: transparent;}")
+        self.central_widget.setObjectName("central")
+        central_widget_layout = QVBoxLayout()
+
 
         chb = QCheckBox("Запускать при старте Windows")
         self.checkboxes_widgets['run_on_windows_startup'] = chb
         chb.setChecked(is_app_in_startup(self.STARTUP_CONFIG[0]))
         chb.setStyleSheet(checkbox_style)
         chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
-        main_layout.addWidget(chb)
+        central_widget_layout.addWidget(chb)
 
         for id, params in self.matrix.items():
 
@@ -540,14 +580,14 @@ class SettingsWindow(QWidget):
                 chb.setChecked(current_val)
                 chb.setStyleSheet(checkbox_style)
                 chb.stateChanged.connect(self.on_change_handler)
-                main_layout.addWidget(chb)
+                central_widget_layout.addWidget(chb)
             elif isinstance(current_val, float):
-                range = params[1]
-                a, b = range
+                range_ = params[1]
+                a, b = range_
                 val = (current_val-a)/(b-a)
                 sb = CustomSlider("SCALAR", 400, val)
                 sb.setFixedHeight(50)
-                sb.setRange(*range)
+                sb.setRange(*range_)
                 self.values_widgets[id] = sb
                 sb.value_changed.connect(self.on_change_handler)
                 label = QLabel()
@@ -556,15 +596,36 @@ class SettingsWindow(QWidget):
                 layout = QHBoxLayout()
                 layout.addWidget(label)
                 layout.addWidget(sb)
-                main_layout.addLayout(layout)
-                main_layout.addSpacing(20)
+                central_widget_layout.addLayout(layout)
+                central_widget_layout.addSpacing(20)
             elif isinstance(current_val, str):
                 label = QLabel()
                 label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
                 label.setStyleSheet(style)
                 layout = QHBoxLayout()
                 layout.addWidget(label)
-                main_layout.addLayout(layout)
+                central_widget_layout.addLayout(layout)
+
+
+        self.central_widget.setLayout(central_widget_layout)
+
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.central_widget)
+        self.scroll_area.setMaximumHeight(700)
+
+
+        main_layout = QVBoxLayout()
+
+        head_label = QLabel()
+        head_label.setText("Настройки")
+        head_label.setFixedHeight(50)
+        head_label.setAlignment(Qt.AlignCenter)
+        head_label.setStyleSheet(style)
+        main_layout.addWidget(head_label)
+
+        main_layout.addWidget(self.scroll_area)
 
         save_button = QPushButton("Закрыть и сохранить")
         save_button.clicked.connect(self.save_button_handler)
@@ -578,13 +639,14 @@ class SettingsWindow(QWidget):
         for button in [save_button, exit_button]:
             button.setStyleSheet(self.button_style)
             button.setCursor(Qt.PointingHandCursor)
-
         buttons = QHBoxLayout()
         buttons.addWidget(save_button)
         buttons.addWidget(exit_button)
-        main_layout.addSpacing(50)
+        main_layout.addSpacing(5)
         main_layout.addLayout(buttons)
+
         self.setLayout(main_layout)
+
         # если задавать родителя в super().__init__(parent), то форма становится модальной.
         # Иначе в случае ниже - не становится модальной.
         # self.setParent(self.globals.main_window)
