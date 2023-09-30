@@ -87,7 +87,7 @@ def draw_wait_label(self, painter):
     max_rect = self.rect()
     alignment = Qt.AlignCenter
 
-    painter.setPen(QPen(Qt.yellow, 1))
+    painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
     text = "  ".join("ПОДОЖДИ")
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
     text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
@@ -141,10 +141,6 @@ def draw_content(self, painter, folder_data):
 
 def draw_main(self, painter):
 
-    if Vars.Globals.DEBUG:
-        draw_board_origin(self, painter)
-        draw_origin_compass(self, painter)
-
     cf = Vars.LibraryData.current_folder()
     if cf.previews_done:
         draw_content(self, painter, cf)
@@ -153,6 +149,10 @@ def draw_main(self, painter):
 
 
     self.draw_center_label_main(painter)
+
+    if Vars.Globals.DEBUG:
+        draw_board_origin(self, painter)
+        draw_origin_compass(self, painter)
 
 def draw_origin_compass(self, painter):
 
@@ -198,7 +198,8 @@ def draw_origin_compass(self, painter):
     # text_rect_center = QPointF(curpos).toPoint() + QPoint(0, -10)
     text_rect_center = point.toPoint()
 
-    text = f'{dist:.2f}'
+    scale_percent = math.ceil(self.board_scale*100)
+    text = f'{dist:.2f}\n{scale_percent:,}%'.replace(',', ' ')
     font = painter.font()
     font.setPixelSize(10)
     painter.setFont(font)
@@ -297,7 +298,6 @@ def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor=N
     _board_origin += pivot
 
     self.board_origin  = _board_origin
-    # print(self.board_scale)
 
     self.update()
 
