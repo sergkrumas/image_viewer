@@ -2751,23 +2751,30 @@ class MainWindow(QMainWindow, UtilsMixin):
 
     def animated_or_not_animated_close(self, callback_on_finish):
         if self.isAnimationEffectsAllowed() and not self.is_library_page_active():
-            self.animate_properties(
-                [
-                    (self, "image_scale", self.image_scale, 0.01, self.update),
-                    (self, "image_center_position", self.image_center_position, self.get_center_position(), self.update)
-                ],
-                callback_on_finish=callback_on_finish
-            )
+            if self.handling_input:
+                # callback_on_finish()
+                # closeAllWindows(), в отличие от callback_on_finish(), закрывает приложение сразу,
+                # что полезно, когда функции animated_or_not_animated_close переходит управление
+                # по причине предварительного вызова processAppEvents(update_only=False)
+                QApplication.closeAllWindows()
+            else:
+                self.animate_properties(
+                    [
+                        (self, "image_scale", self.image_scale, 0.01, self.update),
+                        (self, "image_center_position", self.image_center_position, self.get_center_position(), self.update)
+                    ],
+                    callback_on_finish=callback_on_finish
+                )
         else:
             self.close()
 
     def require_window_closing(self):
         if Globals.lite_mode:
-            self.animated_or_not_animated_close(QApplication.instance().exit)
+            self.animated_or_not_animated_close(QApplication.instance().quit)
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
         else:
-            self.animated_or_not_animated_close(QApplication.instance().exit)
+            self.animated_or_not_animated_close(QApplication.instance().quit)
 
     def show_center_label(self, info_type, error=False):
         self.center_label_error = error
