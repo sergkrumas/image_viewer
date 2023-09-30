@@ -46,7 +46,8 @@ def init(self):
     self.pureref_mode = False
 
     self.board_origin = self.get_center_position()
-    self.board_scale = 1.0
+    self.board_scale_x = 1.0
+    self.board_scale_y = 1.0
 
     self.board_translating = True
 
@@ -119,12 +120,13 @@ def draw_content(self, painter, folder_data):
             if not image_data.board_position:
                 continue
             image_scale = image_data.board_scale
-            board_scale = self.board_scale
-            w = image_data.source_width*image_scale*board_scale
-            h = image_data.source_height*image_scale*board_scale
+            board_scale_x = self.board_scale_x
+            board_scale_y = self.board_scale_y
+            w = image_data.source_width*image_scale*board_scale_x
+            h = image_data.source_height*image_scale*board_scale_y
             image_rect = QRectF(0, 0, w, h)
             pos = QPointF(self.board_origin)
-            pos += QPointF(image_data.board_position.x()*board_scale, image_data.board_position.y()*board_scale)
+            pos += QPointF(image_data.board_position.x()*board_scale_x, image_data.board_position.y()*board_scale_y)
             image_rect.moveCenter(pos)
 
             painter.setBrush(Qt.NoBrush)
@@ -198,8 +200,9 @@ def draw_origin_compass(self, painter):
     # text_rect_center = QPointF(curpos).toPoint() + QPoint(0, -10)
     text_rect_center = point.toPoint()
 
-    scale_percent = math.ceil(self.board_scale*100)
-    text = f'{dist:.2f}\n{scale_percent:,}%'.replace(',', ' ')
+    scale_percent_x = math.ceil(self.board_scale_x*100)
+    scale_percent_y = math.ceil(self.board_scale_y*100)
+    text = f'{dist:.2f}\n{scale_percent_x:,}% {scale_percent_y:,}%'.replace(',', ' ')
     font = painter.font()
     font.setPixelSize(10)
     painter.setFont(font)
@@ -278,8 +281,11 @@ def mouseReleaseEvent(self, event):
         if self.transformations_allowed:
             self.board_translating = False
             self.update()
+    if event.button() == Qt.MiddleButton:
+        if self.transformations_allowed:
+            set_default_viewport_scale(self, keep_position=True)
 
-def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor=None):
+def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor_x=None, factor_y=None):
 
     curpos = self.mapped_cursor_pos()
     if pivot is None:
@@ -287,17 +293,31 @@ def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor=N
 
     _board_origin = self.board_origin
 
-    if factor is None:
-        scale_speed = 10.0
-        if scroll_value > 0:
-            factor = scale_speed/(scale_speed-1)
-        else:
-            factor = (scale_speed-1)/scale_speed
+    scale_speed = 10.0
+    if scroll_value > 0:
+        factor = scale_speed/(scale_speed-1)
+    else:
+        factor = (scale_speed-1)/scale_speed
 
-    self.board_scale *= factor
+    if factor_x is None:
+        factor_x = factor
+
+    if factor_y is None:
+        factor_y = factor
+
+
+    if ctrl:
+        factor_x = factor
+        factor_y = 1.0
+    elif shift:
+        factor_x = 1.0
+        factor_y = factor
+
+    self.board_scale_x *= factor_x
+    self.board_scale_y *= factor_y
 
     _board_origin -= pivot
-    _board_origin = QPointF(_board_origin.x()*factor, _board_origin.y()*factor)
+    _board_origin = QPointF(_board_origin.x()*factor_x, _board_origin.y()*factor_y)
     _board_origin += pivot
 
     self.board_origin  = _board_origin
@@ -315,7 +335,10 @@ def wheelEvent(self, event):
         return
     elif no_mod:
         do_scale_board(self, scroll_value, ctrl, shift, no_mod)
-
+    elif ctrl:
+        do_scale_board(self, scroll_value, ctrl, shift, no_mod)
+    elif shift:
+        do_scale_board(self, scroll_value, ctrl, shift, no_mod)
 
 def thumbnails_click_handler(image_data):
 
@@ -323,26 +346,36 @@ def thumbnails_click_handler(image_data):
     if image_data.board_position is None:
         Vars.Globals.main_window.show_center_label("Этот элемент не представлен на доске", error=True)
     else:
-        board_scale = self.board_scale
+        board_scale_x = self.board_scale_x
+        board_scale_y = self.board_scale_y
 
-        image_pos = QPointF(image_data.board_position.x()*board_scale, image_data.board_position.y()*board_scale)
+        image_pos = QPointF(image_data.board_position.x()*board_scale_x, image_data.board_position.y()*board_scale_y)
         viewport_center_pos = self.get_center_position()
 
         self.board_origin = self.board_origin - image_pos + viewport_center_pos - self.board_origin 
 
-        image_width = image_data.source_width*image_data.board_scale*self.board_scale
-        image_height = image_data.source_height*image_data.board_scale*self.board_scale
+        image_width = image_data.source_width*image_data.board_scale*board_scale_x
+        image_height = image_data.source_height*image_data.board_scale*board_scale_y
         image_rect = QRect(0, 0, int(image_width), int(image_height))
         fitted_rect = fit_rect_into_rect(image_rect, self.rect())
         do_scale_board(self, 0, False, False, False,
             pivot=viewport_center_pos,
-            factor=fitted_rect.width()/image_rect.width()
+            factor_x=fitted_rect.width()/image_rect.width(),
+            factor_y=fitted_rect.height()/image_rect.height(),
         )
 
     self.update()
 
-def set_default_viewport_scale(self):
-    self.board_scale = 1.0
+def set_default_viewport_scale(self, keep_position=False):
+    if keep_position:
+        do_scale_board(self, 0, False, False, False,
+            pivot=self.mapped_cursor_pos(),
+            factor_x=1/self.board_scale_x,
+            factor_y=1/self.board_scale_y,
+        )
+    else:
+        self.board_scale_x = 1.0
+        self.board_scale_y = 1.0
 
 def set_default_viewport_origin(self):
     self.board_origin = QPointF(300, 300)

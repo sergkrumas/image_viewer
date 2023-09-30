@@ -239,16 +239,18 @@ class LibraryData(object):
     def save_board_data(self):
         cf = self.current_folder()
         MW = self.globals.main_window
-        cf.board_scale = MW.board_scale
+        cf.board_scale_x = MW.board_scale_x
+        cf.board_scale_y = MW.board_scale_y
         cf.board_origin = MW.board_origin
 
     def load_board_data(self):
         cf = self.current_folder()
         MW = self.globals.main_window
-        if cf.board_scale is None:
+        if cf.board_scale_x is None:
             pureref.set_default_viewport_scale(MW)
         else:
-            MW.board_scale = cf.board_scale
+            MW.board_scale_x = cf.board_scale_x
+            MW.board_scale_y = cf.board_scale_y
         if cf.board_origin is None:
             pureref.set_default_viewport_origin(MW)
         else:
@@ -1133,7 +1135,8 @@ class FolderData():
         self.sort_type_reversed = False
 
         self.board_origin = None
-        self.board_scale = None
+        self.board_scale_x = None
+        self.board_scale_y = None
         self.board_ready = False
 
         self.relative_thumbnails_row_offset_x = 0
