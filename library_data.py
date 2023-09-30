@@ -721,12 +721,17 @@ class LibraryData(object):
             try:
                 # try only for .avif-files
                 source = load_image_respect_orientation(image_data.filepath)
+                image_data.preview_error = False
             except:
                 source = QPixmap()
+                image_data.preview_error = True
+
             if source.isNull():
                 source = Globals.ERROR_PREVIEW_PIXMAP
+                image_data.preview_error = True
             if not image_data.is_supported_filetype:
                 source = Globals.NOT_SUPPORTED_PIXMAP
+                image_data.preview_error = True
             # thumbnail
             THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
             thumbnail = source.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH,
@@ -1138,6 +1143,8 @@ class FolderData():
         self.board_scale_x = None
         self.board_scale_y = None
         self.board_ready = False
+
+        self.preview_error = False
 
         self.relative_thumbnails_row_offset_x = 0
         self.absolute_pureref_thumbnails_row_offset_x = 0

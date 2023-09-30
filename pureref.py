@@ -98,7 +98,7 @@ def prepare_board(self, folder_data):
 
     offset = QPointF(0, 0)
     for image_data in folder_data.images_list:
-        if image_data.is_supported_filetype:
+        if not image_data.preview_error:
             image_data.board_scale = 1.0
             image_data.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
             offset += QPointF(image_data.source_width, 0)
