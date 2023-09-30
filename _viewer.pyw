@@ -534,6 +534,8 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.corner_menu = dict()
         self.corner_menu_items = []
 
+        self.translation_delta_when_animation = QPointF(0, 0)
+
         self.context_menu_stylesheet = """
         QMenu{
             padding: 0px;
