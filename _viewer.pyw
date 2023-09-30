@@ -1499,6 +1499,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     old = self.image_center_position
                     self.hint_center_position += new-old
                     self.image_center_position = new
+                    self.translation_delta_on_animation += new-old
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
@@ -1846,7 +1847,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
         # эти значения должны быть вычислены до изменения self.image_scale
         r = self.get_image_viewport_rect()
-        now_image_rect = QRectF(r)
+        current_image_rect = QRectF(r)
         p1 = r.topLeft()
         p2 = r.bottomRight()
 
@@ -1998,8 +1999,15 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 def update_function():
                     self.image_scale = self.image_rect.width()/self.get_rotated_pixmap().width()
-                    self.image_center_position = QPointF(self.image_rect.center())
+                    icp = QPointF(self.image_rect.center()) + self.translation_delta_on_animation
+                    self.image_center_position = icp
                     self.update()
+
+                def on_start():
+                    self.translation_delta_on_animation = QPointF(0, 0)
+
+                def on_finish():
+                    pass
 
                 if (before_scale < 1.0 and image_scale > 1.0) or (before_scale > 1.0 and image_scale < 1.0):
                     print("scale is clamped to 100%")
@@ -2008,14 +2016,16 @@ class MainWindow(QMainWindow, UtilsMixin):
                 wanna_image_rect = self.get_image_viewport_rect(od=(image_center_position, image_scale))
                 self.animate_properties(
                     [
-                        (self, "image_rect", now_image_rect, wanna_image_rect, update_function),
+                        (self, "image_rect", current_image_rect, wanna_image_rect, update_function),
                     ],
                     anim_id="zoom",
                     duration=0.7,
                     # easing=QEasingCurve.OutQuad
                     # easing=QEasingCurve.OutQuart
                     # easing=QEasingCurve.OutQuint
-                    easing=QEasingCurve.OutCubic
+                    easing=QEasingCurve.OutCubic,
+                    callback_on_start=on_start,
+                    callback_on_finish=on_finish,
                 )
 
             else:
