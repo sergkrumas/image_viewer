@@ -136,6 +136,8 @@ def draw_content(self, painter, folder_data):
 
             painter.drawText(image_rect, alignment, text)
 
+            painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
+
 
 def draw_main(self, painter):
 
