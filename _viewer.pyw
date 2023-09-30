@@ -1499,7 +1499,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     old = self.image_center_position
                     self.hint_center_position += new-old
                     self.image_center_position = new
-                    self.translation_delta_on_animation += new-old
+                    self.translation_delta_when_animation += new-old
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
@@ -1904,6 +1904,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                                                                     self.UPPER_SCALE_LIMIT)
         delta = before_scale - self.image_scale
 
+
+        clamped = False
+        if (before_scale < 1.0 and self.image_scale > 1.0) or (before_scale > 1.0 and self.image_scale < 1.0):
+            print("scale is clamped to 100%")
+            self.image_scale = 1.0
+            clamped = True
+
         pixmap_rect = self.get_rotated_pixmap().rect()
         orig_width = pixmap_rect.width()
         orig_height = pixmap_rect.height()
@@ -1987,7 +1994,14 @@ class MainWindow(QMainWindow, UtilsMixin):
         new_width = abs(p2.x() - p1.x())
         new_height = abs(p2.y() - p1.y())
 
-        image_scale = new_width / orig_width
+        if clamped:
+            # здесь приходится задавать явно,
+            # иначе масштабирование может застрять на этом значении
+            # при уменьшении или при увеличении; Это конечно костыль,
+            # и всю функцию надо будет переписать в скором времени
+            image_scale = 1.0
+        else:
+            image_scale = new_width / orig_width
         image_center_position = (p1 + p2)/2
 
         # end
@@ -1999,19 +2013,16 @@ class MainWindow(QMainWindow, UtilsMixin):
 
                 def update_function():
                     self.image_scale = self.image_rect.width()/self.get_rotated_pixmap().width()
-                    icp = QPointF(self.image_rect.center()) + self.translation_delta_on_animation
+                    icp = QPointF(self.image_rect.center()) + self.translation_delta_when_animation
                     self.image_center_position = icp
                     self.update()
 
                 def on_start():
-                    self.translation_delta_on_animation = QPointF(0, 0)
+                    self.translation_delta_when_animation = QPointF(0, 0)
 
                 def on_finish():
                     pass
 
-                if (before_scale < 1.0 and image_scale > 1.0) or (before_scale > 1.0 and image_scale < 1.0):
-                    print("scale is clamped to 100%")
-                    image_scale = 1.0
 
                 wanna_image_rect = self.get_image_viewport_rect(od=(image_center_position, image_scale))
                 self.animate_properties(
