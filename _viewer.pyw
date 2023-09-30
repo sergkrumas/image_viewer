@@ -697,13 +697,13 @@ class MainWindow(QMainWindow, UtilsMixin):
     def get_animation_task_class(self):
 
         class AnimationTask(QTimer):
-            def __init__(self, parent, anim_id, is_task_new, easing, duration, anim_tracks, callback_on_finish, callback_on_start):
+            def __init__(self, parent, anim_id, task_generation, easing, duration, anim_tracks, callback_on_finish, callback_on_start):
                 super().__init__()
 
                 self.main_window = parent
                 self.anim_id = anim_id
                 self.anim_tracks = anim_tracks
-                self.is_task_new = is_task_new
+                self.task_generation = task_generation
                 self.easing = easing
                 self.on_finish_animation_callback = callback_on_finish
                 self.on_start_animation_callback = callback_on_start
@@ -723,7 +723,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                     self._at_first_step = True
                     if self.on_start_animation_callback:
                         self.on_start_animation_callback()
-                    if self.is_task_new:
+                    if self.task_generation > 0:
                         old_anim_tracks = self.anim_tracks[:]
                         self.anim_tracks.clear()
                         # обновление значений на текущие, ведь удалённый ранее таймер с тем же anim_id уже изменил текущее значение
@@ -760,9 +760,16 @@ class MainWindow(QMainWindow, UtilsMixin):
             print("animation timer stopped")
             self.animation_timer.stop()
 
+    def get_current_animation_task_generation(self, anim_id=None):
+        if anim_id is not None:
+            for anim_task in self.animation_tasks[:]:
+                if anim_task.anim_id == anim_id:
+                    return anim_task.task_generation
+        return 0
+
     def animate_properties(self, anim_tracks, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
         AnimationTask = self.get_animation_task_class()
-        is_task_new = False
+        task_generation = 0
         if anim_id is not None:
             for anim_task in self.animation_tasks[:]:
                 if anim_task.anim_id == anim_id:
@@ -770,8 +777,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                     anim_task.animation_allowed = False
                     # if anim_task in self.animation_tasks:
                     self.animation_tasks.remove(anim_task)
-                    is_task_new = True
-        animation_task = AnimationTask(self, anim_id, is_task_new, QEasingCurve(easing), duration, anim_tracks, callback_on_finish, callback_on_start)
+                    task_generation = anim_task.task_generation + 1
+        animation_task = AnimationTask(self, anim_id, task_generation, QEasingCurve(easing), duration, anim_tracks, callback_on_finish, callback_on_start)
         animation_task.evaluation_step() # first call before timer starts!
         self.animation_timer.start()
 
@@ -1887,8 +1894,13 @@ class MainWindow(QMainWindow, UtilsMixin):
                 _height = _viewport_rect.height()
 
                 # чем больше scale_speed, тем больше придётся крутить колесо мыши
+                # для одной и той же величины увеличения или уменьшения
                 if animated_zoom_enabled:
+                    gen = self.get_current_animation_task_generation(anim_id="zoom")
                     scale_speed = 2.5
+                    scale_speed -= 1.4*(min(20, gen)/20)
+                    # msg = f'zoom generation: {gen}, result speed value: {scale_speed}'
+                    # print(msg)
                 else:
                     scale_speed = 5
 
@@ -1901,6 +1913,8 @@ class MainWindow(QMainWindow, UtilsMixin):
                     if _new_width - float(viewport_width) < 10.0:
                         _new_width = float(viewport_width) + 10.0
                     self.image_scale = _new_width/_pixmap_rect.width()
+
+
 
         self.image_scale = min(max(self.LOWER_SCALE_LIMIT, self.image_scale),
                                                                     self.UPPER_SCALE_LIMIT)
