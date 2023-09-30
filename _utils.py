@@ -279,7 +279,7 @@ def is_webp_file_animated(filepath):
 def draw_cyberpunk_corners(self, painter, image_rect):
     painter.setClipping(True)
     rg1 = QRegion(self.rect())
-    rg2 = QRegion(image_rect)
+    rg2 = QRegion(QRectF(image_rect).toRect())
     rg3=rg1.subtracted(rg2)
     painter.setClipRegion(rg3)
 
@@ -299,7 +299,7 @@ def draw_cyberpunk_corners(self, painter, image_rect):
     f2 = c + QPoint(0, 85)
     d1 = f1 + QPoint(20, 40)
     d2 = f2 + QPoint(40, 20)
-    points = QPolygon([d1, f1, c, f2, d2])
+    points = QPolygonF([d1, f1, c, f2, d2])
     painter.drawPolygon(points)
     # top right corner
     c = image_rect.topRight()
@@ -308,7 +308,7 @@ def draw_cyberpunk_corners(self, painter, image_rect):
     f2 = c + QPoint(0, 85)
     d1 = f1 + QPoint(-20, 40)
     d2 = f2 + QPoint(-40, 20)
-    points = QPolygon([d1, f1, c, f2, d2])
+    points = QPolygonF([d1, f1, c, f2, d2])
     painter.drawPolygon(points)
     # bottom right corner
     c = image_rect.bottomRight()
@@ -317,7 +317,7 @@ def draw_cyberpunk_corners(self, painter, image_rect):
     f2 = c + QPoint(0, -85)
     d1 = f1 + QPoint(-20, -40)
     d2 = f2 + QPoint(-40, -20)
-    points = QPolygon([d1, f1, c, f2, d2])
+    points = QPolygonF([d1, f1, c, f2, d2])
     painter.drawPolygon(points)
     # bottom left corner
     c = image_rect.bottomLeft()
@@ -326,7 +326,7 @@ def draw_cyberpunk_corners(self, painter, image_rect):
     f2 = c + QPoint(0, -85)
     d1 = f1 + QPoint(20, -40)
     d2 = f2 + QPoint(40, -20)
-    points = QPolygon([d1, f1, c, f2, d2])
+    points = QPolygonF([d1, f1, c, f2, d2])
     painter.drawPolygon(points)
 
     painter.setClipping(False)
