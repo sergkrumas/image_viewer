@@ -206,13 +206,16 @@ def draw_origin_compass(self, painter):
     max_rect = self.rect()
     alignment = Qt.AlignCenter
 
-    painter.setPen(QPen(Qt.red))
 
     text_rect = calculate_text_rect(font, max_rect, text, alignment)
 
     text_rect.moveCenter(text_rect_center)
+    painter.setBrush(QBrush(QColor(10, 10, 10)))
+    painter.setPen(Qt.NoPen)
+    painter.drawRect(text_rect)
+    painter.setPen(QPen(Qt.red))
     painter.drawText(text_rect, alignment, text)
-
+    painter.setBrush(Qt.NoBrush)
     painter.setPen(old_pen)
 
 
