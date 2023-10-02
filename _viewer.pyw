@@ -1181,7 +1181,7 @@ class MainWindow(QMainWindow, UtilsMixin):
                         self.show_static(filepath)
                 except:
                     self.error_pixmap_and_reset(
-                        "Невозможно отобразить\nподдерживаемый тип файла", traceback.format_exc())
+                        "Файл повреждён", traceback.format_exc())
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
