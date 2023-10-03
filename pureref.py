@@ -141,10 +141,26 @@ def draw_content(self, painter, folder_data):
             painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
 
 
+def draw_grid(self, painter):
+    LINES_INTERVAL_X = int(300 * self.board_scale_x)
+    LINES_INTERVAL_Y = int(300 * self.board_scale_y)
+    r = self.rect().adjusted(-LINES_INTERVAL_X*2, -LINES_INTERVAL_Y*2, LINES_INTERVAL_X*2, LINES_INTERVAL_Y*2)
+    value_x = int(fit(self.board_scale_x, 0.08, 1.0, 0, 200))
+    # value_x = 100
+    pen = QPen(QColor(220, 220, 220, value_x), 1)
+    painter.setPen(pen)
+    icp = self.board_origin
+    offset = QPointF(icp.x() % LINES_INTERVAL_X, icp.y() % LINES_INTERVAL_Y)
+    for i in range(r.left(), r.right(), LINES_INTERVAL_X):
+        painter.drawLine(offset+QPointF(i, r.top()), offset+QPointF(i, r.bottom()))
+    for i in range(r.top(), r.bottom(), LINES_INTERVAL_Y):
+        painter.drawLine(offset+QPointF(r.left(), i), offset+QPointF(r.right(), i))
+
 def draw_main(self, painter):
 
     cf = Vars.LibraryData.current_folder()
     if cf.previews_done:
+        draw_grid(self, painter)
         draw_content(self, painter, cf)
     else:
         draw_wait_label(self, painter)
