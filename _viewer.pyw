@@ -1494,6 +1494,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             else:
                 self.tagging_sidebar_visible = tagging.get_sidebar_rect(self).contains(curpos)
 
+            self.tagging_sidebar_visible &= self.isActiveWindow()
+
             if self.tagging_overlay_mode:
                 tagging.main_mouseMoveEvent(self, event)
                 return
@@ -2713,6 +2715,8 @@ class MainWindow(QMainWindow, UtilsMixin):
             painter.drawText(output_rect, Qt.AlignLeft, ci.image_metadata_info)
 
     def draw_view_history_row(self, painter):
+        if not self.isActiveWindow():
+            return
         viewed_list = LibraryData().get_viewed_list()
         offset = 5
         padding = self.CORNER_BUTTON_RADIUS*2
