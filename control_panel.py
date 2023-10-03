@@ -649,31 +649,35 @@ class ControlPanel(QWidget, UtilsMixin):
         # if settings_win_under_mouse:
         #     MW.setCursor(Qt.PointingHandCursor)
 
-        if MW.over_corner_menu_item():
-            MW.setCursor(Qt.PointingHandCursor)
-        elif MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
-            MW.setCursor(Qt.PointingHandCursor)
-        elif MW.is_library_page_active():
-            if MW.previews_list_active_item:
+        if not MW.isActiveWindow():
+            MW.setCursor(Qt.ArrowCursor)
+        else:
+            if MW.over_corner_menu_item():
                 MW.setCursor(Qt.PointingHandCursor)
+            elif MW.over_corner_button() or MW.over_corner_button(corner_attr="topLeft"):
+                MW.setCursor(Qt.PointingHandCursor)
+            elif MW.is_library_page_active():
+                if MW.previews_list_active_item:
+                    MW.setCursor(Qt.PointingHandCursor)
+                else:
+                    MW.setCursor(Qt.ArrowCursor)
+
+            elif MW.is_viewer_page_active():
+                if MW.region_zoom_in_input_started:
+                    MW.setCursor(Qt.CrossCursor)
+                elif any(btn.underMouse() for btn in self.buttons_list):
+                    MW.setCursor(Qt.PointingHandCursor)
+                elif self.thumbnails_click(define_cursor_shape=True):
+                    MW.setCursor(Qt.PointingHandCursor)
+                elif MW.is_cursor_over_image() and \
+                        (not MW.is_library_page_active()) and \
+                        (not self.globals.control_panel.underMouse()):
+                    MW.setCursor(Qt.SizeAllCursor)
+                else:
+                    MW.setCursor(Qt.ArrowCursor)
             else:
                 MW.setCursor(Qt.ArrowCursor)
 
-        elif MW.is_viewer_page_active():
-            if MW.region_zoom_in_input_started:
-                MW.setCursor(Qt.CrossCursor)
-            elif any(btn.underMouse() for btn in self.buttons_list):
-                MW.setCursor(Qt.PointingHandCursor)
-            elif self.thumbnails_click(define_cursor_shape=True):
-                MW.setCursor(Qt.PointingHandCursor)
-            elif MW.is_cursor_over_image() and \
-                    (not MW.is_library_page_active()) and \
-                    (not self.globals.control_panel.underMouse()):
-                MW.setCursor(Qt.SizeAllCursor)
-            else:
-                MW.setCursor(Qt.ArrowCursor)
-        else:
-            MW.setCursor(Qt.ArrowCursor)
         self.update()
 
     def opacity_handler(self):
