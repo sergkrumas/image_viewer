@@ -20,12 +20,13 @@
 
 from _utils import *
 
-import tagging, help_text
 
 from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
-import comments
 from pureref import PureRefMixin
+from help_text import HelpWidgetMixin
+import comments
+import tagging
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
@@ -90,7 +91,7 @@ class Globals():
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
-class MainWindow(QMainWindow, UtilsMixin, PureRefMixin):
+class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -504,7 +505,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin):
 
         self.contextMenuActivated = False
 
-        self.help_infopanel = False
+        self.init_help_infopanel()
 
         self.error = False
 
@@ -2910,7 +2911,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin):
             else:
                 self.require_window_closing()
         elif key == Qt.Key_F1:
-            help_text.toggle_infopanel(self)
+            self.toggle_infopanel()
         elif event.nativeScanCode() == 0x29:
             self.open_settings_window()
 

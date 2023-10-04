@@ -348,7 +348,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def toggle_help(self):
         MW = self.globals.main_window
-        help_text.toggle_infopanel(self.globals.main_window)
+        MW.toggle_infopanel()
         MW.update()
 
     def quick_show(self):

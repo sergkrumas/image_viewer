@@ -78,22 +78,27 @@ INFO_START_PAGE = """
 
 
 
-def toggle_infopanel(parent):
-    parent.help_infopanel = not parent.help_infopanel
-    if parent.help_infopanel:
-        # enter
-        parent.help_form = HelpForm(parent, )
-        parent.help_form.show()
-        parent.help_form.activateWindow()
-        parent.help_form.setFocus()
-    else:
-        # leave
-        if parent.help_form:
-            parent.help_form.close()
-            parent.help_form.setParent(None)
-        parent.help_form = None
+class HelpWidgetMixin():
 
-class HelpForm(QWidget):
+    def init_help_infopanel(self):
+        self.show_help_infopanel = False
+
+    def toggle_infopanel(self):
+        self.show_help_infopanel = not self.show_help_infopanel
+        if self.show_help_infopanel:
+            # enter
+            self.help_widget = HelpWidget(self, )
+            self.help_widget.show()
+            self.help_widget.activateWindow()
+            self.help_widget.setFocus()
+        else:
+            # leave
+            if self.help_widget:
+                self.help_widget.close()
+                self.help_widget.setParent(None)
+            self.help_widget = None
+
+class HelpWidget(QWidget):
 
     button_style = """QPushButton{
         font-size: 20px;
@@ -276,12 +281,12 @@ class HelpForm(QWidget):
     def keyReleaseEvent(self, event):
         key = event.key()
         if key == Qt.Key_Escape:
-            toggle_infopanel(self.parent())
+            self.parent().toggle_infopanel()
 
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key_Escape:
-            toggle_infopanel(self.parent())
+            self.parent().toggle_infopanel()
 
     def mousePressEvent(self, event):
         pass
