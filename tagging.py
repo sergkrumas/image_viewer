@@ -31,23 +31,12 @@ import tempfile
 
 HTML_FILEPATH = "generated.html"
 HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)
+UI_TAGGING_ELEMENTS_IN_A_ROW = 14
+
 
 class Vars():
-
     TAGS_BASE = dict()
     CURRENT_MAX_TAG_ID = 0
-
-    Globals = None
-    LibraryData = None
-
-def get_tagging_folderpath():
-    folderpath = os.path.join(os.path.dirname(__file__), "user_data", Vars.Globals.TAGS_ROOT)
-    create_pathsubfolders_if_not_exist(folderpath)
-    return folderpath
-
-
-
-UI_TAGGING_ELEMENTS_IN_A_ROW = 14
 
 def text_to_list(t):
     t = t.strip()
@@ -61,20 +50,6 @@ def text_to_list(t):
 
 def list_to_text(l):
     return " ".join(l)
-
-TagListRecord = namedtuple('TagListRecord' , 'md5_str md5_tuple filepath')
-
-
-def get_tags_for_image_data(image_data):
-    return_list = list()
-    for key, tag in Vars.TAGS_BASE.items():
-        for record in tag.records:
-            if record.md5_str == image_data.md5:
-                return_list.append(tag)
-    # status_string = f"{len(return_list)} get_tags_for_image_data {image_data.filepath}"
-    # print(status_string)
-    return return_list
-
 
 def print_tag_to_html(tag):
 
@@ -110,6 +85,16 @@ def print_tag_to_html(tag):
 
     os.system("start %s" % HTML_FILEPATH)
 
+def get_base_tags():
+    return list(Vars.TAGS_BASE.values())
+
+def get_base_tag(tag_name):
+    for tag in get_base_tags():
+        if tag.name.lower() == tag_name.lower():
+            return tag
+    return None
+
+TagListRecord = namedtuple('TagListRecord' , 'md5_str md5_tuple filepath')
 
 class Tag():
 
@@ -128,16 +113,33 @@ class Tag():
     def __hash__(self):
         return self.id
 
-    def store_to_disk(self):
-        if not os.path.exists(get_tagging_folderpath()):
-            os.mkdir(get_tagging_folderpath())
+class TaggingLibraryDataMixin():
 
-        filename = f"ID{self.id:04}"
-        info_filepath = os.path.join(get_tagging_folderpath(), "%s.info" % filename)
-        list_filepath = os.path.join(get_tagging_folderpath(), "%s.list" % filename)
+    def get_tagging_folderpath(self):
+        folderpath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.TAGS_ROOT)
+        create_pathsubfolders_if_not_exist(folderpath)
+        return folderpath
 
-        info_data = "\n".join([str(self.name), self.description])
-        list_data = "\n".join([f"{r.md5_str} {r.filepath}" for r in self.records])
+    def get_tags_for_image_data(self, image_data):
+        return_list = list()
+        for key, tag in Vars.TAGS_BASE.items():
+            for record in tag.records:
+                if record.md5_str == image_data.md5:
+                    return_list.append(tag)
+        # status_string = f"{len(return_list)} get_tags_for_image_data {image_data.filepath}"
+        # print(status_string)
+        return return_list
+
+    def store_tag_to_disk(self, tag):
+        if not os.path.exists(self.get_tagging_folderpath()):
+            os.mkdir(self.get_tagging_folderpath())
+
+        filename = f"ID{tag.id:04}"
+        info_filepath = os.path.join(self.get_tagging_folderpath(), "%s.info" % filename)
+        list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
+
+        info_data = "\n".join([str(tag.name), tag.description])
+        list_data = "\n".join([f"{r.md5_str} {r.filepath}" for r in tag.records])
 
         with open(info_filepath, "w+", encoding="utf8") as file:
             file.write(info_data)
@@ -145,191 +147,164 @@ class Tag():
         with open(list_filepath, "w+", encoding="utf8") as file:
             file.write(list_data)
 
-def load_tags(libdata):
+    def load_tags(self):
 
+        if not os.path.exists(self.get_tagging_folderpath()):
+            print('load_tags_info::', self.get_tagging_folderpath(), "doesn't exist! Abort")
+            return
 
-    Vars.LibraryData = libdata
-    Vars.Globals = libdata.globals
+        print('loading tags data')
+        for filename in os.listdir(self.get_tagging_folderpath()):
+            filepath = os.path.join(self.get_tagging_folderpath(), filename)
 
-    if not os.path.exists(get_tagging_folderpath()):
-        print('load_tags_info::', get_tagging_folderpath(), "doesn't exist! Abort")
-        return
+            # файлы в папке должны быть либо так
+            #       `IDxxxx.info`
+            # либо
+            #       `IDxxxx.list`
 
-    print('loading tags data')
-    for filename in os.listdir(get_tagging_folderpath()):
-        filepath = os.path.join(get_tagging_folderpath(), filename)
+            match_data = re.fullmatch(r"ID(\d{4})\.info", filename)
+            if not match_data:
+                continue
 
-        # файлы в папке должны быть либо так
-        #       `IDxxxx.info`
-        # либо
-        #       `IDxxxx.list`
+            # print(filepath)
 
-        match_data = re.fullmatch(r"ID(\d{4})\.info", filename)
-        if not match_data:
-            continue
+            id_ = match_data.groups()[0]
+            id_int = int(id_)
 
-        # print(filepath)
+            # чтение описания
+            with open(filepath, "r", encoding="utf8") as file:
+                data = file.read().split("\n")
 
-        id_ = match_data.groups()[0]
-        id_int = int(id_)
+            if data:
+                name = data[0]
+                description = "\n".join(data[1:])
+                tag = Tag(id_int, name, description)
+                # print("\tTAG INFO:", id_int, name, description)
 
-        # чтение описания
-        with open(filepath, "r", encoding="utf8") as file:
-            data = file.read().split("\n")
+                list_path = os.path.join(self.get_tagging_folderpath(), f"ID{id_}.list")
 
-        if data:
-            name = data[0]
-            description = "\n".join(data[1:])
-            tag = Tag(id_int, name, description)
-            # print("\tTAG INFO:", id_int, name, description)
+                # чтение списка
+                if os.path.exists(list_path):
+                    with open(list_path, "r", encoding="utf8") as file:
+                        data = file.read().split("\n")
+                        for record in data:
+                            parts = record.split(" ")
+                            if len(parts) > 1:
+                                md5_str = parts[0]
+                                filepath = parts[1]
+                                tag.records.append(TagListRecord(md5_str, convert_md5_to_int_tuple(md5_str), filepath))
 
-            list_path = os.path.join(get_tagging_folderpath(), f"ID{id_}.list")
+                Vars.TAGS_BASE[id_int] = tag
+            else:
+                print(f"\t ERROR {filepath}")
 
-            # чтение списка
-            if os.path.exists(list_path):
-                with open(list_path, "r", encoding="utf8") as file:
-                    data = file.read().split("\n")
-                    for record in data:
-                        parts = record.split(" ")
-                        if len(parts) > 1:
-                            md5_str = parts[0]
-                            filepath = parts[1]
-                            tag.records.append(TagListRecord(md5_str, convert_md5_to_int_tuple(md5_str), filepath))
+            Vars.CURRENT_MAX_TAG_ID = max(Vars.CURRENT_MAX_TAG_ID, id_int)
 
-            Vars.TAGS_BASE[id_int] = tag
+class TaggingMixing():
+
+    def tagging_init(self):
+        self.show_tags_overlay = False
+        self.TAGS_SIDEBAR_WIDTH = 500
+        self.tagging_sidebar_visible = False
+        self.tagging_form = None
+
+    def toggle_tags_overlay(self):
+        self.show_tags_overlay = not self.show_tags_overlay
+        if self.show_tags_overlay:
+            # enter
+            self.tagging_form = TaggingForm(self, )
+            self.tagging_form.show()
+            self.tagging_form.activateWindow()
+            self.tagging_form.tagslist_edit.setFocus()
         else:
-            print(f"\t ERROR {filepath}")
+            # leave
+            if self.tagging_form:
+                self.tagging_form.close()
+                self.tagging_form.setParent(None)
+            self.tagging_form = None
 
-        Vars.CURRENT_MAX_TAG_ID = max(Vars.CURRENT_MAX_TAG_ID, id_int)
+    def draw_tags_background(self, painter):
+        if self.show_tags_overlay:
 
+            # old_font = painter.font()
+            # font = QFont(old_font)
+            # font.setPixelSize(250)
+            # font.setWeight(1900)
+            # painter.setFont(font)
+            # pen = QPen(QColor(180, 180, 180), 1)
+            # painter.setPen(pen)
+            # painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "TAGGING PANEL")
+            # painter.setFont(old_font)
 
+            painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 200)))
 
+    def draw_tags_sidebar_overlay(self, painter):
 
-def get_base_tags():
-    return list(Vars.TAGS_BASE.values())
+        sidebar_rect = self.get_sidebar_rect()
+        curpos = self.mapFromGlobal(QCursor().pos())
 
-def get_base_tag(tag_name):
-    for tag in get_base_tags():
-        if tag.name.lower() == tag_name.lower():
-            return tag
-    return None
+        old_brush = painter.brush()
+        old_pen = painter.pen()
+        old_font = painter.font()
 
+        size = (sidebar_rect.width(), sidebar_rect.height())
+        gradient = QLinearGradient(0, 0, *size)
+        gradient.setColorAt(0, QColor(0, 0, 0, 0))
+        gradient.setColorAt(1, QColor(0, 0, 0, 255))
 
+        gradient.setFinalStop(0, 0)
+        gradient.setStart(self.TAGS_SIDEBAR_WIDTH, 0)
 
+        if self.tagging_sidebar_visible:
 
-def init(self):
-    self.tagging_overlay_mode = False
-    self.TAGS_SIDEBAR_WIDTH = 500
-    self.tagging_sidebar_visible = False
-    self.tagging_form = None
-
-def toggle_overlay(parent):
-    parent.tagging_overlay_mode = not parent.tagging_overlay_mode
-    if parent.tagging_overlay_mode:
-        # enter
-        parent.tagging_form = TaggingForm(parent, )
-        parent.tagging_form.show()
-        parent.tagging_form.activateWindow()
-        parent.tagging_form.tagslist_edit.setFocus()
-    else:
-        # leave
-        if parent.tagging_form:
-            parent.tagging_form.close()
-            parent.tagging_form.setParent(None)
-        parent.tagging_form = None
-
-def draw_main(self, painter):
-    if self.tagging_overlay_mode:
-
-        # old_font = painter.font()
-        # font = QFont(old_font)
-        # font.setPixelSize(250)
-        # font.setWeight(1900)
-        # painter.setFont(font)
-        # pen = QPen(QColor(180, 180, 180), 1)
-        # painter.setPen(pen)
-        # painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "TAGGING PANEL")
-        # painter.setFont(old_font)
-
-        painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 200)))
-
-# эти обработчики не актуальны, если форма тегов будет модальной
-def main_wheelEvent(self, event):
-    pass
-def main_mousePressEvent(self, event):
-    pass
-def main_mouseMoveEvent(self, event):
-    pass
-def main_mouseReleaseEvent(self, event):
-    pass
-
-def wheelEvent(self, event):
-    scroll_value = event.angleDelta().y()/240
-    ctrl = event.modifiers() & Qt.ControlModifier
-    shift = event.modifiers() & Qt.ShiftModifier
-    no_mod = event.modifiers() == Qt.NoModifier
-
-def get_tiny_sidebar_rect(self):
-    return QRect(0, 0, 50, self.rect().height())
-
-def get_sidebar_rect(self):
-    return QRect(0, 0, self.TAGS_SIDEBAR_WIDTH, self.rect().height())
-
-def draw_tags_sidebar_overlay(self, painter):
-
-    sidebar_rect = get_sidebar_rect(self)
-    curpos = self.mapFromGlobal(QCursor().pos())
-
-    old_brush = painter.brush()
-    old_pen = painter.pen()
-    old_font = painter.font()
-
-    size = (sidebar_rect.width(), sidebar_rect.height())
-    gradient = QLinearGradient(0, 0, *size)
-    gradient.setColorAt(0, QColor(0, 0, 0, 0))
-    gradient.setColorAt(1, QColor(0, 0, 0, 255))
-
-    gradient.setFinalStop(0, 0)
-    gradient.setStart(self.TAGS_SIDEBAR_WIDTH, 0)
-
-    if self.tagging_sidebar_visible:
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(QColor(0, 0, 0, 200)))
-        # painter.drawRect(sidebar_rect)
-        painter.fillRect(QRect(0, 0, *size), gradient)
-        font = QFont(old_font)
-        font.setPixelSize(20)
-        font.setWeight(1900)
-        painter.setFont(font)
-
-        test_pixmap = QPixmap(1000, 1000)
-        test_painter = QPainter()
-        test_painter.begin(test_pixmap)
-        test_painter.setFont(font)
-
-        painter.setPen(QPen(Qt.gray))
-        painter.drawText(QPoint(50, 250), "Теги изображения")
-
-        tags_list = Vars.LibraryData.current_folder().current_image().tags_list
-        for i, tag in enumerate(tags_list):
-            tag_text = f"#{tag.name} ({len(tag.records)})"
-            test_rect = test_painter.drawText(QRect(0, 0, 1000, 1000),
-                                                Qt.AlignCenter | Qt.AlignVCenter, tag_text)
-            # back_rect = QRect(40, 50*(i+3), self.TAGS_SIDEBAR_WIDTH, 40)
-            back_rect = QRect(40, 50*(i+6), test_rect.width()+50, test_rect.height()+10)
-            text_rect = back_rect.adjusted(-10, -5, 10, 5)
             painter.setPen(Qt.NoPen)
-            painter.setBrush(QBrush(Qt.white))
-            painter.drawRect(back_rect)
-            painter.setPen(QPen(Qt.black))
-            painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, tag_text)
+            painter.setBrush(QBrush(QColor(0, 0, 0, 200)))
+            # painter.drawRect(sidebar_rect)
+            painter.fillRect(QRect(0, 0, *size), gradient)
+            font = QFont(old_font)
+            font.setPixelSize(20)
+            font.setWeight(1900)
+            painter.setFont(font)
 
-        test_painter.end()
+            test_pixmap = QPixmap(1000, 1000)
+            test_painter = QPainter()
+            test_painter.begin(test_pixmap)
+            test_painter.setFont(font)
 
-    painter.setFont(old_font)
-    painter.setBrush(old_brush)
-    painter.setPen(old_pen)
+            painter.setPen(QPen(Qt.gray))
+            painter.drawText(QPoint(50, 250), "Теги изображения")
+
+            tags_list = self.LibraryData().current_folder().current_image().tags_list
+            for i, tag in enumerate(tags_list):
+                tag_text = f"#{tag.name} ({len(tag.records)})"
+                test_rect = test_painter.drawText(QRect(0, 0, 1000, 1000),
+                                                    Qt.AlignCenter | Qt.AlignVCenter, tag_text)
+                # back_rect = QRect(40, 50*(i+3), self.TAGS_SIDEBAR_WIDTH, 40)
+                back_rect = QRect(40, 50*(i+6), test_rect.width()+50, test_rect.height()+10)
+                text_rect = back_rect.adjusted(-10, -5, 10, 5)
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(QBrush(Qt.white))
+                painter.drawRect(back_rect)
+                painter.setPen(QPen(Qt.black))
+                painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, tag_text)
+
+            test_painter.end()
+
+        painter.setFont(old_font)
+        painter.setBrush(old_brush)
+        painter.setPen(old_pen)
+
+    def get_tiny_sidebar_rect(self):
+        return QRect(0, 0, 50, self.rect().height())
+
+    def get_sidebar_rect(self):
+        return QRect(0, 0, self.TAGS_SIDEBAR_WIDTH, self.rect().height())
+
+    def main_wheelEvent(self, event):
+        scroll_value = event.angleDelta().y()/240
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
 
 class ClickableLabel(QLabel):
     def __init__(self, tag, label_type=None):
@@ -635,7 +610,7 @@ class TaggingForm(QWidget):
 
         tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
         base_tags_list = [tag.name for tag in get_base_tags()]
-        im_data = Vars.LibraryData.current_folder().current_image()
+        im_data = self.parent().LibraryData().current_folder().current_image()
         before_tags_list = im_data.tags_list
         # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
         im_data.tags_list = []
@@ -672,7 +647,7 @@ class TaggingForm(QWidget):
                         break
                 if not is_there_any_record:
                     tag.records.append(image_record)
-                    tag.store_to_disk()
+                    self.parent().LibraryData().store_tag_to_disk(tag)
 
             else:
                 # создаём новый тег в базе и тоже отмечаем
@@ -683,7 +658,7 @@ class TaggingForm(QWidget):
                 # сохранение в данных изображения и в базе
                 im_data.tags_list.append(tag)
                 tag.records.append(image_record)
-                tag.store_to_disk()
+                self.parent().LibraryData().store_tag_to_disk(tag)
 
         # обработка снятых тегов
         tags_list_set = set(tags_list)
@@ -701,12 +676,12 @@ class TaggingForm(QWidget):
             for tag in get_base_tags():
                 if tag.name == deleted_tag_name:
                     delete_record(tag, im_data)
-                    tag.store_to_disk()
+                    self.parent().LibraryData().store_tag_to_disk(tag)
 
-        toggle_overlay(self.parent())
+        self.parent().toggle_tags_overlay()
 
     def init_tagging_UI(self):
-        TAGS = Vars.LibraryData.current_folder().current_image().tags_list
+        TAGS = self.parent().LibraryData().current_folder().current_image().tags_list
         BASE_TAGS = get_base_tags()
 
         found_tags = []
@@ -733,12 +708,12 @@ class TaggingForm(QWidget):
     def keyReleaseEvent(self, event):
         key = event.key()
         if key == Qt.Key_Escape:
-            toggle_overlay(self.parent())
+            self.parent().toggle_tags_overlay()
 
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key_Escape:
-            toggle_overlay(self.parent())
+            self.parent().toggle_tags_overlay()
 
     def mousePressEvent(self, event):
         pass

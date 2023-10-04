@@ -21,10 +21,9 @@
 from _utils import *
 
 import settings_handling
-import tagging
-
 from commenting import CommentingLibraryDataMixin
 from pureref import PureRefLibraryDataMixin
+from tagging import TaggingLibraryDataMixin
 
 from collections import defaultdict
 import datetime
@@ -72,7 +71,7 @@ class LibraryModeImageColumn():
         self.images.append(image_data)
         self.height += image_data.preview_size.height()
 
-class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin):
+class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
@@ -87,7 +86,7 @@ class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin):
             i.on_library_page = False
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
-            tagging.load_tags(i)
+            i.load_tags()
             i.load_fav_list()
             i.load_comments_list()
             i.load_pureref_boards()
@@ -1313,14 +1312,6 @@ class ImageData():
         except Exception as e:
             return 0
 
-    # решение проблемы циклических импортов
-    get_tags_func = None
-    @classmethod
-    def get_tags_function(cls):
-        if cls.get_tags_func is None:
-            cls.get_tags_func = __import__("tagging").get_tags_for_image_data
-        return cls.get_tags_func
-
     def __init__(self, filepath, folder_data):
         super().__init__()
         self.scale = None
@@ -1344,7 +1335,7 @@ class ImageData():
                 self.md5, self.md5_tuple = "", ()
             self.creation_date = self.get_creation_date(self.filepath)
             self.image_metadata = dict()
-            self.tags_list = ImageData.get_tags_function()(self)
+            self.tags_list = LibraryData().get_tags_for_image_data(self)
             self.disk_size = self.get_disk_size(self.filepath)
         else:
             self.creation_date = 0

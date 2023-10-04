@@ -26,7 +26,7 @@ from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageCo
 from pureref import PureRefMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
-import tagging
+from tagging import TaggingMixing
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
@@ -91,7 +91,7 @@ class Globals():
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
-class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, CommentingMixin):
+class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -569,7 +569,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         """
 
         self.pureref_init()
-        tagging.init(self)
+        self.tagging_init()
 
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
@@ -1391,8 +1391,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
 
         elif self.is_viewer_page_active():
-            if self.tagging_overlay_mode:
-                tagging.main_mousePressEvent(self, event)
+            if self.show_tags_overlay:
+                self.tagging_main_mousePressEvent(self, event)
                 return
 
             if event.button() == Qt.LeftButton:
@@ -1443,14 +1443,14 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         elif self.is_viewer_page_active():
             curpos = self.mapFromGlobal(QCursor().pos())
             if not self.tagging_sidebar_visible:
-                self.tagging_sidebar_visible = tagging.get_tiny_sidebar_rect(self).contains(curpos)
+                self.tagging_sidebar_visible = self.get_tiny_sidebar_rect().contains(curpos)
             else:
-                self.tagging_sidebar_visible = tagging.get_sidebar_rect(self).contains(curpos)
+                self.tagging_sidebar_visible = self.get_sidebar_rect().contains(curpos)
 
             self.tagging_sidebar_visible &= self.isActiveWindow()
 
-            if self.tagging_overlay_mode:
-                tagging.main_mouseMoveEvent(self, event)
+            if self.show_tags_overlay:
+                self.tagging_main_mouseMoveEvent(self, event)
                 return
 
             if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
@@ -1490,8 +1490,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             return
 
         elif self.is_viewer_page_active():
-            if self.tagging_overlay_mode:
-                tagging.main_mouseReleaseEvent(self, event)
+            if self.show_tags_overlay:
+                self.tagging_main_mouseReleaseEvent(self, event)
                 return
             if event.button() == Qt.LeftButton:
                 self.left_button_pressed = False
@@ -1732,8 +1732,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         elif self.is_viewer_page_active():
 
-            if self.tagging_overlay_mode:
-                tagging.main_wheelEvent(self, event)
+            if self.show_tags_overlay:
+                self.tagging_main_wheelEvent(self, event)
                 return
 
             if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
@@ -2585,8 +2585,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         self.draw_image_metadata(painter)
 
-        tagging.draw_tags_sidebar_overlay(self, painter)
-        tagging.draw_main(self, painter)
+        self.draw_tags_sidebar_overlay(painter)
+        self.draw_tags_background(painter)
 
     def draw_center_label_main(self, painter):
         if self.image_center_position:
@@ -2869,7 +2869,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.STNG_show_thirds = not self.STNG_show_thirds
                 self.update()
             elif check_scancode_for(event, "T"):
-                tagging.toggle_overlay(self)
+                self.toggle_tags_overlay()
                 self.update()
             elif check_scancode_for(event, "I"):
                 self.invert_image = not self.invert_image
