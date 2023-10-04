@@ -24,7 +24,6 @@
 
 from _utils import *
 import help_text
-import pureref
 
 class ControlPanelButton(QPushButton):
     def __init__(self, id, *args, callback=None):
@@ -1206,7 +1205,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     select=False,
                     selection_rect=None,
                     click=False,
-                    click_hanlder=None,
+                    click_handler=None,
             ):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
@@ -1281,8 +1280,8 @@ class ControlPanel(QWidget, UtilsMixin):
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
-                        elif click_hanlder:
-                            click_hanlder(image_data)
+                        elif click_handler:
+                            click_handler(image_data)
                             return
 
 
@@ -1326,8 +1325,8 @@ class ControlPanel(QWidget, UtilsMixin):
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
-                        elif click_hanlder:
-                            click_hanlder(image_data)
+                        elif click_handler:
+                            click_handler(image_data)
                             return
 
 
@@ -1437,7 +1436,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     self.thumbnails_click(click=True)
 
         elif MW.is_pureref_page_active():
-            self.thumbnails_click(click_hanlder=pureref.thumbnails_click_handler)
+            self.thumbnails_click(click_handler=MW.pureref_thumbnails_click_handler)
 
         self.update()
         MW.update()

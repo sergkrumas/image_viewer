@@ -20,12 +20,12 @@
 
 from _utils import *
 
-import pureref, tagging, help_text
+import tagging, help_text
 
 from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
 import comments
-
+from pureref import PureRefMixin
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
@@ -90,7 +90,7 @@ class Globals():
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
-class MainWindow(QMainWindow, UtilsMixin):
+class MainWindow(QMainWindow, UtilsMixin, PureRefMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -447,6 +447,9 @@ class MainWindow(QMainWindow, UtilsMixin):
         self.stay_on_top = False
         self.handling_input = False
 
+        self.Globals = Globals
+        self.LibraryData = LibraryData
+
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
         else:
@@ -564,7 +567,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         }
         """
 
-        pureref.init(self)
+        self.pureref_init()
         tagging.init(self)
 
     # def changeEvent(self, event):
@@ -1418,7 +1421,7 @@ class MainWindow(QMainWindow, UtilsMixin):
 
 
         if self.is_pureref_page_active():
-            pureref.mousePressEvent(self, event)
+            self.pureref_mousePressEvent(event)
 
         elif self.is_start_page_active():
             self.mousePressEventStartPage(event)
@@ -1481,7 +1484,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     def mouseMoveEvent(self, event):
 
         if self.is_pureref_page_active():
-            pureref.mouseMoveEvent(self, event)
+            self.pureref_mouseMoveEvent(event)
 
         elif self.is_start_page_active():
             self.update()
@@ -1531,7 +1534,7 @@ class MainWindow(QMainWindow, UtilsMixin):
     def mouseReleaseEvent(self, event):
 
         if self.is_pureref_page_active():
-            pureref.mouseReleaseEvent(self, event)
+            self.pureref_mouseReleaseEvent(event)
 
         elif self.is_start_page_active():
             return
@@ -1769,7 +1772,7 @@ class MainWindow(QMainWindow, UtilsMixin):
         control_panel_undermouse = self.is_control_panel_under_mouse()
 
         if self.is_pureref_page_active():
-            pureref.wheelEvent(self, event)
+            self.pureref_wheelEvent(event)
 
         elif self.is_start_page_active():
             return
@@ -2208,7 +2211,7 @@ class MainWindow(QMainWindow, UtilsMixin):
             self.region_zoom_in_draw(painter)
 
         elif self.is_pureref_page_active():
-            pureref.draw(self, painter)
+            self.pureref_draw(painter)
 
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")

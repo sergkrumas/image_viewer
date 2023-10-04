@@ -23,7 +23,7 @@ from _utils import *
 import settings_handling
 import tagging
 import comments
-import pureref
+from pureref import PureRefLibraryDataMixin
 
 from collections import defaultdict
 import datetime
@@ -71,7 +71,7 @@ class LibraryModeImageColumn():
         self.images.append(image_data)
         self.height += image_data.preview_size.height()
 
-class LibraryData(object):
+class LibraryData(PureRefLibraryDataMixin):
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
@@ -89,7 +89,7 @@ class LibraryData(object):
             tagging.load_tags(i)
             i.load_fav_list()
             comments.load_comments_list(i)
-            pureref.load_pureref_boards(i)
+            i.load_pureref_boards()
             i.load_session_file()
         return cls.instance
 
@@ -247,12 +247,12 @@ class LibraryData(object):
         cf = self.current_folder()
         MW = self.globals.main_window
         if cf.board_scale_x is None:
-            pureref.set_default_viewport_scale(MW)
+            MW.set_default_boardviewport_scale()
         else:
             MW.board_scale_x = cf.board_scale_x
             MW.board_scale_y = cf.board_scale_y
         if cf.board_origin is None:
-            pureref.set_default_viewport_origin(MW)
+            MW.set_default_boardviewport_origin()
         else:
             MW.board_origin = cf.board_origin
 
