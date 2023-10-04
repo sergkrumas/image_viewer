@@ -380,7 +380,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.distance = math.sqrt(pow(diff.x(), 2) + pow(diff.y(), 2))
             def __lt__(self, other):
                 return self.distance > other.distance
-        window_rect = MW.rect()
+        window_rect = QRectF(MW.rect())
         content_rect = MW.get_image_viewport_rect(debug=False)
         i_rect = window_rect.intersected(content_rect)
         if i_rect.width() == 0 or i_rect.height() == 0:
