@@ -192,32 +192,34 @@ class HelpWidget(QWidget):
             font-size: 15pt;
         }
 
-        QScrollBar:vertical {
-            border: 1px solid #999999;
+        QScrollBar {
             border-radius: 5px;
-            background: gray;
-            width:10px;
-            margin: 0px 0px 0px 0px;
+            background: rgb(40, 50, 60);
+        }
+        QScrollBar:vertical {
+            width: 10px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle {
+            background: rgb(210, 210, 210);
+            border-radius: 5px;
         }
         QScrollBar::handle:vertical {
-            background: black;
-            min-height: 0px;
+            width: 10px;
+            min-height: 10px;
             border-radius: 5px;
         }
-
         QScrollBar::add-line:vertical {
-            background: black;
-            height: 0px;
-            subcontrol-position: bottom;
-            subcontrol-origin: margin;
-            border-radius: 5px;
+             background: transparent;
         }
         QScrollBar::sub-line:vertical {
-            background: black;
-            height: 0 px;
-            subcontrol-position: top;
-            subcontrol-origin: margin;
-            border-radius: 5px;
+             background: transparent;
+        }
+        QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+             background: transparent;
+        }
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+             background: transparent;
         }
 
         """
