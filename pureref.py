@@ -349,9 +349,8 @@ class PureRefMixin():
 
     def pureref_thumbnails_click_handler(self, image_data):
 
-        self = self.Globals.main_window
         if image_data.board_position is None:
-            self.Globals.main_window.show_center_label("Этот элемент не представлен на доске", error=True)
+            self.show_center_label("Этот элемент не представлен на доске", error=True)
         else:
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
@@ -359,7 +358,7 @@ class PureRefMixin():
             image_pos = QPointF(image_data.board_position.x()*board_scale_x, image_data.board_position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
-            self.board_origin = self.board_origin - image_pos + viewport_center_pos - self.board_origin 
+            self.board_origin = - image_pos + viewport_center_pos
 
             image_width = image_data.source_width*image_data.board_scale*board_scale_x
             image_height = image_data.source_height*image_data.board_scale*board_scale_y
