@@ -2881,7 +2881,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             elif check_scancode_for(event, "R"):
                 self.start_inframed_image_saving(event)
             elif check_scancode_for(event, "M"):
-                self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
+                if self.is_pureref_page_active():
+                    self.pureref_toggle_minimap()
+                elif self.is_viewer_page_active():
+                    self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
             elif check_scancode_for(event, "P"):
                 self.toggle_stay_on_top()
                 self.update()

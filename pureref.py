@@ -44,6 +44,11 @@ class PureRefMixin():
 
         self.board_translating = True
 
+        self.pureref_show_minimap = False
+
+    def pureref_toggle_minimap(self):
+        self.pureref_show_minimap = not self.pureref_show_minimap
+
     def pureref_draw_stub(self, painter):
         font.setPixelSize(250)
         font.setWeight(1900)
@@ -87,12 +92,17 @@ class PureRefMixin():
 
     def prepare_board(self, folder_data):
 
-        offset = QPointF(0, 0)
+        if self.Globals.DEBUG:
+            offset = QPointF(0, 0) - QPointF(500, 0)
+        else:
+            offset = QPointF(0, 0)
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
                 image_data.board_scale = 1.0
                 image_data.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
+
+        self.build_bounding_rect(folder_data)
 
         folder_data.board_ready = True
 
@@ -131,7 +141,6 @@ class PureRefMixin():
 
                 painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
 
-
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = int(300 * self.board_scale_x)
         LINES_INTERVAL_Y = int(300 * self.board_scale_y)
@@ -162,6 +171,8 @@ class PureRefMixin():
         if self.Globals.DEBUG:
             self.pureref_draw_board_origin(painter)
             self.pureref_draw_origin_compass(painter)
+
+        self.pureref_draw_minimap(painter)
 
     def pureref_draw_origin_compass(self, painter):
 
@@ -228,7 +239,6 @@ class PureRefMixin():
         painter.setBrush(Qt.NoBrush)
         painter.setPen(old_pen)
 
-
     def pureref_draw_board_origin(self, painter):
         pos = self.board_origin
         pen = QPen(QColor(220, 220, 220, 200), 5)
@@ -262,6 +272,103 @@ class PureRefMixin():
         text_rect = self.calculate_text_rect(font, max_rect, text, alignment)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
+
+    def build_bounding_rect(self, folder_data):
+        points = []
+        points.append(self.board_origin)
+        for image_data in folder_data.images_list:
+            if not image_data.preview_error:
+                rf = QRectF(0, 0, image_data.source_width, image_data.source_height)
+                rf.moveCenter(image_data.board_position)
+                points.append(rf.topLeft())
+                points.append(rf.bottomRight())
+        p1, p2 = get_bounding_points(points)
+        bounding_rect = build_valid_rectF(p1, p2)
+        self.board_bounding_rect = bounding_rect
+
+    def pureref_draw_minimap(self, painter):
+        if not self.pureref_show_minimap:
+            return
+
+        cf = self.LibraryData().current_folder()
+        if cf.board_ready:
+            painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20, 220)))
+
+            minimap_rect = self.board_bounding_rect
+            map_width = max(400, self.rect().width() - 300)
+            factor = map_width / self.board_bounding_rect.width()
+            map_height = self.board_bounding_rect.height()*factor
+            minimap_rect = QRectF(0, 0, map_width, map_height)
+            minimap_rect.moveCenter(self.get_center_position())
+
+            # backplate
+            minimap_backplate = minimap_rect.adjusted(-10, -10, 10, 10)
+            painter.fillRect(minimap_backplate, QBrush(QColor(0, 0, 0, 150)))
+            # gray frame
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(QColor(50, 50, 50), 1))
+            painter.drawRect(minimap_rect)
+
+            for image_data in cf.images_list:
+                if not image_data.board_position:
+                    continue
+                delta = image_data.board_position - self.board_bounding_rect.topLeft()
+                delta = QPointF(
+                    abs(delta.x()/self.board_bounding_rect.width()),
+                    abs(delta.y()/self.board_bounding_rect.height())
+                )
+                point = minimap_rect.topLeft() + QPointF(delta.x()*map_width, delta.y()*map_height)
+                painter.setPen(QPen(Qt.red, 4))
+                painter.drawPoint(point)
+
+                w = map_width   *   image_data.source_width/self.board_bounding_rect.width()
+                h = map_height   *   image_data.source_height/self.board_bounding_rect.height()
+                image_frame_rect = QRectF(0, 0, w, h)
+                image_frame_rect.moveCenter(point)
+
+                painter.setPen(QPen(Qt.green, 1))
+                painter.drawRect(image_frame_rect)
+
+            # origin point
+            center_point_rel = -self.board_bounding_rect.topLeft()
+            center_point = QPointF(
+                map_width * center_point_rel.x()/self.board_bounding_rect.width(),
+                map_height * center_point_rel.y()/self.board_bounding_rect.height()
+            ) + minimap_rect.topLeft()
+            painter.setPen(QPen(Qt.red, 2))            
+            painter.drawLine(center_point+QPointF(-10, -10), center_point+QPointF(10, 10))
+            painter.drawLine(center_point+QPointF(-10, 10), center_point+QPointF(10, -10))
+
+            # viewport rect
+            viewport_rect = self.rect()
+            viewport_pos = -self.board_origin + self.get_center_position()
+            tp = self.board_bounding_rect.topLeft()
+
+            # здесь board_scale необходим для правильной передачи смещения вьюпорта
+            delta = viewport_pos - QPointF(tp.x()*self.board_scale_x, tp.y()*self.board_scale_y)
+            delta = QPointF(
+                delta.x()/self.board_bounding_rect.width()/self.board_scale_x,
+                delta.y()/self.board_bounding_rect.height()/self.board_scale_y
+            )
+
+            point = minimap_rect.topLeft() + QPointF(delta.x()*map_width, delta.y()*map_height)
+            painter.setPen(QPen(Qt.yellow, 4))
+            painter.drawPoint(point)
+
+            vw = viewport_rect.width()
+            vh = viewport_rect.height()
+            rel_size = QPointF(
+                vw/self.board_bounding_rect.width(),
+                vh/self.board_bounding_rect.height()
+            )
+            # здесь board scale нужен для передачи мастабирования вьюпорта
+            w = map_width*rel_size.x()/self.board_scale_x
+            h = map_height*rel_size.y()/self.board_scale_y
+            miniviewport_rect = QRectF(0, 0, w, h)
+            miniviewport_rect.moveCenter(point)
+            painter.setPen(QPen(Qt.yellow, 1))
+            painter.drawRect(miniviewport_rect)
+
 
     def pureref_mousePressEvent(self, event):
 

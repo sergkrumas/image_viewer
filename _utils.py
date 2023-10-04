@@ -262,6 +262,19 @@ def build_valid_rect(p1, p2):
         bottom = max(p.y(), bottom)
     return QRect(QPoint(int(left), int(top)), QPoint(int(right), int(bottom)))
 
+def build_valid_rectF(p1, p2):
+    MAX = sys.maxsize
+    left = MAX
+    right = -MAX
+    top = MAX
+    bottom = -MAX
+    for p in [p1, p2]:
+        left = min(p.x(), left)
+        right = max(p.x(), right)
+        top = min(p.y(), top)
+        bottom = max(p.y(), bottom)
+    return QRectF(QPointF(int(left), int(top)), QPointF(int(right), int(bottom)))
+
 def is_webp_file_animated(filepath):
     result = False
     file_h = open(filepath, "rb")
@@ -553,3 +566,18 @@ class UtilsMixin:
 
     def cursor_in_rect(self, r):
         return r.contains(self.mapped_cursor_pos())
+
+def get_bounding_points(points):
+    MAX = sys.maxsize
+    left = MAX
+    right = -MAX
+    top = MAX
+    bottom = -MAX
+    if not points:
+        raise Exception("Empty list!")
+    for p in points:
+        left = min(int(p.x()), left)
+        right = max(int(p.x()), right)
+        top = min(int(p.y()), top)
+        bottom = max(int(p.y()), bottom)
+    return QPointF(left, top), QPointF(right, bottom)
