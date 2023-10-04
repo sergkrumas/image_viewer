@@ -25,7 +25,7 @@ from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageCo
                                                                             ThumbnailsThread)
 from pureref import PureRefMixin
 from help_text import HelpWidgetMixin
-import comments
+from commenting import CommentingMixin
 import tagging
 
 from pixmaps_generation import generate_pixmaps
@@ -91,7 +91,7 @@ class Globals():
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
-class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
+class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, CommentingMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -1192,7 +1192,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
         self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
         self.set_window_title(self.current_image_details())
         if not self.error:
-            comments.check_lost_image_and_update_base(image_data)
+            LibraryData().check_lost_image_and_update_base(image_data)
         self.update()
 
     def read_image_metadata(self, image_data):
@@ -1299,7 +1299,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
             LibraryData().update_current_folder_columns()
 
         SettingsWindow.center_if_on_screen()
-        comments.CommentWindow.center_if_on_screen()
+        self.center_comment_window()
 
         self.update()
         # здесь по возможности ещё должен быть и скейл относительно центра.
@@ -1341,57 +1341,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
     def isLeftClickAndCtrlShift(self, event):
         return event.buttons() == Qt.LeftButton \
                              and event.modifiers() == (Qt.ControlModifier | Qt.ShiftModifier)
-
-    def get_comment_rect_info(self):
-        rect = build_valid_rect(self.COMMENT_RECT_INPUT_POINT1, self.COMMENT_RECT_INPUT_POINT2)
-        im_rect = self.get_image_viewport_rect()
-        screen_delta1 = rect.topLeft() - im_rect.topLeft()
-        screen_delta2 = rect.bottomRight() - im_rect.topLeft()
-
-        left = screen_delta1.x()/im_rect.width()
-        top = screen_delta1.y()/im_rect.height()
-
-        right = screen_delta2.x()/im_rect.width()
-        bottom = screen_delta2.y()/im_rect.height()
-
-        return left, top, right, bottom
-
-    def image_comment_mousePressEvent(self, event):
-        cf = LibraryData().current_folder()
-        ci = cf.current_image()
-        if ci:
-            self.COMMENT_RECT_INPUT_POINT1 = event.pos()
-            self.COMMENT_RECT_INPUT_POINT2 = event.pos()
-            if self.comment_data_candidate:
-                self.comment_data = self.comment_data_candidate
-                self.image_comment_update_rect(event)
-            else:
-                left, top, right, bottom = self.get_comment_rect_info()
-                self.comment_data = comments.CommentData.create_comment(ci, left, top, right, bottom)
-        self.update()
-
-    def image_comment_update_rect(self, event):
-        if self.comment_data is not None:
-            self.COMMENT_RECT_INPUT_POINT2 = event.pos()
-            left, top, right, bottom = self.get_comment_rect_info()
-            self.comment_data.left = left
-            self.comment_data.top = top
-            self.comment_data.right = right
-            self.comment_data.bottom = bottom
-        self.update()
-
-    def image_comment_mouseMoveEvent(self, event):
-        self.image_comment_update_rect(event)
-        self.update()
-
-    def image_comment_mouseReleaseEvent(self, event):
-        self.image_comment_update_rect(event)
-        comments.store_comments_list()
-        if self.comment_data_candidate is None:
-            comments.CommentWindow().show(self.comment_data, 'new')
-        self.comment_data = None
-        self.comment_data_candidate = None
-        self.update()
 
     def mousePressEventStartPage(self, event):
 
@@ -2656,52 +2605,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
                 text = self.center_label_info_type
             self.draw_center_label(painter, text)        
 
-    def draw_comments(self, painter):
-
-        old_pen = painter.pen()
-        old_brush = painter.brush()
-
-        for comment in comments.get_comments_for_image():
-            painter.setPen(QPen(Qt.yellow, 1))
-            painter.setBrush(Qt.NoBrush)
-            im_rect = self.get_image_viewport_rect()
-
-            base_point = im_rect.topLeft()
-
-            # abs is for backwards compatibility
-            screen_left = base_point.x() + im_rect.width()*abs(comment.left)
-            screen_top = base_point.y() + im_rect.height()*abs(comment.top)
-
-            screen_right = base_point.x() + im_rect.width()*abs(comment.right)
-            screen_bottom = base_point.y() + im_rect.height()*abs(comment.bottom)
-
-            comment_rect = QRectF(
-                QPointF(screen_left, screen_top),
-                QPointF(screen_right, screen_bottom)
-            ).toRect()
-            comment.screen_rect = comment_rect
-            cursor_inside = comment_rect.contains(self.mapFromGlobal(QCursor().pos()))
-            if cursor_inside:
-                painter.setOpacity(1.0)
-            else:
-                painter.setOpacity(0.5)
-            painter.drawRect(comment_rect)
-            painter.setOpacity(1.0)
-
-            text_to_draw = f'{comment.date_str}\n{comment.date_edited_str}\n{comment.text}'
-            rect = painter.drawText(QRect(), Qt.AlignLeft, text_to_draw)
-
-            if cursor_inside:
-                painter.setPen(Qt.NoPen)
-                painter.setBrush(QBrush(Qt.black))
-                rect.moveTopLeft(comment_rect.bottomLeft())
-                painter.drawRect(rect)
-                painter.setPen(QPen(Qt.white))
-                painter.drawText(rect, Qt.AlignLeft, text_to_draw)
-
-        painter.setPen(old_pen)
-        painter.setBrush(old_brush)
-
     def draw_image_metadata(self, painter):
         cf = LibraryData().current_folder()
         ci = cf.current_image()
@@ -3138,7 +3041,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
         self.update()
 
     def get_selected_comment(self, event):
-        image_comments = comments.get_comments_for_image()
+        image_comments = LibraryData().get_comments_for_image()
         selected_comment = None
         if image_comments and hasattr(image_comments[0], "screen_rect"):
             for comment in image_comments:
@@ -3359,12 +3262,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin):
                 elif action == delete_comment:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
-                        comments.delete_comment(sel_comment)
+                        LibraryData().delete_comment(sel_comment)
                         self.update()
                 elif action == change_comment_text:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
-                        comments.CommentWindow().show(sel_comment, 'edit')
+                        self.show_comment_form(sel_comment)
                 elif action == change_comment_borders:
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:

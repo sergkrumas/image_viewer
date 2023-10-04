@@ -22,7 +22,8 @@ from _utils import *
 
 import settings_handling
 import tagging
-import comments
+
+from commenting import CommentingLibraryDataMixin
 from pureref import PureRefLibraryDataMixin
 
 from collections import defaultdict
@@ -71,7 +72,7 @@ class LibraryModeImageColumn():
         self.images.append(image_data)
         self.height += image_data.preview_size.height()
 
-class LibraryData(PureRefLibraryDataMixin):
+class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin):
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
@@ -88,7 +89,7 @@ class LibraryData(PureRefLibraryDataMixin):
             i.phantom_image._is_phantom = True
             tagging.load_tags(i)
             i.load_fav_list()
-            comments.load_comments_list(i)
+            i.load_comments_list()
             i.load_pureref_boards()
             i.load_session_file()
         return cls.instance
