@@ -644,7 +644,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         elif requested_page == self.pages.VIEWER_PAGE:
             self.viewer_reset() # для показа сообщения о загрузке
             LibraryData().after_current_image_changed()
-            recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
+            self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
             LibraryData().add_current_image_to_view_history()
             cf = LibraryData().current_folder()
             ThumbnailsThread(cf, Globals).start()
@@ -655,7 +655,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.transformations_allowed = False
 
         elif requested_page == self.pages.PUREREF_PAGE:
-            recreate_control_panel(requested_page=self.pages.PUREREF_PAGE)
+            self.recreate_control_panel(requested_page=self.pages.PUREREF_PAGE)
             self.transformations_allowed = True
             LibraryData().load_board_data()
 
@@ -3029,6 +3029,18 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         self.update()
 
+    def recreate_control_panel(self, requested_page=None):
+        MW = Globals.main_window
+        if Globals.control_panel is not None:
+            Globals.control_panel.timer.stop()
+            Globals.control_panel.close()
+            Globals.control_panel.setParent(None)
+            Globals.control_panel = None
+
+        CP = Globals.control_panel = ControlPanel(self, requested_page=requested_page)
+        CP.show()
+        return CP
+
     def copy_to_clipboard(self):
         if self.pixmap:
             if self.copied_from_clipboard:
@@ -3452,17 +3464,6 @@ def excepthook(exc_type, exc_value, exc_tb):
         _restart_app(aftercrash=True)
     sys.exit()
 
-def recreate_control_panel(requested_page=None):
-    MW = Globals.main_window
-    if Globals.control_panel is not None:
-        Globals.control_panel.timer.stop()
-        Globals.control_panel.close()
-        Globals.control_panel.setParent(None)
-        Globals.control_panel = None
-
-    CP = Globals.control_panel = ControlPanel(MW, requested_page=requested_page)
-    CP.show()
-    return CP
 def _restart_app(aftercrash=False):
     if aftercrash:
 
@@ -3710,7 +3711,7 @@ def _main():
     ControlPanel.globals = Globals
     ControlPanel.LibraryData = LibraryData
     ControlPanel.SettingsWindow = SettingsWindow
-    CP = recreate_control_panel()
+    CP = MW.recreate_control_panel()
     # обработка входящих данных
     if path:
         LibraryData().handle_input_data(path)
