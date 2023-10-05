@@ -452,42 +452,27 @@ class ControlPanel(QWidget, UtilsMixin):
         MW.show_center_label("Обновлено")
         self.update()
 
-    def __init__(self, *args, **kwargs):
+    def pureref_set_default_scale(self):
+        MW = self.globals.main_window
+        MW.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
+
+    def pureref_zoom_out(self):
+        MW = self.globals.main_window
+        MW.pureref_do_scale_board(-1.0)
+
+    def pureref_zoom_in(self):
+        MW = self.globals.main_window
+        MW.pureref_do_scale_board(1.0)
+
+    def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         _main_layout = QVBoxLayout()
         _buttons_layout = QHBoxLayout()
         _label_layout = QHBoxLayout()
 
-        self.zoom_out_btn = ControlPanelButton("zoom_out", "Уменьшить",
-                                                    callback=self.zoom_out)
-        self.zoom_in_btn = ControlPanelButton("zoom_in", "Увеличить",
-                                                    callback=self.zoom_in)
-        self.original_scale_btn = ControlPanelButton("orig_scale", "1:1",
-                                                    callback=self.set_original_scale)
-        self.help_btn = ControlPanelButton("help", "Справка",
-                                                    callback=self.toggle_help)
-        self.settings_btn = ControlPanelButton("settings", "Настройки",
-                                                    callback=self.show_settings_window)
-        self.previous_btn = ControlPanelButton("previous", "Предыдущий",
-                                                    callback=self.show_previous)
-        self.play_btn = ControlPanelButton("play", "Слайдшоу",
-                                                    callback=self.play)
-        self.next_btn = ControlPanelButton("next", "Следующий",
-                                                    callback=self.show_next)
-        self.rotate_clockwise_btn = ControlPanelButton("rotate_clockwise", "Повернуть\nпо часовой стрелке",
-                                                    callback=self.rotate_clockwise)
-        self.rotate_counterclockwise_btn = ControlPanelButton("rotate_counterclockwise", "Повернуть против\nчасовой стрелки",
-                                                    callback=self.rotate_counterclockwise)
-        self.favorite_btn = ControlPanelButton("favorite", "Избранное",
-                                                    callback=self.manage_favorite_list)
-        self.update_list_btn = ControlPanelButton("update_list", "Обновить список",
-                                                    callback=self.update_folder_list)
 
-        # self.open_in_explorer_btn = ControlPanelButton("", "Найти\nна диске")
-        # self.open_in_google_chrome_btn = ControlPanelButton("", "Открыть в\nGoogle Chrome")
         self.space_btn_generator = lambda: ControlPanelButton("space")
-
 
         self.control_panel_label = QLabel("", self) #"picture_filename.extension (XxW)"
         self.control_panel_label.setStyleSheet("font-weight: bold; color: white; font-size: 12pt; padding: 5px;")
@@ -502,26 +487,48 @@ class ControlPanel(QWidget, UtilsMixin):
         effect.setYOffset(0)
         self.control_panel_label.setGraphicsEffect(effect)
 
-        self.all_buttons = [
-            self.original_scale_btn,
-            self.zoom_out_btn,
-            self.zoom_in_btn,
+        main_window = self.parent()
 
-            self.help_btn,
-            self.settings_btn,
+        if requested_page is None or requested_page == main_window.pages.VIEWER_PAGE:
+            self.favorite_btn = ControlPanelButton("favorite", "Избранное",
+                                                        callback=self.manage_favorite_list)            
+            self.all_buttons = [
+                ControlPanelButton("orig_scale", "1:1", callback=self.set_original_scale),
+                ControlPanelButton("zoom_out", "Уменьшить", callback=self.zoom_out),
+                ControlPanelButton("zoom_in", "Увеличить", callback=self.zoom_in),
 
-            self.previous_btn,
-            self.play_btn,
-            self.next_btn,
+                ControlPanelButton("help", "Справка", callback=self.toggle_help),
+                ControlPanelButton("settings", "Настройки", callback=self.show_settings_window),
 
-            self.rotate_counterclockwise_btn,
-            self.rotate_clockwise_btn,
-            self.favorite_btn,
+                ControlPanelButton("previous", "Предыдущий", callback=self.show_previous),
+                ControlPanelButton("play", "Слайдшоу", callback=self.play),
+                ControlPanelButton("next", "Следующий", callback=self.show_next),
 
-            # self.space_btn_generator(),
-            self.update_list_btn,
-            self.space_btn_generator(),
-        ]
+                ControlPanelButton("rotate_counterclockwise", "Повернуть против\nчасовой стрелки",
+                                                    callback=self.rotate_counterclockwise),
+                ControlPanelButton("rotate_clockwise", "Повернуть\nпо часовой стрелке",
+                                                    callback=self.rotate_clockwise),
+                self.favorite_btn,
+                ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
+                self.space_btn_generator(),
+            ]
+        elif requested_page == main_window.pages.PUREREF_PAGE:
+            self.all_buttons = [
+                ControlPanelButton("settings", "Настройки", callback=self.show_settings_window),
+                ControlPanelButton("help", "Справка", callback=self.toggle_help),
+
+                self.space_btn_generator(),
+
+                ControlPanelButton("orig_scale", "1:1", callback=self.pureref_set_default_scale),
+                ControlPanelButton("zoom_out", "Уменьшить", callback=self.pureref_zoom_out),
+                ControlPanelButton("zoom_in", "Увеличить", callback=self.pureref_zoom_in),
+
+                self.space_btn_generator(),
+                ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
+            ]            
+        else:
+            self.all_buttons = []            
+
 
         self.buttons_list = self.all_buttons[:]
 

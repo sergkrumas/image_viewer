@@ -438,6 +438,9 @@ class PureRefMixin():
 
         self.update()
 
+    def pureref_do_scale_board(self, scroll_value):
+        self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
+
     def pureref_wheelEvent(self, event):
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -479,10 +482,14 @@ class PureRefMixin():
 
         self.update()
 
-    def set_default_boardviewport_scale(self, keep_position=False):
+    def set_default_boardviewport_scale(self, keep_position=False, center_as_pivot=False):
+        if center_as_pivot:
+            pivot = self.get_center_position()
+        else:
+            pivot = self.mapped_cursor_pos()
         if keep_position:
             self.do_scale_board(0, False, False, False,
-                pivot=self.mapped_cursor_pos(),
+                pivot=pivot,
                 factor_x=1/self.board_scale_x,
                 factor_y=1/self.board_scale_y,
             )
