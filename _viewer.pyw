@@ -642,9 +642,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.transformations_allowed = False
 
         elif requested_page == self.pages.VIEWER_PAGE:
+            self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
             self.viewer_reset() # для показа сообщения о загрузке
             LibraryData().after_current_image_changed()
-            self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
             LibraryData().add_current_image_to_view_history()
             cf = LibraryData().current_folder()
             ThumbnailsThread(cf, Globals).start()
