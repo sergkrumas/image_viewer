@@ -748,11 +748,13 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     setattr(attr_host, attr_name, value)
                     callback_func()
                 if self.animation_duration < (time.time() - self.at_start_timestamp):
+                    self.animation_allowed = False
+                    if self in self.main_window.animation_tasks:
+                        self.main_window.animation_tasks.remove(self)
+                    msg = f'animation task closed {self.anim_id}'
                     if self.on_finish_animation_callback:
                         self.on_finish_animation_callback()
-                    self.animation_allowed = False
-                    self.main_window.animation_tasks.remove(self)
-                    print("animation task closed")
+                    print(msg)
 
         return AnimationTask
 
@@ -2790,6 +2792,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if CP is not None and CP.fullscreen_flag:
             CP.do_toggle_fullscreen()
 
+    def toggle_animation_playback(self):
+        if self.animated:
+            im_data = self.image_data
+            im_data.anim_paused = not im_data.anim_paused
+        self.update()        
+
     def keyPressEvent(self, event):
         key = event.key()
 
@@ -2837,10 +2845,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             elif key == Qt.Key_End:
                 LibraryData().jump_to_last()
             elif key == Qt.Key_Space:
-                if self.animated:
-                    im_data = self.image_data
-                    im_data.anim_paused = not im_data.anim_paused
-                self.update()
+                if self.is_pureref_page_active():
+                    self.pureref_fly_over_board(user_call=True)
+                elif self.is_viewer_page_active():
+                    self.toggle_animation_playback()
             elif check_scancode_for(event, ("W", "S", "A", "D")):
                 length = 1.0
                 if event.modifiers() & Qt.ShiftModifier:

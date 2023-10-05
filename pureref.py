@@ -46,6 +46,13 @@ class PureRefMixin():
 
         self.pureref_show_minimap = False
 
+        self.pr_viewport = QPointF(0, 0)
+
+        self.fly_pairs = []
+        self._board_scale_x = 1.0
+        self._board_scale_y = 1.0
+        self.current_start_pos = None
+
     def pureref_toggle_minimap(self):
         self.pureref_show_minimap = not self.pureref_show_minimap
 
@@ -156,6 +163,13 @@ class PureRefMixin():
         for i in range(r.top(), r.bottom(), LINES_INTERVAL_Y):
             painter.drawLine(offset+QPointF(r.left(), i), offset+QPointF(r.right(), i))
 
+    def pureref_draw_user_points(self, painter, cf):
+
+        painter.setPen(QPen(Qt.red, 5))
+        for point, board_scale_x, board_scale_y in cf.board_user_points:
+            p = self.board_origin + QPointF(point.x()*self.board_scale_x, point.y()*self.board_scale_y)
+            painter.drawPoint(p)
+
     def pureref_draw_main(self, painter):
 
         cf = self.LibraryData().current_folder()
@@ -171,6 +185,8 @@ class PureRefMixin():
         if self.Globals.DEBUG:
             self.pureref_draw_board_origin(painter)
             self.pureref_draw_origin_compass(painter)
+
+        self.pureref_draw_user_points(painter, cf)
 
         self.pureref_draw_minimap(painter)
 
@@ -372,6 +388,10 @@ class PureRefMixin():
 
     def pureref_mousePressEvent(self, event):
 
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
         if event.buttons() == Qt.LeftButton:
             if self.transformations_allowed:
                 self.board_translating = True
@@ -379,7 +399,12 @@ class PureRefMixin():
                 self.start_origin_pos = self.board_origin
                 self.update()
 
+
     def pureref_mouseMoveEvent(self, event):
+
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
 
         if event.buttons() == Qt.LeftButton:
             if self.transformations_allowed and self.board_translating:
@@ -391,6 +416,10 @@ class PureRefMixin():
 
     def pureref_mouseReleaseEvent(self, event):
 
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
         if event.button() == Qt.LeftButton:
             if self.transformations_allowed:
                 self.board_translating = False
@@ -399,7 +428,13 @@ class PureRefMixin():
             if self.transformations_allowed:
                 self.set_default_boardviewport_scale(keep_position=True)
 
-    def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor_x=None, factor_y=None):
+        if event.button() == Qt.LeftButton and ctrl and not shift:
+            cf = self.LibraryData().current_folder()
+            delta = QPointF(event.pos() - self.board_origin)
+            delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+            cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
+
+    def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor_x=None, factor_y=None, precalculate=False):
 
         curpos = self.mapped_cursor_pos()
         if pivot is None:
@@ -499,6 +534,132 @@ class PureRefMixin():
 
     def set_default_boardviewport_origin(self):
         self.board_origin = QPointF(300, 300)
+
+    def animate_scale_update(self):
+
+        # надо менять и значение self.board_origin для того, чтобы увеличивать относительно центра картинки и центра экрана (они совпадают)
+        factor_x = self._board_scale_x/self.board_scale_x
+        factor_y = self._board_scale_y/self.board_scale_y
+
+        pivot = self.get_center_position()
+
+        _board_origin = self.board_origin
+
+        self.board_scale_x *= factor_x
+        self.board_scale_y *= factor_y
+
+        _board_origin -= pivot
+        _board_origin = QPointF(_board_origin.x()*factor_x, _board_origin.y()*factor_y)
+        _board_origin += pivot
+
+        self.board_origin  = _board_origin
+
+        self.update()
+
+    def pureref_fly_over_board(self, user_call=False):
+
+        if user_call and self.fly_pairs:
+            # создаём таску с тем же anim_id, чтобы отменить циклическую анимацию
+            self.animate_properties(
+                [
+                    (self, "pr_viewport", self.pr_viewport, self.pr_viewport, self.update),
+                ],
+                anim_id="flying",
+                duration=0.001,
+            )
+            self.fly_pairs = list()
+            return
+
+        viewport_center_pos = self.get_center_position()
+        cf = self.LibraryData().current_folder()
+        pair = None
+
+        current_pos = delta = QPointF(self.get_center_position() - self.board_origin)
+        current_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+
+        if not self.fly_pairs:
+            _list = []
+
+            if cf.board_user_points:
+                for point, bx, by in cf.board_user_points:
+                    _list.append([point, bx, by])
+            else:
+                for image_data in cf.images_list:
+                    if not image_data.preview_error:
+                        point = image_data.board_position
+
+
+
+                        _list.append([point, None, image_data])
+                        # _list.append([point, bx, by, image_data])
+
+            self.fly_pairs = get_cycled_pairs(_list, slideshow=False)
+            pair = [
+                [current_pos, self.board_scale_x, self.board_scale_y],
+                [_list[0][0], _list[0][1], _list[0][2], ]
+            ]
+
+        if pair is None:
+            pair = next(self.fly_pairs)
+
+        def animate_scale():
+
+
+
+            bx = pair[1][1]
+            by = pair[1][2]
+
+            if bx is None:
+                pass
+                image_data = by
+                board_scale_x = self.board_scale_x
+                board_scale_y = self.board_scale_y
+                # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
+                image_width = image_data.source_width*image_data.board_scale #*board_scale_x
+                image_height = image_data.source_height*image_data.board_scale #*board_scale_y
+                image_rect = QRect(0, 0, int(image_width), int(image_height))
+                fitted_rect = fit_rect_into_rect(image_rect, self.rect())
+                bx = fitted_rect.width()/image_rect.width()
+                by = fitted_rect.height()/image_rect.height()                
+
+
+            self.animate_properties(
+                [
+                    (self, "_board_scale_x", self.board_scale_x, bx, self.animate_scale_update),
+                    (self, "_board_scale_y", self.board_scale_y, by, self.animate_scale_update),
+                ],
+                anim_id="flying",
+                duration=1.5,
+                easing=QEasingCurve.InOutSine,
+                callback_on_finish=self.pureref_fly_over_board,
+            )
+
+        def update_viewport_position():
+            self.board_origin = -self.pr_viewport + viewport_center_pos
+            self.update()
+
+
+        delta = QPointF(self.get_center_position() - self.board_origin) 
+        current_pos_ = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+
+        pair = [
+            [current_pos_, self.board_scale_x, self.board_scale_y],
+            pair[1],
+        ]        
+
+        pos1 = QPointF(pair[0][0].x()*self.board_scale_x, pair[0][0].y()*self.board_scale_y)
+        pos2 = QPointF(pair[1][0].x()*self.board_scale_x, pair[1][0].y()*self.board_scale_y)
+
+        self.animate_properties(
+            [
+                (self, "pr_viewport", pos1, pos2, update_viewport_position),
+            ],
+            anim_id="flying",
+            duration=2.0,
+            # easing=QEasingCurve.InOutSine,
+            callback_on_finish=animate_scale,
+            # callback_on_finish=self.pureref_fly_over_board
+        )
 
 
 

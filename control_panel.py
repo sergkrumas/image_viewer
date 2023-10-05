@@ -1590,7 +1590,7 @@ class Slideshow(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         images_list = self.LibraryData().current_folder().images_list
         images_list = [im for im in images_list if im.is_supported_filetype]
-        self.pairs = self.get_cycled_pairs(images_list)
+        self.pairs = get_cycled_pairs(images_list)
         self.opacity = 0.001
         self.increase_opacity = True
         self.show_this()
@@ -1638,26 +1638,6 @@ class Slideshow(QWidget):
 
     def close_this(self):
         self.increase_opacity = False
-
-    def get_cycled_pairs(self, input_list):
-        elements = input_list[:]
-        count = len(elements)
-        # переставляем последний элемент на первое место,
-        # чтобы изначальная первая картинка показалась первой,
-        # а не так, чтобы вторая стала первой согласно текущему алгоритму смены слайдов
-        last_el = elements.pop(-1)
-        elements.insert(0, last_el)
-
-        # добавляем первый элемент в конец для получения всех паросочетаний,
-        # которые можно потом зациклить
-        elements.append(elements[0])
-        pairs = []
-        number = 1
-        for index, el in enumerate(elements[:-1]):
-            pairs.append((el, elements[index+1], f"{number}/{count}"))
-            number += 1
-        print(pairs)
-        return itertools.cycle(pairs)
 
     def keyReleaseEvent(self, event):
         self.close_this()

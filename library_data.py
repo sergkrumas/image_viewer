@@ -1144,6 +1144,8 @@ class FolderData():
         self.board_scale_y = None
         self.board_ready = False
 
+        self.board_user_points = []
+
         self.preview_error = False
 
         self.relative_thumbnails_row_offset_x = 0

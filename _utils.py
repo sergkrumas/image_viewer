@@ -23,15 +23,30 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtSvg import  QSvgRenderer
 
+
+import time
+import math
+import sys
+import subprocess
+import os
+import random
+import traceback
+import psutil
+import ctypes
+import itertools
+import locale
+import hashlib
+import platform
+import json
+import platform
+import datetime
+from functools import lru_cache
+from collections import namedtuple
+import argparse
+
 import PIL
 import pillow_avif
-
-import time, math, sys, subprocess, os, random, \
-     traceback, psutil, ctypes, itertools, locale,\
-     hashlib, platform, json, platform, datetime, argparse
-from functools import lru_cache
 from PIL import Image
-from collections import namedtuple
 
 import win32con, win32api
 
@@ -65,6 +80,40 @@ SCANCODES_FROM_LATIN_CHAR = {
     "[": 26,
     "]": 27,
 }
+
+
+def check_scancode_for(event, data):
+    if data is None:
+        return False
+    code = event.nativeScanCode()
+    if isinstance(data, str):
+        data = data.upper()[0]
+        return SCANCODES_FROM_LATIN_CHAR[data] == code
+    elif isinstance(data, (list, tuple)):
+        return any(SCANCODES_FROM_LATIN_CHAR[ch] == code for ch in data)
+
+
+
+def get_cycled_pairs(input_list, slideshow=True):
+    elements = input_list[:]
+    count = len(elements)
+
+    if slideshow:
+        # переставляем последний элемент на первое место,
+        # чтобы изначальная первая картинка показалась первой,
+        # а не так, чтобы вторая стала первой согласно текущему алгоритму смены слайдов
+        last_el = elements.pop(-1)
+        elements.insert(0, last_el)
+
+    # добавляем первый элемент в конец для получения всех паросочетаний,
+    # которые можно потом зациклить
+    elements.append(elements[0])
+    pairs = []
+    number = 1
+    for index, el in enumerate(elements[:-1]):
+        pairs.append([el, elements[index+1], f"{number}/{count}"])
+        number += 1
+    return itertools.cycle(pairs)
 
 def PIL_to_QPixmap(im):
     if im.mode == "RGB":
@@ -105,7 +154,6 @@ def create_pathsubfolders_if_not_exist(folder_path):
         if not os.path.exists(folder):
             os.mkdir(folder)
 
-
 def get_index_centered_list(listed_data, value_in_list_to_start_from):
     if len(listed_data) == 0:
         return []
@@ -133,16 +181,6 @@ def get_index_centered_list(listed_data, value_in_list_to_start_from):
                 right_index += 1
         right_or_left_side = not right_or_left_side
 
-def check_scancode_for(event, data):
-    if data is None:
-        return False
-    code = event.nativeScanCode()
-    if isinstance(data, str):
-        data = data.upper()[0]
-        return SCANCODES_FROM_LATIN_CHAR[data] == code
-    elif isinstance(data, (list, tuple)):
-        return any(SCANCODES_FROM_LATIN_CHAR[ch] == code for ch in data)
-
 from win32com.shell import shell, shellcon
 def delete_to_recyclebin(filename):
     if not os.path.exists(filename):
@@ -159,7 +197,6 @@ def delete_to_recyclebin(filename):
     if not res[1]:
         if os.path.exists(filename):
             os.system('del "%s"' % filename)
-
 
 def convert_md5_to_int_tuple(md5_str):
     md5_by_parts = []
