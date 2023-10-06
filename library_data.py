@@ -1351,10 +1351,6 @@ class ImageData():
 
         self.pureref_item = None
 
-        self.board_position = None
-        self.board_scale = None
-        self.board_rotation = None
-
         # UI
         self._touched = False               # обнуляется после отпускания кнопки мыши
         self._selected = False              # обнуляется после каждого перемещения

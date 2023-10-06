@@ -42,6 +42,7 @@ class PureRefBoardItem():
 
         self.board_scale = 1.0
         self.board_position = QPointF()
+        self.board_rotation = None
 
 
 class PureRefMixin():
