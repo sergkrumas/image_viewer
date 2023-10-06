@@ -1134,7 +1134,7 @@ class FolderData():
         self.previews_done = False
         self.deep_scan = False
         self.viewed_list = []
-        self._images_list_selected = []
+        self._images_list_selected = list()
 
         self.sort_type = "original"
         self.sort_type_reversed = False
@@ -1145,6 +1145,7 @@ class FolderData():
         self.board_ready = False
 
         self.board_user_points = []
+        self.pureref_items_list = []
 
         self.preview_error = False
 
@@ -1347,6 +1348,8 @@ class ImageData():
 
         self.source_width = 0
         self.source_height = 0
+
+        self.pureref_item = None
 
         self.board_position = None
         self.board_scale = None

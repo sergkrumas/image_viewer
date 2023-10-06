@@ -92,7 +92,15 @@ def check_scancode_for(event, data):
     elif isinstance(data, (list, tuple)):
         return any(SCANCODES_FROM_LATIN_CHAR[ch] == code for ch in data)
 
-
+def calculate_text_rect(font, max_rect, text, alignment):
+    pic = QPicture()
+    painter = QPainter(pic)
+    painter.setFont(font)
+    text_rect = painter.drawText(max_rect, alignment, text)
+    painter.end()
+    del painter
+    del pic
+    return text_rect
 
 def get_cycled_pairs(input_list, slideshow=True):
     elements = input_list[:]

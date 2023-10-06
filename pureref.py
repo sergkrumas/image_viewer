@@ -32,6 +32,17 @@ class PureRefLibraryDataMixin():
         if os.path.exists(self.get_pureref_boards_root()):
             print("loading pureRef boards data")
 
+class PureRefBoardItem():
+
+    def __init__(self, image_data, items):
+        super().__init__()
+        self.image_data = image_data
+        image_data.pureref_item = self
+        items.append(self)
+
+        self.board_scale = 1.0
+        self.board_position = QPointF()
+
 
 class PureRefMixin():
 
@@ -64,16 +75,6 @@ class PureRefMixin():
         painter.setPen(pen)
         painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "PUREREF BOARDS")
 
-    def calculate_text_rect(self, font, max_rect, text, alignment):
-        pic = QPicture()
-        painter = QPainter(pic)
-        painter.setFont(font)
-        text_rect = painter.drawText(max_rect, alignment, text)
-        painter.end()
-        del painter
-        del pic
-        return text_rect
-
     def pureref_draw(self, painter):
         old_font = painter.font()
         font = QFont(old_font)
@@ -93,7 +94,7 @@ class PureRefMixin():
 
         painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
         text = "  ".join("ПОДОЖДИ")
-        text_rect = self.calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = calculate_text_rect(font, max_rect, text, alignment)
         text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
@@ -103,10 +104,14 @@ class PureRefMixin():
             offset = QPointF(0, 0) - QPointF(500, 0)
         else:
             offset = QPointF(0, 0)
+
+        items_list = folder_data.pureref_items_list = []
+
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
-                image_data.board_scale = 1.0
-                image_data.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+                prbi = PureRefBoardItem(image_data, items_list)
+                prbi.board_scale = 1.0
+                prbi.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
         self.build_bounding_rect(folder_data)
@@ -124,17 +129,17 @@ class PureRefMixin():
             font.setWeight(300)
             font.setPixelSize(12)
             painter.setFont(font)
-            for image_data in folder_data.images_list:
-                if not image_data.board_position:
-                    continue
-                image_scale = image_data.board_scale
+            for prbi in folder_data.pureref_items_list:
+                image_data = prbi.image_data
+
+                item_scale = prbi.board_scale
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
-                w = image_data.source_width*image_scale*board_scale_x
-                h = image_data.source_height*image_scale*board_scale_y
+                w = image_data.source_width*item_scale*board_scale_x
+                h = image_data.source_height*item_scale*board_scale_y
                 image_rect = QRectF(0, 0, w, h)
                 pos = QPointF(self.board_origin)
-                pos += QPointF(image_data.board_position.x()*board_scale_x, image_data.board_position.y()*board_scale_y)
+                pos += QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
                 image_rect.moveCenter(pos)
 
                 painter.setBrush(Qt.NoBrush)
@@ -219,9 +224,6 @@ class PureRefMixin():
         # painter.drawLine(QPoint(0, 0), QPoint(radius-40, 0))
         # painter.resetTransform()
 
-
-
-
         ellipse_rect = QRect(0, 0, radius*2, radius*2)
         ellipse_rect.moveCenter(curpos)
         painter.drawEllipse(ellipse_rect)
@@ -250,7 +252,7 @@ class PureRefMixin():
         alignment = Qt.AlignCenter
 
 
-        text_rect = self.calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = calculate_text_rect(font, max_rect, text, alignment)
 
         text_rect.moveCenter(text_rect_center)
         painter.setBrush(QBrush(QColor(10, 10, 10)))
@@ -286,24 +288,24 @@ class PureRefMixin():
         alignment = Qt.AlignCenter
 
         text = "НАЧАЛО"
-        text_rect = self.calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = calculate_text_rect(font, max_rect, text, alignment)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
         text = "КООРДИНАТ"
-        text_rect = self.calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = calculate_text_rect(font, max_rect, text, alignment)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
 
     def build_bounding_rect(self, folder_data):
         points = []
         points.append(self.board_origin)
-        for image_data in folder_data.images_list:
-            if not image_data.preview_error:
-                rf = QRectF(0, 0, image_data.source_width, image_data.source_height)
-                rf.moveCenter(image_data.board_position)
-                points.append(rf.topLeft())
-                points.append(rf.bottomRight())
+        for prbi in folder_data.pureref_items_list:
+            image_data = prbi.image_data
+            rf = QRectF(0, 0, image_data.source_width, image_data.source_height)
+            rf.moveCenter(prbi.board_position)
+            points.append(rf.topLeft())
+            points.append(rf.bottomRight())
         p1, p2 = get_bounding_points(points)
         bounding_rect = build_valid_rectF(p1, p2)
         self.board_bounding_rect = bounding_rect
@@ -331,10 +333,10 @@ class PureRefMixin():
             painter.setPen(QPen(QColor(50, 50, 50), 1))
             painter.drawRect(minimap_rect)
 
-            for image_data in cf.images_list:
-                if not image_data.board_position:
-                    continue
-                delta = image_data.board_position - self.board_bounding_rect.topLeft()
+            for prbi in cf.pureref_items_list:
+                image_data = prbi.image_data
+
+                delta = prbi.board_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
                     abs(delta.x()/self.board_bounding_rect.width()),
                     abs(delta.y()/self.board_bounding_rect.height())
@@ -500,19 +502,20 @@ class PureRefMixin():
 
     def pureref_thumbnails_click_handler(self, image_data):
 
-        if image_data.board_position is None:
+        if image_data.pureref_item is None:
             self.show_center_label("Этот элемент не представлен на доске", error=True)
         else:
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            image_pos = QPointF(image_data.board_position.x()*board_scale_x, image_data.board_position.y()*board_scale_y)
+            prbi = image_data.pureref_item
+            image_pos = QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
             self.board_origin = - image_pos + viewport_center_pos
 
-            image_width = image_data.source_width*image_data.board_scale*board_scale_x
-            image_height = image_data.source_height*image_data.board_scale*board_scale_y
+            image_width = image_data.source_width*prbi.board_scale*board_scale_x
+            image_height = image_data.source_height*prbi.board_scale*board_scale_y
             image_rect = QRect(0, 0, int(image_width), int(image_height))
             fitted_rect = fit_rect_into_rect(image_rect, self.rect())
             self.do_scale_board(0, False, False, False,
@@ -590,14 +593,10 @@ class PureRefMixin():
                 for point, bx, by in cf.board_user_points:
                     _list.append([point, bx, by])
             else:
-                for image_data in cf.images_list:
-                    if not image_data.preview_error:
-                        point = image_data.board_position
-
-
-
-                        _list.append([point, None, image_data])
-                        # _list.append([point, bx, by, image_data])
+                for prbi in cf.pureref_items_list:
+                    point = prbi.board_position
+                    _list.append([point, None, prbi])
+                    # _list.append([point, bx, by, prbi])
 
             self.fly_pairs = get_cycled_pairs(_list, slideshow=False)
             pair = [
@@ -616,13 +615,13 @@ class PureRefMixin():
             by = pair[1][2]
 
             if bx is None:
-                pass
-                image_data = by
+                prbi = by
+                image_data = by.image_data
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
                 # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-                image_width = image_data.source_width*image_data.board_scale #*board_scale_x
-                image_height = image_data.source_height*image_data.board_scale #*board_scale_y
+                image_width = image_data.source_width*prbi.board_scale #*board_scale_x
+                image_height = image_data.source_height*prbi.board_scale #*board_scale_y
                 image_rect = QRect(0, 0, int(image_width), int(image_height))
                 fitted_rect = fit_rect_into_rect(image_rect, self.rect())
                 bx = fitted_rect.width()/image_rect.width()
