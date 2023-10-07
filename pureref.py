@@ -70,6 +70,9 @@ class PureRefMixin():
         self._board_scale_x = 1.0
         self._board_scale_y = 1.0
 
+        self.prbi_under_mouse = None        
+        self.images_drawn = 0
+
     def pureref_toggle_minimap(self):
         self.pureref_show_minimap = not self.pureref_show_minimap
 
@@ -135,29 +138,36 @@ class PureRefMixin():
             font.setWeight(300)
             font.setPixelSize(12)
             painter.setFont(font)
+
+            self.images_drawn = 0
+            self.prbi_under_mouse = None
             for prbi in folder_data.pureref_items_list:
-                image_data = prbi.image_data
+                self.pureref_draw_item(painter, prbi)
 
-                item_scale = prbi.board_scale
-                board_scale_x = self.board_scale_x
-                board_scale_y = self.board_scale_y
-                w = image_data.source_width*item_scale*board_scale_x
-                h = image_data.source_height*item_scale*board_scale_y
-                image_rect = QRectF(0, 0, w, h)
-                pos = QPointF(self.board_origin)
-                pos += QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
-                image_rect.moveCenter(pos)
+            painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), f'perfomance status: {self.images_drawn} images drawn')
 
-                painter.setBrush(Qt.NoBrush)
-                painter.drawRect(image_rect)
+    def pureref_draw_item(self, painter, prbi):
+        image_data = prbi.image_data
+        item_scale = prbi.board_scale
+        board_scale_x = self.board_scale_x
+        board_scale_y = self.board_scale_y
+        w = image_data.source_width*item_scale*board_scale_x
+        h = image_data.source_height*item_scale*board_scale_y
+        image_rect = QRectF(0, 0, w, h)
+        pos = QPointF(self.board_origin)
+        pos += QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
+        image_rect.moveCenter(pos)
 
-                text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
-                max_rect = self.rect()
-                alignment = Qt.AlignCenter
+        if image_rect.intersected(QRectF(self.rect())):
+            self.images_drawn += 1
 
-                painter.drawText(image_rect, alignment, text)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawRect(image_rect)
+            text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+            alignment = Qt.AlignCenter
+            painter.drawText(image_rect, alignment, text)
 
-                painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
+            painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
