@@ -34,8 +34,14 @@ class PureRefLibraryDataMixin():
 
 class PureRefBoardItem():
 
-    def __init__(self, image_data, items):
+    class types():
+        ITEM_IMAGE = 1
+        ITEM_FOLDER = 2
+        ITEM_GROUP = 3
+
+    def __init__(self, item_type, image_data, items):
         super().__init__()
+        self.type = item_type
         self.image_data = image_data
         image_data.pureref_item = self
         items.append(self)
@@ -110,7 +116,7 @@ class PureRefMixin():
 
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
-                prbi = PureRefBoardItem(image_data, items_list)
+                prbi = PureRefBoardItem(PureRefBoardItem.types.ITEM_IMAGE, image_data, items_list)
                 prbi.board_scale = 1.0
                 prbi.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
