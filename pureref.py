@@ -69,7 +69,6 @@ class PureRefMixin():
         self.fly_pairs = []
         self._board_scale_x = 1.0
         self._board_scale_y = 1.0
-        self.current_start_pos = None
 
     def pureref_toggle_minimap(self):
         self.pureref_show_minimap = not self.pureref_show_minimap
