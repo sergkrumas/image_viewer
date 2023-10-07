@@ -616,9 +616,6 @@ class PureRefMixin():
             pair = next(self.fly_pairs)
 
         def animate_scale():
-
-
-
             bx = pair[1][1]
             by = pair[1][2]
 
@@ -634,7 +631,6 @@ class PureRefMixin():
                 fitted_rect = fit_rect_into_rect(image_rect, self.rect())
                 bx = fitted_rect.width()/image_rect.width()
                 by = fitted_rect.height()/image_rect.height()                
-
 
             self.animate_properties(
                 [
