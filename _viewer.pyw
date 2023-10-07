@@ -1128,35 +1128,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 Image.open(filepath).save(filepath)
                 self.show_static(filepath, pass_=2)
 
-    def error_pixmap_and_reset(self, title, msg, no_background=False):
-        self.error = True
-        self.pixmap = self.generate_info_pixmap(title, msg, no_background=no_background)
-        self.image_filepath = None
-        self.transformations_allowed = False
-        self.animated = False
-        self.restore_image_transformations(correct=False)
-
-    def viewer_reset(self, simple=False):
-        self.pixmap = None
-        self.image_filepath = None
-        self.transformations_allowed = False
-        self.animated = False
-        self.svg_rendered = False
-        self.rotated_pixmap = None
-        self.copied_from_clipboard = False
-        self.comment_data = None
-        self.comment_data_candidate = None
-        self.show_animated(None)
-        if not simple:
-            self.set_loading_text()
-            main_window = Globals.main_window
-            main_window.update()
-            processAppEvents()
-
-    def set_loading_text(self):
-        # self.loading_text = random.choice(self.LOADING_TEXT)
-        self.loading_text = "\n".join(self.LOADING_TEXT)
-
     def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
         self.rotated_pixmap = None
@@ -1189,6 +1160,35 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if not self.error:
             LibraryData().check_lost_image_and_update_base(image_data)
         self.update()
+
+    def error_pixmap_and_reset(self, title, msg, no_background=False):
+        self.error = True
+        self.pixmap = self.generate_info_pixmap(title, msg, no_background=no_background)
+        self.image_filepath = None
+        self.transformations_allowed = False
+        self.animated = False
+        self.restore_image_transformations(correct=False)
+
+    def viewer_reset(self, simple=False):
+        self.pixmap = None
+        self.image_filepath = None
+        self.transformations_allowed = False
+        self.animated = False
+        self.svg_rendered = False
+        self.rotated_pixmap = None
+        self.copied_from_clipboard = False
+        self.comment_data = None
+        self.comment_data_candidate = None
+        self.show_animated(None)
+        if not simple:
+            self.set_loading_text()
+            main_window = Globals.main_window
+            main_window.update()
+            processAppEvents()
+
+    def set_loading_text(self):
+        # self.loading_text = random.choice(self.LOADING_TEXT)
+        self.loading_text = "\n".join(self.LOADING_TEXT)
 
     def read_image_metadata(self, image_data):
         if not image_data.image_metadata:
