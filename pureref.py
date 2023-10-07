@@ -552,7 +552,9 @@ class PureRefMixin():
 
     def animate_scale_update(self):
 
-        # надо менять и значение self.board_origin для того, чтобы увеличивать относительно центра картинки и центра экрана (они совпадают)
+        # надо менять и значение self.board_origin для того,
+        # чтобы увеличивать относительно центра картинки и центра экрана,
+        # а они совпадают в данном случае
         factor_x = self._board_scale_x/self.board_scale_x
         factor_y = self._board_scale_y/self.board_scale_y
 
