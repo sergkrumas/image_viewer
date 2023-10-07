@@ -1067,6 +1067,21 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         p.end()
         return pxm
 
+    def animation_stamp(self):
+        self.frame_delay = self.movie.nextFrameDelay()
+        self.frame_time = time.time()
+
+    def tick_animation(self):
+        delta = (time.time() - self.frame_time) * 1000
+        is_playing = not self.image_data.anim_paused
+        is_animation = self.movie.frameCount() > 1
+        if delta > self.frame_delay and is_playing and is_animation:
+            self.movie.jumpToNextFrame()
+            self.animation_stamp()
+            self.frame_delay = self.movie.nextFrameDelay()
+            self.pixmap = self.movie.currentPixmap()
+            self.get_rotated_pixmap(force_update=True)
+
     def is_animated_file_valid(self):
         self.movie.jumpToFrame(0)
         self.animation_stamp()
@@ -1090,25 +1105,16 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.movie.deleteLater()
                 self.movie = None
 
-    def animation_stamp(self):
-        self.frame_delay = self.movie.nextFrameDelay()
-        self.frame_time = time.time()
-
-    def tick_animation(self):
-        delta = (time.time() - self.frame_time) * 1000
-        is_playing = not self.image_data.anim_paused
-        is_animation = self.movie.frameCount() > 1
-        if delta > self.frame_delay and is_playing and is_animation:
-            self.movie.jumpToNextFrame()
-            self.animation_stamp()
-            self.frame_delay = self.movie.nextFrameDelay()
-            self.pixmap = self.movie.currentPixmap()
-            self.get_rotated_pixmap(force_update=True)
+    def show_svg(self, filepath):
+        self.image_filepath = filepath
+        self.transformations_allowed = True
+        self.pixmap = load_svg(filepath, scale_factor=self.image_data.svg_scale_factor)
+        self.svg_rendered = True
 
     def show_static(self, filepath, pass_=1):
         # pixmap = QPixmap(filepath)
         pixmap = load_image_respect_orientation(filepath)
-        if pixmap and not (pixmap.width() == 0 or pixmap.height() == 0):
+        if pixmap and not pixmap.isNull():
             self.pixmap = pixmap
             self.image_filepath = filepath
             self.transformations_allowed = True
@@ -1150,12 +1156,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def set_loading_text(self):
         # self.loading_text = random.choice(self.LOADING_TEXT)
         self.loading_text = "\n".join(self.LOADING_TEXT)
-
-    def show_svg(self, filepath):
-        self.image_filepath = filepath
-        self.transformations_allowed = True
-        self.pixmap = load_svg(filepath, scale_factor=self.image_data.svg_scale_factor)
-        self.svg_rendered = True
 
     def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
