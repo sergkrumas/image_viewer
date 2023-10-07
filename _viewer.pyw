@@ -1073,6 +1073,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         fr = self.movie.frameRect()
         if fr.width() == 0 or fr.height() == 0:
             self.invalid_movie = True
+            self.animated = False
             self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")
 
     def show_animated(self, filepath):
@@ -1082,6 +1083,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.movie.setCacheMode(QMovie.CacheAll)
             self.image_filepath = filepath
             self.transformations_allowed = True
+            self.animated = True
             self.is_animated_file_valid()
         else:
             if self.movie:
@@ -1149,6 +1151,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         # self.loading_text = random.choice(self.LOADING_TEXT)
         self.loading_text = "\n".join(self.LOADING_TEXT)
 
+    def show_svg(self, filepath):
+        self.image_filepath = filepath
+        self.transformations_allowed = True
+        self.pixmap = load_svg(filepath, scale_factor=self.image_data.svg_scale_factor)
+        self.svg_rendered = True
+
     def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
         self.rotated_pixmap = None
@@ -1157,32 +1165,19 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         filepath = self.image_data.filepath
         self.viewer_reset(simple=True)
         # setting new image
-        is_gif_file = lambda fp: fp.lower().endswith(".gif")
-        is_webp_file = lambda fp: fp.lower().endswith(".webp")
-        is_svg_file = lambda fp: fp.lower().endswith((".svg", ".svgz"))
-        is_avif_file = lambda fp: fp.lower().endswith((".avif", ".heif", ".heic"))
-        is_supported_file = LibraryData.is_interest_file(filepath)
         self.error = False
         if filepath == "":
             self.error_pixmap_and_reset("Нет изображений", "", no_background=True)
         else:
-            if not is_supported_file:
+            if not LibraryData().is_supported_file(filepath):
                 self.error_pixmap_and_reset("Невозможно\nотобразить",
                                                     "Этот файл не поддерживается")
             else:
                 try:
-                    _gif_file = is_gif_file(filepath)
-                    _webp_animated_file = is_webp_file(filepath)
-                    _webp_animated_file = _webp_animated_file and is_webp_file_animated(filepath)
-                    if _gif_file or _webp_animated_file:
+                    if LibraryData().is_gif_file(filepath) or LibraryData().is_webp_file_animated(filepath):
                         self.show_animated(filepath)
-                        self.animated = True
-                    elif is_svg_file(filepath):
-                        self.image_filepath = filepath
-                        self.transformations_allowed = True
-                        self.pixmap = load_svg(filepath,
-                                                    scale_factor=self.image_data.svg_scale_factor)
-                        self.svg_rendered = True
+                    elif LibraryData().is_svg_file(filepath):
+                        self.show_svg(filepath)
                     else:
                         self.show_static(filepath)
                 except:

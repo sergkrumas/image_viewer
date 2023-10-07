@@ -205,6 +205,30 @@ class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLi
         self.update_current_folder_columns()
         MW.update()
 
+    @staticmethod
+    def is_supported_file(filepath):
+        return LibraryData.is_interest_file(filepath)
+    
+    @staticmethod
+    def is_gif_file(filepath):
+        return filepath.lower().endswith(".gif")
+
+    @staticmethod
+    def is_webp_file(filepath):
+        return filepath.lower().endswith(".webp")
+
+    @staticmethod
+    def is_svg_file(filepath):
+        return filepath.lower().endswith((".svg", ".svgz"))
+
+    @staticmethod
+    def is_avif_file(filepath):
+        return filepath.lower().endswith((".avif", ".heif", ".heic"))
+
+    @staticmethod
+    def is_webp_file_animated(filepath): 
+        return LibraryData().is_webp_file(filepath) and is_webp_file_animated(filepath)
+
     def choose_next_folder(self):
         # self.before_current_image_changed()
         if self._index < len(self.folders)-1:
