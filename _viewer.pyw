@@ -1170,8 +1170,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.error_pixmap_and_reset("Нет изображений", "", no_background=True)
         else:
             if not LibraryData().is_supported_file(filepath):
-                self.error_pixmap_and_reset("Невозможно\nотобразить",
-                                                    "Этот файл не поддерживается")
+                self.error_pixmap_and_reset("Невозможно\nотобразить", "Этот файл не поддерживается")
             else:
                 try:
                     if LibraryData().is_gif_file(filepath) or LibraryData().is_webp_file_animated(filepath):
@@ -1181,8 +1180,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     else:
                         self.show_static(filepath)
                 except:
-                    self.error_pixmap_and_reset(
-                        "Файл повреждён", traceback.format_exc())
+                    self.error_pixmap_and_reset("Файл повреждён", traceback.format_exc())
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
