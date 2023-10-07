@@ -46,6 +46,8 @@ class PureRefBoardItem():
         image_data.pureref_item = self
         items.append(self)
 
+        self.pixmap = None
+
         self.board_scale = 1.0
         self.board_position = QPointF()
         self.board_rotation = None
@@ -167,7 +169,13 @@ class PureRefMixin():
             alignment = Qt.AlignCenter
             painter.drawText(image_rect, alignment, text)
 
-            painter.drawPixmap(image_rect, image_data.preview, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
+            image_to_draw = None
+            if image_rect.width() < 250 or image_rect.height() < 250:
+                image_to_draw = image_data.preview
+            else:
+                pass
+            if image_to_draw:
+                painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
