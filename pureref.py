@@ -216,12 +216,16 @@ class PureRefMixin():
             show_msg(filepath)            
 
         filepath = prbi.image_data.filepath
-        if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
-            load_animated(filepath)
-        elif self.LibraryData().is_svg_file(filepath):
-            load_svg(filepath)
-        else:
-            load_static(filepath)
+        try:
+            prbi.pixmap = QPixmap()
+            if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
+                load_animated(filepath)
+            elif self.LibraryData().is_svg_file(filepath):
+                load_svg(filepath)
+            else:
+                load_static(filepath)
+        except:
+            prbi.pixmap = QPixmap()
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
