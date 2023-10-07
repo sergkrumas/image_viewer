@@ -47,6 +47,7 @@ class PureRefBoardItem():
         items.append(self)
 
         self.pixmap = None
+        self.animated = False
 
         self.board_scale = 1.0
         self.board_position = QPointF()
@@ -72,8 +73,11 @@ class PureRefMixin():
         self._board_scale_x = 1.0
         self._board_scale_y = 1.0
 
-        self.prbi_under_mouse = None        
+        self.prbi_under_mouse = None
         self.images_drawn = 0
+
+        self.context_menu_allowed = True
+
 
     def pureref_toggle_minimap(self):
         self.pureref_show_minimap = not self.pureref_show_minimap
@@ -175,6 +179,10 @@ class PureRefMixin():
             else:
                 self.trigger_prbi_pixmap_loading(prbi)
                 image_to_draw = prbi.pixmap
+
+            if image_rect.contains(self.mapped_cursor_pos()):
+                self.prbi_under_mouse = prbi
+
             if image_to_draw:
                 painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
@@ -546,6 +554,18 @@ class PureRefMixin():
     def pureref_do_scale_board(self, scroll_value):
         self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
 
+    def pureref_scroll_animation(self, prbi, scroll_value):
+        frames_list = list(range(0, prbi.movie.frameCount()))
+        if scroll_value > 0:
+            pass
+        else:
+            frames_list = list(reversed(frames_list))
+        frames_list.append(0)
+        i = frames_list.index(prbi.movie.currentFrameNumber()) + 1
+        prbi.movie.jumpToFrame(frames_list[i])
+        prbi.pixmap = prbi.movie.currentPixmap()
+        self.update()
+
     def pureref_wheelEvent(self, event):
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -555,6 +575,13 @@ class PureRefMixin():
         control_panel_undermouse = self.is_control_panel_under_mouse()
         if control_panel_undermouse:
             return
+        elif self.board_translating:
+            return
+        elif self.prbi_under_mouse is not None and event.buttons() == Qt.RightButton:
+            prbi = self.prbi_under_mouse
+            self.context_menu_allowed = False
+            if prbi.animated and prbi.type == prbi.types.ITEM_IMAGE:
+                self.pureref_scroll_animation(prbi, scroll_value)
         elif no_mod:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
         elif ctrl:

@@ -1349,6 +1349,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
     def mousePressEvent(self, event):
 
+        self.context_menu_allowed = True
+
         if event.button() == Qt.LeftButton:
             if self.over_corner_button():
                 self.require_window_closing()
@@ -3093,6 +3095,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     self.show_center_label(text)
 
     def contextMenuEvent(self, event):
+
+        if not self.context_menu_allowed:
+            return
+
         contextMenu = QMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
 
