@@ -1086,7 +1086,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         self.movie.jumpToFrame(0)
         self.animation_stamp()
         fr = self.movie.frameRect()
-        if fr.width() == 0 or fr.height() == 0:
+        if fr.isNull():
             self.invalid_movie = True
             self.animated = False
             self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")

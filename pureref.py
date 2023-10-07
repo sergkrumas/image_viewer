@@ -173,9 +173,47 @@ class PureRefMixin():
             if image_rect.width() < 250 or image_rect.height() < 250:
                 image_to_draw = image_data.preview
             else:
-                pass
+                self.trigger_prbi_pixmap_loading(prbi)
+                image_to_draw = prbi.pixmap
             if image_to_draw:
-                painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_data.preview.size())))
+                painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
+
+    def trigger_prbi_pixmap_loading(self, prbi):
+        if prbi.pixmap is not None:
+            return
+
+        def show_msg(filepath):
+            msg = f'loaded to board: {filepath}'
+            print(msg)
+
+        def load_animated(filepath):
+            prbi.movie = QMovie(filepath)
+            prbi.movie.setCacheMode(QMovie.CacheAll)
+            prbi.movie.jumpToFrame(0)
+            prbi.pixmap = prbi.movie.currentPixmap()
+            prbi.animated = True
+            if prbi.movie.frameRect().isNull():
+                prbi.pixmap = None
+            else:
+                show_msg(filepath)
+
+        def load_svg(filepath):
+            prbi.pixmap = load_svg(filepath)
+            prbi.animated = False
+            show_msg(filepath)            
+
+        def load_static(filepath):
+            prbi.pixmap = load_image_respect_orientation(filepath)
+            prbi.animated = False
+            show_msg(filepath)            
+
+        filepath = prbi.image_data.filepath
+        if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
+            load_animated(filepath)
+        elif self.LibraryData().is_svg_file(filepath):
+            load_svg(filepath)
+        else:
+            load_static(filepath)
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
