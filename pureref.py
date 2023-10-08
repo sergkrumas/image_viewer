@@ -536,7 +536,6 @@ class PureRefMixin():
         if factor_y is None:
             factor_y = factor
 
-
         if ctrl:
             factor_x = factor
             factor_y = 1.0

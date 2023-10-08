@@ -382,10 +382,11 @@ class SettingsWindow(QWidget):
                 cls.matrix[key] = list(cls.matrix[key])
             # copy actual comments from program file, not from settings file
             for key in cls.matrix.keys():
-                info = cls.backup_matrix[key][-1]
-                data = cls.matrix[key]
-                data[-1] = info
-                cls.matrix[key] = data
+                if key in cls.backup_matrix.keys():
+                    info = cls.backup_matrix[key][-1]
+                    data = cls.matrix[key]
+                    data[-1] = info
+                    cls.matrix[key] = data
 
             # apply settings to global variables
             cls.load_settings_to_globals()
