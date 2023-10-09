@@ -898,7 +898,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.show_center_label(self.label_type.SCALE)
             # self.setCursor(Qt.ArrowCursor)
 
-    def build_input_rect(self):
+    def region_zoom_build_input_rect(self):
         if self.INPUT_POINT1 and self.INPUT_POINT2:
             self.input_rect = build_valid_rect(self.INPUT_POINT1, self.INPUT_POINT2)
             self.projected_rect = fit_rect_into_rect(self.input_rect, self.rect())
@@ -906,7 +906,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.zoom_level = self.projected_rect.width()/w
             self.input_rect_animated = self.input_rect
 
-    def do_region_zoom(self):
+    def region_zoom_do_zooming(self):
         if self.input_rect.width() != 0:
             # scale = 1/self.image_scale
 
@@ -965,7 +965,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def region_zoom_in_mouseMoveEvent(self, event):
         if (not self.zoom_region_defined) and not self.region_zoom_break_activated:
             self.INPUT_POINT2 = event.pos()
-            self.build_input_rect()
+            self.region_zoom_build_input_rect()
             self.region_zoom_in_UX_breaker_start(event)
         if self.region_zoom_break_activated:
             self.region_zoom_in_UX_breaker_start(event)
@@ -973,10 +973,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def region_zoom_in_mouseReleaseEvent(self, event):
         if (not self.zoom_region_defined) and not self.region_zoom_break_activated:
             self.INPUT_POINT2 = event.pos()
-            self.build_input_rect()
+            self.region_zoom_build_input_rect()
             if self.INPUT_POINT1 and self.INPUT_POINT2:
                 self.zoom_region_defined = True
-                self.do_region_zoom()
+                self.region_zoom_do_zooming()
             else:
                 self.region_zoom_in_cancel()
             self.region_zoom_in_input_started = False
