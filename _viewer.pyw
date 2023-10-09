@@ -383,15 +383,16 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         if self.image_scale > self.START_HINT_AT_SCALE_VALUE:
             if not self.hint_text:
-                rect = self.rect()
                 self.hint_text = random.choice(self.secret_hints_list)
 
+                rect = self.rect()
                 self.secret_width = rect.width()
                 self.secret_height = rect.height()
 
-                w1 = self.secret_width/2
-                w2 = self.secret_height/2
-                self.hint_center_position = QPointF(w1, w2).toPoint()
+                rel = self.get_image_viewport_rect().topLeft() - QPoint(0, 0)
+                x_rel = abs(rel.x())/self.get_image_viewport_rect().width()
+                y_rel = abs(rel.y())/self.get_image_viewport_rect().height()
+                self.secret_hint_top_left_pos_rel = QPointF(x_rel, y_rel)
 
                 self.secret_pic = QPixmap(self.secret_width, self.secret_height)
                 self.secret_p = QPainter()
@@ -408,7 +409,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if self.image_scale < self.START_HINT_AT_SCALE_VALUE:
             if self.hint_text:
                 self.hint_text = ""
-                self.hint_center_position = QPoint(0, 0)
 
     def draw_secret_hint(self, painter):
         if not self.secret_hints_list:
@@ -420,15 +420,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if not self.frameless_mode:
             return
 
-        a = max(self.START_HINT_AT_SCALE_VALUE, self.image_scale)-self.START_HINT_AT_SCALE_VALUE
-        b = 100.0 - self.START_HINT_AT_SCALE_VALUE
-        factor = a/b
-        START_VALUE = 0.0
-        END_VALUE = 0.5
-        painter.setOpacity(START_VALUE+factor*(END_VALUE-START_VALUE))
+        opacity_val = fit(self.image_scale, self.START_HINT_AT_SCALE_VALUE, self.UPPER_SCALE_LIMIT, 0.0, 0.5)
+        painter.setOpacity(opacity_val)
 
         hint_rect = self.get_secret_hint_rect()
         painter.drawPixmap(hint_rect, self.secret_pic, QRectF(self.secret_pic.rect()))
+
         painter.setOpacity(1.0)
 
     def set_window_title(self, text):
@@ -519,8 +516,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         self.block_paginating = False
 
-        self.hint_center_position = QPoint(0, 0)
-
         self._key_pressed = False
         self._key_unreleased = False
 
@@ -538,7 +533,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         self.corner_menu = dict()
         self.corner_menu_items = []
 
-        self.translation_delta_when_animation = QPointF(0, 0)
 
         self.context_menu_stylesheet = """
         QMenu{
@@ -1026,7 +1020,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         # self.get_rotated_pixmap(force_update=True)
         self.image_scale = 1.0
         self.image_center_position = self.get_center_position()
-        self.hint_center_position = QPoint(0, 0)
 
         if correct:
             self.correct_scale()
@@ -1286,15 +1279,15 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         return im_rect
 
     def get_secret_hint_rect(self):
-        hint_rect = QRectF()
-        # new_width = self.secret_width/20*(self.image_scale - self.START_HINT_AT_SCALE_VALUE)
-        # new_height = self.secret_height/20*(self.image_scale - self.START_HINT_AT_SCALE_VALUE)
-        new_width = self.secret_width*self.image_scale/100
-        new_height = self.secret_height*self.image_scale/100
-        pos = self.hint_center_position - QPointF(new_width/2, new_height/2)
-        hint_rect.moveTo(pos)
-        hint_rect.setWidth(new_width)
-        hint_rect.setHeight(new_height)
+        factor = self.image_scale/self.UPPER_SCALE_LIMIT
+        new_width = self.secret_width*factor
+        new_height = self.secret_height*factor
+        rel = self.secret_hint_top_left_pos_rel
+        r = self.get_image_viewport_rect()
+        anchor_point = r.topLeft() + QPointF(r.width()*rel.x(), r.height()*rel.y()) + QPointF(new_width*2/3, new_height*2/3)
+        pos = anchor_point
+        hint_rect = QRectF(0, 0, new_width, new_height)
+        hint_rect.moveTopLeft(pos)
         return hint_rect
 
     def resizeEvent(self, event):
@@ -1477,7 +1470,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     old = self.image_center_position
                     if not self.is_there_any_task_with_anim_id("zoom"):
                         self.image_center_position = new
-                    for anim_task in self.get_current_animation_tasks_id("zoom"):                        
+                    for anim_task in self.get_current_animation_tasks_id("zoom"):
                         anim_task.translation_delta_when_animation = self.mapped_cursor_pos() - self.old_cursor_pos
 
         elif self.is_library_page_active():
@@ -1583,10 +1576,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.rect().width()/2,
             self.rect().height()/2
         ).toPoint()
-        self.hint_center_position = QPointF(
-            self.rect().width()/2,
-            self.rect().height()/2
-        ).toPoint()
+
         # setGeometry вместо resize и move и мерцания исчезают полностью
         if True:
             size = QSizeF(r.width(), r.height())
@@ -1621,13 +1611,11 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         else:
             MAGIC_CONST = 11
         self.image_center_position += QPointF(f_geometry.left(), f_geometry.top()+MAGIC_CONST)
-        self.hint_center_position += QPointF(f_geometry.left(), f_geometry.top()+MAGIC_CONST)
         self.frameless_mode = True
         self.set_window_style()
         self.showMaximized()
         desktop = QDesktopWidget()
         self.image_center_position -= QPointF(desktop.screenGeometry(self).topLeft())
-        self.hint_center_position -= QPointF(desktop.screenGeometry(self).topLeft())
         self.update()
 
     def get_center_position(self):
@@ -1869,7 +1857,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if (before_scale < 1.0 and new_scale > 1.0) or (before_scale > 1.0 and new_scale < 1.0):
             factor = 1.0/scale
             # print("scale is clamped to 100%")
- 
+
         if new_scale > self.UPPER_SCALE_LIMIT:
             factor = self.UPPER_SCALE_LIMIT/scale
 
@@ -2464,6 +2452,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             if self.STNG_show_image_center:
                 self.draw_center_point(painter, self.image_center_position)
 
+
             self.draw_secret_hint(painter)
 
             # draw center label
@@ -2509,7 +2498,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 text = f"frame {frame_num}/{frame_count}"
             else:
                 text = self.center_label_info_type
-            self.draw_center_label(painter, text)        
+            self.draw_center_label(painter, text)
 
     def draw_image_metadata(self, painter):
         cf = LibraryData().current_folder()
@@ -2700,7 +2689,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if self.animated:
             im_data = self.image_data
             im_data.anim_paused = not im_data.anim_paused
-        self.update()        
+        self.update()
 
     def keyPressEvent(self, event):
         key = event.key()
