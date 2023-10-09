@@ -132,6 +132,7 @@ class PureRefMixin():
         self.build_bounding_rect(folder_data)
 
         folder_data.board_ready = True
+        self.update()
 
     def pureref_draw_content(self, painter, folder_data):
         

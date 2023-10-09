@@ -659,6 +659,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.restore_image_transformations()
 
         self.current_page = requested_page
+        self.update()
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):

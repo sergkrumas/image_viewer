@@ -1384,7 +1384,6 @@ class ImageData():
         MW = LibraryData().globals.main_window
         self.scale = MW.image_scale
         self.position = MW.image_center_position - QPointF(MW.width()/2, MW.height()/2).toPoint()
-        self.hint_position = MW.hint_center_position
         self.image_rotation = MW.image_rotation
         if MW.animated:
             self.anim_cur_frame = MW.movie.currentFrameNumber()
@@ -1409,8 +1408,6 @@ class ImageData():
                 )
             else:
                 MW.image_center_position = new_pos
-        if self.hint_position:
-            MW.hint_center_position = self.hint_position
         if self.image_rotation:
             MW.image_rotation = self.image_rotation
         self.update_fav_button_state()
