@@ -713,25 +713,46 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.on_start_animation_callback = callback_on_start
                 self.animation_duration = duration
 
+                self.callback_args = []
+                if anim_id == "zoom":
+                    self.callback_args = [self]
+
                 self._at_first_step = False
                 self.animation_allowed = True
 
                 self.main_window.animation_tasks.append(self)
 
-            def evaluation_step(self):
+            def stop(self, too_old=False):
+                if self.animation_allowed:
+                    self.animation_allowed = False
+                    if self in self.main_window.animation_tasks:
+                        self.main_window.animation_tasks.remove(self)
+                    if self.on_finish_animation_callback:
+                        self.on_finish_animation_callback(*self.callback_args)
+                    if too_old:
+                        action = "terminated"
+                    else:
+                        action = "closed"
+                    # self.evaluation_step(force=True)
+                    msg = f'animation task {action}: {self.anim_id}'
+                    print(msg)
 
-                if not self.animation_allowed:
+            def evaluation_step(self, force=False):
+
+                if (not self.animation_allowed) and not force:
                     return
                 if not self._at_first_step:
                     self.at_start_timestamp = time.time()
                     self._at_first_step = True
                     if self.on_start_animation_callback:
-                        self.on_start_animation_callback()
+                        self.on_start_animation_callback(*self.callback_args)
                     if self.task_generation > 0:
                         old_anim_tracks = self.anim_tracks[:]
                         self.anim_tracks.clear()
                         # обновление значений на текущие, ведь удалённый ранее таймер с тем же anim_id уже изменил текущее значение
                         for attr_host, attr_name, start_value, end_value, callback_func in old_anim_tracks:
+                            if attr_host is None:
+                                attr_host = self
                             start_value = getattr(attr_host, attr_name)
                             self.anim_tracks.append((attr_host, attr_name, start_value, end_value, callback_func))
 
@@ -745,16 +766,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 factor = self.easing.valueForProgress(min(1.0, max(0.0, t)))
                 for attr_host, attr_name, start_value, end_value, callback_func in self.anim_tracks:
                     value = self.main_window.interpolate_values(start_value, end_value, factor)
+                    if attr_host is None:
+                        attr_host = self
                     setattr(attr_host, attr_name, value)
-                    callback_func()
+                    callback_func(*self.callback_args)
                 if self.animation_duration < (time.time() - self.at_start_timestamp):
-                    self.animation_allowed = False
-                    if self in self.main_window.animation_tasks:
-                        self.main_window.animation_tasks.remove(self)
-                    msg = f'animation task closed {self.anim_id}'
-                    if self.on_finish_animation_callback:
-                        self.on_finish_animation_callback()
-                    print(msg)
+                    self.stop()
 
         return AnimationTask
 
@@ -766,6 +783,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             print("animation timer stopped")
             self.animation_timer.stop()
 
+    def get_current_animation_tasks_id(self, anim_id):
+        return [anim_task for anim_task in self.animation_tasks if anim_task.anim_id == anim_id]
+
     def get_current_animation_task_generation(self, anim_id=None):
         if anim_id is not None:
             for anim_task in self.animation_tasks[:]:
@@ -773,16 +793,19 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     return anim_task.task_generation
         return 0
 
+    def is_there_any_task_with_anim_id(self, anim_id):
+        for anim_task in self.animation_tasks[:]:
+            if anim_task.anim_id == anim_id:
+                return True
+        return False
+
     def animate_properties(self, anim_tracks, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
         AnimationTask = self.get_animation_task_class()
         task_generation = 0
         if anim_id is not None:
             for anim_task in self.animation_tasks[:]:
-                if anim_task.anim_id == anim_id:
-                    anim_task.stop()
-                    anim_task.animation_allowed = False
-                    # if anim_task in self.animation_tasks:
-                    self.animation_tasks.remove(anim_task)
+                if anim_task.anim_id == anim_id and anim_task.animation_allowed:
+                    anim_task.stop(too_old=True)
                     task_generation = anim_task.task_generation + 1
         animation_task = AnimationTask(self, anim_id, task_generation, QEasingCurve(easing), duration, anim_tracks, callback_on_finish, callback_on_start)
         animation_task.evaluation_step() # first call before timer starts!
@@ -1236,7 +1259,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         return self.rotated_pixmap
 
     def get_image_viewport_rect(self, debug=False, od=None):
-        im_rect = QRectF()
         if self.pixmap or self.invalid_movie or self.animated:
             if self.pixmap:
                 pixmap = self.get_rotated_pixmap()
@@ -1247,8 +1269,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         else:
             orig_width = 0
             orig_height = 0
-        im_rect.setLeft(0)
-        im_rect.setTop(0)
         if self.error:
             image_scale = 1.0
             self.image_center_position = self.get_center_position()
@@ -1261,13 +1281,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         icp = self.image_center_position
         if od is not None:
             icp = od[0]
-        pos = icp - QPointF(new_width/2, new_height/2)
-        if debug:
-            to_print = f'{pos} {new_width} {new_height}'
-            print(to_print)
-        im_rect.moveTo(pos)
-        im_rect.setWidth(new_width)
-        im_rect.setHeight(new_height)
+        im_rect = QRectF(0, 0, new_width, new_height)
+        im_rect.moveCenter(icp)
         return im_rect
 
     def get_secret_hint_rect(self):
@@ -1402,10 +1417,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.image_comment_mousePressEvent(event)
 
             if self.transformations_allowed:
+                self.old_cursor_pos = self.mapped_cursor_pos()
+                for anim_task in self.get_current_animation_tasks_id("zoom"):
+                    anim_task.translation_delta_when_animation = QPointF(0, 0)
                 if self.is_cursor_over_image():
                     self.image_translating = True
-                    self.oldCursorPos = self.mapped_cursor_pos()
-                    self.oldElementPos = self.image_center_position
+                    self.old_image_center_position = self.image_center_position
                     self.update()
 
             ready_to_view = self.is_viewer_page_active() and not self.handling_input
@@ -1456,11 +1473,12 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.image_comment_mouseMoveEvent(event)
             elif event.buttons() == Qt.LeftButton:
                 if self.transformations_allowed and self.image_translating:
-                    new =  self.oldElementPos - (self.oldCursorPos - self.mapped_cursor_pos())
+                    new =  self.old_image_center_position - (self.old_cursor_pos - self.mapped_cursor_pos())
                     old = self.image_center_position
-                    self.hint_center_position += new-old
-                    self.image_center_position = new
-                    self.translation_delta_when_animation += new-old
+                    if not self.is_there_any_task_with_anim_id("zoom"):
+                        self.image_center_position = new
+                    for anim_task in self.get_current_animation_tasks_id("zoom"):                        
+                        anim_task.translation_delta_when_animation = self.mapped_cursor_pos() - self.old_cursor_pos
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
@@ -1500,6 +1518,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 if self.transformations_allowed:
                     self.image_translating = False
                     self.update()
+
+                    for anim_task in self.get_current_animation_tasks_id("zoom"):
+                        anim_task.translation_delta_when_animation_summary += anim_task.translation_delta_when_animation
+                        anim_task.translation_delta_when_animation = QPointF(0, 0)
 
         self.update()
         super().mouseReleaseEvent(event)
@@ -1804,8 +1826,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
         animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG_animated_zoom
 
-        if not override_factor:
-
+        if override_factor:
+            factor = override_factor
+        else:
             # чем больше scale_speed, тем больше придётся крутить колесо мыши
             # для одной и той же дельты увеличения или уменьшения
             if animated_zoom_enabled:
@@ -1822,15 +1845,13 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             else:
                 factor = (scale_speed-1)/scale_speed
 
-        else:
-            factor = override_factor
 
-        current_image_rect = QRectF(self.get_image_viewport_rect())
+
         if override_factor:
             pivot = QPointF(self.rect().center())
         else:
             if cursor_pivot:
-                if current_image_rect.contains(self.mapped_cursor_pos()):
+                if self.get_image_viewport_rect().contains(self.mapped_cursor_pos()):
                     pivot = QPointF(self.mapped_cursor_pos())
                 else:
                     pivot = QPointF(self.rect().center())
@@ -1857,32 +1878,41 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         scale *= factor
         center_position += pivot
 
-        # end
+
+        # finish
         if override_factor:
             return scale, center_position
         else:
 
             if animated_zoom_enabled:
 
-                def update_function():
-                    self.image_scale = self.image_rect.width()/self.get_rotated_pixmap().width()
-                    icp = QPointF(self.image_rect.center()) + self.translation_delta_when_animation
-                    self.image_center_position = icp
+                def update_function(anim_task):
+                    self.image_scale = anim_task.image_rect.width()/self.get_rotated_pixmap().width()
+                    self.image_center_position = QPointF(anim_task.image_rect.center()) + anim_task.translation_delta_when_animation + anim_task.translation_delta_when_animation_summary
+                    self.activate_or_reset_secret_hint()
+                    self.show_center_label(self.label_type.SCALE)
                     self.update()
 
-                def on_start():
-                    self.translation_delta_when_animation = QPointF(0, 0)
+                    # msg = f'{anim_task.translation_delta_when_animation} {anim_task.translation_delta_when_animation_summary}'
+                    # print(msg)
 
-                def on_finish():
-                    pass
+                def on_start(anim_task):
+                    anim_task.translation_delta_when_animation = QPointF(0, 0)
+                    anim_task.translation_delta_when_animation_summary = QPointF(0, 0)
+                    anim_task.image_rect = self.get_image_viewport_rect()
 
+                def on_finish(anim_task):
+                    self.old_cursor_pos = self.mapped_cursor_pos()
+                    self.old_image_center_position = self.image_center_position
+
+                current_image_rect = self.get_image_viewport_rect()
                 wanna_image_rect = self.get_image_viewport_rect(od=(center_position, scale))
                 self.animate_properties(
                     [
-                        (self, "image_rect", current_image_rect, wanna_image_rect, update_function),
+                        (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
                     ],
                     anim_id="zoom",
-                    duration=0.7,
+                    duration=2.7,
                     # easing=QEasingCurve.OutQuad
                     # easing=QEasingCurve.OutQuart
                     # easing=QEasingCurve.OutQuint
@@ -1898,9 +1928,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 viewport_rect = self.get_image_viewport_rect()
                 is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
                 if before_scale < self.image_scale and is_vr_small:
-                    self.image_center_position = QPoint(QCursor().pos())
+                    self.image_center_position = QPointF(self.mapped_cursor_pos())
                 else:
-                    self.image_center_position = center_position.toPoint()
+                    self.image_center_position = center_position
 
 
         self.show_center_label(self.label_type.SCALE)
