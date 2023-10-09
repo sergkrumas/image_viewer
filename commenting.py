@@ -212,11 +212,11 @@ class CommentingMixin():
             base_point = im_rect.topLeft()
 
             # abs is for backwards compatibility
-            screen_left = base_point.x() + im_rect.width()*abs(comment.left)
-            screen_top = base_point.y() + im_rect.height()*abs(comment.top)
+            screen_left = base_point.x() + im_rect.width()*comment.left
+            screen_top = base_point.y() + im_rect.height()*comment.top
 
-            screen_right = base_point.x() + im_rect.width()*abs(comment.right)
-            screen_bottom = base_point.y() + im_rect.height()*abs(comment.bottom)
+            screen_right = base_point.x() + im_rect.width()*comment.right
+            screen_bottom = base_point.y() + im_rect.height()*comment.bottom
 
             comment_rect = QRectF(
                 QPointF(screen_left, screen_top),
