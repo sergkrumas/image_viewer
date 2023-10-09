@@ -2614,13 +2614,30 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def isBlockedByAnimation(self):
         return self.isAnimationEffectsAllowed() and self.block_paginating
 
+    def check_thumbnails_fullscreen(self):
+        CP = Globals.control_panel
+        if CP is not None and CP.fullscreen_flag:
+            return True
+        return False
+
+    def cancel_thumbnails_fullscreen(self):
+        CP = Globals.control_panel
+        if CP is not None and CP.fullscreen_flag:
+            CP.do_toggle_fullscreen()
+
+    def toggle_animation_playback(self):
+        if self.animated:
+            im_data = self.image_data
+            im_data.anim_paused = not im_data.anim_paused
+        self.update()
+
     def keyReleaseEvent(self, event):
-        # isAutoRepeat даёт отфильтровать ненужные срабатывания
-        # иначе при зажатой клавише keyReleaseEvent будет генерироваться без конца
 
         if self.check_thumbnails_fullscreen():
             return
 
+        # isAutoRepeat даёт отфильтровать ненужные срабатывания
+        # иначе при зажатой клавише keyReleaseEvent будет генерироваться без конца
         if not event.isAutoRepeat():
             self._key_pressed = False
             self._key_unreleased = False
@@ -2674,23 +2691,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                         LibraryData().show_previous_image()
         self.update()
 
-    def check_thumbnails_fullscreen(self):
-        CP = Globals.control_panel
-        if CP is not None and CP.fullscreen_flag:
-            return True
-        return False
-
-    def cancel_thumbnails_fullscreen(self):
-        CP = Globals.control_panel
-        if CP is not None and CP.fullscreen_flag:
-            CP.do_toggle_fullscreen()
-
-    def toggle_animation_playback(self):
-        if self.animated:
-            im_data = self.image_data
-            im_data.anim_paused = not im_data.anim_paused
-        self.update()
-
     def keyPressEvent(self, event):
         key = event.key()
 
@@ -2698,12 +2698,13 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             if key == Qt.Key_Escape:
                 self.cancel_thumbnails_fullscreen()
                 self.update()
-
             return
 
-        if self._key_pressed:
-            self._key_unreleased = True # зажата
-        self._key_pressed = True # нажата
+        if not key in [Qt.Key_Control, Qt.Key_Shift]:
+            if self._key_pressed:
+                self._key_unreleased = True # зажата
+            self._key_pressed = True # нажата
+
         # print('keyPressEvent')
         if key == Qt.Key_Escape:
             if self.contextMenuActivated:
