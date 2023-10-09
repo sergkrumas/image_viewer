@@ -1601,12 +1601,18 @@ class Slideshow(QWidget):
         self.TRANSITION_DURATION = main_window.STNG_slides_transition_duration
         self.DELAY_DURATION = main_window.STNG_slides_delay_duration
 
+    def load_pixmap(self, filepath):
+        if self.LibraryData().is_svg_file(filepath):
+            return load_svg(filepath)
+        else:
+            return QPixmap(filepath)
+
     def set_pics(self):
         pair = next(self.pairs)
         p1, p2, text = pair
         # загружаем картинки
-        self.p1 = QPixmap(p1.filepath)
-        self.p2 = QPixmap(p2.filepath)
+        self.p1 = self.load_pixmap(p1.filepath)
+        self.p2 = self.load_pixmap(p2.filepath)
         # время задаётся только после загрузок картинок!
         self.start_time = time.time()
         self.text = text
