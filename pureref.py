@@ -78,6 +78,7 @@ class PureRefMixin():
 
         self.context_menu_allowed = True
 
+        self.pureref_region_zoom_in_init()
 
     def pureref_toggle_minimap(self):
         self.pureref_show_minimap = not self.pureref_show_minimap
@@ -276,6 +277,8 @@ class PureRefMixin():
         self.pureref_draw_user_points(painter, cf)
 
         self.pureref_draw_minimap(painter)
+
+        self.pureref_region_zoom_in_draw(painter)
 
     def pureref_draw_origin_compass(self, painter):
 
@@ -476,13 +479,19 @@ class PureRefMixin():
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
-        if event.buttons() == Qt.LeftButton:
+
+        if self.isLeftClickAndShift(event):
+            self.pureref_region_zoom_in_mousePressEvent(event)
+
+        elif event.buttons() == Qt.LeftButton:
             if self.transformations_allowed:
                 self.board_translating = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
                 self.start_origin_pos = self.board_origin
                 self.update()
 
+    def isLeftClickAndShift(self, event):
+        return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ShiftModifier
 
     def pureref_mouseMoveEvent(self, event):
 
@@ -490,12 +499,16 @@ class PureRefMixin():
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
-        if event.buttons() == Qt.LeftButton:
+
+        if self.isLeftClickAndShift(event) or self.pureref_region_zoom_in_input_started:
+            self.pureref_region_zoom_in_mouseMoveEvent(event)
+        elif event.buttons() == Qt.LeftButton:
             if self.transformations_allowed and self.board_translating:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
                 start_value = self.board_origin
                 # delta = end_value-start_value
                 self.board_origin = end_value
+
         self.update()
 
     def pureref_mouseReleaseEvent(self, event):
@@ -503,6 +516,9 @@ class PureRefMixin():
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
+
+        if self.isLeftClickAndShift(event) or self.pureref_region_zoom_in_input_started:
+            self.pureref_region_zoom_in_mouseReleaseEvent(event)
 
         if event.button() == Qt.LeftButton:
             if self.transformations_allowed:
@@ -519,6 +535,9 @@ class PureRefMixin():
             cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor_x=None, factor_y=None, precalculate=False):
+
+        if not precalculate:
+            self.pureref_region_zoom_do_cancel()
 
         curpos = self.mapped_cursor_pos()
         if pivot is None:
@@ -545,14 +564,22 @@ class PureRefMixin():
             factor_x = 1.0
             factor_y = factor
 
-        self.board_scale_x *= factor_x
-        self.board_scale_y *= factor_y
+        _board_scale_x = self.board_scale_x
+        _board_scale_y = self.board_scale_y
+
+        _board_scale_x *= factor_x
+        _board_scale_y *= factor_y
 
         _board_origin -= pivot
         _board_origin = QPointF(_board_origin.x()*factor_x, _board_origin.y()*factor_y)
         _board_origin += pivot
 
+        if precalculate:
+            return _board_scale_x, _board_scale_y, _board_origin
+
         self.board_origin  = _board_origin
+        self.board_scale_x = _board_scale_x
+        self.board_scale_y = _board_scale_y
 
         self.update()
 
@@ -757,6 +784,176 @@ class PureRefMixin():
             callback_on_finish=animate_scale,
             # callback_on_finish=self.pureref_fly_over_board
         )
+
+
+
+
+
+
+
+
+    def pureref_region_zoom_in_init(self):
+        self.pureref_magnifier_input_rect = None
+        self.pureref_magnifier_projected_rect = None
+        self.pureref_orig_scale_x = None
+        self.pureref_orig_scale_y = None        
+        self.pureref_orig_origin = None
+        self.pureref_zoom_region_defined = False
+        self.pureref_magnifier_zoom_level = 1.0
+        self.pureref_region_zoom_in_input_started = False
+        self.pureref_magnifier_input_rect_animated = None
+
+    def pureref_region_zoom_do_cancel(self):
+        if self.pureref_magnifier_input_rect:
+            if self.isAnimationEffectsAllowed():
+                self.animate_properties(
+                    [
+                        (self, "board_origin", self.board_origin, self.pureref_orig_origin, self.update),
+                        (self, "board_scale_x", self.board_scale_x, self.pureref_orig_scale_x, self.update),
+                        (self, "board_scale_y", self.board_scale_y, self.pureref_orig_scale_y, self.update),
+                    ],
+                    anim_id="pureref_region_zoom_out",
+                    duration=0.4,
+                    easing=QEasingCurve.InOutCubic
+                )
+            else:
+                self.board_scale_x = self.pureref_orig_scale_x
+                self.board_scale_y = self.pureref_orig_scale_y
+                self.board_origin = self.pureref_orig_origin
+            self.pureref_region_zoom_in_init()
+            self.update()
+            # self.show_center_label(self.label_type.SCALE)
+            # self.setCursor(Qt.ArrowCursor)
+
+    def pureref_region_zoom_build_magnifier_input_rect(self):
+        if self.pureref_INPUT_POINT1 and self.pureref_INPUT_POINT2:
+            self.pureref_magnifier_input_rect = build_valid_rect(self.pureref_INPUT_POINT1, self.pureref_INPUT_POINT2)
+            self.pureref_magnifier_projected_rect = fit_rect_into_rect(self.pureref_magnifier_input_rect, self.rect())
+            w = self.pureref_magnifier_input_rect.width() or self.pureref_magnifier_projected_rect.width()
+            self.pureref_magnifier_zoom_level = self.pureref_magnifier_projected_rect.width()/w
+            self.pureref_magnifier_input_rect_animated = self.pureref_magnifier_input_rect
+
+    def pureref_region_zoom_do_zooming(self):
+        if self.pureref_magnifier_input_rect.width() != 0:
+
+            # 0. подготовка
+            input_center = self.pureref_magnifier_input_rect.center()
+            self.pureref_magnifier_input_rect_animated = QRect(self.pureref_magnifier_input_rect)
+            before_pos = QPointF(self.board_origin)
+
+            # 1. сдвинуть изображение так, чтобы позиция input_center оказалась в центре окна
+            diff = self.rect().center() - input_center
+            pos = self.board_origin + diff
+            self.board_origin = pos
+
+            # 2. увеличить относительно центра окна на factor с помощью функции
+            # которая умеет увеличивать масштаб
+            factor_x = self.pureref_magnifier_projected_rect.width()/self.pureref_magnifier_input_rect.width()
+            factor_y = self.pureref_magnifier_projected_rect.height()/self.pureref_magnifier_input_rect.height()
+            scale_x, scale_y, origin = self.do_scale_board(1.0, False, False, True, 
+                                                    factor_x=factor_x, factor_y=factor_y, precalculate=True,
+                                                    pivot=self.get_center_position())
+
+            if self.isAnimationEffectsAllowed():
+                self.animate_properties(
+                    [
+                        (self, "board_origin", before_pos, origin, self.update),
+                        (self, "board_scale_x", self.board_scale_x, scale_x, self.update),
+                        (self, "board_scale_y", self.board_scale_y, scale_y, self.update),                        
+                        (self, "pureref_magnifier_input_rect_animated", self.pureref_magnifier_input_rect_animated, self.pureref_magnifier_projected_rect, self.update)
+                    ],
+                    anim_id="pureref_region_zoom_in",
+                    duration=0.8,
+                    easing=QEasingCurve.InOutCubic
+                )
+            else:
+                self.board_origin = origin
+                self.board_scale_x = scale_x
+                self.board_scale_y = scale_y                
+            self.show_center_label(self.label_type.SCALE)
+
+    def pureref_region_zoom_in_mousePressEvent(self, event):
+        if not self.pureref_zoom_region_defined:
+            self.pureref_region_zoom_in_input_started = True
+            self.pureref_INPUT_POINT1 = event.pos()
+            self.pureref_magnifier_input_rect = None
+            self.pureref_orig_scale_x = self.board_scale_x
+            self.pureref_orig_scale_y = self.board_scale_y
+            self.pureref_orig_origin = self.board_origin
+            # self.setCursor(Qt.CrossCursor)
+
+    def pureref_region_zoom_in_mouseMoveEvent(self, event):
+        if not self.pureref_zoom_region_defined:
+            self.pureref_INPUT_POINT2 = event.pos()
+            self.pureref_region_zoom_build_magnifier_input_rect()
+
+    def pureref_region_zoom_in_mouseReleaseEvent(self, event):
+        if not self.pureref_zoom_region_defined:
+            self.pureref_INPUT_POINT2 = event.pos()
+            self.pureref_region_zoom_build_magnifier_input_rect()
+            if self.pureref_INPUT_POINT1 and self.pureref_INPUT_POINT2:
+                self.pureref_zoom_region_defined = True
+                self.pureref_region_zoom_do_zooming()
+            else:
+                self.pureref_region_zoom_do_cancel()
+            self.pureref_region_zoom_in_input_started = False
+
+
+    def pureref_region_zoom_in_draw(self, painter):
+        if self.pureref_magnifier_input_rect:
+            painter.setBrush(Qt.NoBrush)
+            pureref_magnifier_input_rect = self.pureref_magnifier_input_rect
+            pureref_magnifier_projected_rect = self.pureref_magnifier_projected_rect
+            # if not self.pureref_zoom_region_defined:
+            #     painter.setPen(QPen(Qt.white, 1, Qt.DashLine))
+            #     painter.drawRect(pureref_magnifier_input_rect)
+            painter.setPen(QPen(Qt.white, 1))
+            if not self.pureref_zoom_region_defined or self.pureref_magnifier_input_rect_animated:
+                if True:
+                    painter.drawLine(self.pureref_magnifier_input_rect_animated.topLeft(),
+                                                                        pureref_magnifier_projected_rect.topLeft())
+                    painter.drawLine(self.pureref_magnifier_input_rect_animated.topRight(),
+                                                                        pureref_magnifier_projected_rect.topRight())
+                    painter.drawLine(self.pureref_magnifier_input_rect_animated.bottomLeft(),
+                                                                    pureref_magnifier_projected_rect.bottomLeft())
+                    painter.drawLine(self.pureref_magnifier_input_rect_animated.bottomRight(),
+                                                                    pureref_magnifier_projected_rect.bottomRight())
+                else:
+                    painter.drawLine(pureref_magnifier_projected_rect.topLeft(), pureref_magnifier_projected_rect.bottomRight())
+                    painter.drawLine(pureref_magnifier_projected_rect.bottomLeft(), pureref_magnifier_projected_rect.topRight())
+            if not self.pureref_zoom_region_defined:
+                value = math.ceil(self.pureref_magnifier_zoom_level*100)
+                text = f"{value:,}%".replace(',', ' ')
+                font = painter.font()
+                font.setPixelSize(14)
+                painter.setFont(font)
+                painter.drawText(self.rect(), Qt.AlignCenter, text)
+            if self.pureref_magnifier_input_rect_animated:
+                painter.drawRect(self.pureref_magnifier_input_rect_animated)
+                painter.drawRect(pureref_magnifier_projected_rect)
+            if self.pureref_zoom_region_defined:
+                painter.setOpacity(0.8)
+                painter.setClipping(True)
+                r = QPainterPath()
+                r.addRect(QRectF(self.rect()))
+                r.addRect(QRectF(pureref_magnifier_projected_rect))
+                painter.setClipPath(r)
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(QBrush(Qt.black))
+                painter.drawRect(self.rect())
+                painter.setClipping(False)
+                painter.setOpacity(1.0)
+
+
+
+
+
+
+
+
+
+
+
 
 
 

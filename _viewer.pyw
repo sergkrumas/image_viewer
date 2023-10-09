@@ -620,6 +620,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             cancel_fullscreen_on_control_panel()
 
         elif self.current_page == self.pages.PUREREF_PAGE:
+            self.pureref_region_zoom_do_cancel()
             cancel_fullscreen_on_control_panel()
             LibraryData().save_board_data()
 
@@ -914,7 +915,6 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             input_center = self.input_rect.center()
             self.input_rect_animated = QRect(self.input_rect)
             before_pos = QPointF(self.image_center_position)
-            image_center = QPointF(self.image_center_position)
 
             # 1. сдвинуть изображение так, чтобы позиция input_center оказалась в центре окна
             diff = self.rect().center() - input_center
@@ -2742,6 +2742,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.contextMenuActivated = False
             elif self.input_rect:
                 self.region_zoom_in_cancel()
+            elif self.pureref_magnifier_input_rect:
+                self.pureref_region_zoom_do_cancel()
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
             else:
