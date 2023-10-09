@@ -886,7 +886,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                         (self, "image_center_position", self.image_center_position, self.orig_pos, self.update),
                         (self, "image_scale", self.image_scale, self.orig_scale, self.update)
                     ],
-                    anim_id="region_zoomn",
+                    anim_id="region_zoom_out",
                     duration=0.4,
                     easing=QEasingCurve.InOutCubic
                 )
@@ -933,7 +933,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                         (self, "image_scale", self.image_scale, scale, self.update),
                         (self, "input_rect_animated", self.input_rect_animated, self.projected_rect, self.update)
                     ],
-                    anim_id="region_zoom",
+                    anim_id="region_zoom_in",
                     duration=0.8,
                     easing=QEasingCurve.InOutCubic
                 )
