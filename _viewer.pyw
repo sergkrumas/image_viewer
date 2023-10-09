@@ -2304,8 +2304,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 painter.drawPixmap(item_rect, item_data.preview)
 
                 if not hasattr(item_data, "library_cache_version"):
+                    highres_svg = LibraryData().is_svg_file(item_data.filepath)
                     item_data.library_cache_version = load_image_respect_orientation(
-                                                                        item_data.filepath)
+                                        item_data.filepath, highres_svg=highres_svg)
                 cached = item_data.library_cache_version
                 if cached:
                     source_rect = cached.rect()
