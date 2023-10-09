@@ -695,7 +695,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def get_animation_task_class(self):
 
         class AnimationTask(QTimer):
-            def __init__(self, parent, anim_id, task_generation, easing, duration, anim_tracks, callback_on_finish, callback_on_start):
+            def __init__(self, parent, anim_id, task_generation, easing, duration, anim_tracks, callback_on_finish, callback_on_start, user_data):
                 super().__init__()
 
                 self.main_window = parent
@@ -706,6 +706,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.on_finish_animation_callback = callback_on_finish
                 self.on_start_animation_callback = callback_on_start
                 self.animation_duration = duration
+                self.user_data = user_data
 
                 self.callback_args = []
                 if anim_id == "zoom":
@@ -793,15 +794,45 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 return True
         return False
 
-    def animate_properties(self, anim_tracks, anim_id=None, callback_on_finish=None, callback_on_start=None, duration=0.2, easing=QEasingCurve.OutCubic):
+    def animate_properties(self, anim_tracks,
+                anim_id=None,
+                callback_on_finish=None,
+                callback_on_start=None,
+                duration=0.2,
+                easing=QEasingCurve.OutCubic,
+                user_data=None
+            ):
         AnimationTask = self.get_animation_task_class()
         task_generation = 0
         if anim_id is not None:
             for anim_task in self.animation_tasks[:]:
                 if anim_task.anim_id == anim_id and anim_task.animation_allowed:
+                    default_generation = True
+
+                    a = math.copysign(1.0, anim_task.user_data)
+                    b = math.copysign(1.0, user_data)
+                    if anim_task.anim_id == "zoom" and (anim_task.user_data is not None) and (user_data is not None):
+                        if a != b:
+                            default_generation = False
+
+                    if default_generation:
+                        task_generation = anim_task.task_generation + 1
+                    else:
+                        task_generation = 0
+                    msg = f'task generation {task_generation},   {user_data} {a} {b}'
+                    print(msg)
                     anim_task.stop(too_old=True)
-                    task_generation = anim_task.task_generation + 1
-        animation_task = AnimationTask(self, anim_id, task_generation, QEasingCurve(easing), duration, anim_tracks, callback_on_finish, callback_on_start)
+        animation_task = AnimationTask(
+            self,
+            anim_id,
+            task_generation,
+            QEasingCurve(easing),
+            duration,
+            anim_tracks,
+            callback_on_finish,
+            callback_on_start,
+            user_data
+        )
         animation_task.evaluation_step() # first call before timer starts!
         self.animation_timer.start()
 
@@ -1870,61 +1901,58 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         # finish
         if override_factor:
             return scale, center_position
+
+        if animated_zoom_enabled:
+
+            def update_function(anim_task):
+                self.image_scale = anim_task.image_rect.width()/self.get_rotated_pixmap().width()
+                self.image_center_position = QPointF(anim_task.image_rect.center()) + anim_task.translation_delta_when_animation + anim_task.translation_delta_when_animation_summary
+                self.activate_or_reset_secret_hint()
+                self.show_center_label(self.label_type.SCALE)
+                self.update()
+
+                # msg = f'{anim_task.translation_delta_when_animation} {anim_task.translation_delta_when_animation_summary}'
+                # print(msg)
+
+            def on_start(anim_task):
+                anim_task.translation_delta_when_animation = QPointF(0, 0)
+                anim_task.translation_delta_when_animation_summary = QPointF(0, 0)
+                anim_task.image_rect = self.get_image_viewport_rect()
+
+            def on_finish(anim_task):
+                self.old_cursor_pos = self.mapped_cursor_pos()
+                self.old_image_center_position = self.image_center_position
+
+            current_image_rect = self.get_image_viewport_rect()
+            wanna_image_rect = self.get_image_viewport_rect(od=(center_position, scale))
+            self.animate_properties(
+                [
+                    (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
+                ],
+                anim_id="zoom",
+                duration=0.7,
+                # easing=QEasingCurve.OutQuad
+                # easing=QEasingCurve.OutQuart
+                # easing=QEasingCurve.OutQuint
+                easing=QEasingCurve.OutCubic,
+                callback_on_start=on_start,
+                callback_on_finish=on_finish,
+                user_data=scroll_value
+            )
+
         else:
 
-            if animated_zoom_enabled:
+            self.image_scale = scale
 
-                def update_function(anim_task):
-                    self.image_scale = anim_task.image_rect.width()/self.get_rotated_pixmap().width()
-                    self.image_center_position = QPointF(anim_task.image_rect.center()) + anim_task.translation_delta_when_animation + anim_task.translation_delta_when_animation_summary
-                    self.activate_or_reset_secret_hint()
-                    self.show_center_label(self.label_type.SCALE)
-                    self.update()
-
-                    # msg = f'{anim_task.translation_delta_when_animation} {anim_task.translation_delta_when_animation_summary}'
-                    # print(msg)
-
-                def on_start(anim_task):
-                    anim_task.translation_delta_when_animation = QPointF(0, 0)
-                    anim_task.translation_delta_when_animation_summary = QPointF(0, 0)
-                    anim_task.image_rect = self.get_image_viewport_rect()
-
-                def on_finish(anim_task):
-                    self.old_cursor_pos = self.mapped_cursor_pos()
-                    self.old_image_center_position = self.image_center_position
-
-                current_image_rect = self.get_image_viewport_rect()
-                wanna_image_rect = self.get_image_viewport_rect(od=(center_position, scale))
-                self.animate_properties(
-                    [
-                        (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
-                    ],
-                    anim_id="zoom",
-                    duration=2.7,
-                    # easing=QEasingCurve.OutQuad
-                    # easing=QEasingCurve.OutQuart
-                    # easing=QEasingCurve.OutQuint
-                    easing=QEasingCurve.OutCubic,
-                    callback_on_start=on_start,
-                    callback_on_finish=on_finish,
-                )
-
+            viewport_rect = self.get_image_viewport_rect()
+            is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
+            if before_scale < self.image_scale and is_vr_small:
+                self.image_center_position = QPointF(self.mapped_cursor_pos())
             else:
-
-                self.image_scale = scale
-
-                viewport_rect = self.get_image_viewport_rect()
-                is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
-                if before_scale < self.image_scale and is_vr_small:
-                    self.image_center_position = QPointF(self.mapped_cursor_pos())
-                else:
-                    self.image_center_position = center_position
-
+                self.image_center_position = center_position
 
         self.show_center_label(self.label_type.SCALE)
-
         self.activate_or_reset_secret_hint()
-
         self.update()
 
     def scale_label_opacity(self):
