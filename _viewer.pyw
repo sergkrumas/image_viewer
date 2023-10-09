@@ -819,8 +819,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                         task_generation = anim_task.task_generation + 1
                     else:
                         task_generation = 0
-                    msg = f'task generation {task_generation},   {user_data} {a} {b}'
-                    print(msg)
+                    # msg = f'task generation {task_generation},   {user_data} {a} {b}'
+                    # print(msg)
                     anim_task.stop(too_old=True)
         animation_task = AnimationTask(
             self,
