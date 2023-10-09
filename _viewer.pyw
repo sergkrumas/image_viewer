@@ -1931,7 +1931,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
                 ],
                 anim_id="zoom",
-                duration=0.7,
+                duration=1.7,
                 # easing=QEasingCurve.OutQuad
                 # easing=QEasingCurve.OutQuart
                 # easing=QEasingCurve.OutQuint
