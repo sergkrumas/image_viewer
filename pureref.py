@@ -195,7 +195,7 @@ class PureRefMixin():
             msg = f'loaded to board: {filepath}'
             print(msg)
 
-        def load_animated(filepath):
+        def __load_animated(filepath):
             prbi.movie = QMovie(filepath)
             prbi.movie.setCacheMode(QMovie.CacheAll)
             prbi.movie.jumpToFrame(0)
@@ -206,12 +206,12 @@ class PureRefMixin():
             else:
                 show_msg(filepath)
 
-        def load_svg(filepath):
+        def __load_svg(filepath):
             prbi.pixmap = load_svg(filepath)
             prbi.animated = False
             show_msg(filepath)            
 
-        def load_static(filepath):
+        def __load_static(filepath):
             prbi.pixmap = load_image_respect_orientation(filepath)
             prbi.animated = False
             show_msg(filepath)            
@@ -220,13 +220,14 @@ class PureRefMixin():
         try:
             prbi.pixmap = QPixmap()
             if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
-                load_animated(filepath)
+                __load_animated(filepath)
             elif self.LibraryData().is_svg_file(filepath):
-                load_svg(filepath)
+                __load_svg(filepath)
             else:
-                load_static(filepath)
-        except:
+                __load_static(filepath)
+        except Exception as e:
             prbi.pixmap = QPixmap()
+
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x

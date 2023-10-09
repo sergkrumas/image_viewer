@@ -810,9 +810,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 if anim_task.anim_id == anim_id and anim_task.animation_allowed:
                     default_generation = True
 
-                    a = math.copysign(1.0, anim_task.user_data)
-                    b = math.copysign(1.0, user_data)
                     if anim_task.anim_id == "zoom" and (anim_task.user_data is not None) and (user_data is not None):
+                        a = math.copysign(1.0, anim_task.user_data)
+                        b = math.copysign(1.0, user_data)
                         if a != b:
                             default_generation = False
 
@@ -1926,12 +1926,14 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
             current_image_rect = self.get_image_viewport_rect()
             wanna_image_rect = self.get_image_viewport_rect(od=(center_position, scale))
+            gen = self.get_current_animation_task_generation(anim_id="zoom")
+            duration = fit(gen, 0, 20, 0.8, 1.7)
             self.animate_properties(
                 [
                     (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
                 ],
                 anim_id="zoom",
-                duration=1.7,
+                duration=duration,
                 # easing=QEasingCurve.OutQuad
                 # easing=QEasingCurve.OutQuart
                 # easing=QEasingCurve.OutQuint
