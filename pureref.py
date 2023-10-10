@@ -63,7 +63,7 @@ class PureRefMixin():
         self.board_scale_x = 1.0
         self.board_scale_y = 1.0
 
-        self.board_translating = True
+        self.board_translating = False
 
         self.pureref_show_minimap = False
 
