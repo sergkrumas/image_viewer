@@ -636,3 +636,7 @@ def shift_list_to_became_first(_list, should_be_the_first_in_list):
     part2.extend(part1)
     result = part2
     return result
+
+
+def calculate_distance(p1, p2):
+    return math.sqrt( math.pow(p2.x() - p1.x(), 2) + math.pow(p2.y() - p1.y(), 2) )

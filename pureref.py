@@ -53,6 +53,15 @@ class PureRefBoardItem():
         self.board_position = QPointF()
         self.board_rotation = None
 
+    def calculate_absolute_position(self, board=None):
+
+        board_origin = board.board_origin
+        _scale_x = board.board_scale_x
+        _scale_y = board.board_scale_y
+
+        rel_pos = self.board_position
+        return QPointF(board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
+
 
 class PureRefMixin():
 
@@ -736,21 +745,18 @@ class PureRefMixin():
                 for point, bx, by in cf.board_user_points:
                     _list.append([point, bx, by])
             else:
-                min_len = 9999999999999999
-                min_len_prbi = None
+                min_distance = 9999999999999999
+                min_distance_prbi = None
                 cursor_pos = self.mapped_cursor_pos()
                 for prbi in cf.pureref_items_list:
-                    rel_pos = prbi.board_position
-                    pos = self.board_origin + QPointF(rel_pos.x()*self.board_scale_x, rel_pos.y()*self.board_scale_y)
 
-                    p1 = cursor_pos
-                    p2 = pos
-                    distance = math.sqrt( math.pow(p2.x() - p1.x(), 2) + math.pow(p2.y() - p1.y(), 2))
-                    if distance < min_len:
-                        min_len = distance
-                        min_len_prbi = prbi
+                    pos = prbi.calculate_absolute_position(board=self)
+                    distance = calculate_distance(pos, cursor_pos)
+                    if distance < min_distance:
+                        min_distance = distance
+                        min_distance_prbi = prbi
 
-                sorted_list = shift_list_to_became_first(cf.pureref_items_list, min_len_prbi)
+                sorted_list = shift_list_to_became_first(cf.pureref_items_list, min_distance_prbi)
                 for prbi in sorted_list:
                     point = prbi.board_position
                     _list.append([point, None, prbi])
