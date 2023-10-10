@@ -208,7 +208,7 @@ class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLi
     @staticmethod
     def is_supported_file(filepath):
         return LibraryData.is_interest_file(filepath)
-    
+
     @staticmethod
     def is_gif_file(filepath):
         return filepath.lower().endswith(".gif")
@@ -226,7 +226,7 @@ class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLi
         return filepath.lower().endswith((".avif", ".heif", ".heic"))
 
     @staticmethod
-    def is_webp_file_animated(filepath): 
+    def is_webp_file_animated(filepath):
         return LibraryData().is_webp_file(filepath) and is_webp_file_animated(filepath)
 
     def choose_next_folder(self):

@@ -491,7 +491,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
         if requested_page is None or requested_page == main_window.pages.VIEWER_PAGE:
             self.favorite_btn = ControlPanelButton("favorite", "Избранное",
-                                                        callback=self.manage_favorite_list)            
+                                                        callback=self.manage_favorite_list)
             self.all_buttons = [
                 ControlPanelButton("orig_scale", "1:1", callback=self.set_original_scale),
                 ControlPanelButton("zoom_out", "Уменьшить", callback=self.zoom_out),
@@ -525,9 +525,9 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
                 ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
-            ]            
+            ]
         else:
-            self.all_buttons = []            
+            self.all_buttons = []
 
 
         self.buttons_list = self.all_buttons[:]
@@ -637,7 +637,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 h = image_data.source_height
                 filename = image_data.filename
                 foldername = image_data.folder_data.folder_name
-                
+
                 text = f"{foldername} \\ {filename} {w} x {h}"
             else:
                 text = "страница PureRef"
