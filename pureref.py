@@ -54,13 +54,10 @@ class PureRefBoardItem():
         self.board_rotation = None
 
     def calculate_absolute_position(self, board=None):
-
-        board_origin = board.board_origin
         _scale_x = board.board_scale_x
         _scale_y = board.board_scale_y
-
         rel_pos = self.board_position
-        return QPointF(board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
+        return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
 
 class PureRefMixin():
@@ -175,7 +172,10 @@ class PureRefMixin():
         pos += QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
         image_rect.moveCenter(pos)
 
-        if image_rect.intersected(QRectF(self.rect())):
+        if image_rect.intersected(QRectF(self.rect())).isNull():
+            self.trigger_prbi_pixmap_unloading(prbi)
+
+        else:
             self.images_drawn += 1
 
             painter.setBrush(Qt.NoBrush)
@@ -214,6 +214,23 @@ class PureRefMixin():
 
                     painter.setPen(QPen(Qt.white, 1))
                     painter.drawText(text_rect, alignment, prbi.status)
+
+
+    def trigger_prbi_pixmap_unloading(self, prbi):
+        if prbi.pixmap is None:
+            return
+
+        dist = calculate_distance(
+                prbi.calculate_absolute_position(board=self),
+                self.get_center_position()
+        )
+        if dist > 10000.0:
+            prbi.pixmap = None
+            prbi.movie = None
+
+            filepath = prbi.image_data.filepath
+            msg = f'unloaded from board: {filepath}'
+            print(msg)
 
     def trigger_prbi_pixmap_loading(self, prbi):
         if prbi.pixmap is not None:
@@ -256,7 +273,6 @@ class PureRefMixin():
                 __load_static(filepath)
         except Exception as e:
             prbi.pixmap = QPixmap()
-
 
     def pureref_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
