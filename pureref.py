@@ -718,14 +718,7 @@ class PureRefMixin():
     def pureref_fly_over_board(self, user_call=False):
 
         if user_call and self.fly_pairs:
-            # создаём таску с тем же anim_id, чтобы отменить циклическую анимацию
-            self.animate_properties(
-                [
-                    (self, "pr_viewport", self.pr_viewport, self.pr_viewport, self.update),
-                ],
-                anim_id="flying",
-                duration=0.001,
-            )
+            self.cancel_all_anim_tasks()
             self.fly_pairs = []
             return
 
