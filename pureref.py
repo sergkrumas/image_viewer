@@ -188,6 +188,24 @@ class PureRefMixin():
             if image_to_draw:
                 painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
+            if prbi == self.prbi_under_mouse and prbi.animated:
+                # painter.drawText(image_rect.topLeft(), prbi.status)
+
+                alignment = Qt.AlignCenter | Qt.AlignVCenter
+                text_rect = calculate_text_rect(painter.font(), image_rect, prbi.status, alignment)
+                text_rect.adjust(-5, -5, 5, 5)
+                text_rect.moveTopLeft(image_rect.topLeft())
+
+                if text_rect.width() < image_rect.width():
+                    path = QPainterPath()
+                    path.addRoundedRect(QRectF(text_rect), 5, 5)
+                    painter.setPen(Qt.NoPen)
+                    painter.setBrush(QBrush(QColor(50, 60, 90)))
+                    painter.drawPath(path)
+
+                    painter.setPen(QPen(Qt.white, 1))
+                    painter.drawText(text_rect, alignment, prbi.status)
+
     def trigger_prbi_pixmap_loading(self, prbi):
         if prbi.pixmap is not None:
             return
@@ -202,6 +220,7 @@ class PureRefMixin():
             prbi.movie.jumpToFrame(0)
             prbi.pixmap = prbi.movie.currentPixmap()
             prbi.animated = True
+            self.update_scroll_status(prbi)
             if prbi.movie.frameRect().isNull():
                 prbi.pixmap = None
             else:
@@ -586,6 +605,13 @@ class PureRefMixin():
     def pureref_do_scale_board(self, scroll_value):
         self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
 
+    def update_scroll_status(self, prbi):
+        current_frame = prbi.movie.currentFrameNumber()
+        frame_count = prbi.movie.frameCount()
+        if frame_count > 0:
+            current_frame += 1
+        prbi.status = f'{current_frame}/{frame_count}'
+
     def pureref_scroll_animation(self, prbi, scroll_value):
         frames_list = list(range(0, prbi.movie.frameCount()))
         if scroll_value > 0:
@@ -596,6 +622,7 @@ class PureRefMixin():
         i = frames_list.index(prbi.movie.currentFrameNumber()) + 1
         prbi.movie.jumpToFrame(frames_list[i])
         prbi.pixmap = prbi.movie.currentPixmap()
+        self.update_scroll_status(prbi)
         self.update()
 
     def pureref_wheelEvent(self, event):
