@@ -3071,7 +3071,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     elif action == toggle_two_monitors_wide:
                         self.do_toggle_two_monitors_wide()
                     elif action == rerun_extended_mode:
-                        do_rerun_in_extended_mode(self.is_library_page_active())
+                        do_rerun_in_default_mode(self.is_library_page_active())
         else:
             show_in_gchrome = None
             show_in_explorer = None
@@ -3239,9 +3239,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 elif action == change_svg_scale:
                     self.contextMenuChangeSVGScale()
                 elif action == rerun_in_extended_mode:
-                    do_rerun_in_extended_mode(False)
+                    do_rerun_in_default_mode(False)
                 elif action == rerun_extended_mode:
-                    do_rerun_in_extended_mode(self.is_library_page_active())
+                    do_rerun_in_default_mode(self.is_library_page_active())
 
     def closeEvent(self, event):
         if Globals.DEBUG:
@@ -3442,13 +3442,13 @@ def start_lite_process(path):
     args = [sys.executable, app_path, path, "-lite"]
     subprocess.Popen(args)
 
-def do_rerun_in_extended_mode(is_on_library_page):
+def do_rerun_in_default_mode(is_on_library_page):
     path = LibraryData.get_content_path(LibraryData().current_folder())
     if Globals.DEBUG:
         app_path = __file__
     else:
         app_path = sys.argv[0]
-    args = [sys.executable, app_path, path, "-extended"]
+    args = [sys.executable, app_path, path, "-full"]
     if is_on_library_page:
         args.append("-forcelibrarypage")
     subprocess.Popen(args)
