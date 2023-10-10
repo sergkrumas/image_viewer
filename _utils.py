@@ -628,3 +628,11 @@ def get_bounding_points(points):
         top = min(int(p.y()), top)
         bottom = max(int(p.y()), bottom)
     return QPointF(left, top), QPointF(right, bottom)
+
+def shift_list_to_became_first(_list, should_be_the_first_in_list):
+    index = _list.index(should_be_the_first_in_list)
+    part1 = _list[0:index]
+    part2 = _list[index:]
+    part2.extend(part1)
+    result = part2
+    return result

@@ -699,7 +699,7 @@ class PureRefMixin():
                 anim_id="flying",
                 duration=0.001,
             )
-            self.fly_pairs = list()
+            self.fly_pairs = []
             return
 
         viewport_center_pos = self.get_center_position()
@@ -716,10 +716,24 @@ class PureRefMixin():
                 for point, bx, by in cf.board_user_points:
                     _list.append([point, bx, by])
             else:
+                min_len = 9999999999999999
+                min_len_prbi = None
+                cursor_pos = self.mapped_cursor_pos()
                 for prbi in cf.pureref_items_list:
+                    rel_pos = prbi.board_position
+                    pos = self.board_origin + QPointF(rel_pos.x()*self.board_scale_x, rel_pos.y()*self.board_scale_y)
+
+                    p1 = cursor_pos
+                    p2 = pos
+                    distance = math.sqrt( math.pow(p2.x() - p1.x(), 2) + math.pow(p2.y() - p1.y(), 2))
+                    if distance < min_len:
+                        min_len = distance
+                        min_len_prbi = prbi
+
+                sorted_list = shift_list_to_became_first(cf.pureref_items_list, min_len_prbi)
+                for prbi in sorted_list:
                     point = prbi.board_position
                     _list.append([point, None, prbi])
-                    # _list.append([point, bx, by, prbi])
 
             self.fly_pairs = get_cycled_pairs(_list, slideshow=False)
             pair = [
