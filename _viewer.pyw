@@ -624,7 +624,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             cancel_fullscreen_on_control_panel()
             LibraryData().save_board_data()
 
-
+        self.cancel_all_anim_tasks()
+        self.hide_center_label()
 
         if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_columns()
@@ -795,6 +796,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             if anim_task.anim_id == anim_id:
                 return True
         return False
+
+    def cancel_all_anim_tasks(self):
+        for anim_task in self.animation_tasks[:]:
+            anim_task.stop(too_old=True)        
 
     def animate_properties(self, anim_tracks,
                 anim_id=None,
@@ -2619,14 +2624,15 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         self.center_label_info_type = info_type
         if info_type not in self.label_type.all():
             # текстовые сообщения показываем дольше
-            self.CENTER_LABEL_TIME_LIMIT = 5
+            self.CENTER_LABEL_TIME_LIMIT = 5.0
         else:
-            self.CENTER_LABEL_TIME_LIMIT = 2
+            self.CENTER_LABEL_TIME_LIMIT = 2.0
         # show center label on screen
         self.center_label_time = time.time()
 
     def hide_center_label(self):
-        self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT
+        self.CENTER_LABEL_TIME_LIMIT = 2.0
+        self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT*5
 
     def check_scroll_lock(self):
         return windll.user32.GetKeyState(VK_SCROLL)
@@ -2811,7 +2817,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.invert_image = not self.invert_image
                 self.update()
             elif check_scancode_for(event, "G"):
-                self.toggle_test_animation()
+                # self.toggle_test_animation()
+                self.hide_center_label()
             elif check_scancode_for(event, "K"):
                 pass
             elif check_scancode_for(event, "R"):

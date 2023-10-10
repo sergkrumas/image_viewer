@@ -863,8 +863,6 @@ class PureRefMixin():
                 self.board_origin = self.pureref_orig_origin
             self.pureref_region_zoom_in_init()
             self.update()
-            # self.show_center_label(self.label_type.SCALE)
-            # self.setCursor(Qt.ArrowCursor)
 
     def pureref_region_zoom_build_magnifier_input_rect(self):
         if self.pureref_INPUT_POINT1 and self.pureref_INPUT_POINT2:
