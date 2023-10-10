@@ -724,7 +724,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     self.animation_allowed = False
                     if self in self.main_window.animation_tasks:
                         self.main_window.animation_tasks.remove(self)
-                    if self.on_finish_animation_callback:
+                    if self.on_finish_animation_callback and not too_old:
                         self.on_finish_animation_callback(*self.callback_args)
                     if too_old:
                         action = "terminated"
@@ -802,7 +802,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 callback_on_start=None,
                 duration=0.2,
                 easing=QEasingCurve.OutCubic,
-                user_data=None
+                user_data=None,
             ):
         AnimationTask = self.get_animation_task_class()
         task_generation = 0
