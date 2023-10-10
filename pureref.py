@@ -136,7 +136,7 @@ class PureRefMixin():
         self.update()
 
     def pureref_draw_content(self, painter, folder_data):
-        
+
         if not folder_data.board_ready:
             self.prepare_board(folder_data)
         else:
@@ -210,12 +210,12 @@ class PureRefMixin():
         def __load_svg(filepath):
             prbi.pixmap = load_svg(filepath)
             prbi.animated = False
-            show_msg(filepath)            
+            show_msg(filepath)
 
         def __load_static(filepath):
             prbi.pixmap = load_image_respect_orientation(filepath)
             prbi.animated = False
-            show_msg(filepath)            
+            show_msg(filepath)
 
         filepath = prbi.image_data.filepath
         try:
@@ -296,7 +296,7 @@ class PureRefMixin():
         # painter.drawLine(QPointF(pos).toPoint(), curpos)
 
         radius = 40
-        delta = curpos - QPointF(pos).toPoint() 
+        delta = curpos - QPointF(pos).toPoint()
         radians_angle = math.atan2(delta.y(), delta.x())
         # painter.translate(curpos)
         # painter.rotate(180/3.14*radians_angle-180)
@@ -438,7 +438,7 @@ class PureRefMixin():
                 map_width * center_point_rel.x()/self.board_bounding_rect.width(),
                 map_height * center_point_rel.y()/self.board_bounding_rect.height()
             ) + minimap_rect.topLeft()
-            painter.setPen(QPen(Qt.red, 2))            
+            painter.setPen(QPen(Qt.red, 2))
             painter.drawLine(center_point+QPointF(-10, -10), center_point+QPointF(10, 10))
             painter.drawLine(center_point+QPointF(-10, 10), center_point+QPointF(10, -10))
 
@@ -759,7 +759,7 @@ class PureRefMixin():
                 image_rect = QRect(0, 0, int(image_width), int(image_height))
                 fitted_rect = fit_rect_into_rect(image_rect, self.rect())
                 bx = fitted_rect.width()/image_rect.width()
-                by = fitted_rect.height()/image_rect.height()                
+                by = fitted_rect.height()/image_rect.height()
 
             self.animate_properties(
                 [
@@ -777,13 +777,13 @@ class PureRefMixin():
             self.update()
 
 
-        delta = QPointF(self.get_center_position() - self.board_origin) 
+        delta = QPointF(self.get_center_position() - self.board_origin)
         current_pos_ = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
 
         pair = [
             [current_pos_, self.board_scale_x, self.board_scale_y],
             pair[1],
-        ]        
+        ]
 
         pos1 = QPointF(pair[0][0].x()*self.board_scale_x, pair[0][0].y()*self.board_scale_y)
         pos2 = QPointF(pair[1][0].x()*self.board_scale_x, pair[1][0].y()*self.board_scale_y)
@@ -810,7 +810,7 @@ class PureRefMixin():
         self.pureref_magnifier_input_rect = None
         self.pureref_magnifier_projected_rect = None
         self.pureref_orig_scale_x = None
-        self.pureref_orig_scale_y = None        
+        self.pureref_orig_scale_y = None
         self.pureref_orig_origin = None
         self.pureref_zoom_region_defined = False
         self.pureref_magnifier_zoom_level = 1.0
@@ -864,7 +864,7 @@ class PureRefMixin():
             # которая умеет увеличивать масштаб
             factor_x = self.pureref_magnifier_projected_rect.width()/self.pureref_magnifier_input_rect.width()
             factor_y = self.pureref_magnifier_projected_rect.height()/self.pureref_magnifier_input_rect.height()
-            scale_x, scale_y, origin = self.do_scale_board(1.0, False, False, True, 
+            scale_x, scale_y, origin = self.do_scale_board(1.0, False, False, True,
                                                     factor_x=factor_x, factor_y=factor_y, precalculate=True,
                                                     pivot=self.get_center_position())
 
@@ -873,7 +873,7 @@ class PureRefMixin():
                     [
                         (self, "board_origin", before_pos, origin, self.update),
                         (self, "board_scale_x", self.board_scale_x, scale_x, self.update),
-                        (self, "board_scale_y", self.board_scale_y, scale_y, self.update),                        
+                        (self, "board_scale_y", self.board_scale_y, scale_y, self.update),
                         (self, "pureref_magnifier_input_rect_animated", self.pureref_magnifier_input_rect_animated, self.pureref_magnifier_projected_rect, self.update)
                     ],
                     anim_id="pureref_region_zoom_in",
@@ -883,8 +883,7 @@ class PureRefMixin():
             else:
                 self.board_origin = origin
                 self.board_scale_x = scale_x
-                self.board_scale_y = scale_y                
-            self.show_center_label(self.label_type.SCALE)
+                self.board_scale_y = scale_y
 
     def pureref_region_zoom_in_mousePressEvent(self, event):
         if not self.pureref_zoom_region_defined:
