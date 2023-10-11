@@ -3404,27 +3404,26 @@ def excepthook(exc_type, exc_value, exc_tb):
     sys.exit()
 
 def _restart_app(aftercrash=False):
+    args = [sys.executable, sys.argv[0]]
+    filepath = None
     if aftercrash:
-
-        filepath = None
         try:
             filepath = LibraryData().current_folder().current_image().filepath
         except:
             pass
         if filepath is not None:
-            subprocess.Popen([sys.executable, sys.argv[0], filepath, "-aftercrash"])
-        else:
-            subprocess.Popen([sys.executable, sys.argv[0], "-aftercrash"])
+            args.append(filepath)
+        if not Globals.lite_mode:
+            args.append('-full')
+        args.append('-aftercrash')
     else:
-        filepath = None
         if len(sys.argv) > 1:
             filepath = sys.argv[1]
-        if not os.path.exists(filepath):
-            filepath = None
-        if filepath is not None:
-            subprocess.Popen([sys.executable, sys.argv[0], filepath])
-        else:
-            subprocess.Popen([sys.executable, sys.argv[0]])
+            if os.path.exists(filepath):
+                args.append(filepath)
+        if '-full' in sys.argv:
+            args.append('-full')                
+    subprocess.Popen(args)
 
 def exit_threads():
     if not Globals.USE_SOCKETS:
