@@ -98,7 +98,7 @@ class CommentingLibraryDataMixin():
         return (image_data.md5, image_data.disk_size)
 
     def delete_comment(self, comment):
-        ret = QMessageBox.question(None,'',
+        ret = QMessageBox.question(None,'Удаление комментария',
             f'Комент "{comment.get_title()}". Удалить его?',
             QMessageBox.Yes | QMessageBox.No)
         if ret == QMessageBox.No:

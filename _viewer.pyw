@@ -3234,6 +3234,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     sel_comment = self.get_selected_comment(event)
                     if sel_comment:
                         self.comment_data_candidate = sel_comment
+                    self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
                 elif action == copy_image_metadata:
                     QApplication.clipboard().setText(ci.image_metadata_info)
                 elif action == change_svg_scale:
