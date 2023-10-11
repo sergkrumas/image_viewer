@@ -2188,11 +2188,29 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def draw_console_output(self, painter):
         font = painter.font()
         font.setFamily('Consolas')
-        font.setPixelSize(18)
+        FONT_HEIGHT = 17
+        font.setPixelSize(FONT_HEIGHT)
         painter.setFont(font)
+        painter.setBrush(QBrush(Qt.black))
+
         if SettingsWindow.get_setting_value('show_console_output'):
-            for n, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
-                painter.drawText(QPoint(255, 50+10*n), message)
+            n = 0
+            for number, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
+                _message = message.strip()
+                if not _message:
+                    # оказывается, в сообщениях бывают пустые строки.
+                    continue
+                n += 1
+                max_rect = QRect(0, 0, self.rect().width(), self.rect().height())
+                alignment = Qt.AlignLeft
+                text_rect = calculate_text_rect(font, max_rect, message, alignment)
+                painter.setOpacity(0.7)
+                text_rect.moveTopLeft(QPoint(255, 50+n*(text_rect.height()+3)))
+                painter.setPen(Qt.NoPen)
+                painter.drawRect(text_rect.adjusted(-1, -1, 1, 1))
+                painter.setOpacity(1.0)
+                painter.setPen(QPen(Qt.white))
+                painter.drawText(text_rect, alignment, message)
 
     def get_center_x_position(self):
         return int(self.rect().width()/2)
