@@ -1599,11 +1599,15 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         # при этом при перетаскивании окно увеличивается до бывших увеличенных размеров,
         # что нежелательно
         self.showNormal()
-        r = self.get_image_viewport_rect()
+
+        if self.is_viewer_page_active():
+            r = self.get_image_viewport_rect()
+        else:
+            r = QRect(0, 0, 0, 0)
         if r.width() == 0:
             # случай, когда на экране отображется надпись "загрузка"
             # т.е. handling_input == True
-            r = QRect(0, 0, 500, 270)
+            r = QRect(0, 0, 1800, 970)
             r.moveCenter(f_geometry.center())
         pos = r.topLeft()
         # для того чтобы на всех мониторах всё вело себя предсказуемо, а именно
@@ -2697,20 +2701,26 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if not event.isAutoRepeat():
             self._key_pressed = False
             self._key_unreleased = False
-        # print('keyReleaseEvent')
+
         key = event.key()
         if key == Qt.Key_Tab:
             self.cycle_change_page()
+
+        if self.is_start_page_active():
+            return
+
         if self.is_library_page_active():
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
             elif key == Qt.Key_Down:
                 LibraryData().choose_next_folder()
-        else:
-            if self.is_start_page_active():
-                return
-            if self.check_scroll_lock():
-                if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
+
+        elif self.is_viewer_page_active():
+
+            if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
+
+                if self.check_scroll_lock():
+
                     length = 1.0
                     if event.modifiers() & Qt.ShiftModifier:
                         length *= 20.0
@@ -2723,28 +2733,32 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     elif key == Qt.Key_Right:
                         delta =  QPoint(-1, 0) * length
                     self.image_center_position += delta
-                    self.update()
-            else:
-                if key == Qt.Key_Up:
-                    main_window = Globals.main_window
-                    main_window.do_scale_image(0.05, cursor_pivot=False)
-                elif key == Qt.Key_Down:
-                    main_window = Globals.main_window
-                    main_window.do_scale_image(-0.05, cursor_pivot=False)
-                elif key == Qt.Key_Right:
-                    if event.modifiers() & Qt.AltModifier:
-                        LibraryData().show_viewed_image_next()
-                    elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
-                        self.toggle_monitor('right')
-                    elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                        LibraryData().show_next_image()
-                elif key == Qt.Key_Left:
-                    if event.modifiers() & Qt.AltModifier:
-                        LibraryData().show_viewed_image_prev()
-                    elif event.modifiers() & Qt.ControlModifier and self.frameless_mode:
-                        self.toggle_monitor('left')
-                    elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                        LibraryData().show_previous_image()
+
+                else:
+
+                    if key == Qt.Key_Up:
+                        self.do_scale_image(0.05, cursor_pivot=False)
+
+                    elif key == Qt.Key_Down:
+                        self.do_scale_image(-0.05, cursor_pivot=False)
+
+                    elif key == Qt.Key_Right:
+                        if event.modifiers() & Qt.AltModifier:
+                            LibraryData().show_viewed_image_next()
+                        elif event.modifiers() & Qt.ControlModifier:
+                            if self.frameless_mode:
+                                self.toggle_monitor('right')
+                        elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                            LibraryData().show_next_image()
+                    elif key == Qt.Key_Left:
+                        if event.modifiers() & Qt.AltModifier:
+                            LibraryData().show_viewed_image_prev()
+                        elif event.modifiers() & Qt.ControlModifier:
+                            if self.frameless_mode:
+                                self.toggle_monitor('left')
+                        elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                            LibraryData().show_previous_image()
+
         self.update()
 
     def keyPressEvent(self, event):
@@ -2778,79 +2792,93 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         elif event.nativeScanCode() == 0x29:
             self.open_settings_window()
 
-        if self.is_library_page_active():
-            if key == Qt.Key_Backtab:
+        if self.is_start_page_active():
+            return
+
+        if key == Qt.Key_Backtab:
+            if self.is_library_page_active():
                 LibraryData().choose_doom_scroll()
-            elif key == Qt.Key_Delete:
+        elif key == Qt.Key_Delete:
+            if self.is_library_page_active():            
                 LibraryData().delete_current_folder()
-            elif check_scancode_for(event, "U"):
-                LibraryData().update_current_folder()
-        else:
-            if self.is_start_page_active():
-                return
-            if key == Qt.Key_Backtab:
+        elif check_scancode_for(event, "U"):
+            LibraryData().update_current_folder()
+
+        if key == Qt.Key_Backtab:
+            if self.is_viewer_page_active():
                 LibraryData().choose_doom_scroll()
-            elif key == Qt.Key_Delete:
+        elif key == Qt.Key_Delete:
+            if self.is_viewer_page_active():            
                 LibraryData().delete_current_image()
-            elif key == Qt.Key_Home:
+        elif key == Qt.Key_Home:
+            if self.is_viewer_page_active():            
                 LibraryData().jump_to_first()
-            elif key == Qt.Key_End:
+        elif key == Qt.Key_End:
+            if self.is_viewer_page_active():            
                 LibraryData().jump_to_last()
-            elif key == Qt.Key_Space:
-                if self.is_pureref_page_active():
-                    self.pureref_fly_over_board(user_call=True)
-                elif self.is_viewer_page_active():
-                    self.toggle_animation_playback()
-            elif check_scancode_for(event, ("W", "S", "A", "D")):
-                length = 1.0
-                if event.modifiers() & Qt.ShiftModifier:
-                    length *= 20.0
-                if check_scancode_for(event, "W"):
-                    delta =  QPoint(0, 1) * length
-                elif check_scancode_for(event, "S"):
-                    delta =  QPoint(0, -1) * length
-                elif check_scancode_for(event, "A"):
-                    delta =  QPoint(1, 0) * length
-                elif check_scancode_for(event, "D"):
-                    delta =  QPoint(-1, 0) * length
-                self.image_center_position += delta
-                self.update()
-            elif check_scancode_for(event, "Y"):
-                if self.frameless_mode:
-                    self.toggle_to_frame_mode()
-                else:
-                    self.toggle_to_frameless_mode()
-            elif check_scancode_for(event, "F"):
-                Globals.control_panel.manage_favorite_list()
-            elif check_scancode_for(event, "C"):
-                self.show_image_center = not self.show_image_center
-                self.update()
+
+        elif key == Qt.Key_Space:
+            if self.is_pureref_page_active():
+                self.pureref_fly_over_board(user_call=True)
+            elif self.is_viewer_page_active():
+                self.toggle_animation_playback()
+
+        elif check_scancode_for(event, ("W", "S", "A", "D")):
+            length = 1.0
+            if event.modifiers() & Qt.ShiftModifier:
+                length *= 20.0
+            if check_scancode_for(event, "W"):
+                delta =  QPoint(0, 1) * length
+            elif check_scancode_for(event, "S"):
+                delta =  QPoint(0, -1) * length
+            elif check_scancode_for(event, "A"):
+                delta =  QPoint(1, 0) * length
             elif check_scancode_for(event, "D"):
+                delta =  QPoint(-1, 0) * length
+            if self.is_viewer_page_active():
+                self.image_center_position += delta
+            elif self.is_pureref_page_active():
+                self.board_origin += delta
+            self.update()
+
+        elif check_scancode_for(event, "Y"):
+            if self.frameless_mode:
+                self.toggle_to_frame_mode()
+            else:
+                self.toggle_to_frameless_mode()
+        elif check_scancode_for(event, "F"):
+            if self.is_viewer_page_active():
+                Globals.control_panel.manage_favorite_list()
+        elif check_scancode_for(event, "C"):
+            if self.is_viewer_page_active():
+                self.show_image_center = not self.show_image_center
+        elif check_scancode_for(event, "D"):
+            if self.is_viewer_page_active():
                 self.STNG_show_thirds = not self.STNG_show_thirds
-                self.update()
-            elif check_scancode_for(event, "T"):
+        elif check_scancode_for(event, "T"):
+            if self.is_viewer_page_active():
                 self.toggle_tags_overlay()
-                self.update()
-            elif check_scancode_for(event, "I"):
+        elif check_scancode_for(event, "I"):
+            if self.is_viewer_page_active():
                 self.invert_image = not self.invert_image
-                self.update()
-            elif check_scancode_for(event, "G"):
-                # self.toggle_test_animation()
-                self.hide_center_label()
-            elif check_scancode_for(event, "K"):
-                pass
-            elif check_scancode_for(event, "R"):
+        elif check_scancode_for(event, "G"):
+            # self.toggle_test_animation()
+            self.hide_center_label()
+        elif check_scancode_for(event, "K"):
+            pass
+        elif check_scancode_for(event, "R"):
+            if self.is_viewer_page_active():
                 self.start_inframed_image_saving(event)
-            elif check_scancode_for(event, "M"):
-                if self.is_pureref_page_active():
-                    self.pureref_toggle_minimap()
-                elif self.is_viewer_page_active():
-                    self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
-            elif check_scancode_for(event, "P"):
-                self.toggle_stay_on_top()
-                self.update()
-            elif check_scancode_for(event, "U"):
-                LibraryData().update_current_folder()
+        elif check_scancode_for(event, "M"):
+            if self.is_pureref_page_active():
+                self.pureref_toggle_minimap()
+            elif self.is_viewer_page_active():
+                self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
+        elif check_scancode_for(event, "P"):
+            self.toggle_stay_on_top()
+            self.update()
+
+
         self.update()
 
     def toggle_test_animation(self):
