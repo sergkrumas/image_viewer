@@ -23,7 +23,7 @@ from _utils import *
 
 from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
-from pureref import BoardMixin
+from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
 from tagging import TaggingMixing

@@ -22,7 +22,7 @@ from _utils import *
 
 import settings_handling
 from commenting import CommentingLibraryDataMixin
-from pureref import BoardLibraryDataMixin
+from board import BoardLibraryDataMixin
 from tagging import TaggingLibraryDataMixin
 
 from collections import defaultdict
