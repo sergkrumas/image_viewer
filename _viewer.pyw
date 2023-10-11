@@ -1837,7 +1837,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         self.image_scale = 1.0
         self.update()
 
-    def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None):
+    def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None, slow=False):
 
         if not self.transformations_allowed:
             return
@@ -1868,6 +1868,9 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 # print(msg)
             else:
                 scale_speed = 5
+
+            if slow:
+                scale_speed = 20
 
             if scroll_value > 0:
                 factor = scale_speed/(scale_speed-1)
@@ -1958,7 +1961,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
             viewport_rect = self.get_image_viewport_rect()
             is_vr_small = viewport_rect.width() < 150 or viewport_rect.height() < 150
-            if before_scale < self.image_scale and is_vr_small:
+            if before_scale < self.image_scale and is_vr_small and not slow:
                 self.image_center_position = QPointF(self.mapped_cursor_pos())
             else:
                 self.image_center_position = center_position
@@ -2737,10 +2740,10 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 else:
 
                     if key == Qt.Key_Up:
-                        self.do_scale_image(0.05, cursor_pivot=False)
+                        self.do_scale_image(0.05, cursor_pivot=False, slow=True)
 
                     elif key == Qt.Key_Down:
-                        self.do_scale_image(-0.05, cursor_pivot=False)
+                        self.do_scale_image(-0.05, cursor_pivot=False, slow=True)
 
                     elif key == Qt.Key_Right:
                         if event.modifiers() & Qt.AltModifier:
