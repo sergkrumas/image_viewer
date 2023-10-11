@@ -9,7 +9,7 @@
 /user_data/settings.json
 /user_data/history.log
 /user_data/tags/*.*
-/user_data/pureref_boards/*.*
+/user_data/boards/*.*
 register_image_viewer.reg
 default_register_image_viewer.reg
 thumbnails_row_debug/python/imgs/*

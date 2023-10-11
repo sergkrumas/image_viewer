@@ -23,7 +23,7 @@ from _utils import *
 
 from library_data import (LibraryData, FolderData, ImageData, LibraryModeImageColumn,
                                                                             ThumbnailsThread)
-from pureref import PureRefMixin
+from pureref import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
 from tagging import TaggingMixing
@@ -78,7 +78,7 @@ class Globals():
     SESSION_FILENAME = "session.txt"
     FAV_FILENAME = "fav.txt"
     COMMENTS_FILENAME = "comments.txt"
-    PUREREF_BOARDS_ROOT = "pureref_boards"
+    BOARDS_ROOT = "boards"
     TAGS_ROOT = "tags"
     USERROTATIONS_FILENAME = "viewer.ini"
     DEFAULT_PATHS_FILENAME = "default_paths.txt"
@@ -91,7 +91,7 @@ class Globals():
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
 
-class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing):
+class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -124,7 +124,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     class pages():
         START_PAGE = 'STARTPAGE'
         VIEWER_PAGE = 'VIEWERPAGE'
-        PUREREF_PAGE = 'PUREREFPAGE'
+        BOARD_PAGE = 'BOARDPAGE'
         LIBRARY_PAGE = 'LIBRARYPAGE'
 
         @classmethod
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             return [
                 cls.START_PAGE,
                 cls.VIEWER_PAGE,
-                cls.PUREREF_PAGE,
+                cls.BOARD_PAGE,
                 cls.LIBRARY_PAGE
             ]
 
@@ -562,7 +562,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         }
         """
 
-        self.pureref_init()
+        self.board_init()
         self.tagging_init()
 
     # def changeEvent(self, event):
@@ -583,8 +583,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
     def is_start_page_active(self):
         return self.current_page == self.pages.START_PAGE
 
-    def is_pureref_page_active(self):
-        return self.current_page == self.pages.PUREREF_PAGE
+    def is_board_page_active(self):
+        return self.current_page == self.pages.BOARD_PAGE
 
     def cycle_change_page(self):
         pages = self.pages.all()
@@ -619,8 +619,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             LibraryData().before_current_image_changed()
             cancel_fullscreen_on_control_panel()
 
-        elif self.current_page == self.pages.PUREREF_PAGE:
-            self.pureref_region_zoom_do_cancel()
+        elif self.current_page == self.pages.BOARD_PAGE:
+            self.board_region_zoom_do_cancel()
             cancel_fullscreen_on_control_panel()
             LibraryData().save_board_data()
 
@@ -650,8 +650,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             Globals.control_panel.setVisible(False)
             self.transformations_allowed = False
 
-        elif requested_page == self.pages.PUREREF_PAGE:
-            self.recreate_control_panel(requested_page=self.pages.PUREREF_PAGE)
+        elif requested_page == self.pages.BOARD_PAGE:
+            self.recreate_control_panel(requested_page=self.pages.BOARD_PAGE)
             self.transformations_allowed = True
             LibraryData().load_board_data()
 
@@ -1412,8 +1412,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
 
 
-        if self.is_pureref_page_active():
-            self.pureref_mousePressEvent(event)
+        if self.is_board_page_active():
+            self.board_mousePressEvent(event)
 
         elif self.is_start_page_active():
             self.mousePressEventStartPage(event)
@@ -1477,8 +1477,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
     def mouseMoveEvent(self, event):
 
-        if self.is_pureref_page_active():
-            self.pureref_mouseMoveEvent(event)
+        if self.is_board_page_active():
+            self.board_mouseMoveEvent(event)
 
         elif self.is_start_page_active():
             self.update()
@@ -1528,8 +1528,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
     def mouseReleaseEvent(self, event):
 
-        if self.is_pureref_page_active():
-            self.pureref_mouseReleaseEvent(event)
+        if self.is_board_page_active():
+            self.board_mouseReleaseEvent(event)
 
         elif self.is_start_page_active():
             return
@@ -1769,8 +1769,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         no_mod = event.modifiers() == Qt.NoModifier
         control_panel_undermouse = self.is_control_panel_under_mouse()
 
-        if self.is_pureref_page_active():
-            self.pureref_wheelEvent(event)
+        if self.is_board_page_active():
+            self.board_wheelEvent(event)
 
         elif self.is_start_page_active():
             return
@@ -2095,8 +2095,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
             self.draw_content(painter)
             self.region_zoom_in_draw(painter)
 
-        elif self.is_pureref_page_active():
-            self.pureref_draw(painter)
+        elif self.is_board_page_active():
+            self.board_draw(painter)
 
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")
@@ -2784,8 +2784,8 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.contextMenuActivated = False
             elif self.input_rect:
                 self.region_zoom_in_cancel()
-            elif self.pureref_magnifier_input_rect:
-                self.pureref_region_zoom_do_cancel()
+            elif self.board_magnifier_input_rect:
+                self.board_region_zoom_do_cancel()
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
             else:
@@ -2825,7 +2825,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 delta =  QPoint(-1, 0) * length
             if self.is_viewer_page_active():
                 self.image_center_position += delta
-            elif self.is_pureref_page_active():
+            elif self.is_board_page_active():
                 self.board_origin += delta
 
 
@@ -2872,13 +2872,13 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
 
 
-        elif self.is_pureref_page_active():
+        elif self.is_board_page_active():
 
             if key == Qt.Key_Space:
-                self.pureref_fly_over_board(user_call=True)
+                self.board_fly_over(user_call=True)
 
             elif check_scancode_for(event, "M"):
-                self.pureref_toggle_minimap()
+                self.board_toggle_minimap()
 
         self.update()
 
@@ -3157,7 +3157,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
             contextMenu.addSeparator()
 
-            if not self.is_pureref_page_active():
+            if not self.is_board_page_active():
 
                 if self.image_data and not self.image_data.is_supported_filetype:
                     run_unsupported_file = contextMenu.addAction("Открыть неподдерживаемый файл...")
@@ -3183,7 +3183,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
             contextMenu.addSeparator()
 
-            if not self.is_pureref_page_active():
+            if not self.is_board_page_active():
                 open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
                 if not self.error:
                     show_in_explorer = contextMenu.addAction("Найти на диске")
@@ -3202,7 +3202,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                     text = "Развернуть окно на два монитора"
                 toggle_two_monitors_wide = contextMenu.addAction(text)
 
-            if not self.is_pureref_page_active():
+            if not self.is_board_page_active():
                 if Globals.lite_mode:
                     contextMenu.addSeparator()
                     rerun_in_extended_mode = contextMenu.addAction("Перезапустить в обычном режиме")
@@ -3212,7 +3212,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
 
             contextMenu.addSeparator()
 
-            if not self.is_pureref_page_active():
+            if not self.is_board_page_active():
                 if self.svg_rendered:
                     text = "Изменить разрешение растеризации SVG-файла..."
                     change_svg_scale = contextMenu.addAction(text)

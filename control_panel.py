@@ -452,17 +452,17 @@ class ControlPanel(QWidget, UtilsMixin):
         MW.show_center_label("Обновлено")
         self.update()
 
-    def pureref_set_default_scale(self):
+    def board_set_default_scale(self):
         MW = self.globals.main_window
         MW.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
 
-    def pureref_zoom_out(self):
+    def board_zoom_out(self):
         MW = self.globals.main_window
-        MW.pureref_do_scale_board(-1.0)
+        MW.do_scale_board(-1.0)
 
-    def pureref_zoom_in(self):
+    def board_zoom_in(self):
         MW = self.globals.main_window
-        MW.pureref_do_scale_board(1.0)
+        MW.do_scale_board(1.0)
 
     def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -512,16 +512,16 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
                 self.space_btn_generator(),
             ]
-        elif requested_page == main_window.pages.PUREREF_PAGE:
+        elif requested_page == main_window.pages.BOARD_PAGE:
             self.all_buttons = [
                 ControlPanelButton("settings", "Настройки", callback=self.show_settings_window),
                 ControlPanelButton("help", "Справка", callback=self.toggle_help),
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("orig_scale", "1:1", callback=self.pureref_set_default_scale),
-                ControlPanelButton("zoom_out", "Уменьшить", callback=self.pureref_zoom_out),
-                ControlPanelButton("zoom_in", "Увеличить", callback=self.pureref_zoom_in),
+                ControlPanelButton("orig_scale", "1:1", callback=self.board_set_default_scale),
+                ControlPanelButton("zoom_out", "Уменьшить", callback=self.board_zoom_out),
+                ControlPanelButton("zoom_in", "Увеличить", callback=self.board_zoom_in),
 
                 self.space_btn_generator(),
                 ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
@@ -628,7 +628,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     text = btn.property("tooltip_text").replace("\n", " ")
                     break
             text = text or MW.current_image_details()
-        elif MW.is_pureref_page_active():
+        elif MW.is_board_page_active():
 
             if self.underMouseImageData is not None:
                 image_data = self.underMouseImageData
@@ -640,7 +640,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 text = f"{foldername} \\ {filename} {w} x {h}"
             else:
-                text = "страница PureRef"
+                text = "страница доски"
 
         self.control_panel_label.setText(text)
         # movie progress bar
@@ -880,7 +880,7 @@ class ControlPanel(QWidget, UtilsMixin):
         is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
         multirow = not is_call_from_main_window and self.fullscreen_flag
         draw_mirror = draw_mirror and (not is_call_from_main_window) and (not self.fullscreen_flag)
-        is_pureref_page_active = self.globals.main_window.is_pureref_page_active()
+        is_board_page_active = self.globals.main_window.is_board_page_active()
 
         if not is_call_from_main_window:
             ROW_LENGTH = self.calculate_row_length()
@@ -1005,8 +1005,8 @@ class ControlPanel(QWidget, UtilsMixin):
                         # history row
                         relative_offset_x = -THUMBNAIL_WIDTH*current_index
 
-                    if is_pureref_page_active and not is_call_from_main_window:
-                        offset_x = THUMBNAIL_WIDTH*(image_index + 1) + folder_data.absolute_pureref_thumbnails_row_offset_x
+                    if is_board_page_active and not is_call_from_main_window:
+                        offset_x = THUMBNAIL_WIDTH*(image_index + 1) + folder_data.absolute_board_thumbnails_row_offset_x
                     else:
                         offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
@@ -1155,8 +1155,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 relative_offset_x = folder_data.relative_thumbnails_row_offset_x
 
-                if is_pureref_page_active and not is_call_from_main_window:
-                    offset_x = THUMBNAIL_WIDTH*(image_index + 1) - THUMBNAIL_WIDTH/2 + folder_data.absolute_pureref_thumbnails_row_offset_x
+                if is_board_page_active and not is_call_from_main_window:
+                    offset_x = THUMBNAIL_WIDTH*(image_index + 1) - THUMBNAIL_WIDTH/2 + folder_data.absolute_board_thumbnails_row_offset_x
                 else:
                     offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
                 sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
@@ -1219,7 +1219,7 @@ class ControlPanel(QWidget, UtilsMixin):
         MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
 
         is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
-        is_pureref_page_active = self.globals.main_window.is_pureref_page_active()
+        is_board_page_active = self.globals.main_window.is_board_page_active()
 
         ROW_LENGTH = self.calculate_row_length()
 
@@ -1306,8 +1306,8 @@ class ControlPanel(QWidget, UtilsMixin):
                     relative_offset_x = -THUMBNAIL_WIDTH*current_index
                 else:
                     relative_offset_x = folder_data.relative_thumbnails_row_offset_x
-                if is_pureref_page_active and not is_call_from_main_window:
-                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + folder_data.absolute_pureref_thumbnails_row_offset_x
+                if is_board_page_active and not is_call_from_main_window:
+                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + folder_data.absolute_board_thumbnails_row_offset_x
                 else:
 
                     offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
@@ -1371,14 +1371,14 @@ class ControlPanel(QWidget, UtilsMixin):
 
             self.multirow_scroll_y = min(max_value, max(self.multirow_scroll_y, min_value))
 
-        elif MW.is_pureref_page_active() and not self.fullscreen_flag:
+        elif MW.is_board_page_active() and not self.fullscreen_flag:
             libdata = self.LibraryData()
             cf = libdata.current_folder()
             if scroll_value > 0:
                 step = THUMBNAIL_WIDTH
             else:
                 step = -THUMBNAIL_WIDTH
-            cf.absolute_pureref_thumbnails_row_offset_x -= step
+            cf.absolute_board_thumbnails_row_offset_x -= step
 
             cf = self.LibraryData().current_folder()
             images_list_count = len(cf.images_list)
@@ -1389,7 +1389,7 @@ class ControlPanel(QWidget, UtilsMixin):
             max_value = 0
             min_value = viewer_width - content_width
 
-            cf.absolute_pureref_thumbnails_row_offset_x = min(max_value, max(cf.absolute_pureref_thumbnails_row_offset_x, min_value))
+            cf.absolute_board_thumbnails_row_offset_x = min(max_value, max(cf.absolute_board_thumbnails_row_offset_x, min_value))
 
             status = f'{max_value}, {min_value}'
             # print(status)
@@ -1442,8 +1442,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 elif event.modifiers() == Qt.NoModifier and not cf._images_list_selected:
                     self.thumbnails_click(click=True)
 
-        elif MW.is_pureref_page_active():
-            self.thumbnails_click(click_handler=MW.pureref_thumbnails_click_handler)
+        elif MW.is_board_page_active():
+            self.thumbnails_click(click_handler=MW.board_thumbnails_click_handler)
 
         self.update()
         MW.update()

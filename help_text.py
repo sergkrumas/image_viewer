@@ -66,8 +66,8 @@ INFO_LIBRARY_PAGE = """
     U - Обновить список изображений для текущей папки
 """
 
-INFO_PUREREF_PAGE = """
-➜ СТРАНИЦА PUREREF
+INFO_BOARD_PAGE = """
+➜ СТРАНИЦА BOARD
     В разработке
 """
 
@@ -239,7 +239,7 @@ class HelpWidget(QWidget):
             return {
                 'STARTPAGE': INFO_START_PAGE,
                 'VIEWERPAGE': INFO_VIEWER_PAGE,
-                'PUREREFPAGE': INFO_PUREREF_PAGE,
+                'BOARDPAGE': INFO_BOARD_PAGE,
                 'LIBRARYPAGE': INFO_LIBRARY_PAGE,
             }[page]            
         all_pages = parent.pages.all()

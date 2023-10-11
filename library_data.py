@@ -22,7 +22,7 @@ from _utils import *
 
 import settings_handling
 from commenting import CommentingLibraryDataMixin
-from pureref import PureRefLibraryDataMixin
+from pureref import BoardLibraryDataMixin
 from tagging import TaggingLibraryDataMixin
 
 from collections import defaultdict
@@ -71,7 +71,7 @@ class LibraryModeImageColumn():
         self.images.append(image_data)
         self.height += image_data.preview_size.height()
 
-class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
+class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
@@ -89,7 +89,7 @@ class LibraryData(PureRefLibraryDataMixin, CommentingLibraryDataMixin, TaggingLi
             i.load_tags()
             i.load_fav_list()
             i.load_comments_list()
-            i.load_pureref_boards()
+            i.load_boards()
             i.load_session_file()
         return cls.instance
 
@@ -1169,12 +1169,12 @@ class FolderData():
         self.board_ready = False
 
         self.board_user_points = []
-        self.pureref_items_list = []
+        self.board_items_list = []
 
         self.preview_error = False
 
         self.relative_thumbnails_row_offset_x = 0
-        self.absolute_pureref_thumbnails_row_offset_x = 0
+        self.absolute_board_thumbnails_row_offset_x = 0
 
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
@@ -1373,7 +1373,7 @@ class ImageData():
         self.source_width = 0
         self.source_height = 0
 
-        self.pureref_item = None
+        self.board_item = None
 
         # UI
         self._touched = False               # обнуляется после отпускания кнопки мыши
