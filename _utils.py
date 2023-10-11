@@ -206,6 +206,9 @@ def delete_to_recyclebin(filename):
         if os.path.exists(filename):
             os.system('del "%s"' % filename)
 
+def md5_tuple_to_string(md5_tuple):
+    return "".join([f'{part:08x}' for part in md5_tuple])
+
 def convert_md5_to_int_tuple(md5_str):
     md5_by_parts = []
     for i in range(4):
