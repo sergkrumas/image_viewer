@@ -2709,7 +2709,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         if self.is_start_page_active():
             return
 
-        if self.is_library_page_active():
+        elif self.is_library_page_active():
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
             elif key == Qt.Key_Down:
@@ -2775,7 +2775,7 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self._key_unreleased = True # зажата
             self._key_pressed = True # нажата
 
-        # print('keyPressEvent')
+
         if key == Qt.Key_Escape:
             if self.contextMenuActivated:
                 self.contextMenuActivated = False
@@ -2792,36 +2792,21 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
         elif event.nativeScanCode() == 0x29:
             self.open_settings_window()
 
-        if self.is_start_page_active():
-            return
 
-        if key == Qt.Key_Backtab:
-            if self.is_library_page_active():
-                LibraryData().choose_doom_scroll()
-        elif key == Qt.Key_Delete:
-            if self.is_library_page_active():            
-                LibraryData().delete_current_folder()
-        elif check_scancode_for(event, "U"):
-            LibraryData().update_current_folder()
 
-        if key == Qt.Key_Backtab:
-            if self.is_viewer_page_active():
-                LibraryData().choose_doom_scroll()
-        elif key == Qt.Key_Delete:
-            if self.is_viewer_page_active():            
-                LibraryData().delete_current_image()
-        elif key == Qt.Key_Home:
-            if self.is_viewer_page_active():            
-                LibraryData().jump_to_first()
-        elif key == Qt.Key_End:
-            if self.is_viewer_page_active():            
-                LibraryData().jump_to_last()
+        if check_scancode_for(event, "Y"):
+            if self.frameless_mode:
+                self.toggle_to_frame_mode()
+            else:
+                self.toggle_to_frameless_mode()
 
-        elif key == Qt.Key_Space:
-            if self.is_pureref_page_active():
-                self.pureref_fly_over_board(user_call=True)
-            elif self.is_viewer_page_active():
-                self.toggle_animation_playback()
+        elif check_scancode_for(event, "G"):
+            # self.toggle_test_animation()
+            self.hide_center_label()
+
+        elif check_scancode_for(event, "P"):
+            self.toggle_stay_on_top()
+            self.update()
 
         elif check_scancode_for(event, ("W", "S", "A", "D")):
             length = 1.0
@@ -2839,45 +2824,58 @@ class MainWindow(QMainWindow, UtilsMixin, PureRefMixin, HelpWidgetMixin, Comment
                 self.image_center_position += delta
             elif self.is_pureref_page_active():
                 self.board_origin += delta
-            self.update()
 
-        elif check_scancode_for(event, "Y"):
-            if self.frameless_mode:
-                self.toggle_to_frame_mode()
-            else:
-                self.toggle_to_frameless_mode()
-        elif check_scancode_for(event, "F"):
-            if self.is_viewer_page_active():
+
+        if self.is_start_page_active():
+            return
+
+        elif self.is_library_page_active():
+
+            if key == Qt.Key_Backtab:
+                LibraryData().choose_doom_scroll()
+            elif key == Qt.Key_Delete:
+                LibraryData().delete_current_folder()
+            elif check_scancode_for(event, "U"):
+                LibraryData().update_current_folder()
+
+        elif self.is_viewer_page_active():
+
+            if check_scancode_for(event, "U"):
+                LibraryData().update_current_folder()
+
+            elif key == Qt.Key_Backtab:
+                LibraryData().choose_doom_scroll()
+            elif key == Qt.Key_Delete:
+                LibraryData().delete_current_image()
+            elif key == Qt.Key_Home:
+                LibraryData().jump_to_first()
+            elif key == Qt.Key_End:
+                LibraryData().jump_to_last()
+            elif key == Qt.Key_Space:
+                self.toggle_animation_playback()
+            elif check_scancode_for(event, "F"):
                 Globals.control_panel.manage_favorite_list()
-        elif check_scancode_for(event, "C"):
-            if self.is_viewer_page_active():
+            elif check_scancode_for(event, "C"):
                 self.show_image_center = not self.show_image_center
-        elif check_scancode_for(event, "D"):
-            if self.is_viewer_page_active():
+            elif check_scancode_for(event, "D"):
                 self.STNG_show_thirds = not self.STNG_show_thirds
-        elif check_scancode_for(event, "T"):
-            if self.is_viewer_page_active():
+            elif check_scancode_for(event, "T"):
                 self.toggle_tags_overlay()
-        elif check_scancode_for(event, "I"):
-            if self.is_viewer_page_active():
+            elif check_scancode_for(event, "I"):
                 self.invert_image = not self.invert_image
-        elif check_scancode_for(event, "G"):
-            # self.toggle_test_animation()
-            self.hide_center_label()
-        elif check_scancode_for(event, "K"):
-            pass
-        elif check_scancode_for(event, "R"):
-            if self.is_viewer_page_active():
+            elif check_scancode_for(event, "R"):
                 self.start_inframed_image_saving(event)
-        elif check_scancode_for(event, "M"):
-            if self.is_pureref_page_active():
-                self.pureref_toggle_minimap()
-            elif self.is_viewer_page_active():
+            elif check_scancode_for(event, "M"):
                 self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
-        elif check_scancode_for(event, "P"):
-            self.toggle_stay_on_top()
-            self.update()
 
+
+        elif self.is_pureref_page_active():
+
+            if key == Qt.Key_Space:
+                self.pureref_fly_over_board(user_call=True)
+
+            elif check_scancode_for(event, "M"):
+                self.pureref_toggle_minimap()
 
         self.update()
 
