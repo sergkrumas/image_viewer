@@ -67,6 +67,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.NOT_SUPPORTED_PIXMAP = NOT_SUPPORTED_PIXMAP
 
+
     WIDTH = 50
     FAV_BIG_ICON = QPixmap(WIDTH, WIDTH)
     FAV_BIG_ICON.fill(Qt.transparent)
@@ -89,6 +90,73 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.drawPolygon(poly, fillRule=Qt.WindingFill)
     painter.end()
     Globals.FAV_BIG_ICON = FAV_BIG_ICON
+
+
+    WIDTH = 50
+    TAG_BIG_ICON = QPixmap(WIDTH, WIDTH)
+    TAG_BIG_ICON.fill(Qt.transparent)
+    painter = QPainter()
+    painter.begin(TAG_BIG_ICON)
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+    painter.setPen(QPen(Qt.white, 1))
+    font = painter.font()
+    font.setPixelSize(WIDTH-5)
+    painter.setFont(font)
+    painter.drawText(TAG_BIG_ICON.rect(), Qt.AlignCenter | Qt.AlignVCenter, "#")
+    painter.end()
+    Globals.TAG_BIG_ICON = TAG_BIG_ICON
+
+
+    WIDTH = 50
+    COMMENTS_BIG_ICON = QPixmap(WIDTH, WIDTH)
+    COMMENTS_BIG_ICON.fill(Qt.transparent)
+    painter = QPainter()
+    painter.begin(COMMENTS_BIG_ICON)
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+    path1 = QPainterPath()
+    path2 = QPainterPath()    
+    radius = 10
+    rect = COMMENTS_BIG_ICON.rect().adjusted(5, 5, -5, -15)
+    path1.addRoundedRect(QRectF(rect), radius, radius)
+
+    points = [
+        QPointF(25, 25),
+        QPointF(25, WIDTH-5),
+        QPointF(40, 25),
+    ]
+    poly = QPolygonF(points)
+    path2.addPolygon(poly)
+
+
+    painter.setBrush(QBrush(Qt.white))
+    pen = QPen(Qt.white, 3)
+    pen.setCapStyle(Qt.RoundCap)
+    pen.setJoinStyle(Qt.RoundJoin)
+    painter.setPen(pen)
+
+    path = path1.united(path2)
+    painter.drawPath(path)
+
+
+    painter.setBrush(Qt.NoBrush)
+    painter.setPen(QPen(Qt.black, 5))
+    y = int(WIDTH/2.5)
+    for point in [
+            QPoint(WIDTH//2, y) - QPoint(10, 0),
+            QPoint(WIDTH//2, y),
+            QPoint(WIDTH//2, y) + QPoint(10, 0),
+                ]:
+        painter.drawPoint(point)
+
+    painter.end()
+    Globals.COMMENTS_BIG_ICON = COMMENTS_BIG_ICON
+
+
+
+    
 
     print('finish generating pixmaps')
 

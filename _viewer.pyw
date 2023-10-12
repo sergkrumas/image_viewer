@@ -50,6 +50,8 @@ class Globals():
     control_panel = None
     DEFAULT_THUMBNAIL = None
     FAV_BIG_ICON = None
+    TAG_BIG_ICON = None
+    COMMENTS_BIG_ICON = None
     ERROR_PREVIEW_PIXMAP = None
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
     force_full_mode = False # обычный режим со всеми фичами без ограничений

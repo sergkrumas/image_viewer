@@ -1288,9 +1288,19 @@ class FolderData():
     def is_fav_folder(self):
         return LibraryData().fav_folder is self
 
+    def is_tag_folder(self):
+        return self.tag_data is not None
+
+    def is_comments_folder(self):
+        return LibraryData().comments_folder is self
+
     def get_current_thumbnail(self):
         if self.is_fav_folder():
             return LibraryData().globals.FAV_BIG_ICON
+        elif self.is_tag_folder():
+            return LibraryData().globals.TAG_BIG_ICON
+        elif self.is_comments_folder():
+            return LibraryData().globals.COMMENTS_BIG_ICON            
         else:
             try:
                 return self.images_list[self._index].get_thumbnail()
