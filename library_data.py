@@ -572,7 +572,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepath
 
     def load_fav_list(self):
-        ItemRecord = namedtuple("ItemRecord", "md5 filepath disk_size separator_field")
+        ItemRecord = namedtuple("ItemRecord", "filepath md5 disk_size separator_field")
         files = []
         if os.path.exists(self.get_fav_list_path()):
             print("loading favourite data")
@@ -601,8 +601,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         data_to_out = []
         for im in images:
             info_lines = (
-                f"{im.md5}",
                 f"{im.filepath}",
+                f"{im.md5}",
                 f"{im.disk_size}",
             )
             favi_data = "\n".join(info_lines)
