@@ -458,11 +458,11 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def board_zoom_out(self):
         MW = self.globals.main_window
-        MW.do_scale_board(-1.0)
+        MW.do_scale_board(-1.0, False, False, True, pivot=MW.get_center_position())
 
     def board_zoom_in(self):
         MW = self.globals.main_window
-        MW.do_scale_board(1.0)
+        MW.do_scale_board(1.0, False, False, True, pivot=MW.get_center_position())
 
     def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
