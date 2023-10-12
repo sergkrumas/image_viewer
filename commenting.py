@@ -63,7 +63,8 @@ class CommentingLibraryDataMixin():
                 to_print = f"Ошибки при чтении файла {_path}"
                 print(to_print)
         files = list(set(files))
-        self.create_folder_data("С комментариями", files, image_filepath=None, comm=True)
+
+        self.comments_folder = self.create_folder_data("С комментариями", files, image_filepath=None, virtual=True)
 
     def store_comments_list(self):
         elements = []

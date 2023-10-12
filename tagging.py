@@ -187,18 +187,20 @@ class TaggingLibraryDataMixin():
 
                 # чтение списка
                 if os.path.exists(list_path):
+                    list_data = []
                     with open(list_path, "r", encoding="utf8") as file:
-                        data = file.read().split("\n")
-                        for record in data:
-                            # максимум 3 части, здесь это нужно указать,
-                            # потому что в самом пути могут быть пробелы,
-                            # поэтому на записи файла путь пишется в последнюю очередь
-                            parts = record.split(" ", 2)
-                            if len(parts) > 1:
-                                md5_str = parts[0]
-                                disk_size = parts[1]
-                                filepath = parts[2]
-                                tag.records.append(TagListRecord(md5_str, disk_size, filepath))
+                        list_data = file.read().split("\n")
+
+                    for record in list_data:
+                        # максимум 3 части, здесь это нужно указать,
+                        # потому что в самом пути могут быть пробелы,
+                        # поэтому на записи файла путь пишется в последнюю очередь
+                        parts = record.split(" ", 2)
+                        if len(parts) > 1:
+                            md5_str = parts[0]
+                            disk_size = parts[1]
+                            filepath = parts[2]
+                            tag.records.append(TagListRecord(md5_str, disk_size, filepath))
 
                 Vars.TAGS_BASE[id_int] = tag
             else:

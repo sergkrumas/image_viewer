@@ -86,8 +86,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.on_library_page = False
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
-            i.load_tags()
             i.load_fav_list()
+            i.load_tags()
             i.load_comments_list()
             i.load_boards()
             i.load_session_file()
@@ -124,18 +124,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def get_fav_folder(self):
         return self.fav_folder
 
-    def create_folder_data(self, folder_path, files, image_filepath=None, fav=False, comm=False, library_loading=False):
+    def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False):
         folder_data = FolderData(folder_path, files,
             image_filepath=image_filepath,
-            fav=fav,
-            comm=comm,
+            virtual=virtual,
             library_loading=library_loading,
         )
         self.folders.append(folder_data)
-        if fav:
-            self.fav_folder = folder_data
-        if comm:
-            self.comments_folder = folder_data
+
+
         self._current_folder = folder_data
 
         # удаление дубликатов и копирование модификаторов с них
@@ -281,13 +278,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.board_origin = cf.board_origin
 
     def delete_current_image(self):
+        MW = self.globals.main_window
         cf = self.current_folder()
         ci = cf.current_image()
         if ci in cf.images_list: #служебные объекты ImageData не находятся в списке
+            if cf.virtual:
+                MW.show_center_label("Из виртуальных нельзя удалять изображения", error=True)
+                return
             # prepare
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
             delete_to_recyclebin(ci.filepath)
-            MW = self.globals.main_window
             MW.show_center_label(f"Файл\n{ci.filepath}\n удален в корзину")
             cf.images_list.remove(ci)
             # show next
@@ -296,7 +296,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             cf.current_image().load_ui_data()
             MW.set_window_title(MW.current_image_details())
             LibraryData.update_current_folder_columns()
-            MW.update()
+        else:
+            MW.show_center_label("Это не удалить!", error=True)    
+        MW.update()
 
     def show_that_preview_on_viewer_page(self, image_data):
         fd = image_data.folder_data
@@ -455,8 +457,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def delete_current_folder(self):
         MW = self.globals.main_window
         cf = LibraryData().current_folder()
-        if cf.fav:
-            MW.show_center_label('Нельзя удалять изображение находясь в папке Избранное', error=True)
+        if cf.virtual:
+            MW.show_center_label('Нельзя удалять виртуальные папки из библиотеки', error=True)
             return
         else:
             LibraryData().choose_previous_folder()
@@ -466,7 +468,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def update_current_folder(self):
         cf = LibraryData().current_folder()
-        if cf.fav:
+        if cf.virtual:
             return
         print("updating current folder...")
         current_filepath = cf.current_image().filepath
@@ -553,10 +555,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # когда папка не сохранится, потому что данных нет
         folders_list = []
         for fd in LibraryData().folders:
-            ok_1 = not fd.fav
-            ok_2 = not fd.comm
-            ok_3 = fd.current_image().filepath
-            if all((ok_1, ok_2, ok_3)):
+            ok_1 = not fd.virtual
+            ok_2 = fd.current_image().filepath
+            if all((ok_1, ok_2)):
                 folders_list.append(fd)
         data_to_out = []
         for fd in folders_list:
@@ -599,7 +600,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 print(to_print)
                 # пока ещё не удаляем, мало ли что
                 # os.remove(self.get_fav_list_path())
-        self.create_folder_data("Избранное", files, image_filepath=None, fav=True)
+        self.fav_folder = self.create_folder_data("Избранное", files, image_filepath=None, virtual=True)
 
     def store_fav_list(self):
         images = self.get_fav_virtual_folder().images_list
@@ -617,14 +618,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             fav_file.write(data_to_write)
 
     def get_comm_virutal_folder(self):
-        for folder in self.folders:
-            if folder.comm:
-                return folder
+        return self.comments_folder
 
     def get_fav_virtual_folder(self):
-        for folder in self.folders:
-            if folder.fav:
-                return folder
+        return self.fav_folder
 
     def fav_list_filepaths(self):
         return [a.filepath for a in self.get_fav_virtual_folder().images_list]
@@ -1111,7 +1108,7 @@ class FolderData():
         self.original_list = self.images_list[:]
         self.sort_type = "original"
         self.sort_type_reversed = False
-        if not self.fav and not self.comm:
+        if not self.virtual:
             items = LibraryData.read_user_rotations_for_folder(self)
             for image_data in self.images_list:
                 for filename, value in items:
@@ -1148,15 +1145,14 @@ class FolderData():
 
     def __init__(self, folder_path, files,
                     image_filepath=None,
-                    fav=False,
-                    comm=False,
+                    virtual=False,
                     library_loading=False):
 
         super().__init__()
+
+        self.virtual = virtual
         self.folder_path = folder_path
         self.folder_name = os.path.basename(folder_path)
-        self.fav = fav
-        self.comm = comm
         self._index = -1
         self.before_index = -1
         self.images_list = []
@@ -1286,8 +1282,11 @@ class FolderData():
         mw = LibraryData.globals.main_window
         # mw.update_thumbnails_row_relative_offset(folder_data)
 
+    def is_fav_folder(self):
+        return LibraryData().fav_folder is self
+
     def get_current_thumbnail(self):
-        if self.fav:
+        if self.is_fav_folder():
             return LibraryData().globals.FAV_BIG_ICON
         else:
             try:

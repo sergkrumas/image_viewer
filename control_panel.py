@@ -444,8 +444,8 @@ class ControlPanel(QWidget, UtilsMixin):
     def update_folder_list(self):
         MW = self.globals.main_window
         cf = self.LibraryData().current_folder()
-        if cf.fav or cf.comm:
-            MW.show_center_label("Папка избранного и папка с коментами не обновляются!", error=True)
+        if cf.virtual:
+            MW.show_center_label("Виртуальные папки не обновляются!", error=True)
             return
         self.LibraryData().update_current_folder()
         MW.update_thumbnails_row_relative_offset(cf, only_set=True)

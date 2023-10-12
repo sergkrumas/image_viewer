@@ -3096,7 +3096,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 for item_rect, item_data in self.folders_list:
                     if item_rect.contains(event.pos()):
                         folder_data = item_data
-            if folder_data and not folder_data.fav:
+            if folder_data and not folder_data.virtual:
                 action_title = f"Открыть папку \"{folder_data.folder_path}\" в копии"
                 open_separated = contextMenu.addAction(action_title)
                 toggle_two_monitors_wide = None
@@ -3223,7 +3223,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
                     copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
                     copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
-                    if LibraryData().current_folder().fav:
+                    if LibraryData().current_folder().is_fav_folder():
                         contextMenu.addSeparator()
                         action_title = "Перейти из избранного в папку с этим изображением"
                         go_to_folder = contextMenu.addAction(action_title)
