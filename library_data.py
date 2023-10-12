@@ -124,16 +124,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def get_fav_folder(self):
         return self.fav_folder
 
-    def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False):
+    def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False, make_current=True):
+            
+
         folder_data = FolderData(folder_path, files,
             image_filepath=image_filepath,
             virtual=virtual,
             library_loading=library_loading,
         )
         self.folders.append(folder_data)
-
-
-        self._current_folder = folder_data
 
         # удаление дубликатов и копирование модификаторов с них
         for fd in LibraryData().folders:
@@ -146,9 +145,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     # break
                     # иногда дубликатов получается больше, чем 2, поэтому break отменяется
 
-        # индекс задаём только после удаления дубликатов
-        self._index = self.folders.index(folder_data)
-        return self._current_folder
+        if make_current:
+            # индекс задаём только после удаления дубликатов
+            self._index = self.folders.index(folder_data)
+            self._current_folder = self.folders[self._index]
+
+        return folder_data
 
     def find_modifiers(self, path):
         for fd in LibraryData().folders:
@@ -1151,6 +1153,7 @@ class FolderData():
         super().__init__()
 
         self.virtual = virtual
+        self.tag_data = None
         self.folder_path = folder_path
         self.folder_name = os.path.basename(folder_path)
         self._index = -1

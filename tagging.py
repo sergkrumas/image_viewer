@@ -185,6 +185,7 @@ class TaggingLibraryDataMixin():
 
                 list_path = os.path.join(self.get_tagging_folderpath(), f"ID{id_}.list")
 
+                tag_files = []
                 # чтение списка
                 if os.path.exists(list_path):
                     list_data = []
@@ -201,12 +202,46 @@ class TaggingLibraryDataMixin():
                             disk_size = parts[1]
                             filepath = parts[2]
                             tag.records.append(TagListRecord(md5_str, disk_size, filepath))
+                            tag_files.append(filepath)
+
+                folder_data = self.create_folder_data(f'#{name}', tag_files, virtual=True)
+                folder_data.tag_data = tag
 
                 Vars.TAGS_BASE[id_int] = tag
             else:
                 print(f"\t ERROR {filepath}")
 
             Vars.CURRENT_MAX_TAG_ID = max(Vars.CURRENT_MAX_TAG_ID, id_int)
+
+    def update_or_create_tag_virtual_folder(self, im_data, tag, delete=False):
+
+        found_folder_data = None
+        for folder_data in self.folders:
+            if folder_data.virtual and folder_data.tag_data is tag:
+                found_folder_data = folder_data
+                break
+
+        tag_folder_name = f'#{tag.name}'
+        if found_folder_data is not None:
+            if delete:
+                for _image_data in found_folder_data.images_list[:]:
+                    if compare_md5_strings(_image_data.md5, im_data.md5):
+                        found_folder_data.images_list.remove(_image_data)
+                        break
+
+            else:
+                found_folder_data.images_list.append(im_data)
+
+        else:
+            if not delete:
+                # создать новую папку
+                tag_files = [im_data.filepath, ]
+                folder_data = self.create_folder_data(tag_folder_name, tag_files, virtual=True, make_current=False)
+                folder_data.tag_data = tag
+            else:
+                raise Exception("impossible")
+
+
 
 class TaggingMixing():
 
@@ -619,7 +654,7 @@ class TaggingForm(QWidget):
         tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
         base_tags_list = [tag.name for tag in get_base_tags()]
         im_data = self.parent().LibraryData().current_folder().current_image()
-        before_tags_list = im_data.tags_list
+        before_tags_list = im_data.tags_list[:]
         # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
         im_data.tags_list = []
         image_record = TagListRecord(im_data.md5, im_data.disk_size, im_data.filepath)
@@ -644,7 +679,7 @@ class TaggingForm(QWidget):
             if tag_text in base_tags_list:
                 # заносим существующий тег
                 tag = get_base_tag(tag_text)
-                # сохранение в данных изображения и в базе
+                # сохранение в данных изображения и в базе тегов
                 im_data.tags_list.append(tag)
 
                 # это изображение уже может быть в базе, поэтому сначала проверяем есть ли оно там
@@ -656,6 +691,7 @@ class TaggingForm(QWidget):
                 if not is_there_any_record:
                     tag.records.append(image_record)
                     self.parent().LibraryData().store_tag_to_disk(tag)
+                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag)
 
             else:
                 # создаём новый тег в базе и тоже отмечаем
@@ -667,6 +703,7 @@ class TaggingForm(QWidget):
                 im_data.tags_list.append(tag)
                 tag.records.append(image_record)
                 self.parent().LibraryData().store_tag_to_disk(tag)
+                self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag)
 
         # обработка снятых тегов
         tags_list_set = set(tags_list)
@@ -676,7 +713,7 @@ class TaggingForm(QWidget):
         # info = "deleted tags " + ", ".join(deleted_tags)
 
         def delete_record(tag, idata):
-            for record in tag.records:
+            for record in tag.records[:]:
                 if compare_md5_strings(record.md5_str, idata.md5):
                     tag.records.remove(record)
 
@@ -685,6 +722,7 @@ class TaggingForm(QWidget):
                 if tag.name == deleted_tag_name:
                     delete_record(tag, im_data)
                     self.parent().LibraryData().store_tag_to_disk(tag)
+                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag, delete=True)                    
 
         self.parent().toggle_tags_overlay()
 

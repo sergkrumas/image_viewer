@@ -2262,11 +2262,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(QPen(QColor(Qt.white)))
             left = 50 + thumb_ui_size
             text_rect = QRect(left, int(scroll_offset + 50+n*H), LEFT_COL_WIDTH-left, 200)
+            text = folder_data.get_current_image_name()
+            painter.drawText(text_rect, Qt.AlignLeft, text)
+
+            text_rect = QRect(left, int(scroll_offset + 24+n*H), LEFT_COL_WIDTH-left, 200)
             images_list_len = len(folder_data.images_list)
             text = f"{images_list_len} {folder_data.folder_path}"
-            painter.drawText(text_rect, Qt.AlignLeft, text)
-            text_rect = QRect(left, int(scroll_offset + 24+n*H), LEFT_COL_WIDTH-left, 200)
-            text = folder_data.get_current_image_name()
             painter.drawText(text_rect, Qt.AlignLeft, text)
 
             if folder_data.images_list:
