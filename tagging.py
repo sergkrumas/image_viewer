@@ -124,7 +124,7 @@ class TaggingLibraryDataMixin():
         return_list = list()
         for key, tag in Vars.TAGS_BASE.items():
             for record in tag.records:
-                if record.md5_str == image_data.md5:
+                if compare_md5_strings(record.md5_str, image_data.md5):
                     return_list.append(tag)
         # status_string = f"{len(return_list)} get_tags_for_image_data {image_data.filepath}"
         # print(status_string)
@@ -642,7 +642,7 @@ class TaggingForm(QWidget):
                 # это изображение уже может быть в базе, поэтому сначала проверяем есть ли оно там
                 is_there_any_record = False
                 for record in tag.records:
-                    if record.md5_str == im_data.md5:
+                    if compare_md5_strings(record.md5_str, im_data.md5):
                         is_there_any_record = True
                         break
                 if not is_there_any_record:
@@ -669,7 +669,7 @@ class TaggingForm(QWidget):
 
         def delete_record(tag, idata):
             for record in tag.records:
-                if record.md5_str == idata.md5:
+                if compare_md5_strings(record.md5_str, idata.md5):
                     tag.records.remove(record)
 
         for deleted_tag_name in deleted_tags_set:

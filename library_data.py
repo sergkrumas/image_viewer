@@ -959,7 +959,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         elif fd and pre_load and content_hash:
             for n, image_data in enumerate(fd.images_list):
-                if f'{image_data.md5}' == content_hash:
+                if compare_md5_strings(image_data.md5, content_hash):
                     fd.set_current_index(n)
 
         if not pre_load:
@@ -1136,7 +1136,7 @@ class FolderData():
 
     def _find_image_by_hash_and_retrieve(self, hash_value, temp_list):
         for image_data in self.images_list:
-            if image_data.md5 == hash_value:
+            if compare_md5_strings(image_data.md5, hash_value):
                 temp_list.append(image_data)
                 self.images_list.remove(image_data)
                 break

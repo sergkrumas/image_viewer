@@ -209,6 +209,14 @@ def delete_to_recyclebin(filename):
 def md5_tuple_to_string(md5_tuple):
     return "".join([f'{part:08x}' for part in md5_tuple])
 
+def compare_md5_strings(a1, a2):
+    # вроде как в Python строки сравниваются по хэшам,
+    # отсюда пришлось перестраховываться и проверять строки посимвольно
+    for a1, a2 in zip(a1, a2):
+        if a1 != a2:
+            return False
+    return True
+
 def convert_md5_to_int_tuple(md5_str):
     md5_by_parts = []
     for i in range(4):

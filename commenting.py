@@ -114,7 +114,7 @@ class CommentingLibraryDataMixin():
         if not self.comments_storage[_id]:
             comments_folder = self.comments_folder
             for image in comments_folder.images_list:
-                if image.md5 == ci.md5 and image.disk_size == ci.disk_size:
+                if compare_md5_strings(image.md5, ci.md5) and image.disk_size == ci.disk_size:
                     comments_folder.images_list.remove(image)
         self.store_comments_list()
 
@@ -347,7 +347,7 @@ class CommentData(object):
         comments_folder = LibraryData().comments_folder
         found = False
         for image in comments_folder.images_list:
-            if image.md5 == image_data.md5 and image.disk_size == image_data.disk_size:
+            if compare_md5_strings(image.md5, image_data.md5) and image.disk_size == image_data.disk_size:
                 found = True
         if not found:
             comments_folder.images_list.append(image_data)
