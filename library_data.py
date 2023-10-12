@@ -551,10 +551,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             return
         # TODO здесь из-за f_d.current_image().filepath может быть баг,
         # когда папка не сохранится, потому что данных нет
-        is_ok = lambda x: not x.fav and x.current_image().filepath
-        folders_data = [f_d for f_d in LibraryData().folders if is_ok(f_d)]
+        folders_list = []
+        for fd in LibraryData().folders:
+            ok_1 = not fd.fav
+            ok_2 = not fd.comm
+            ok_3 = fd.current_image().filepath
+            if all((ok_1, ok_2, ok_3)):
+                folders_list.append(fd)
         data_to_out = []
-        for fd in folders_data:
+        for fd in folders_list:
             info_lines = (
                 f'{fd.folder_path}',
                 f'{fd.current_image().md5}',
