@@ -94,7 +94,7 @@ def get_base_tag(tag_name):
             return tag
     return None
 
-TagListRecord = namedtuple('TagListRecord' , 'filepath md5_str disk_size')
+TagListRecord = namedtuple('TagListRecord' , 'md5_str disk_size filepath')
 
 class Tag():
 
@@ -139,7 +139,9 @@ class TaggingLibraryDataMixin():
         list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
 
         info_data = "\n".join([str(tag.name), tag.description])
-        list_data = "\n".join([f"{r.filepath} {r.md5_str} {r.disk_size}" for r in tag.records])
+
+        # !!!! пусть всегда должен быть последним, потому что в нём могут быть пробелы
+        list_data = "\n".join([f"{r.md5_str} {r.disk_size} {r.filepath}" for r in tag.records])
 
         with open(info_filepath, "w+", encoding="utf8") as file:
             file.write(info_data)
@@ -188,12 +190,15 @@ class TaggingLibraryDataMixin():
                     with open(list_path, "r", encoding="utf8") as file:
                         data = file.read().split("\n")
                         for record in data:
-                            parts = record.split(" ")
+                            # максимум 3 части, здесь это нужно указать,
+                            # потому что в самом пути могут быть пробелы,
+                            # поэтому на записи файла путь пишется в последнюю очередь
+                            parts = record.split(" ", 2)
                             if len(parts) > 1:
-                                filepath = parts[0]
-                                md5_str = parts[1]
-                                disk_size = parts[2]
-                                tag.records.append(TagListRecord(filepath, md5_str, disk_size))
+                                md5_str = parts[0]
+                                disk_size = parts[1]
+                                filepath = parts[2]
+                                tag.records.append(TagListRecord(md5_str, disk_size, filepath))
 
                 Vars.TAGS_BASE[id_int] = tag
             else:
@@ -615,7 +620,7 @@ class TaggingForm(QWidget):
         before_tags_list = im_data.tags_list
         # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
         im_data.tags_list = []
-        image_record = TagListRecord(im_data.filepath, im_data.md5, im_data.disk_size)
+        image_record = TagListRecord(im_data.md5, im_data.disk_size, im_data.filepath)
 
 
         # TODO: попробовать переписать обработку тегов таким способом:
