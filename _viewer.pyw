@@ -2881,6 +2881,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif check_scancode_for(event, "M"):
                 self.board_toggle_minimap()
 
+            elif key == Qt.Key_Home:
+                self.board_viewport_show_first_item()
+
+            elif key == Qt.Key_End:
+                self.board_viewport_show_last_item()
+
         self.update()
 
     def toggle_test_animation(self):

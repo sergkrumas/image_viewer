@@ -840,6 +840,21 @@ class BoardMixin():
             # callback_on_finish=self.board_fly_over
         )
 
+    def is_board_ready(self):
+        return self.LibraryData().current_folder().board_ready
+
+
+    def board_viewport_show_first_item(self):
+        cf = self.LibraryData().current_folder()
+        if self.is_board_ready():
+            if cf.board_items_list:
+                self.board_thumbnails_click_handler(cf.board_items_list[0].image_data)
+
+    def board_viewport_show_last_item(self):
+        cf = self.LibraryData().current_folder()
+        if self.is_board_ready():
+           if cf.board_items_list:
+                self.board_thumbnails_click_handler(cf.board_items_list[-1].image_data)
 
 
 
@@ -995,9 +1010,6 @@ class BoardMixin():
                 painter.drawRect(self.rect())
                 painter.setClipping(False)
                 painter.setOpacity(1.0)
-
-
-
 
 
 
