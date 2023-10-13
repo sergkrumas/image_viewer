@@ -56,13 +56,13 @@ class ControlPanelButton(QPushButton):
             path = QPainterPath()
             path.addRoundedRect(QRectF(self.rect()), 5, 5)
 
-            if self.id == "play":
-                painter.setPen(Qt.NoPen)
-                painter.setBrush(orange)
-                painter.drawEllipse(self.rect().adjusted(2, 2, -2, -2))
-            elif self.underMouse():
-                painter.setBrush(QBrush(Qt.black))
-                painter.setPen(Qt.NoPen)
+            if self.underMouse():
+                if self.id == "play":
+                    painter.setPen(Qt.NoPen)
+                    painter.setBrush(orange)
+                else:
+                    painter.setBrush(QBrush(Qt.black))
+                    painter.setPen(Qt.NoPen)
                 painter.setOpacity(0.8)
                 painter.drawPath(path)
                 painter.setOpacity(1.0)
