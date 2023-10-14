@@ -2797,6 +2797,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_region_zoom_do_cancel()
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
+            elif HookConsoleOutput.check_messages():
+                HookConsoleOutput.clear_messages_list()
             else:
                 self.require_window_closing()
         elif key == Qt.Key_F1:
@@ -3582,6 +3584,14 @@ class HookConsoleOutput:
         if self.console:
             self.console.flush()
         # self.file.flush()
+
+    @classmethod
+    def check_messages(cls):
+        return bool(cls.messages)
+
+    @classmethod
+    def clear_messages_list(cls):
+        cls.messages.clear()
 
     @classmethod
     def get_messages(cls):
