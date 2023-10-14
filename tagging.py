@@ -221,7 +221,6 @@ class TaggingLibraryDataMixin():
                 found_folder_data = folder_data
                 break
 
-        tag_folder_name = f'#{tag.name}'
         if found_folder_data is not None:
             if delete:
                 for _image_data in found_folder_data.images_list[:]:
@@ -236,7 +235,7 @@ class TaggingLibraryDataMixin():
             if not delete:
                 # создать новую папку
                 tag_files = [im_data.filepath, ]
-                folder_data = self.create_folder_data(tag_folder_name, tag_files, virtual=True, make_current=False)
+                folder_data = self.create_folder_data(f'#{tag.name}', tag_files, virtual=True, make_current=False)
                 folder_data.tag_data = tag
             else:
                 raise Exception("impossible")

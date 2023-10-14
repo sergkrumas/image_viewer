@@ -87,8 +87,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
             i.load_fav_list()
-            i.load_tags()
             i.load_comments_list()
+            i.load_tags()
             i.load_boards()
             i.load_session_file()
         return cls.instance
@@ -126,13 +126,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False, make_current=True):
             
-
         folder_data = FolderData(folder_path, files,
             image_filepath=image_filepath,
             virtual=virtual,
             library_loading=library_loading,
         )
-        self.folders.append(folder_data)
+        if make_current:
+            self.folders.append(folder_data)
 
         # удаление дубликатов и копирование модификаторов с них
         for fd in LibraryData().folders:
@@ -147,8 +147,19 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if make_current:
             # индекс задаём только после удаления дубликатов
-            self._index = self.folders.index(folder_data)
-            self._current_folder = self.folders[self._index]
+            self.choose_that_folder(folder_data, write_view_history=False)
+        else:
+            # make_current = False только у папок тегов
+            current_folder = self.current_folder()
+            # вставляем папку тега сразу за последней виртуальной папкой в списке папок 
+            n = 0
+            for n, fd in enumerate(self.folders):
+                if fd.virtual:
+                    index = n+1
+            self.folders.insert(n, folder_data)
+
+            # сохраняем текущую папку текущей
+            self.choose_that_folder(current_folder, write_view_history=False)
 
         return folder_data
 
@@ -176,10 +187,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.set_window_title(MW.current_image_details())
         MW.update()
 
-    def choose_that_folder(self, folder_data):
+    def choose_that_folder(self, folder_data, write_view_history=True):
         self._index = self.folders.index(folder_data)
         self._current_folder = self.folders[self._index]
-        self.add_current_image_to_view_history()
+        if write_view_history:
+            self.add_current_image_to_view_history()
 
     def go_to_folder_of_current_image(self):
         im = LibraryData().current_folder().current_image()
