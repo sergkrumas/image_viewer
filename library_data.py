@@ -1383,7 +1383,7 @@ class ImageData():
         self.anim_paused = False
         self.svg_scale_factor = 20
         self.anim_cur_frame = 0
-        if self.filepath:
+        if self.filepath and not LibraryData().globals.lite_mode:
             if LibraryData.is_interest_file(self.filepath):
                 self.md5, self.md5_tuple = generate_md5(self.filepath)
             else:
