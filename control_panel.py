@@ -1605,10 +1605,7 @@ class Slideshow(QWidget):
         self.DELAY_DURATION = main_window.STNG_slides_delay_duration
 
     def load_pixmap(self, filepath):
-        if self.LibraryData().is_svg_file(filepath):
-            return load_svg(filepath)
-        else:
-            return QPixmap(filepath)
+        return load_image_respect_orientation(filepath, highres_svg=self.LibraryData().is_svg_file(filepath))
 
     def set_pics(self):
         pair = next(self.pairs)

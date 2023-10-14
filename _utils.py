@@ -103,27 +103,31 @@ def calculate_text_rect(font, max_rect, text, alignment):
     return text_rect
 
 def get_cycled_pairs_slideshow(input_list):
-    elements = input_list[:]
-    count = len(elements)
+    images_list = input_list[:]
+    count = len(images_list)
 
     start_empty_image = namedtuple("ImageData", "filepath")
     start_empty_image.filepath = ""
 
-    yield (start_empty_image, input_list[0], f"1/{count}")
+    filename = os.path.basename(input_list[0].filepath)
+    yield (start_empty_image, input_list[0], f"1/{count}\n{filename}")
 
     # переставляем последний элемент на первое место,
     # чтобы изначальная первая картинка показалась первой,
     # а не так, чтобы вторая стала первой согласно текущему алгоритму смены слайдов
-    last_el = elements.pop(-1)
-    elements.insert(0, last_el)
+    last_el = images_list.pop(-1)
+    images_list.insert(0, last_el)
 
     # добавляем первый элемент в конец для получения всех паросочетаний,
     # которые можно потом зациклить
-    elements.append(elements[0])
+    images_list.append(images_list[0])
     pairs = []
     number = 1
-    for index, el in enumerate(elements[:-1]):
-        pairs.append([el, elements[index+1], f"{number}/{count}"])
+
+    for index, im_data in enumerate(images_list[:-1]):
+        next_im_data = images_list[index+1]
+        filename = os.path.basename(next_im_data.filepath)
+        pairs.append([im_data, next_im_data, f"{number}/{count}\n{filename}"])
         number += 1
 
     iterator = itertools.cycle(pairs)
