@@ -1593,7 +1593,7 @@ class Slideshow(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         images_list = self.LibraryData().current_folder().images_list
         images_list = [im for im in images_list if im.is_supported_filetype]
-        self.pairs = get_cycled_pairs(images_list)
+        self.pairs = get_cycled_pairs_slideshow(images_list)
         self.opacity = 0.001
         self.increase_opacity = True
         self.show_this()

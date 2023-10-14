@@ -860,7 +860,7 @@ class BoardMixin():
                     point = prbi.board_position
                     _list.append([point, None, prbi])
 
-            self.fly_pairs = get_cycled_pairs(_list, slideshow=False)
+            self.fly_pairs = get_cycled_pairs(_list)
             pair = [
                 [current_pos, self.board_scale_x, self.board_scale_y],
                 [_list[0][0], _list[0][1], _list[0][2], ]

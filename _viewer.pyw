@@ -3599,7 +3599,7 @@ class HookConsoleOutput:
 
     @classmethod
     def check_messages(cls):
-        return bool(cls.messages)
+        return bool(list(cls.get_messages()))
 
     @classmethod
     def clear_messages_list(cls):
