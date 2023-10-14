@@ -142,7 +142,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return self.fav_folder
 
     def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False, make_current=True):
-            
+
         folder_data = FolderData(folder_path, files,
             image_filepath=image_filepath,
             virtual=virtual,
@@ -168,7 +168,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             # make_current = False только у папок тегов
             current_folder = self.current_folder()
-            # вставляем папку тега сразу за последней виртуальной папкой в списке папок 
+            # вставляем папку тега сразу за последней виртуальной папкой в списке папок
             n = 0
             for n, fd in enumerate(self.folders):
                 if fd.virtual:
@@ -328,7 +328,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.set_window_title(MW.current_image_details())
             LibraryData.update_current_folder_columns()
         else:
-            MW.show_center_label("Это не удалить!", error=True)    
+            MW.show_center_label("Это не удалить!", error=True)
         MW.update()
 
     def show_that_preview_on_viewer_page(self, image_data):
@@ -493,7 +493,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             return
         elif len(self.folders) == 1:
             MW.show_center_label('Нельзя удалить единственную папку из библиотеки', error=True)
-            return            
+            return
         else:
             LibraryData().choose_previous_folder()
             LibraryData().folders.remove(cf)
@@ -1332,7 +1332,7 @@ class FolderData():
         elif self.is_tag_folder():
             return LibraryData().globals.TAG_BIG_ICON
         elif self.is_comments_folder():
-            return LibraryData().globals.COMMENTS_BIG_ICON            
+            return LibraryData().globals.COMMENTS_BIG_ICON
         else:
             try:
                 return self.images_list[self._index].get_thumbnail()

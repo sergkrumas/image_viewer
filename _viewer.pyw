@@ -801,7 +801,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def cancel_all_anim_tasks(self):
         for anim_task in self.animation_tasks[:]:
-            anim_task.stop(too_old=True)        
+            anim_task.stop(too_old=True)
 
     def animate_properties(self, anim_tracks,
                 anim_id=None,
@@ -3507,7 +3507,7 @@ def _restart_app(aftercrash=False):
             if os.path.exists(filepath):
                 args.append(filepath)
         if '-full' in sys.argv:
-            args.append('-full')                
+            args.append('-full')
     subprocess.Popen(args)
 
 def exit_threads():

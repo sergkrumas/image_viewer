@@ -575,7 +575,7 @@ class BoardMixin():
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
-    def do_scale_board(self, scroll_value, ctrl, shift, no_mod, 
+    def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
 
         if not precalculate:
@@ -814,7 +814,7 @@ class BoardMixin():
                 board_scale_x=self.board_scale_x,
                 board_scale_y=self.board_scale_y,
                 board_origin=pos2,
-                pivot = self.get_center_position()                
+                pivot = self.get_center_position()
             )
 
             self.animate_properties(
