@@ -1216,7 +1216,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.tags_list = []
         else:
             self.tags_list = LibraryData().get_tags_for_image_data(image_data)
-            LibraryData().check_lost_image_and_update_base(image_data)
         self.update()
 
     def error_pixmap_and_reset(self, title, msg, no_background=False):
@@ -1495,6 +1494,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.tagging_sidebar_visible = self.get_tiny_sidebar_rect().contains(curpos)
             else:
                 self.tagging_sidebar_visible = self.get_sidebar_rect().contains(curpos)
+            if self.Globals.lite_mode:
+                self.tagging_sidebar_visible = False
 
             self.tagging_sidebar_visible &= self.isActiveWindow()
 
@@ -2568,6 +2569,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.draw_center_label(painter, text)
 
     def draw_image_metadata(self, painter):
+        if self.Globals.lite_mode:
+            return
+
         cf = LibraryData().current_folder()
         ci = cf.current_image()
         out = []
@@ -3182,22 +3186,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 contextMenu.addSeparator()
 
-                sel_comment = self.get_selected_comment(event)
-                if sel_comment:
-                    action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
-                    change_comment_text = contextMenu.addAction(action_text)
+                if not Globals.lite_mode:
+                    sel_comment = self.get_selected_comment(event)
+                    if sel_comment:
+                        action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
+                        change_comment_text = contextMenu.addAction(action_text)
 
-                    action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
-                    change_comment_borders = contextMenu.addAction(action_text)
+                        action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
+                        change_comment_borders = contextMenu.addAction(action_text)
 
-                    action_text = f'Удалить комент "{sel_comment.get_title()}"'
-                    delete_comment = contextMenu.addAction(action_text)
+                        action_text = f'Удалить комент "{sel_comment.get_title()}"'
+                        delete_comment = contextMenu.addAction(action_text)
 
-                    contextMenu.addSeparator()
+                        contextMenu.addSeparator()
 
-                ci = LibraryData().current_folder().current_image()
-                if ci.image_metadata:
-                    copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
+                    ci = LibraryData().current_folder().current_image()
+                    if ci.image_metadata:
+                        copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
 
             contextMenu.addSeparator()
 

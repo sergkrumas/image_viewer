@@ -164,6 +164,9 @@ class CommentingMixin():
         return left, top, right, bottom
 
     def image_comment_mousePressEvent(self, event):
+        if self.Globals.lite_mode:
+            self.show_center_label("Комментарии нельзя задавать и просматривать в упрощённом режиме", error=True)
+            return
         cf = self.LibraryData().current_folder()
         ci = cf.current_image()
         if ci:
@@ -177,7 +180,7 @@ class CommentingMixin():
                 self.comment_data = CommentData.create_comment(self.LibraryData, ci, left, top, right, bottom)
         self.update()
 
-    def image_comment_update_rect(self, event):
+    def image_comment_update_rect(self, event):        
         if self.comment_data is not None:
             self.COMMENT_RECT_INPUT_POINT2 = event.pos()
             left, top, right, bottom = self.get_comment_rect_info()
@@ -188,10 +191,14 @@ class CommentingMixin():
         self.update()
 
     def image_comment_mouseMoveEvent(self, event):
+        if self.Globals.lite_mode:
+            return        
         self.image_comment_update_rect(event)
         self.update()
 
     def image_comment_mouseReleaseEvent(self, event):
+        if self.Globals.lite_mode:
+            return        
         self.image_comment_update_rect(event)
         self.LibraryData().store_comments_list()
         if self.comment_data_candidate is None:
@@ -201,6 +208,9 @@ class CommentingMixin():
         self.update()
 
     def draw_comments(self, painter):
+
+        if self.Globals.lite_mode:
+            return
 
         old_pen = painter.pen()
         old_brush = painter.brush()

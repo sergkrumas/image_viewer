@@ -86,11 +86,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.on_library_page = False
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
-            i.load_fav_list()
-            i.load_comments_list()
-            i.load_tags()
+
+            i.fav_folder = ...
+            i.comments_folder = ...
+
+            if not i.globals.lite_mode:
+                i.load_fav_list()
+                i.load_comments_list()
+                i.load_tags()
+                i.load_session_file()
             i.load_boards()
-            i.load_session_file()
         return cls.instance
 
     @staticmethod
@@ -470,10 +475,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def delete_current_folder(self):
         MW = self.globals.main_window
-        cf = LibraryData().current_folder()
+        cf = self.current_folder()
         if cf.virtual:
             MW.show_center_label('Нельзя удалять виртуальные папки из библиотеки', error=True)
             return
+        elif len(self.folders) == 1:
+            MW.show_center_label('Нельзя удалить единственную папку из библиотеки', error=True)
+            return            
         else:
             LibraryData().choose_previous_folder()
             LibraryData().folders.remove(cf)
@@ -1443,6 +1451,8 @@ class ImageData():
             MW.get_rotated_pixmap(force_update=True)
 
     def update_fav_button_state(self):
+        if LibraryData().globals.lite_mode:
+            return
         favorite_btn = LibraryData().globals.control_panel.favorite_btn
         if LibraryData().is_in_fav_list(self):
             favorite_btn.setText("-")

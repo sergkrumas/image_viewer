@@ -251,6 +251,10 @@ class TaggingMixing():
         self.tagging_form = None
 
     def toggle_tags_overlay(self):
+        if self.Globals.lite_mode:
+            self.show_tags_overlay = False
+            self.show_center_label("Теги нельзя юзать в упрощённом режиме!", error=True)
+            return
         self.show_tags_overlay = not self.show_tags_overlay
         if self.show_tags_overlay:
             # enter

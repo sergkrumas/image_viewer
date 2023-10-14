@@ -420,6 +420,9 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def manage_favorite_list(self):
         MW = self.globals.main_window
+        if self.globals.lite_mode:
+            MW.show_center_label("В упрощённом режиме функция не работает!\nПерезапустите программу в обычном режиме через команду контекстного меню", error=True)
+            return
         status = self.LibraryData().manage_favorite_list()
         if status == "added":
             self.favorite_btn.setText("-")
