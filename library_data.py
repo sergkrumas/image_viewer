@@ -1383,7 +1383,6 @@ class ImageData():
         self.anim_paused = False
         self.svg_scale_factor = 20
         self.anim_cur_frame = 0
-        self.tags_list = list()
         if self.filepath:
             if LibraryData.is_interest_file(self.filepath):
                 self.md5, self.md5_tuple = generate_md5(self.filepath)
@@ -1391,7 +1390,6 @@ class ImageData():
                 self.md5, self.md5_tuple = "", ()
             self.creation_date = self.get_creation_date(self.filepath)
             self.image_metadata = dict()
-            self.tags_list = LibraryData().get_tags_for_image_data(self)
             self.disk_size = self.get_disk_size(self.filepath)
         else:
             self.creation_date = 0

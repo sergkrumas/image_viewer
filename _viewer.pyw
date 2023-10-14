@@ -1212,7 +1212,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.restore_image_transformations()
         self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
         self.set_window_title(self.current_image_details())
-        if not self.error:
+        if self.error:
+            self.tags_list = []
+        else:
+            self.tags_list = LibraryData().get_tags_for_image_data(image_data)
             LibraryData().check_lost_image_and_update_base(image_data)
         self.update()
 

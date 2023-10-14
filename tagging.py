@@ -316,8 +316,7 @@ class TaggingMixing():
             painter.setPen(QPen(Qt.gray))
             painter.drawText(QPoint(50, 250), "Теги изображения")
 
-            tags_list = self.LibraryData().current_folder().current_image().tags_list
-            for i, tag in enumerate(tags_list):
+            for i, tag in enumerate(self.tags_list):
                 tag_text = f"#{tag.name} ({len(tag.records)})"
                 test_rect = test_painter.drawText(QRect(0, 0, 1000, 1000),
                                                     Qt.AlignCenter | Qt.AlignVCenter, tag_text)
@@ -650,12 +649,12 @@ class TaggingForm(QWidget):
         #     QMessageBox.warning(self,"Error", "Do not use commas and periods: .,")
         #     return
 
-        tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
+        new_tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
         base_tags_list = [tag.name for tag in get_base_tags()]
         im_data = self.parent().LibraryData().current_folder().current_image()
-        before_tags_list = im_data.tags_list[:]
+        before_tags_list = self.parent().tags_list
         # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
-        im_data.tags_list = []
+
         image_record = TagListRecord(im_data.md5, im_data.disk_size, im_data.filepath)
 
 
@@ -674,12 +673,11 @@ class TaggingForm(QWidget):
 
 
         # обработка добавленных тегов
-        for tag_text in tags_list:
+        for tag_text in new_tags_list:
             if tag_text in base_tags_list:
                 # заносим существующий тег
                 tag = get_base_tag(tag_text)
                 # сохранение в данных изображения и в базе тегов
-                im_data.tags_list.append(tag)
 
                 # это изображение уже может быть в базе, поэтому сначала проверяем есть ли оно там
                 is_there_any_record = False
@@ -699,13 +697,12 @@ class TaggingForm(QWidget):
                 Vars.TAGS_BASE[Vars.CURRENT_MAX_TAG_ID] = tag
 
                 # сохранение в данных изображения и в базе
-                im_data.tags_list.append(tag)
                 tag.records.append(image_record)
                 self.parent().LibraryData().store_tag_to_disk(tag)
                 self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag)
 
         # обработка снятых тегов
-        tags_list_set = set(tags_list)
+        tags_list_set = set(new_tags_list)
         before_tags_list_set = set([tag.name for tag in before_tags_list])
         deleted_tags_set = before_tags_list_set - tags_list_set
 
@@ -721,17 +718,19 @@ class TaggingForm(QWidget):
                 if tag.name == deleted_tag_name:
                     delete_record(tag, im_data)
                     self.parent().LibraryData().store_tag_to_disk(tag)
-                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag, delete=True)                    
+                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag, delete=True)
+
+        self.parent().tags_list = self.parent().LibraryData().get_tags_for_image_data(im_data)
 
         self.parent().toggle_tags_overlay()
 
     def init_tagging_UI(self):
-        TAGS = self.parent().LibraryData().current_folder().current_image().tags_list
+        IMAGE_TAGS = self.parent().tags_list
         BASE_TAGS = get_base_tags()
 
         found_tags = []
         for base_tag in BASE_TAGS:
-            if base_tag in TAGS:
+            if base_tag in IMAGE_TAGS:
                 found_tags.append(base_tag)
 
         found_tags = [str(l) for l in found_tags]
