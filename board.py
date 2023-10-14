@@ -311,8 +311,6 @@ class BoardMixin():
             self.board_draw_wait_label(painter)
 
 
-        self.draw_center_label_main(painter)
-
         if self.Globals.DEBUG:
             self.board_draw_board_origin(painter)
             self.board_draw_origin_compass(painter)

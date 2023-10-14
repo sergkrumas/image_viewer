@@ -2103,6 +2103,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_board_page_active():
             self.board_draw(painter)
 
+        # draw center label
+        self.draw_center_label_main(painter)
+
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")
         # draw close button
@@ -2520,11 +2523,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.STNG_show_image_center:
                 self.draw_center_point(painter, self.image_center_position)
 
-
             self.draw_secret_hint(painter)
-
-            # draw center label
-            self.draw_center_label_main(painter)
 
         elif self.movie:
             pass
