@@ -577,16 +577,14 @@ class BoardMixin():
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
-    def do_scale_board(self, scroll_value, ctrl, shift, no_mod, pivot=None, factor_x=None, factor_y=None, precalculate=False):
+    def do_scale_board(self, scroll_value, ctrl, shift, no_mod, 
+                pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
 
         if not precalculate:
             self.board_region_zoom_do_cancel()
 
-        curpos = self.mapped_cursor_pos()
         if pivot is None:
-            pivot = curpos
-
-        _board_origin = self.board_origin
+            pivot = self.mapped_cursor_pos()
 
         scale_speed = 10.0
         if scroll_value > 0:
@@ -607,8 +605,9 @@ class BoardMixin():
             factor_x = 1.0
             factor_y = factor
 
-        _board_scale_x = self.board_scale_x
-        _board_scale_y = self.board_scale_y
+        _board_origin = board_origin if board_origin is not None else self.board_origin
+        _board_scale_x = board_scale_x if board_scale_x is not None else self.board_scale_x
+        _board_scale_y = board_scale_y if board_scale_y is not None else self.board_scale_y
 
         _board_scale_x *= factor_x
         _board_scale_y *= factor_y
@@ -739,6 +738,100 @@ class BoardMixin():
 
         self.update()
 
+
+    def board_get_nearest_item(self, folder_data, by_window_center=False):
+        min_distance = 9999999999999999
+        min_distance_prbi = None
+        if by_window_center:
+            cursor_pos = self.get_center_position()
+        else:
+            cursor_pos = self.mapped_cursor_pos()
+        for prbi in folder_data.board_items_list:
+
+            pos = prbi.calculate_absolute_position(board=self)
+            distance = calculate_distance(pos, cursor_pos)
+            if distance < min_distance:
+                min_distance = distance
+                min_distance_prbi = prbi
+
+        return min_distance_prbi
+
+    def board_move_viewport(self, _previous=False, _next=False):
+
+        cf = self.LibraryData().current_folder()
+        nearest_item = self.board_get_nearest_item(cf, by_window_center=True)
+
+        if nearest_item is not None and len(cf.board_items_list) > 1:
+            if _previous:
+                reverse = True
+            elif _next:
+                reverse = False
+
+            _list = shift_list_to_became_first(cf.board_items_list, nearest_item, reverse=reverse)
+
+            first_item = _list[0]
+            second_item = _list[1]
+            pos = first_item.calculate_absolute_position(board=self)
+            distance = calculate_distance(pos, self.get_center_position())
+            if distance < 5.0:
+                # если цент картинки практически совпадает с центром вьюпорта, то выбираем следующую картинку
+                item_to_center_viewport = second_item
+            else:
+                item_to_center_viewport = first_item
+
+            delta = QPointF(self.get_center_position() - self.board_origin)
+            current_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+
+            item_point = item_to_center_viewport.board_position
+
+            pos1 = QPointF(current_pos.x()*self.board_scale_x, current_pos.y()*self.board_scale_y)
+            pos2 = QPointF(item_point.x()*self.board_scale_x, item_point.y()*self.board_scale_y)
+
+            viewport_center_pos = self.get_center_position()
+
+            pos1 = -pos1 + viewport_center_pos
+            pos2 = -pos2 + viewport_center_pos
+
+
+            prbi = item_to_center_viewport
+            image_data = prbi.image_data
+            board_scale_x = self.board_scale_x
+            board_scale_y = self.board_scale_y
+
+            # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
+            image_width = image_data.source_width*prbi.board_scale #*board_scale_x
+            image_height = image_data.source_height*prbi.board_scale #*board_scale_y
+            image_rect = QRect(0, 0, int(image_width), int(image_height))
+            fitted_rect = fit_rect_into_rect(image_rect, self.rect())
+            bx = fitted_rect.width()/image_rect.width()
+            by = fitted_rect.height()/image_rect.height()
+
+            new_board_scale_x, new_board_scale_y, new_board_origin = self.do_scale_board(1.0,
+                False,
+                False,
+                True,
+                factor_x=bx/self.board_scale_x,
+                factor_y=by/self.board_scale_y,
+                precalculate=True,
+                board_scale_x=self.board_scale_x,
+                board_scale_y=self.board_scale_y,
+                board_origin=pos2,
+                pivot = self.get_center_position()                
+            )
+
+            self.animate_properties(
+                [
+                    (self, "board_origin", pos1, new_board_origin, self.update),
+                    (self, "board_scale_x", self.board_scale_x, new_board_scale_x, self.update),
+                    (self, "board_scale_y", self.board_scale_y, new_board_scale_y, self.update),
+                ],
+                anim_id="flying",
+                duration=0.7,
+            )
+
+
+
+
     def board_fly_over(self, user_call=False):
 
         if user_call and self.fly_pairs:
@@ -760,18 +853,11 @@ class BoardMixin():
                 for point, bx, by in cf.board_user_points:
                     _list.append([point, bx, by])
             else:
-                min_distance = 9999999999999999
-                min_distance_prbi = None
-                cursor_pos = self.mapped_cursor_pos()
-                for prbi in cf.board_items_list:
-
-                    pos = prbi.calculate_absolute_position(board=self)
-                    distance = calculate_distance(pos, cursor_pos)
-                    if distance < min_distance:
-                        min_distance = distance
-                        min_distance_prbi = prbi
-
-                sorted_list = shift_list_to_became_first(cf.board_items_list, min_distance_prbi)
+                nearest_item = self.board_get_nearest_item(cf)
+                if nearest_item:
+                    sorted_list = shift_list_to_became_first(cf.board_items_list, nearest_item)
+                else:
+                    sorted_list = cf.board_items_list
                 for prbi in sorted_list:
                     point = prbi.board_position
                     _list.append([point, None, prbi])

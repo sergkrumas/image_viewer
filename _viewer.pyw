@@ -2889,6 +2889,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_End:
                 self.board_viewport_show_last_item()
 
+            elif key == Qt.Key_PageDown:
+                self.board_move_viewport(_previous=True)
+
+            elif key == Qt.Key_PageUp:
+                self.board_move_viewport(_next=True)
+
+
         self.update()
 
     def toggle_test_animation(self):
