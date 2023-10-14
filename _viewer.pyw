@@ -2822,6 +2822,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.toggle_stay_on_top()
             self.update()
 
+        elif check_scancode_for(event, "B"):
+            self.change_page(self.pages.BOARD_PAGE)
+
+        elif check_scancode_for(event, "L"):
+            self.change_page(self.pages.LIBRARY_PAGE)
+
+        elif check_scancode_for(event, "V"):
+            self.change_page(self.pages.VIEWER_PAGE)
+
+        elif key == Qt.Key_Pause:
+            self.change_page(self.pages.START_PAGE)
+
         elif check_scancode_for(event, ("W", "S", "A", "D")):
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
