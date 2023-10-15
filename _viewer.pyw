@@ -138,6 +138,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 cls.LIBRARY_PAGE
             ]
 
+        @classmethod
+        def name(cls, page_id):
+            return {
+                cls.START_PAGE: 'START',
+                cls.VIEWER_PAGE: 'VIEWER',
+                cls.BOARD_PAGE: 'BOARD',
+                cls.LIBRARY_PAGE: 'LIBRARY',
+            }.get(page_id)
+
     class label_type():
         FRAME_NUMBER = 'FRAMENUMBER'
         PLAYSPEED = 'PLAYSPEED'
@@ -336,23 +345,24 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         pages.remove(self.current_page)
         points = reversed(points)
 
-        for page, point in zip(pages, points):
+        for page_id, point in zip(pages, points):
             # painter.drawPoint(point)
             # код для отрисовки угловой кнопки
             r = QRect(QPoint(0, 0), QPoint(50, 30))
             r.moveCenter(point)
-            self.corner_menu_items.append((page, r))
+            self.corner_menu_items.append((page_id, r))
 
             cursor_pos = self.mapFromGlobal(QCursor().pos())
+            page_name = self.pages.name(page_id)
             if r.contains(cursor_pos):
                 painter.setOpacity(1.0)
                 label_rect = QRect(r.topLeft(), r.bottomRight() + QPoint())
                 label_rect.setWidth(200)
-                text = page
+                text = page_name
                 text_rect = label_rect
             else:
                 painter.setOpacity(.8)
-                text = page[0]
+                text = page_name[0]
                 text_rect = r
             # painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, text)
             painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, text)
