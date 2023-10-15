@@ -241,7 +241,7 @@ class HelpWidget(QWidget):
                 'VIEWERPAGE': INFO_VIEWER_PAGE,
                 'BOARDPAGE': INFO_BOARD_PAGE,
                 'LIBRARYPAGE': INFO_LIBRARY_PAGE,
-            }[page]            
+            }[page]
         all_pages = parent.pages.all()
         pages_to_render = all_pages[:]
         cur_page = pages_to_render.pop(pages_to_render.index(parent.current_page))
