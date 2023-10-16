@@ -2414,8 +2414,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setOpacity(0.5)
 
         if draw_left_scrollbar:
-            factor = self.rect().height()/(content_height_left-self.rect().height())
-            factor = min(1.0, factor)
+            factor = self.rect().height()/content_height_left
             left_bar_height = int(factor*self.rect().height())
 
             offset = LibraryData().folderslist_scroll_offset
@@ -2425,20 +2424,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 y_factor = abs(offset)/(content_height_left-self.rect().height())
                 y_factor = min(1.0, y_factor)
                 left_bar_y = (self.rect().height()-left_bar_height)*y_factor
-            # left_bar_y += 20
-            left_bar_y = int(left_bar_y)
+                left_bar_y = int(left_bar_y)
 
-            left_bar_rect = QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), left_bar_y, WIDTH,
-                                                                                left_bar_height)
+            left_bar_rect = QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), left_bar_y, WIDTH, left_bar_height)
 
             path = QPainterPath()
             path.addRoundedRect(QRectF(left_bar_rect), 5, 5)
             painter.fillPath(path, Qt.white)
 
         if draw_right_scrollbar:
-            factor = self.rect().height()/(content_height_right-self.rect().height())
-            factor = min(1.0, factor)
-            right_bar_height = int(factor*self.rect().height())
+            factor = self.rect().height()/content_height_right
+            right_bar_height = int(factor*right_scrollbar_rect.height())
 
             offset = cf.previews_scroll_offset
             if offset == 0:
@@ -2447,8 +2443,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 y_factor = abs(offset)/(content_height_right-self.rect().height())
                 y_factor = min(1.0, y_factor)
                 right_bar_y = (self.rect().height()-right_bar_height)*y_factor
-            # right_bar_y += 20
-            right_bar_y = int(right_bar_y)
+                right_bar_y = int(right_bar_y)
 
             right_bar_rect = QRect(CXP+OFFSET_FROM_CENTER, right_bar_y, WIDTH, right_bar_height)
 
@@ -2818,6 +2813,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
 
+
         if check_scancode_for(event, "Y"):
             if self.frameless_mode:
                 self.toggle_to_frame_mode()
@@ -2825,8 +2821,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.toggle_to_frameless_mode()
 
         elif check_scancode_for(event, "G"):
+            pass
             # self.toggle_test_animation()
-            self.hide_center_label()
+            # self.hide_center_label()
+            # import time
+            # time = time.time()
+            # LibraryData().create_folder_data(f"{time}", [], virtual=True)
+
 
         elif check_scancode_for(event, "P"):
             self.toggle_stay_on_top()
