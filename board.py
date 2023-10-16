@@ -524,7 +524,7 @@ class BoardMixin():
         if self.isLeftClickAndShift(event):
             self.board_region_zoom_in_mousePressEvent(event)
 
-        elif event.buttons() == Qt.LeftButton:
+        elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed:
                 self.board_translating = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
@@ -543,7 +543,7 @@ class BoardMixin():
 
         if self.isLeftClickAndShift(event) or self.board_region_zoom_in_input_started:
             self.board_region_zoom_in_mouseMoveEvent(event)
-        elif event.buttons() == Qt.LeftButton:
+        elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed and self.board_translating:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
                 start_value = self.board_origin
@@ -561,11 +561,11 @@ class BoardMixin():
         if self.isLeftClickAndShift(event) or self.board_region_zoom_in_input_started:
             self.board_region_zoom_in_mouseReleaseEvent(event)
 
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MiddleButton:
             if self.transformations_allowed:
                 self.board_translating = False
                 self.update()
-        if event.button() == Qt.MiddleButton:
+        if event.button() == Qt.MiddleButton and event.modifiers() == Qt.AltModifier:
             if self.transformations_allowed:
                 self.set_default_boardviewport_scale(keep_position=True)
 
