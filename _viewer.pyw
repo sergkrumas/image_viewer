@@ -1869,7 +1869,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if scroll_value < 0.0:
                 return
 
-        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG_animated_zoom
+        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG_animated_zoom and not self._key_pressed
 
         if override_factor:
             factor = override_factor
