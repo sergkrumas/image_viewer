@@ -1597,17 +1597,71 @@ class FinderWindow(QWidget):
 
         self.output_field = QTextEdit()
         self.output_field.setStyleSheet(editfieled_style)
+        self.output_field.setText("\n"*59)
+
+
+        scroll_bars_style = """
+            QScrollBar {
+                border-radius: 5px;
+                background: rgb(40, 50, 60);
+            }
+            QScrollBar:vertical {
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle {
+                background: rgb(210, 210, 210);
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                width: 10px;
+                min-height: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical {
+                 background: transparent;
+            }
+            QScrollBar::sub-line:vertical {
+                 background: transparent;
+            }
+            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+                 background: transparent;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                 background: transparent;
+            }
+
+            QScrollArea:vertical {
+                height: 15px;
+                background-color: transparent;
+                border: none;
+            }
+
+            QTextEdit{
+                color: white;
+                background-color: transparent;
+                border: none; 
+            }
+
+            """
+
+
+        self.output_field.setStyleSheet(scroll_bars_style)
         main_layout.addWidget(self.output_field)
 
         green_button = QPushButton("Зелёная")
         green_button.clicked.connect(self.green_button_handler)
         green_button.setStyleSheet(main_style_button)
+
+
         red_button = QPushButton("Красная")
         red_button.clicked.connect(self.red_button_handler)
         red_button.setStyleSheet(main_style_button)
+        red_button.setCursor(Qt.PointingHandCursor)
 
         green_button.setStyleSheet(self.button_style)
         green_button.setObjectName("green")
+        green_button.setCursor(Qt.PointingHandCursor)
 
         red_button.setStyleSheet(self.button_style)
         red_button.setObjectName("red")
