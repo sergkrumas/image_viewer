@@ -130,9 +130,9 @@ class BoardMixin():
 
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
-                prbi = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
-                prbi.board_scale = 1.0
-                prbi.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+                board_item = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
+                board_item.board_scale = 1.0
+                board_item.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
         self.build_bounding_rect(folder_data)
@@ -154,25 +154,25 @@ class BoardMixin():
 
             self.images_drawn = 0
             self.board_item_under_mouse = None
-            for prbi in folder_data.board_items_list:
-                self.board_draw_item(painter, prbi)
+            for board_item in folder_data.board_items_list:
+                self.board_draw_item(painter, board_item)
 
             painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), f'perfomance status: {self.images_drawn} images drawn')
 
-    def board_draw_item(self, painter, prbi):
-        image_data = prbi.image_data
-        item_scale = prbi.board_scale
+    def board_draw_item(self, painter, board_item):
+        image_data = board_item.image_data
+        item_scale = board_item.board_scale
         board_scale_x = self.board_scale_x
         board_scale_y = self.board_scale_y
         w = image_data.source_width*item_scale*board_scale_x
         h = image_data.source_height*item_scale*board_scale_y
         image_rect = QRectF(0, 0, w, h)
         pos = QPointF(self.board_origin)
-        pos += QPointF(prbi.board_position.x()*board_scale_x, prbi.board_position.y()*board_scale_y)
+        pos += QPointF(board_item.board_position.x()*board_scale_x, board_item.board_position.y()*board_scale_y)
         image_rect.moveCenter(pos)
 
         if image_rect.intersected(QRectF(self.rect())).isNull():
-            self.trigger_prbi_pixmap_unloading(prbi)
+            self.trigger_board_item_pixmap_unloading(board_item)
 
         else:
             self.images_drawn += 1
@@ -187,20 +187,20 @@ class BoardMixin():
             if image_rect.width() < 250 or image_rect.height() < 250:
                 image_to_draw = image_data.preview
             else:
-                self.trigger_prbi_pixmap_loading(prbi)
-                image_to_draw = prbi.pixmap
+                self.trigger_board_item_pixmap_loading(board_item)
+                image_to_draw = board_item.pixmap
 
             if image_rect.contains(self.mapped_cursor_pos()):
-                self.board_item_under_mouse = prbi
+                self.board_item_under_mouse = board_item
 
             if image_to_draw:
                 painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
-            if prbi == self.board_item_under_mouse and prbi.animated:
-                # painter.drawText(image_rect.topLeft(), prbi.status)
+            if board_item == self.board_item_under_mouse and board_item.animated:
+                # painter.drawText(image_rect.topLeft(), board_item.status)
 
                 alignment = Qt.AlignCenter | Qt.AlignVCenter
-                text_rect = calculate_text_rect(painter.font(), image_rect, prbi.status, alignment)
+                text_rect = calculate_text_rect(painter.font(), image_rect, board_item.status, alignment)
                 text_rect.adjust(-5, -5, 5, 5)
                 text_rect.moveTopLeft(image_rect.topLeft())
 
@@ -212,27 +212,27 @@ class BoardMixin():
                     painter.drawPath(path)
 
                     painter.setPen(QPen(Qt.white, 1))
-                    painter.drawText(text_rect, alignment, prbi.status)
+                    painter.drawText(text_rect, alignment, board_item.status)
 
 
-    def trigger_prbi_pixmap_unloading(self, prbi):
-        if prbi.pixmap is None:
+    def trigger_board_item_pixmap_unloading(self, board_item):
+        if board_item.pixmap is None:
             return
 
         dist = calculate_distance(
-                prbi.calculate_absolute_position(board=self),
+                board_item.calculate_absolute_position(board=self),
                 self.get_center_position()
         )
         if dist > 10000.0:
-            prbi.pixmap = None
-            prbi.movie = None
+            board_item.pixmap = None
+            board_item.movie = None
 
-            filepath = prbi.image_data.filepath
+            filepath = board_item.image_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
 
-    def trigger_prbi_pixmap_loading(self, prbi):
-        if prbi.pixmap is not None:
+    def trigger_board_item_pixmap_loading(self, board_item):
+        if board_item.pixmap is not None:
             return
 
         def show_msg(filepath):
@@ -240,30 +240,30 @@ class BoardMixin():
             print(msg)
 
         def __load_animated(filepath):
-            prbi.movie = QMovie(filepath)
-            prbi.movie.setCacheMode(QMovie.CacheAll)
-            prbi.movie.jumpToFrame(0)
-            prbi.pixmap = prbi.movie.currentPixmap()
-            prbi.animated = True
-            self.update_scroll_status(prbi)
-            if prbi.movie.frameRect().isNull():
-                prbi.pixmap = None
+            board_item.movie = QMovie(filepath)
+            board_item.movie.setCacheMode(QMovie.CacheAll)
+            board_item.movie.jumpToFrame(0)
+            board_item.pixmap = board_item.movie.currentPixmap()
+            board_item.animated = True
+            self.update_scroll_status(board_item)
+            if board_item.movie.frameRect().isNull():
+                board_item.pixmap = None
             else:
                 show_msg(filepath)
 
         def __load_svg(filepath):
-            prbi.pixmap = load_svg(filepath)
-            prbi.animated = False
+            board_item.pixmap = load_svg(filepath)
+            board_item.animated = False
             show_msg(filepath)
 
         def __load_static(filepath):
-            prbi.pixmap = load_image_respect_orientation(filepath)
-            prbi.animated = False
+            board_item.pixmap = load_image_respect_orientation(filepath)
+            board_item.animated = False
             show_msg(filepath)
 
-        filepath = prbi.image_data.filepath
+        filepath = board_item.image_data.filepath
         try:
-            prbi.pixmap = QPixmap()
+            board_item.pixmap = QPixmap()
             if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
                 __load_animated(filepath)
             elif self.LibraryData().is_svg_file(filepath):
@@ -271,7 +271,7 @@ class BoardMixin():
             else:
                 __load_static(filepath)
         except Exception as e:
-            prbi.pixmap = QPixmap()
+            board_item.pixmap = QPixmap()
 
     def board_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
@@ -420,10 +420,10 @@ class BoardMixin():
     def build_bounding_rect(self, folder_data):
         points = []
         points.append(self.board_origin)
-        for prbi in folder_data.board_items_list:
-            image_data = prbi.image_data
+        for board_item in folder_data.board_items_list:
+            image_data = board_item.image_data
             rf = QRectF(0, 0, image_data.source_width, image_data.source_height)
-            rf.moveCenter(prbi.board_position)
+            rf.moveCenter(board_item.board_position)
             points.append(rf.topLeft())
             points.append(rf.bottomRight())
         p1, p2 = get_bounding_points(points)
@@ -453,10 +453,10 @@ class BoardMixin():
             painter.setPen(QPen(QColor(50, 50, 50), 1))
             painter.drawRect(minimap_rect)
 
-            for prbi in cf.board_items_list:
-                image_data = prbi.image_data
+            for board_item in cf.board_items_list:
+                image_data = board_item.image_data
 
-                delta = prbi.board_position - self.board_bounding_rect.topLeft()
+                delta = board_item.board_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
                     abs(delta.x()/self.board_bounding_rect.width()),
                     abs(delta.y()/self.board_bounding_rect.height())
@@ -658,10 +658,10 @@ class BoardMixin():
         elif self.board_translating:
             return
         elif self.board_item_under_mouse is not None and event.buttons() == Qt.RightButton:
-            prbi = self.board_item_under_mouse
+            board_item = self.board_item_under_mouse
             self.context_menu_allowed = False
-            if prbi.animated and prbi.type == prbi.types.ITEM_IMAGE:
-                self.board_item_scroll_animation(prbi, scroll_value)
+            if board_item.animated and board_item.type == board_item.types.ITEM_IMAGE:
+                self.board_item_scroll_animation(board_item, scroll_value)
         elif no_mod:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
         elif ctrl:
@@ -739,20 +739,20 @@ class BoardMixin():
 
     def board_get_nearest_item(self, folder_data, by_window_center=False):
         min_distance = 9999999999999999
-        min_distance_prbi = None
+        min_distance_board_item = None
         if by_window_center:
             cursor_pos = self.get_center_position()
         else:
             cursor_pos = self.mapped_cursor_pos()
-        for prbi in folder_data.board_items_list:
+        for board_item in folder_data.board_items_list:
 
-            pos = prbi.calculate_absolute_position(board=self)
+            pos = board_item.calculate_absolute_position(board=self)
             distance = calculate_distance(pos, cursor_pos)
             if distance < min_distance:
                 min_distance = distance
-                min_distance_prbi = prbi
+                min_distance_board_item = board_item
 
-        return min_distance_prbi
+        return min_distance_board_item
 
     def board_move_viewport(self, _previous=False, _next=False):
 
@@ -791,14 +791,14 @@ class BoardMixin():
             pos2 = -pos2 + viewport_center_pos
 
 
-            prbi = item_to_center_viewport
-            image_data = prbi.image_data
+            board_item = item_to_center_viewport
+            image_data = board_item.image_data
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
             # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-            image_width = image_data.source_width*prbi.board_scale #*board_scale_x
-            image_height = image_data.source_height*prbi.board_scale #*board_scale_y
+            image_width = image_data.source_width*board_item.board_scale #*board_scale_x
+            image_height = image_data.source_height*board_item.board_scale #*board_scale_y
             image_rect = QRect(0, 0, int(image_width), int(image_height))
             fitted_rect = fit_rect_into_rect(image_rect, self.rect())
             bx = fitted_rect.width()/image_rect.width()
@@ -856,9 +856,9 @@ class BoardMixin():
                     sorted_list = shift_list_to_became_first(cf.board_items_list, nearest_item)
                 else:
                     sorted_list = cf.board_items_list
-                for prbi in sorted_list:
-                    point = prbi.board_position
-                    _list.append([point, None, prbi])
+                for board_item in sorted_list:
+                    point = board_item.board_position
+                    _list.append([point, None, board_item])
 
             self.fly_pairs = get_cycled_pairs(_list)
             pair = [
@@ -874,13 +874,13 @@ class BoardMixin():
             by = pair[1][2]
 
             if bx is None:
-                prbi = by
+                board_item = by
                 image_data = by.image_data
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
                 # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-                image_width = image_data.source_width*prbi.board_scale #*board_scale_x
-                image_height = image_data.source_height*prbi.board_scale #*board_scale_y
+                image_width = image_data.source_width*board_item.board_scale #*board_scale_x
+                image_height = image_data.source_height*board_item.board_scale #*board_scale_y
                 image_rect = QRect(0, 0, int(image_width), int(image_height))
                 fitted_rect = fit_rect_into_rect(image_rect, self.rect())
                 bx = fitted_rect.width()/image_rect.width()
