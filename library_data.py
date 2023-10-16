@@ -1011,6 +1011,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             record = "%s %s\n" % (date, path)
             file.write(record)
 
+    def show_finder_window(self):
+        FinderWindow(self.globals.main_window).show()
+
+
 class FolderData():
 
     def check_insert_position(self, index):
@@ -1482,6 +1486,184 @@ class ImageData():
     def __repr__(self):
         filename = os.path.basename(self.filepath)
         return f'IMAGE from {filename}'
+
+
+
+
+
+class FinderWindow(QWidget):
+
+    isWindowVisible = False
+    is_initialized = False
+
+    button_style = """QPushButton{
+        font-size: 20px;
+        color: #303940;
+        text-align: center;
+        border-radius: 5px;
+        background: rgb(220, 220, 220);
+        font-family: 'Consolas';
+        font-weight: bold;
+        border: 3px dashed #303940;
+        padding: 5px;
+        height: 40px;
+    }
+    QPushButton:hover{
+        background-color: rgb(253, 203, 54);
+        color: black;
+    }
+    QPushButton#red, QPushButton#green{
+        color: rgb(210, 210, 210);
+        background-color: none;
+        border: none;
+    }
+    QPushButton#green{
+        color: rgb(70, 200, 70);
+    }
+    QPushButton#red{
+        color: rgb(220, 70, 70);
+    }
+    QPushButton#red:hover{
+        color: rgb(200, 0, 0);
+        background-color: rgba(220, 50, 50, 0.1);
+    }
+    QPushButton#green:hover{
+        color: rgb(0, 220, 0);
+        background-color: rgba(50, 220, 50, 0.1);
+    }
+    """
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(FinderWindow, cls).__new__(cls, *args, **kwargs)
+        return cls.instance
+
+    @classmethod
+    def center_if_on_screen(cls):
+        if hasattr(cls, "instance"):
+            window = cls.instance
+            if window.isVisible():
+                cls.pos_at_center(window)
+
+    def show(self, *args):
+        super().show()
+
+    @classmethod
+    def pos_at_center(cls, self):
+
+        MW = self.parent()
+        cp = QDesktopWidget().availableGeometry().center()
+        cp = MW.rect().center()
+        qr = self.frameGeometry()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+        self.activateWindow()
+
+    def __init__(self, parent):
+        if self.is_initialized:
+            return
+
+        super().__init__(parent)
+
+        self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowModality(Qt.WindowModal)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        self.resize(parent.rect().width()-200, parent.rect().height()-400)
+        # show at center
+        FinderWindow.pos_at_center(self)
+        # ui init
+        main_style = "font-size: 11pt; font-family: 'Consolas'; "
+        style = main_style + " color: white; "
+        editfieled_style = style + " background-color: transparent; border: none; "
+        main_style_button = "font-size: 13pt; padding: 5px 0px;"
+
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignTop)
+        label = QLabel()
+        label.setText("Поиск потерянных файлов")
+        label.setFixedHeight(50)
+        label.setAlignment(Qt.AlignCenter)
+        label.setStyleSheet(style)
+        main_layout.addWidget(label)
+
+        self.first_label = QLabel()
+        self.first_label.setStyleSheet(style)
+        main_layout.addWidget(self.first_label)
+
+        self.second_label = QLabel()
+        self.second_label.setStyleSheet(style)
+        main_layout.addWidget(self.second_label)
+
+        self.output_field = QTextEdit()
+        self.output_field.setStyleSheet(editfieled_style)
+        main_layout.addWidget(self.output_field)
+
+        green_button = QPushButton("Зелёная")
+        green_button.clicked.connect(self.green_button_handler)
+        green_button.setStyleSheet(main_style_button)
+        red_button = QPushButton("Красная")
+        red_button.clicked.connect(self.red_button_handler)
+        red_button.setStyleSheet(main_style_button)
+
+        green_button.setStyleSheet(self.button_style)
+        green_button.setObjectName("green")
+
+        red_button.setStyleSheet(self.button_style)
+        red_button.setObjectName("red")
+
+        buttons = QHBoxLayout()
+        buttons.addWidget(green_button)
+        buttons.addWidget(red_button)
+        # main_layout.addSpacing(0)
+        main_layout.addLayout(buttons)
+        self.setLayout(main_layout)
+        # self.setParent(parent)
+
+        FinderWindow.isWindowVisible = True
+        self.is_initialized = True
+
+    def red_button_handler(self):
+        self.hide()
+
+    def green_button_handler(self):
+        self.hide()
+
+    def hide(self):
+        FinderWindow.isWindowVisible = False
+        super().hide()
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        painter.setOpacity(0.9)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(Qt.black))
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.rect()), 10, 10)
+        painter.drawPath(path)
+        painter.end()
+
+
+    def mousePressEvent(self, event):
+        pass
+    def mouseMoveEvent(self, event):
+        pass
+    def mouseReleaseEvent(self, event):
+        pass
+
+
+    def keyReleaseEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            self.red_button_handler()
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key_Escape:
+            self.red_button_handler()
+
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

@@ -2828,6 +2828,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # time = time.time()
             # LibraryData().create_folder_data(f"{time}", [], virtual=True)
 
+        elif check_scancode_for(event, "Q"):
+            LibraryData().show_finder_window()
 
         elif check_scancode_for(event, "P"):
             self.toggle_stay_on_top()
