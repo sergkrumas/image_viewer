@@ -451,6 +451,8 @@ class CommentWindow(QWidget):
 
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        
         self.resize(1000, 400)
         # show at center
         CommentWindow.pos_at_center(self)
