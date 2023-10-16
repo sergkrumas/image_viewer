@@ -1014,6 +1014,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def show_finder_window(self):
         FinderWindow(self.globals.main_window).show()
 
+    def retrieve_lost_records(self):
+        # 1) выявить все записи, где файлы по записанному пути не находятся. Из записи взять размер в байтах и значение md5-хэша
+        # 2) сканировать все файлы в папках для поиска
+                # 1 - проверять совпадение расширения
+                # 2 - проведерять совпадение размера в байтах
+                # 3 - вычислить md5-хэш и проверить совпадение с записанным md5-хэша
+        # 3) исправить запись
+        pass
+
 
 class FolderData():
 
