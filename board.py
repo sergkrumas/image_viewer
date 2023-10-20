@@ -66,15 +66,26 @@ class BoardItem():
         rel_pos = self.board_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
-    def get_size_rect(self):
+    def get_size_rect(self, scaled=False):
+        if scaled:
+            if self.type == self.types.ITEM_IMAGE:
+                scale_x = self.board_scale_x
+                scale_y = self.board_scale_y
+            elif self.type == self.types.ITEM_FOLDER:
+                raise NotImplemented
+            elif self.type == self.types.ITEM_GROUP:
+                raise NotImplemented
+        else:
+            scale_x = 1.0
+            scale_y = 1.0
         if self.type == self.types.ITEM_IMAGE:
-            return QRectF(0, 0, self.image_data.source_width, self.image_data.source_height)
+            return QRectF(0, 0, self.image_data.source_width*scale_x, self.image_data.source_height*scale_y)
         elif self.type == self.types.ITEM_FOLDER:
             raise NotImplemented
         elif self.type == self.types.ITEM_GROUP:
             raise NotImplemented
 
-    def get_selection_polygon(self, board=None):
+    def get_selection_area(self, board=None):
         size_rect = self.get_size_rect()
         size_rect.moveCenter(QPointF(0, 0))
         points = [
@@ -84,20 +95,24 @@ class BoardItem():
             size_rect.bottomLeft(),
         ]
         polygon = QPolygonF(points)
+        transform = self.get_transform_obj(board=board)
+        return transform.map(polygon)
 
+    def get_transform_obj(self, board=None, no_local_scale=False):
         local_scaling = QTransform()
         rotation = QTransform()
         global_scaling = QTransform()
         translation = QTransform()
-
         local_scaling.scale(self.board_scale_x, self.board_scale_y)
         rotation.rotate(self.board_rotation)
         pos = self.calculate_absolute_position(board=board)
         translation.translate(pos.x(), pos.y())
         global_scaling.scale(board.board_scale_x, board.board_scale_y)
-        transform = local_scaling * rotation * global_scaling * translation
-
-        return transform.map(polygon)
+        if no_local_scale:
+            transform = rotation * global_scaling * translation
+        else:
+            transform = local_scaling * rotation * global_scaling * translation
+        return transform
 
 class BoardMixin():
 
@@ -206,56 +221,78 @@ class BoardMixin():
         painter.setPen(pen)
 
         for board_item in folder_data.board_items_list:
-            painter.drawPolygon(board_item.get_selection_polygon(board=self))
+            painter.drawPolygon(board_item.get_selection_area(board=self))
 
         painter.setPen(old_pen)
 
-    def board_draw_item(self, painter, board_item):
-        image_data = board_item.image_data
-        item_scale = board_item.board_scale
-        board_scale_x = self.board_scale_x
-        board_scale_y = self.board_scale_y
-        w = image_data.source_width*item_scale*board_scale_x
-        h = image_data.source_height*item_scale*board_scale_y
-        image_rect = QRectF(0, 0, w, h)
-        pos = QPointF(self.board_origin)
-        pos += QPointF(board_item.board_position.x()*board_scale_x, board_item.board_position.y()*board_scale_y)
-        image_rect.moveCenter(pos)
+    def get_monitor_area(self):
+        r = self.rect()
+        points = [
+            QPointF(r.topLeft()),
+            QPointF(r.topRight()),
+            QPointF(r.bottomRight()),
+            QPointF(r.bottomLeft()),                                    
+        ]
+        return QPolygonF(points)
 
-        if image_rect.intersected(QRectF(self.rect())).isNull():
+    def board_draw_item(self, painter, board_item):
+
+        image_data = board_item.image_data
+
+        selection_area = board_item.get_selection_area(board=self)
+
+        if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
             self.trigger_board_item_pixmap_unloading(board_item)
 
         else:
             self.images_drawn += 1
+            transform = board_item.get_transform_obj(board=self)
+            no_local_scale_transform = board_item.get_transform_obj(board=self, no_local_scale=True)
+
+            painter.setTransform(transform)
+            item_rect = board_item.get_size_rect()
+            item_rect.moveCenter(QPointF(0, 0))
+
+            pen = painter.pen()
+            pen.setCosmetic(True) # не скейлить пен
+            painter.setPen(pen)
 
             painter.setBrush(Qt.NoBrush)
-            painter.drawRect(image_rect)
+            painter.drawRect(item_rect)
             text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
             alignment = Qt.AlignCenter
-            painter.drawText(image_rect, alignment, text)
+            painter.setTransform(no_local_scale_transform)
+            # _text_rect = item_rect
+            _text_rect = board_item.get_size_rect(scaled=True)
+            painter.drawText(_text_rect, alignment, text)
 
+            painter.setTransform(transform)
             image_to_draw = None
-            if image_rect.width() < 250 or image_rect.height() < 250:
+            selection_area_rect = selection_area.boundingRect()
+            if selection_area_rect.width() < 250 or selection_area_rect.height() < 250:
                 image_to_draw = image_data.preview
             else:
                 self.trigger_board_item_pixmap_loading(board_item)
                 image_to_draw = board_item.pixmap
 
-            if image_rect.contains(self.mapped_cursor_pos()):
+            if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
                 self.board_item_under_mouse = board_item
 
             if image_to_draw:
-                painter.drawPixmap(image_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
+                painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
+
+            painter.resetTransform()
+
+            selection_area_bounding_rect = selection_area.boundingRect()
 
             if board_item == self.board_item_under_mouse and board_item.animated:
-                # painter.drawText(image_rect.topLeft(), board_item.status)
 
                 alignment = Qt.AlignCenter | Qt.AlignVCenter
-                text_rect = calculate_text_rect(painter.font(), image_rect, board_item.status, alignment)
+                text_rect = calculate_text_rect(painter.font(), selection_area_bounding_rect, board_item.status, alignment)
                 text_rect.adjust(-5, -5, 5, 5)
-                text_rect.moveTopLeft(image_rect.topLeft())
+                text_rect.moveTopLeft(selection_area[0])
 
-                if text_rect.width() < image_rect.width():
+                if text_rect.width() < selection_area_bounding_rect.width():
                     path = QPainterPath()
                     path.addRoundedRect(QRectF(text_rect), 5, 5)
                     painter.setPen(Qt.NoPen)
@@ -264,6 +301,7 @@ class BoardMixin():
 
                     painter.setPen(QPen(Qt.white, 1))
                     painter.drawText(text_rect, alignment, board_item.status)
+                    painter.setBrush(Qt.NoBrush)
 
 
 
