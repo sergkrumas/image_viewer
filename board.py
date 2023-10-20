@@ -21,6 +21,8 @@
 from _utils import *
 import math
 
+BOARD_DEBUG = True
+
 class BoardLibraryDataMixin():
 
     def get_boards_root(self):
@@ -49,9 +51,14 @@ class BoardItem():
         self.pixmap = None
         self.animated = False
 
-        self.board_scale = 1.0
+        self.board_scale_x = 1.0
+        self.board_scale_y = 1.0
         self.board_position = QPointF()
-        self.board_rotation = None
+        self.board_rotation = 0
+
+        if BOARD_DEBUG:
+            self.board_scale_x = 0.5
+            self.board_rotation = 10
 
     def calculate_absolute_position(self, board=None):
         _scale_x = board.board_scale_x
@@ -59,6 +66,38 @@ class BoardItem():
         rel_pos = self.board_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
+    def get_size_rect(self):
+        if self.type == self.types.ITEM_IMAGE:
+            return QRectF(0, 0, self.image_data.source_width, self.image_data.source_height)
+        elif self.type == self.types.ITEM_FOLDER:
+            raise NotImplemented
+        elif self.type == self.types.ITEM_GROUP:
+            raise NotImplemented
+
+    def get_selection_polygon(self, board=None):
+        size_rect = self.get_size_rect()
+        size_rect.moveCenter(QPointF(0, 0))
+        points = [
+            size_rect.topLeft(),
+            size_rect.topRight(),
+            size_rect.bottomRight(),
+            size_rect.bottomLeft(),
+        ]
+        polygon = QPolygonF(points)
+
+        local_scaling = QTransform()
+        rotation = QTransform()
+        global_scaling = QTransform()
+        translation = QTransform()
+
+        local_scaling.scale(self.board_scale_x, self.board_scale_y)
+        rotation.rotate(self.board_rotation)
+        pos = self.calculate_absolute_position(board=board)
+        translation.translate(pos.x(), pos.y())
+        global_scaling.scale(board.board_scale_x, board.board_scale_y)
+        transform = local_scaling * rotation * global_scaling * translation
+
+        return transform.map(polygon)
 
 class BoardMixin():
 
@@ -157,7 +196,19 @@ class BoardMixin():
             for board_item in folder_data.board_items_list:
                 self.board_draw_item(painter, board_item)
 
+            self.draw_selection(painter, folder_data)
+
             painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), f'perfomance status: {self.images_drawn} images drawn')
+
+    def draw_selection(self, painter, folder_data):
+        old_pen = painter.pen()
+        pen = QPen(Qt.green, 1)
+        painter.setPen(pen)
+
+        for board_item in folder_data.board_items_list:
+            painter.drawPolygon(board_item.get_selection_polygon(board=self))
+
+        painter.setPen(old_pen)
 
     def board_draw_item(self, painter, board_item):
         image_data = board_item.image_data
@@ -213,6 +264,7 @@ class BoardMixin():
 
                     painter.setPen(QPen(Qt.white, 1))
                     painter.drawText(text_rect, alignment, board_item.status)
+
 
 
     def trigger_board_item_pixmap_unloading(self, board_item):
