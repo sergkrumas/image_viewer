@@ -625,7 +625,7 @@ class BoardMixin():
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == Qt.LeftButton and not alt:
             self.selection_start_point = QPointF(event.pos())
             self.selection_rect = None
 
@@ -654,7 +654,7 @@ class BoardMixin():
         if self.isLeftClickAndAlt(event) or self.board_region_zoom_in_input_started:
             self.board_region_zoom_in_mouseMoveEvent(event)
 
-        elif event.buttons() == Qt.LeftButton:
+        elif event.buttons() == Qt.LeftButton and not alt:
             self.selection_end_point = QPointF(event.pos())
             self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
             self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
@@ -698,7 +698,7 @@ class BoardMixin():
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier        
 
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and not alt:
             self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
             if self.selection_rect is not None:
                 self.selection_start_point = None
