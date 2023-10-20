@@ -56,6 +56,9 @@ class BoardItem():
         self.board_position = QPointF()
         self.board_rotation = 0
 
+        self._selected = False
+        self._touched = False
+
         if BOARD_DEBUG:
             self.board_scale_x = 0.5
             self.board_rotation = 10
@@ -139,6 +142,8 @@ class BoardMixin():
 
         self.board_region_zoom_in_init()
 
+        self.selection_rect = None
+
     def board_toggle_minimap(self):
         self.board_show_minimap = not self.board_show_minimap
 
@@ -221,7 +226,8 @@ class BoardMixin():
         painter.setPen(pen)
 
         for board_item in folder_data.board_items_list:
-            painter.drawPolygon(board_item.get_selection_area(board=self))
+            if board_item._selected:
+                painter.drawPolygon(board_item.get_selection_area(board=self))
 
         painter.setPen(old_pen)
 
@@ -302,8 +308,6 @@ class BoardMixin():
                     painter.setPen(QPen(Qt.white, 1))
                     painter.drawText(text_rect, alignment, board_item.status)
                     painter.setBrush(Qt.NoBrush)
-
-
 
     def trigger_board_item_pixmap_unloading(self, board_item):
         if board_item.pixmap is None:
@@ -410,6 +414,17 @@ class BoardMixin():
         self.board_draw_minimap(painter)
 
         self.board_region_zoom_in_draw(painter)
+
+        self.board_draw_selection_rect(painter)
+
+    def board_draw_selection_rect(self, painter):
+        if self.selection_rect is not None:
+            c = QColor(18, 118, 127)
+            painter.setPen(QPen(c))
+            c.setAlphaF(0.5)
+            brush = QBrush(c)
+            painter.setBrush(brush)
+            painter.drawRect(self.selection_rect)
 
     def board_draw_origin_compass(self, painter):
 
@@ -605,13 +620,16 @@ class BoardMixin():
 
 
     def board_mousePressEvent(self, event):
-
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
+        if event.buttons() == Qt.LeftButton:
+            self.selection_start_point = QPointF(event.pos())
+            self.selection_rect = None
 
-        if self.isLeftClickAndShift(event):
+        elif self.isLeftClickAndAlt(event):
             self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
@@ -621,18 +639,26 @@ class BoardMixin():
                 self.start_origin_pos = self.board_origin
                 self.update()
 
-    def isLeftClickAndShift(self, event):
-        return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ShiftModifier
+    def isLeftClickAndNoModifiers(self, event):
+        return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
+
+    def isLeftClickAndAlt(self, event):
+        return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
     def board_mouseMoveEvent(self, event):
-
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        alt = event.modifiers() & Qt.AltModifier        
         no_mod = event.modifiers() == Qt.NoModifier
 
-
-        if self.isLeftClickAndShift(event) or self.board_region_zoom_in_input_started:
+        if self.isLeftClickAndAlt(event) or self.board_region_zoom_in_input_started:
             self.board_region_zoom_in_mouseMoveEvent(event)
+
+        elif event.buttons() == Qt.LeftButton:
+            self.selection_end_point = QPointF(event.pos())
+            self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
+            self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+
         elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed and self.board_translating:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
@@ -642,28 +668,59 @@ class BoardMixin():
 
         self.update()
 
-    def board_mouseReleaseEvent(self, event):
+    def board_selection_callback(self, add_to_selection):
+        current_folder = self.LibraryData().current_folder()
 
+        if self.selection_rect is not None:
+            selection_rect_area = QPolygonF(self.selection_rect)
+            for board_item in current_folder.board_items_list:
+                item_selection_area = board_item.get_selection_area(board=self)
+                if item_selection_area.intersects(selection_rect_area):
+                    board_item._selected = True
+                else:
+                    if add_to_selection and board_item._selected:
+                        pass
+                        # board_item._selected = True
+                    else:
+                        board_item._selected = False
+        else:
+            for board_item in current_folder.board_items_list:
+                item_selection_area = board_item.get_selection_area(board=self)
+                is_contains_point = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                if add_to_selection and board_item._selected:
+                    pass
+                else:
+                    board_item._selected = is_contains_point
+
+    def board_mouseReleaseEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
+        alt = event.modifiers() & Qt.AltModifier        
 
-        if self.isLeftClickAndShift(event) or self.board_region_zoom_in_input_started:
+        if event.button() == Qt.LeftButton:
+            self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+            if self.selection_rect is not None:
+                self.selection_start_point = None
+                self.selection_end_point = None
+                self.selection_rect = None
+
+        if self.isLeftClickAndAlt(event) or self.board_region_zoom_in_input_started:
             self.board_region_zoom_in_mouseReleaseEvent(event)
 
-        if event.button() == Qt.MiddleButton:
-            if self.transformations_allowed:
-                self.board_translating = False
-                self.update()
-        if event.button() == Qt.MiddleButton and event.modifiers() == Qt.AltModifier:
-            if self.transformations_allowed:
-                self.set_default_boardviewport_scale(keep_position=True)
-
-        if event.button() == Qt.LeftButton and ctrl and not shift:
+        elif event.button() == Qt.LeftButton and ctrl and not shift:
             cf = self.LibraryData().current_folder()
             delta = QPointF(event.pos() - self.board_origin)
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
+
+        if event.button() == Qt.MiddleButton and event.modifiers() == Qt.NoModifier:
+            if self.transformations_allowed:
+                self.board_translating = False
+                self.update()
+        elif event.button() == Qt.MiddleButton and event.modifiers() == Qt.AltModifier:
+            if self.transformations_allowed:
+                self.set_default_boardviewport_scale(keep_position=True)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
@@ -710,6 +767,9 @@ class BoardMixin():
         self.board_origin  = _board_origin
         self.board_scale_x = _board_scale_x
         self.board_scale_y = _board_scale_y
+
+        if self.selection_rect:
+            self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
 
         self.update()
 
@@ -1046,6 +1106,8 @@ class BoardMixin():
         self.board_magnifier_zoom_level = 1.0
         self.board_region_zoom_in_input_started = False
         self.board_magnifier_input_rect_animated = None
+        self.board_INPUT_POINT1 = None
+        self.board_INPUT_POINT2 = None
 
     def board_region_zoom_do_cancel(self):
         if self.board_magnifier_input_rect:
@@ -1068,7 +1130,7 @@ class BoardMixin():
             self.update()
 
     def board_region_zoom_build_magnifier_input_rect(self):
-        if self.board_INPUT_POINT1 and self.board_INPUT_POINT2:
+        if self.board_INPUT_POINT1 is not None and self.board_INPUT_POINT2 is not None:
             self.board_magnifier_input_rect = build_valid_rect(self.board_INPUT_POINT1, self.board_INPUT_POINT2)
             self.board_magnifier_projected_rect = fit_rect_into_rect(self.board_magnifier_input_rect, self.rect())
             w = self.board_magnifier_input_rect.width() or self.board_magnifier_projected_rect.width()
