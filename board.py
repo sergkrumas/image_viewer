@@ -778,11 +778,11 @@ class BoardMixin():
             if alt or self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseReleaseEvent(event)
 
-        elif ctrl and not shift:
-            cf = self.LibraryData().current_folder()
-            delta = QPointF(event.pos() - self.board_origin)
-            delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
-            cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
+            elif ctrl and not shift:
+                cf = self.LibraryData().current_folder()
+                delta = QPointF(event.pos() - self.board_origin)
+                delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+                cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
