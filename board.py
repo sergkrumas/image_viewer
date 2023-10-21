@@ -646,13 +646,13 @@ class BoardMixin():
                 return True
         return False
 
-    def board_start_translation(self, event):
+    def board_start_selected_items_translation(self, event):
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board_items_list:
             board_item.start_translation_pos = QPointF(board_item.board_position)
 
-    def board_do_translation(self, event):
+    def board_do_selected_items_translation(self, event):
         if self.start_translation_pos:
             self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
@@ -664,7 +664,7 @@ class BoardMixin():
         else:
             self.translation_ongoing = False
 
-    def board_end_translation(self, event):
+    def board_end_selected_items_translation(self, event):
         translation_trace = self.start_translation_pos is not None
         self.start_translation_pos = None
         current_folder = self.LibraryData().current_folder()
@@ -707,7 +707,7 @@ class BoardMixin():
             if not alt:
 
                 if self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
-                    self.board_start_translation(event)
+                    self.board_start_selected_items_translation(event)
                 else:
                     self.selection_start_point = QPointF(event.pos())
                     self.selection_rect = None
@@ -732,7 +732,7 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
 
             if no_mod and not self.selection_ongoing:
-                self.board_do_translation(event)
+                self.board_do_selected_items_translation(event)
 
             elif self.selection_ongoing is not None and not self.translation_ongoing:
                 self.selection_end_point = QPointF(event.pos())
@@ -769,7 +769,7 @@ class BoardMixin():
 
 
             if self.translation_ongoing:
-                self.board_end_translation(event)
+                self.board_end_selected_items_translation(event)
                 self.selection_start_point = None
                 self.selection_end_point = None
                 self.selection_rect = None
