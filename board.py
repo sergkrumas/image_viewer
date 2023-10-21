@@ -143,6 +143,11 @@ class BoardMixin():
         self.board_region_zoom_in_init()
 
         self.selection_rect = None
+        self.selection_start_point = None
+        self.selection_ongoing = False
+
+        self.start_translation_pos = None
+        self.translation_ongoing = False
 
     def board_toggle_minimap(self):
         self.board_show_minimap = not self.board_show_minimap
@@ -237,7 +242,7 @@ class BoardMixin():
             QPointF(r.topLeft()),
             QPointF(r.topRight()),
             QPointF(r.bottomRight()),
-            QPointF(r.bottomLeft()),                                    
+            QPointF(r.bottomLeft()),
         ]
         return QPolygonF(points)
 
@@ -618,55 +623,55 @@ class BoardMixin():
             painter.setPen(QPen(Qt.yellow, 1))
             painter.drawRect(miniviewport_rect)
 
-
-    def board_mousePressEvent(self, event):
-        ctrl = event.modifiers() & Qt.ControlModifier
-        shift = event.modifiers() & Qt.ShiftModifier
-        alt = event.modifiers() & Qt.AltModifier
-        no_mod = event.modifiers() == Qt.NoModifier
-
-        if event.buttons() == Qt.LeftButton and not alt:
-            self.selection_start_point = QPointF(event.pos())
-            self.selection_rect = None
-
-        elif self.isLeftClickAndAlt(event):
-            self.board_region_zoom_in_mousePressEvent(event)
-
-        elif event.buttons() == Qt.MiddleButton:
-            if self.transformations_allowed:
-                self.board_translating = True
-                self.start_cursor_pos = self.mapped_cursor_pos()
-                self.start_origin_pos = self.board_origin
-                self.update()
-
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
 
     def isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
-    def board_mouseMoveEvent(self, event):
-        ctrl = event.modifiers() & Qt.ControlModifier
-        shift = event.modifiers() & Qt.ShiftModifier
-        alt = event.modifiers() & Qt.AltModifier        
-        no_mod = event.modifiers() == Qt.NoModifier
+    def any_item_area_under_mouse(self, add_selection):
+        current_folder = self.LibraryData().current_folder()
 
-        if self.isLeftClickAndAlt(event) or self.board_region_zoom_in_input_started:
-            self.board_region_zoom_in_mouseMoveEvent(event)
+        for board_item in current_folder.board_items_list:
+            item_selection_area = board_item.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            # стало не нужным, когда я поменял местами выделение и перемещемение в MousePressEvent
+            if is_under_mouse and not board_item._selected:
+                if not add_selection:
+                    for bi in current_folder.board_items_list:
+                        bi._selected = False
+                board_item._selected = True
+                return True
+            if is_under_mouse and board_item._selected:
+                return True
+        return False
 
-        elif event.buttons() == Qt.LeftButton and not alt:
-            self.selection_end_point = QPointF(event.pos())
-            self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
-            self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+    def board_start_translation(self, event):
+        self.start_translation_pos = event.pos()
+        current_folder = self.LibraryData().current_folder()
+        for board_item in current_folder.board_items_list:
+            board_item.start_translation_pos = QPointF(board_item.board_position)
 
-        elif event.buttons() == Qt.MiddleButton:
-            if self.transformations_allowed and self.board_translating:
-                end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
-                start_value = self.board_origin
-                # delta = end_value-start_value
-                self.board_origin = end_value
+    def board_do_translation(self, event):
+        if self.start_translation_pos:
+            self.translation_ongoing = True
+            current_folder = self.LibraryData().current_folder()
+            delta = event.pos() - self.start_translation_pos
+            delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+            for board_item in current_folder.board_items_list:
+                if board_item._selected:
+                    board_item.board_position = board_item.start_translation_pos + delta
+        else:
+            self.translation_ongoing = False
 
-        self.update()
+    def board_end_translation(self, event):
+        translation_trace = self.start_translation_pos is not None
+        self.start_translation_pos = None
+        current_folder = self.LibraryData().current_folder()
+        for board_item in current_folder.board_items_list:
+            board_item.start_translation_pos = None
+        self.translation_ongoing = False
+        return translation_trace
 
     def board_selection_callback(self, add_to_selection):
         current_folder = self.LibraryData().current_folder()
@@ -686,41 +691,108 @@ class BoardMixin():
         else:
             for board_item in current_folder.board_items_list:
                 item_selection_area = board_item.get_selection_area(board=self)
-                is_contains_point = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if add_to_selection and board_item._selected:
                     pass
                 else:
-                    board_item._selected = is_contains_point
+                    board_item._selected = is_under_mouse
+
+    def board_mousePressEvent(self, event):
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        alt = event.modifiers() & Qt.AltModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
+        if event.buttons() == Qt.LeftButton:
+            if not alt:
+
+                if self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
+                    self.board_start_translation(event)
+                else:
+                    self.selection_start_point = QPointF(event.pos())
+                    self.selection_rect = None
+                    self.selection_ongoing = True
+
+            elif alt:
+                self.board_region_zoom_in_mousePressEvent(event)
+
+        elif event.buttons() == Qt.MiddleButton:
+            if self.transformations_allowed:
+                self.board_translating = True
+                self.start_cursor_pos = self.mapped_cursor_pos()
+                self.start_origin_pos = self.board_origin
+                self.update()
+
+    def board_mouseMoveEvent(self, event):
+        ctrl = event.modifiers() & Qt.ControlModifier
+        shift = event.modifiers() & Qt.ShiftModifier
+        alt = event.modifiers() & Qt.AltModifier
+        no_mod = event.modifiers() == Qt.NoModifier
+
+        if event.buttons() == Qt.LeftButton:
+
+            if no_mod and not self.selection_ongoing:
+                self.board_do_translation(event)
+
+            elif self.selection_ongoing is not None and not self.translation_ongoing:
+                self.selection_end_point = QPointF(event.pos())
+                if self.selection_start_point:
+                    self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
+                    self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+
+            elif self.board_region_zoom_in_input_started:
+                self.board_region_zoom_in_mouseMoveEvent(event)
+
+        elif event.buttons() == Qt.MiddleButton:
+            if self.transformations_allowed and self.board_translating:
+                end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
+                start_value = self.board_origin
+                # delta = end_value-start_value
+                self.board_origin = end_value
+
+        self.update()
 
     def board_mouseReleaseEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
-        alt = event.modifiers() & Qt.AltModifier        
+        alt = event.modifiers() & Qt.AltModifier
 
-        if event.button() == Qt.LeftButton and not alt:
-            self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
-            if self.selection_rect is not None:
+        if event.button() == Qt.LeftButton:
+            if not alt and not self.translation_ongoing:
+                self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+                # if self.selection_rect is not None:
                 self.selection_start_point = None
                 self.selection_end_point = None
                 self.selection_rect = None
+                self.selection_ongoing = False
 
-        if self.isLeftClickAndAlt(event) or self.board_region_zoom_in_input_started:
-            self.board_region_zoom_in_mouseReleaseEvent(event)
 
-        elif event.button() == Qt.LeftButton and ctrl and not shift:
+            if self.translation_ongoing:
+                self.board_end_translation(event)
+                self.selection_start_point = None
+                self.selection_end_point = None
+                self.selection_rect = None
+                self.selection_ongoing = False
+
+            if alt or self.board_region_zoom_in_input_started:
+                self.board_region_zoom_in_mouseReleaseEvent(event)
+
+        elif ctrl and not shift:
             cf = self.LibraryData().current_folder()
             delta = QPointF(event.pos() - self.board_origin)
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
-        if event.button() == Qt.MiddleButton and event.modifiers() == Qt.NoModifier:
-            if self.transformations_allowed:
-                self.board_translating = False
-                self.update()
-        elif event.button() == Qt.MiddleButton and event.modifiers() == Qt.AltModifier:
-            if self.transformations_allowed:
-                self.set_default_boardviewport_scale(keep_position=True)
+        elif event.button() == Qt.MiddleButton:
+            if no_mod:
+                if self.transformations_allowed:
+                    self.board_translating = False
+                    self.update()
+            elif alt:
+                if self.transformations_allowed:
+                    self.set_default_boardviewport_scale(keep_position=True)
+
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
