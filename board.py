@@ -1017,7 +1017,8 @@ class BoardMixin():
             elif _next:
                 reverse = False
 
-            _list = shift_list_to_became_first(cf.board_items_list, nearest_item, reverse=reverse)
+            items_list = self.get_original_items_order(cf.board_items_list)
+            _list = shift_list_to_became_first(items_list, nearest_item, reverse=reverse)
 
             first_item = _list[0]
             second_item = _list[1]
@@ -1077,6 +1078,9 @@ class BoardMixin():
                 duration=0.7,
             )
 
+    def get_original_items_order(self, items_list):
+        return list(sorted(items_list, key=lambda x: x.board_index))
+
     def board_fly_over(self, user_call=False):
 
         if user_call and self.fly_pairs:
@@ -1099,10 +1103,11 @@ class BoardMixin():
                     _list.append([point, bx, by])
             else:
                 nearest_item = self.board_get_nearest_item(cf)
+                board_items_list = self.get_original_items_order(cf.board_items_list)
                 if nearest_item:
-                    sorted_list = shift_list_to_became_first(cf.board_items_list, nearest_item)
+                    sorted_list = shift_list_to_became_first(board_items_list, nearest_item)
                 else:
-                    sorted_list = cf.board_items_list
+                    sorted_list = board_items_list
                 for board_item in sorted_list:
                     point = board_item.board_position
                     _list.append([point, None, board_item])
@@ -1176,13 +1181,15 @@ class BoardMixin():
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
             if cf.board_items_list:
-                self.board_thumbnails_click_handler(cf.board_items_list[0].image_data)
+                items_list = self.get_original_items_order(cf.board_items_list)
+                self.board_thumbnails_click_handler(items_list[0].image_data)
 
     def board_viewport_show_last_item(self):
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
            if cf.board_items_list:
-                self.board_thumbnails_click_handler(cf.board_items_list[-1].image_data)
+                items_list = self.get_original_items_order(cf.board_items_list)            
+                self.board_thumbnails_click_handler(items_list[-1].image_data)
 
     def board_region_zoom_in_init(self):
         self.board_magnifier_input_rect = None
