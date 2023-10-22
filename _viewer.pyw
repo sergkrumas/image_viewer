@@ -1602,7 +1602,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.region_zoom_in_UX_breaker_finish(event)
                 return False
         elif self.is_board_page_active():
-            if event.type() == QEvent.MouseButtonDblClick:            
+            if event.type() == QEvent.MouseButtonDblClick:
                 self.board_doubleclick_handler(obj, event)
                 return True
         return False
@@ -3280,7 +3280,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif action == toggle_two_monitors_wide:
                 self.do_toggle_two_monitors_wide()
             elif action == rerun_extended_mode:
-                do_rerun_in_default_mode(self.is_library_page_active())                    
+                do_rerun_in_default_mode(self.is_library_page_active())
             elif action == crash_simulator:
                 1 / 0
             elif action == run_unsupported_file:
