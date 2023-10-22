@@ -291,6 +291,13 @@ class BoardMixin():
             painter.setTransform(no_local_scale_transform)
             # _text_rect = item_rect
             _text_rect = board_item.get_size_rect(scaled=True)
+
+            # есть изображения, ширина которых меньше ширины этой надписи,
+            # поэтому надо увеличивать ширину прямоугольника для текста, чтобы текст не образало 
+            _center = _text_rect.center()
+            _text_rect.setWidth(_text_rect.width()*2)
+            _text_rect.moveCenter(_center)
+
             painter.drawText(_text_rect, alignment, text)
 
             painter.setTransform(transform)
