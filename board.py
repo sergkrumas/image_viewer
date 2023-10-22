@@ -1188,7 +1188,7 @@ class BoardMixin():
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
            if cf.board_items_list:
-                items_list = self.get_original_items_order(cf.board_items_list)            
+                items_list = self.get_original_items_order(cf.board_items_list)
                 self.board_thumbnails_click_handler(items_list[-1].image_data)
 
     def board_region_zoom_in_init(self):
