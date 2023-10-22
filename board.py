@@ -90,7 +90,7 @@ class BoardItem():
         elif self.type == self.types.ITEM_GROUP:
             raise NotImplemented
 
-    def get_selection_area(self, board=None, place_at_center_at_origin=True, no_global_scale=False):
+    def get_selection_area(self, board=None, place_at_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
         if place_at_center_at_origin:
             size_rect.moveCenter(QPointF(0, 0))
@@ -101,21 +101,24 @@ class BoardItem():
             size_rect.bottomLeft(),
         ]
         polygon = QPolygonF(points)
-        transform = self.get_transform_obj(board=board, no_global_scale=no_global_scale)
+        transform = self.get_transform_obj(board=board, apply_global_scale=apply_global_scale, apply_translation=apply_translation)
         return transform.map(polygon)
 
-    def get_transform_obj(self, board=None, no_local_scale=False, no_translation=False, no_global_scale=False):
+    def get_transform_obj(self, board=None, apply_local_scale=True, apply_translation=True, apply_global_scale=True):
         local_scaling = QTransform()
         rotation = QTransform()
         global_scaling = QTransform()
         translation = QTransform()
-        if not no_local_scale:
+        if apply_local_scale:
             local_scaling.scale(self.board_scale_x, self.board_scale_y)
         rotation.rotate(self.board_rotation)
-        if not no_translation:
-            pos = self.calculate_absolute_position(board=board)
-            translation.translate(pos.x(), pos.y())
-        if not no_global_scale:
+        if apply_translation:
+            if apply_global_scale:
+                pos = self.calculate_absolute_position(board=board)
+                translation.translate(pos.x(), pos.y())
+            else:
+                translation.translate(self.board_position.x(), self.board_position.y())
+        if apply_global_scale:
             global_scaling.scale(board.board_scale_x, board.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
         return transform
@@ -154,7 +157,11 @@ class BoardMixin():
 
         self.current_board_index = 0
 
+        self.board_bounding_rect = QRectF()
+
     def board_toggle_minimap(self):
+        cf = self.LibraryData().current_folder()
+        self.build_board_bounding_rect(cf)
         self.board_show_minimap = not self.board_show_minimap
 
     def board_draw_stub(self, painter):
@@ -208,7 +215,7 @@ class BoardMixin():
                 board_item.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
-        self.build_bounding_rect(folder_data)
+        self.build_board_bounding_rect(folder_data)
 
         folder_data.board_ready = True
         self.update()
@@ -267,7 +274,7 @@ class BoardMixin():
         else:
             self.images_drawn += 1
             transform = board_item.get_transform_obj(board=self)
-            no_local_scale_transform = board_item.get_transform_obj(board=self, no_local_scale=True)
+            no_local_scale_transform = board_item.get_transform_obj(board=self, apply_local_scale=False)
 
             painter.setTransform(transform)
             item_rect = board_item.get_size_rect()
@@ -425,6 +432,9 @@ class BoardMixin():
 
         self.board_draw_user_points(painter, cf)
 
+        # r = QRectF(self.board_bounding_rect)
+        # painter.drawRect(r)
+
         self.board_draw_minimap(painter)
 
         self.board_region_zoom_in_draw(painter)
@@ -536,22 +546,21 @@ class BoardMixin():
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
 
-    def build_bounding_rect(self, folder_data):
+    def build_board_bounding_rect(self, folder_data):
         points = []
         points.append(self.board_origin)
         for board_item in folder_data.board_items_list:
-            image_data = board_item.image_data
-            rf = QRectF(0, 0, image_data.source_width, image_data.source_height)
-            rf.moveCenter(board_item.board_position)
+            rf = board_item.get_selection_area(board=self, apply_global_scale=False).boundingRect()
             points.append(rf.topLeft())
             points.append(rf.bottomRight())
         p1, p2 = get_bounding_points(points)
-        bounding_rect = build_valid_rectF(p1, p2)
-        self.board_bounding_rect = bounding_rect
+        self.board_bounding_rect = build_valid_rectF(p1, p2)
 
     def board_draw_minimap(self, painter):
         if not self.board_show_minimap:
             return
+
+        painter.resetTransform()
 
         cf = self.LibraryData().current_folder()
         if cf.board_ready:
@@ -577,20 +586,26 @@ class BoardMixin():
 
                 delta = board_item.board_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
-                    abs(delta.x()/self.board_bounding_rect.width()),
-                    abs(delta.y()/self.board_bounding_rect.height())
+                    delta.x()/self.board_bounding_rect.width(),
+                    delta.y()/self.board_bounding_rect.height()
                 )
                 point = minimap_rect.topLeft() + QPointF(delta.x()*map_width, delta.y()*map_height)
                 painter.setPen(QPen(Qt.red, 4))
                 painter.drawPoint(point)
 
-                w = map_width   *   image_data.source_width/self.board_bounding_rect.width()
-                h = map_height   *   image_data.source_height/self.board_bounding_rect.height()
-                image_frame_rect = QRectF(0, 0, w, h)
-                image_frame_rect.moveCenter(point)
 
                 painter.setPen(QPen(Qt.green, 1))
-                painter.drawRect(image_frame_rect)
+                selection_area = board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False)
+                transform = QTransform()
+                scale_x = map_width/self.board_bounding_rect.width()
+                scale_y = map_height/self.board_bounding_rect.height()
+                transform.scale(scale_x, scale_y)
+
+                selection_area_scaled = transform.map(selection_area)
+                p = point - selection_area_scaled.boundingRect().center()
+                selection_area_scaled.translate(p)
+
+                painter.drawPolygon(selection_area_scaled)
 
             # origin point
             center_point_rel = -self.board_bounding_rect.topLeft()
@@ -677,13 +692,12 @@ class BoardMixin():
             self.translation_ongoing = False
 
     def board_end_selected_items_translation(self, event):
-        translation_trace = self.start_translation_pos is not None
         self.start_translation_pos = None
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board_items_list:
             board_item.start_translation_pos = None
         self.translation_ongoing = False
-        return translation_trace
+        self.build_board_bounding_rect(current_folder)
 
     def board_selection_callback(self, add_to_selection):
         current_folder = self.LibraryData().current_folder()
@@ -1042,7 +1056,7 @@ class BoardMixin():
             # image_width = image_data.source_width*board_item.board_scale_x #*board_scale_x
             # image_height = image_data.source_height*board_item.board_scale_y #*board_scale_y
             # item_rect = QRect(0, 0, int(image_width), int(image_height))
-            item_rect = image_data.board_item.get_selection_area(board=self, place_at_center_at_origin=False, no_global_scale=True).boundingRect().toRect()
+            item_rect = image_data.board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
 
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             bx = fitted_rect.width()/item_rect.width()
@@ -1123,7 +1137,7 @@ class BoardMixin():
                 # image_width = image_data.source_width*board_item.board_scale #*board_scale_x
                 # image_height = image_data.source_height*board_item.board_scale #*board_scale_y
                 # item_rect = QRect(0, 0, int(image_width), int(image_height))
-                item_rect = board_item.get_selection_area(board=self, place_at_center_at_origin=False, no_global_scale=True).boundingRect().toRect()                
+                item_rect = board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
                 by = fitted_rect.height()/item_rect.height()
