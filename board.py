@@ -90,9 +90,9 @@ class BoardItem():
         elif self.type == self.types.ITEM_GROUP:
             raise NotImplemented
 
-    def get_selection_area(self, board=None, place_at_center_at_origin=True, apply_global_scale=True, apply_translation=True):
+    def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
-        if place_at_center_at_origin:
+        if place_center_at_origin:
             size_rect.moveCenter(QPointF(0, 0))
         points = [
             size_rect.topLeft(),
@@ -595,7 +595,7 @@ class BoardMixin():
 
 
                 painter.setPen(QPen(Qt.green, 1))
-                selection_area = board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False)
+                selection_area = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False)
                 transform = QTransform()
                 scale_x = map_width/self.board_bounding_rect.width()
                 scale_y = map_height/self.board_bounding_rect.height()
@@ -942,7 +942,7 @@ class BoardMixin():
             # image_width = image_data.source_width*board_item.board_scale_x*board_scale_x
             # image_height = image_data.source_height*board_item.board_scale_y*board_scale_y
             # item_rect = QRect(0, 0, int(image_width), int(image_height))
-            item_rect = image_data.board_item.get_selection_area(board=self, place_at_center_at_origin=False).boundingRect().toRect()
+            item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
@@ -1056,7 +1056,7 @@ class BoardMixin():
             # image_width = image_data.source_width*board_item.board_scale_x #*board_scale_x
             # image_height = image_data.source_height*board_item.board_scale_y #*board_scale_y
             # item_rect = QRect(0, 0, int(image_width), int(image_height))
-            item_rect = image_data.board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+            item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
 
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             bx = fitted_rect.width()/item_rect.width()
@@ -1137,7 +1137,7 @@ class BoardMixin():
                 # image_width = image_data.source_width*board_item.board_scale #*board_scale_x
                 # image_height = image_data.source_height*board_item.board_scale #*board_scale_y
                 # item_rect = QRect(0, 0, int(image_width), int(image_height))
-                item_rect = board_item.get_selection_area(board=self, place_at_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+                item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
                 by = fitted_rect.height()/item_rect.height()
