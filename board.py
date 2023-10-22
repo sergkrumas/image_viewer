@@ -90,9 +90,10 @@ class BoardItem():
         elif self.type == self.types.ITEM_GROUP:
             raise NotImplemented
 
-    def get_selection_area(self, board=None):
+    def get_selection_area(self, board=None, place_at_center_at_origin=True):
         size_rect = self.get_size_rect()
-        size_rect.moveCenter(QPointF(0, 0))
+        if place_at_center_at_origin:
+            size_rect.moveCenter(QPointF(0, 0))
         points = [
             size_rect.topLeft(),
             size_rect.topRight(),
@@ -103,7 +104,7 @@ class BoardItem():
         transform = self.get_transform_obj(board=board)
         return transform.map(polygon)
 
-    def get_transform_obj(self, board=None, no_local_scale=False):
+    def get_transform_obj(self, board=None, no_local_scale=False, no_translation=False):
         local_scaling = QTransform()
         rotation = QTransform()
         global_scaling = QTransform()
@@ -114,9 +115,10 @@ class BoardItem():
         translation.translate(pos.x(), pos.y())
         global_scaling.scale(board.board_scale_x, board.board_scale_y)
         if no_local_scale:
-            transform = rotation * global_scaling * translation
-        else:
-            transform = local_scaling * rotation * global_scaling * translation
+            local_scaling = QTransform()
+        if no_translation:
+            translation = QTransform()
+        transform = local_scaling * rotation * global_scaling * translation
         return transform
 
 class BoardMixin():
@@ -204,7 +206,6 @@ class BoardMixin():
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
                 board_item.board_index = self.retrieve_new_board_item_index()
-                board_item.board_scale = 1.0
                 board_item.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
@@ -902,6 +903,15 @@ class BoardMixin():
         elif shift:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
 
+    def board_doubleclick_handler(self, obj, event):
+        cf = self.LibraryData().current_folder()
+        for board_item in cf.board_items_list:
+            item_selection_area = board_item.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            if is_under_mouse:
+                self.board_thumbnails_click_handler(board_item.image_data)
+                break
+
     def board_thumbnails_click_handler(self, image_data):
 
         if image_data.board_item is None:
@@ -916,14 +926,15 @@ class BoardMixin():
 
             self.board_origin = - image_pos + viewport_center_pos
 
-            image_width = image_data.source_width*board_item.board_scale*board_scale_x
-            image_height = image_data.source_height*board_item.board_scale*board_scale_y
-            image_rect = QRect(0, 0, int(image_width), int(image_height))
-            fitted_rect = fit_rect_into_rect(image_rect, self.rect())
+            # image_width = image_data.source_width*board_item.board_scale_x*board_scale_x
+            # image_height = image_data.source_height*board_item.board_scale_y*board_scale_y
+            # item_rect = QRect(0, 0, int(image_width), int(image_height))
+            item_rect = image_data.board_item.get_selection_area(board=self, place_at_center_at_origin=False).boundingRect().toRect()
+            fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
-                factor_x=fitted_rect.width()/image_rect.width(),
-                factor_y=fitted_rect.height()/image_rect.height(),
+                factor_x=fitted_rect.width()/item_rect.width(),
+                factor_y=fitted_rect.height()/item_rect.height(),
             )
 
         self.update()
@@ -1029,8 +1040,8 @@ class BoardMixin():
             board_scale_y = self.board_scale_y
 
             # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-            image_width = image_data.source_width*board_item.board_scale #*board_scale_x
-            image_height = image_data.source_height*board_item.board_scale #*board_scale_y
+            image_width = image_data.source_width*board_item.board_scale_x #*board_scale_x
+            image_height = image_data.source_height*board_item.board_scale_y #*board_scale_y
             image_rect = QRect(0, 0, int(image_width), int(image_height))
             fitted_rect = fit_rect_into_rect(image_rect, self.rect())
             bx = fitted_rect.width()/image_rect.width()

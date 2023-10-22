@@ -1601,6 +1601,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 # видимо потому, что кнопка мыши отпущена над окном-ребёнком
                 self.region_zoom_in_UX_breaker_finish(event)
                 return False
+        elif self.is_board_page_active():
+            if event.type() == QEvent.MouseButtonDblClick:            
+                self.board_doubleclick_handler(obj, event)
+                return True
         return False
 
     def toggle_to_frame_mode(self):
