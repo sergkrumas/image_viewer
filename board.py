@@ -711,7 +711,6 @@ class BoardMixin():
                 else:
                     if add_to_selection and board_item._selected:
                         pass
-                        # board_item._selected = True
                     else:
                         board_item._selected = False
         else:
@@ -939,9 +938,6 @@ class BoardMixin():
 
             self.board_origin = - image_pos + viewport_center_pos
 
-            # image_width = image_data.source_width*board_item.board_scale_x*board_scale_x
-            # image_height = image_data.source_height*board_item.board_scale_y*board_scale_y
-            # item_rect = QRect(0, 0, int(image_width), int(image_height))
             item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             self.do_scale_board(0, False, False, False,
@@ -1052,10 +1048,6 @@ class BoardMixin():
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-            # image_width = image_data.source_width*board_item.board_scale_x #*board_scale_x
-            # image_height = image_data.source_height*board_item.board_scale_y #*board_scale_y
-            # item_rect = QRect(0, 0, int(image_width), int(image_height))
             item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
 
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
@@ -1133,10 +1125,7 @@ class BoardMixin():
                 image_data = by.image_data
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
-                # переменные пришлось закоментить, чтобы работало с любым изначальным скейлом
-                # image_width = image_data.source_width*board_item.board_scale #*board_scale_x
-                # image_height = image_data.source_height*board_item.board_scale #*board_scale_y
-                # item_rect = QRect(0, 0, int(image_width), int(image_height))
+
                 item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
