@@ -56,6 +56,8 @@ class BoardItem():
         self.board_position = QPointF()
         self.board_rotation = 0
 
+        self.board_index = 0
+
         self._selected = False
         self._touched = False
 
@@ -149,6 +151,8 @@ class BoardMixin():
         self.start_translation_pos = None
         self.translation_ongoing = False
 
+        self.current_board_index = 0
+
     def board_toggle_minimap(self):
         self.board_show_minimap = not self.board_show_minimap
 
@@ -183,6 +187,10 @@ class BoardMixin():
         text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
+    def retrieve_new_board_item_index(self):
+        self.current_board_index += 1
+        return self.current_board_index
+
     def prepare_board(self, folder_data):
 
         if self.Globals.DEBUG:
@@ -195,6 +203,7 @@ class BoardMixin():
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
+                board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.board_scale = 1.0
                 board_item.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
@@ -641,6 +650,9 @@ class BoardMixin():
                     for bi in current_folder.board_items_list:
                         bi._selected = False
                 board_item._selected = True
+                # вытаскиваем айтем на передний план при отрисовке
+                current_folder.board_items_list.remove(board_item)
+                current_folder.board_items_list.append(board_item)
                 return True
             if is_under_mouse and board_item._selected:
                 return True
@@ -792,7 +804,6 @@ class BoardMixin():
             elif alt:
                 if self.transformations_allowed:
                     self.set_default_boardviewport_scale(keep_position=True)
-
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
@@ -958,7 +969,6 @@ class BoardMixin():
 
         self.update()
 
-
     def board_get_nearest_item(self, folder_data, by_window_center=False):
         min_distance = 9999999999999999
         min_distance_board_item = None
@@ -1048,9 +1058,6 @@ class BoardMixin():
                 anim_id="flying",
                 duration=0.7,
             )
-
-
-
 
     def board_fly_over(self, user_call=False):
 
@@ -1149,7 +1156,6 @@ class BoardMixin():
     def is_board_ready(self):
         return self.LibraryData().current_folder().board_ready
 
-
     def board_viewport_show_first_item(self):
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
@@ -1161,12 +1167,6 @@ class BoardMixin():
         if self.is_board_ready():
            if cf.board_items_list:
                 self.board_thumbnails_click_handler(cf.board_items_list[-1].image_data)
-
-
-
-
-
-
 
     def board_region_zoom_in_init(self):
         self.board_magnifier_input_rect = None
@@ -1318,14 +1318,6 @@ class BoardMixin():
                 painter.drawRect(self.rect())
                 painter.setClipping(False)
                 painter.setOpacity(1.0)
-
-
-
-
-
-
-
-
 
 
 
