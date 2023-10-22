@@ -2974,6 +2974,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter = QPainter()
         painter.begin(save_pixmap)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)        
         painter.setRenderHint(QPainter.Antialiasing, True)
         im_rect = self.get_image_viewport_rect()
         painter.drawPixmap(im_rect.toRect(), pixmap)
@@ -2993,8 +2994,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         new_path = os.path.abspath(os.path.join(rootpath, f"{formated_datetime}{ext}"))
         if not use_screen_scale:
             factor = 1/self.image_scale
-            save_pixmap = save_pixmap.transformed(QTransform().scale(factor, factor),
-                                                                        Qt.SmoothTransformation)
+            save_pixmap = save_pixmap.transformed(QTransform().scale(factor, factor), Qt.SmoothTransformation)
+
         save_pixmap.save(new_path)
         self.show_center_label(f"Изображение сохранено в\n{new_path}")
 
