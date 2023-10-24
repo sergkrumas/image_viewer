@@ -437,20 +437,17 @@ class BoardMixin():
 
         if self.Globals.DEBUG:
             self.board_draw_board_origin(painter)
-            self.board_draw_origin_compass(painter)
 
         self.board_draw_user_points(painter, cf)
 
-        # r = QRectF(self.board_bounding_rect)
-        # painter.drawRect(r)
+        self.board_region_zoom_in_draw(painter)
+        self.board_draw_selection_frames(painter)
+        self.board_draw_selection_transform_box(painter)
+
+        if self.Globals.DEBUG:
+            self.board_draw_origin_compass(painter)
 
         self.board_draw_minimap(painter)
-
-        self.board_region_zoom_in_draw(painter)
-
-        self.board_draw_selection_frames(painter)
-
-        self.board_draw_selection_transform_box(painter)
 
     def board_draw_selection_frames(self, painter):
         if self.selection_rect is not None:
