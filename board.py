@@ -65,10 +65,11 @@ class BoardItem():
             self.board_scale_x = 0.5
             self.board_rotation = 10
 
-    def calculate_absolute_position(self, board=None):
+    def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
         _scale_y = board.board_scale_y
-        rel_pos = self.board_position
+        if rel_pos is None:
+            rel_pos = self.board_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
     def get_size_rect(self, scaled=False):
@@ -156,6 +157,9 @@ class BoardMixin():
 
         self.start_translation_pos = None
         self.translation_ongoing = False
+
+        self.rotation_activation_areas = []
+        self.rotation_ongoing = False
 
         self.current_board_index = 0
 
@@ -295,7 +299,7 @@ class BoardMixin():
             _text_rect = board_item.get_size_rect(scaled=True)
 
             # есть изображения, ширина которых меньше ширины этой надписи,
-            # поэтому надо увеличивать ширину прямоугольника для текста, чтобы текст не образало 
+            # поэтому надо увеличивать ширину прямоугольника для текста, чтобы текст не образало
             _center = _text_rect.center()
             _text_rect.setWidth(_text_rect.width()*2)
             _text_rect.moveCenter(_center)
@@ -459,8 +463,9 @@ class BoardMixin():
             painter.drawRect(self.selection_rect)
 
     def board_draw_selection_transform_box(self, painter):
+        self.rotation_activation_areas = []
         if self.selection_bounding_box is not None:
-        
+
             SIZE = 12
 
             c = QColor(18, 118, 127)
@@ -477,6 +482,7 @@ class BoardMixin():
             # scale activation zone
             for index, point in enumerate(self.selection_bounding_box):
                 painter.drawPoint(point)
+
 
             # roration activation zone
             for index, point in enumerate(self.selection_bounding_box):
@@ -497,10 +503,11 @@ class BoardMixin():
                     point + b,
                 ]
 
-                rotation_corner_area = QPolygonF(points)
+                rotation_activation_area = QPolygonF(points)
                 painter.setPen(QPen(Qt.red))
-                painter.drawPolygon(rotation_corner_area)
+                painter.drawPolygon(rotation_activation_area)
 
+                self.rotation_activation_areas.append(rotation_activation_area)
 
     def board_draw_origin_compass(self, painter):
 
@@ -796,6 +803,55 @@ class BoardMixin():
                 bounding_box.bottomLeft(),
             ])
 
+    def is_rotation_activation_area_clicked(self, event):
+        for raa in self.rotation_activation_areas:
+            if raa.containsPoint(event.pos(), Qt.WindingFill):
+                return True
+        return False
+
+    def board_start_selected_items_rotation(self, event):
+        self.rotation_ongoing = True
+        self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
+        pivot = self.selection_bounding_box.boundingRect().center()
+        radius_vector = QPointF(event.pos()) - pivot
+        self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
+        for bi in self.selected_items:
+            bi.__board_rotation = bi.board_rotation
+            bi.__board_position = bi.board_position
+
+    def board_do_selected_items_rotation(self, event):
+        pivot = self.selection_bounding_box.boundingRect().center()
+        radius_vector = QPointF(event.pos()) - pivot
+        self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
+        self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
+        rotation_delta_degrees = math.degrees(self.rotation_delta)
+        rotation = QTransform()
+        rotation.rotate(rotation_delta_degrees)
+        for bi in self.selected_items:
+            bi.board_rotation = bi.__board_rotation + rotation_delta_degrees
+
+            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
+            pos_radius_vector = pos - pivot
+            pos_radius_vector = rotation.map(pos_radius_vector)
+            new_absolute_position = pivot + pos_radius_vector
+            rel_pos_global_scaled = new_absolute_position - self.board_origin
+            new_board_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+            bi.board_position = new_board_position
+        translate_to_coord_origin = QTransform()
+        translate_back_to_place = QTransform()
+        offset = - self.__selection_bounding_box.boundingRect().center()
+        translate_to_coord_origin.translate(offset.x(), offset.y())
+        offset = - offset
+        translate_back_to_place.translate(offset.x(), offset.y())
+        transform = translate_to_coord_origin * rotation * translate_back_to_place
+
+        self.selection_bounding_box = transform.map(self.__selection_bounding_box)
+
+    def board_end_selected_items_rotation(self, event):
+        self.rotation_ongoing = False
+        cf = self.LibraryData().current_folder()
+        self.init_selection_bounding_box_widget(cf)
+
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
@@ -805,9 +861,13 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
             if not alt:
 
-                if self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
+                if self.is_rotation_activation_area_clicked(event):
+                    self.board_start_selected_items_rotation(event)
+
+                elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
                     self.board_start_selected_items_translation(event)
                     self.update_selection_bouding_box()
+
                 else:
                     self.selection_start_point = QPointF(event.pos())
                     self.selection_rect = None
@@ -831,7 +891,10 @@ class BoardMixin():
 
         if event.buttons() == Qt.LeftButton:
 
-            if no_mod and not self.selection_ongoing:
+            if self.rotation_ongoing:
+                self.board_do_selected_items_rotation(event)
+
+            elif no_mod and not self.selection_ongoing:
                 self.board_do_selected_items_translation(event)
                 self.update_selection_bouding_box()
 
@@ -861,7 +924,7 @@ class BoardMixin():
         alt = event.modifiers() & Qt.AltModifier
 
         if event.button() == Qt.LeftButton:
-            if not alt and not self.translation_ongoing:
+            if not alt and not self.translation_ongoing and not self.rotation_ongoing:
                 self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
                 # if self.selection_rect is not None:
                 self.selection_start_point = None
@@ -869,6 +932,8 @@ class BoardMixin():
                 self.selection_rect = None
                 self.selection_ongoing = False
 
+            if self.rotation_ongoing:
+                self.board_end_selected_items_rotation(event)
 
             if self.translation_ongoing:
                 self.board_end_selected_items_translation(event)
