@@ -747,6 +747,7 @@ class BoardMixin():
             for board_item in current_folder.board_items_list:
                 if board_item._selected:
                     board_item.board_position = board_item.start_translation_pos + delta
+            self.init_selection_bounding_box_widget(current_folder)
         else:
             self.translation_ongoing = False
 
