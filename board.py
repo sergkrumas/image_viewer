@@ -151,6 +151,8 @@ class BoardMixin():
         self.selection_rect = None
         self.selection_start_point = None
         self.selection_ongoing = False
+        self.selected_items = []
+        self.selection_bounding_box = None
 
         self.start_translation_pos = None
         self.translation_ongoing = False
@@ -446,9 +448,11 @@ class BoardMixin():
 
         self.board_region_zoom_in_draw(painter)
 
-        self.board_draw_selection_rect(painter)
+        self.board_draw_selection_frames(painter)
 
-    def board_draw_selection_rect(self, painter):
+        self.board_draw_selection_transform_box(painter)
+
+    def board_draw_selection_frames(self, painter):
         if self.selection_rect is not None:
             c = QColor(18, 118, 127)
             painter.setPen(QPen(c))
@@ -456,6 +460,14 @@ class BoardMixin():
             brush = QBrush(c)
             painter.setBrush(brush)
             painter.drawRect(self.selection_rect)
+
+    def board_draw_selection_transform_box(self, painter):
+        if self.selection_bounding_box is not None:
+        
+            pen = QPen(QColor(18, 118, 127), 2)
+            painter.setPen(pen)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawPolygon(self.selection_bounding_box)
 
     def board_draw_origin_compass(self, painter):
 
@@ -708,7 +720,6 @@ class BoardMixin():
 
     def board_selection_callback(self, add_to_selection):
         current_folder = self.LibraryData().current_folder()
-
         if self.selection_rect is not None:
             selection_rect_area = QPolygonF(self.selection_rect)
             for board_item in current_folder.board_items_list:
@@ -728,6 +739,29 @@ class BoardMixin():
                     pass
                 else:
                     board_item._selected = is_under_mouse
+        self.init_selection_bounding_box_widget(current_folder)
+
+    def init_selection_bounding_box_widget(self, folder_data):
+        self.selected_items = []
+        for board_item in folder_data.board_items_list:
+            if board_item._selected:
+                self.selected_items.append(board_item)
+        self.update_selection_bouding_box()
+
+    def update_selection_bouding_box(self):
+        self.selection_bounding_box = None
+        if len(self.selected_items) == 1:
+            self.selection_bounding_box = self.selected_items[0].get_selection_area(board=self)
+        elif len(self.selected_items) > 1:
+            bounding_box = QRectF()
+            for board_item in self.selected_items:
+                bounding_box = bounding_box.united(board_item.get_selection_area(board=self).boundingRect())
+            self.selection_bounding_box = QPolygonF([
+                bounding_box.topLeft(),
+                bounding_box.topRight(),
+                bounding_box.bottomRight(),
+                bounding_box.bottomLeft(),
+            ])
 
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -740,6 +774,7 @@ class BoardMixin():
 
                 if self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
                     self.board_start_selected_items_translation(event)
+                    self.update_selection_bouding_box()
                 else:
                     self.selection_start_point = QPointF(event.pos())
                     self.selection_rect = None
@@ -765,6 +800,7 @@ class BoardMixin():
 
             if no_mod and not self.selection_ongoing:
                 self.board_do_selected_items_translation(event)
+                self.update_selection_bouding_box()
 
             elif self.selection_ongoing is not None and not self.translation_ongoing:
                 self.selection_end_point = QPointF(event.pos())
@@ -781,6 +817,7 @@ class BoardMixin():
                 start_value = self.board_origin
                 # delta = end_value-start_value
                 self.board_origin = end_value
+                self.update_selection_bouding_box()
 
         self.update()
 
@@ -873,6 +910,7 @@ class BoardMixin():
 
         if self.selection_rect:
             self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
+        self.update_selection_bouding_box()
 
         self.update()
 
