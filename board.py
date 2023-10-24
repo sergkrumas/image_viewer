@@ -469,6 +469,20 @@ class BoardMixin():
             painter.setBrush(Qt.NoBrush)
             painter.drawPolygon(self.selection_bounding_box)
 
+            pen = painter.pen()
+            pen.setWidth(12)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+
+            for point in self.selection_bounding_box:
+                painter.drawPoint(point)
+
+            # A_point = self.selection_bounding_box[0]
+            # B_point = self.selection_bounding_box[1]
+            # C_point = self.selection_bounding_box[2]
+            # D_point = self.selection_bounding_box[3]
+
+
     def board_draw_origin_compass(self, painter):
 
         curpos = self.mapFromGlobal(QCursor().pos())
