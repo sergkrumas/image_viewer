@@ -464,23 +464,45 @@ class BoardMixin():
     def board_draw_selection_transform_box(self, painter):
         if self.selection_bounding_box is not None:
         
-            pen = QPen(QColor(18, 118, 127), 2)
+            SIZE = 12
+
+            c = QColor(18, 118, 127)
+            pen = QPen(c, 2)
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
             painter.drawPolygon(self.selection_bounding_box)
 
             pen = painter.pen()
-            pen.setWidth(12)
+            pen.setWidth(SIZE)
             pen.setCapStyle(Qt.RoundCap)
             painter.setPen(pen)
 
-            for point in self.selection_bounding_box:
+            # scale activation zone
+            for index, point in enumerate(self.selection_bounding_box):
                 painter.drawPoint(point)
 
-            # A_point = self.selection_bounding_box[0]
-            # B_point = self.selection_bounding_box[1]
-            # C_point = self.selection_bounding_box[2]
-            # D_point = self.selection_bounding_box[3]
+            # roration activation zone
+            for index, point in enumerate(self.selection_bounding_box):
+                length = self.selection_bounding_box.size()
+                prev_point_index = (index-1) % length
+                next_point_index = (index+1) % length
+                prev_point = self.selection_bounding_box[prev_point_index]
+                next_point = self.selection_bounding_box[next_point_index]
+
+                a = QVector2D(point - prev_point).normalized().toPointF()
+                b = QVector2D(point - next_point).normalized().toPointF()
+                a *= SIZE*2
+                b *= SIZE*2
+                points = [
+                    point,
+                    point + a,
+                    point + a + b,
+                    point + b,
+                ]
+
+                rotation_corner_area = QPolygonF(points)
+                painter.setPen(QPen(Qt.red))
+                painter.drawPolygon(rotation_corner_area)
 
 
     def board_draw_origin_compass(self, painter):
