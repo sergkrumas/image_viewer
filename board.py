@@ -167,6 +167,8 @@ class BoardMixin():
 
         self.current_board_index = 0
 
+        self.scaling_vector = None
+
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
         self.build_board_bounding_rect(cf)
@@ -508,6 +510,22 @@ class BoardMixin():
 
             for index, point in enumerate(self.selection_bounding_box):
                 painter.drawPoint(point)
+
+            if self.scaling_ongoing:
+                pivot = self.scaling_pivot_point
+                x_axis = self.scaling_x_axis
+                y_axis = self.scaling_y_axis
+
+
+                painter.setPen(QPen(Qt.red, 4))
+                painter.drawLine(pivot, pivot+x_axis)
+                painter.setPen(QPen(Qt.green, 4))
+                painter.drawLine(pivot, pivot+y_axis)
+                if self.scaling_vector is not None:
+                    scaling_vector = self.scaling_vector
+                    painter.setPen(QPen(Qt.yellow, 4))                    
+                    painter.drawLine(pivot, pivot + scaling_vector)
+
 
     def board_draw_origin_compass(self, painter):
 
@@ -859,26 +877,75 @@ class BoardMixin():
             for index, point in enumerate(self.selection_bounding_box):
                 diff = point - QPointF(event.pos())
                 if QVector2D(diff).length() < self.ACTIVATION_AREA_SIZE:
-                    length = self.selection_bounding_box.size()
-                    self.selection_pivot_point_index = (index+2) % length
-                    pivot_point = self.selection_bounding_box[self.selection_pivot_point_index]
+                    self.scaling_active_point_index = index
                     return True
-        self.selection_pivot_point_index = None
+        self.scaling_active_point_index = None
         return False
 
     def board_start_selected_items_scaling(self, event):
         self.scaling_ongoing = True
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
+
+        length = self.selection_bounding_box.size()
+        index = self.scaling_active_point_index
+
+        scaling_pivot_point_index = (index+2) % length
+        prev_point_index = (scaling_pivot_point_index-1) % length
+        next_point_index = (scaling_pivot_point_index+1) % length
+        prev_point = self.selection_bounding_box[prev_point_index]
+        next_point = self.selection_bounding_box[next_point_index]
+        self.scaling_pivot_point = self.selection_bounding_box[scaling_pivot_point_index]
+
+        x_axis = QVector2D(next_point - self.scaling_pivot_point).toPointF()
+        y_axis = QVector2D(prev_point - self.scaling_pivot_point).toPointF()
+
+        if self.scaling_active_point_index % 2 == 1:
+            x_axis, y_axis = y_axis, x_axis
+
+        self.scaling_x_axis = x_axis
+        self.scaling_y_axis = y_axis
+
         for bi in self.selected_items:
             bi.__board_scale_x = bi.board_scale_x
             bi.__board_scale_y = bi.board_scale_y
             bi.__board_position = bi.board_position
+            position_vec = bi.calculate_absolute_position(board=self) - self.scaling_pivot_point
+            bi.normalized_pos = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
+
+    def calculate_vector_projection_factors(self, x_axis, y_axis, vector):
+        x_axis = QVector2D(x_axis)
+        y_axis = QVector2D(y_axis)
+        x_axis_normalized = x_axis.normalized().toPointF()
+        y_axis_normalized = y_axis.normalized().toPointF()
+        x_axis_length = x_axis.length()
+        y_axis_length = y_axis.length()
+        x_factor = QPointF.dotProduct(x_axis_normalized, vector)/x_axis_length
+        y_factor = QPointF.dotProduct(y_axis_normalized, vector)/y_axis_length
+        return x_factor, y_factor
 
     def board_do_selected_items_scaling(self, event):
-        print("scaling moving")
 
-        # менять позицию и скейл элемента 
-        # скейлить сам selection_bounding_box
+        uniform_factor = 1.0
+        for bi in self.selected_items:
+
+            scaling_vector = QPointF(event.pos()) - self.scaling_pivot_point
+            self.scaling_vector = scaling_vector
+
+            # scaling component
+            x_factor, y_factor = self.calculate_vector_projection_factors(self.scaling_x_axis, self.scaling_y_axis, scaling_vector)
+            bi.board_scale_x = bi.__board_scale_x * x_factor
+            bi.board_scale_y = bi.__board_scale_y * y_factor
+
+            # position component
+            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
+            scaling = QTransform()
+            scaling.scale(bi.normalized_pos[0], bi.normalized_pos[1])
+            mapped_scaling_vector = scaling.map(scaling_vector)
+
+            new_absolute_position = self.scaling_pivot_point + mapped_scaling_vector
+            rel_pos_global_scaled = new_absolute_position - self.board_origin
+            new_board_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+            bi.board_position = new_board_position
 
         # pp = self.get_pivot_point().point
         # delta = pp - event.pos()
@@ -890,6 +957,9 @@ class BoardMixin():
         #         sign = -1.0
         # delta.setX(int(delta.y()*sign*self.aspect_ratio))
         # event_pos = pp - delta
+
+        # менять позицию и скейл элемента
+        # скейлить сам selection_bounding_box
 
     def board_end_selected_items_scaling(self, event):
         self.scaling_ongoing = False
