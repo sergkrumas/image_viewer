@@ -829,8 +829,9 @@ class BoardMixin():
         rotation = QTransform()
         rotation.rotate(rotation_delta_degrees)
         for bi in self.selected_items:
+            # rotation component
             bi.board_rotation = bi.__board_rotation + rotation_delta_degrees
-
+            # position component
             pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
             pos_radius_vector = pos - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
@@ -838,6 +839,7 @@ class BoardMixin():
             rel_pos_global_scaled = new_absolute_position - self.board_origin
             new_board_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
             bi.board_position = new_board_position
+        # bounding box transformation
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
         offset = - self.__selection_bounding_box.boundingRect().center()
@@ -845,7 +847,6 @@ class BoardMixin():
         offset = - offset
         translate_back_to_place.translate(offset.x(), offset.y())
         transform = translate_to_coord_origin * rotation * translate_back_to_place
-
         self.selection_bounding_box = transform.map(self.__selection_bounding_box)
 
     def board_end_selected_items_rotation(self, event):
@@ -867,14 +868,33 @@ class BoardMixin():
 
     def board_start_selected_items_scaling(self, event):
         self.scaling_ongoing = True
-        print('start scaling')
+        self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
+        for bi in self.selected_items:
+            bi.__board_scale_x = bi.board_scale_x
+            bi.__board_scale_y = bi.board_scale_y
+            bi.__board_position = bi.board_position
 
     def board_do_selected_items_scaling(self, event):
         print("scaling moving")
 
+        # менять позицию и скейл элемента 
+        # скейлить сам selection_bounding_box
+
+        # pp = self.get_pivot_point().point
+        # delta = pp - event.pos()
+        # sign = math.copysign(1.0, delta.x())
+        # if delta.y() < 0:
+        #     if delta.x() < 0:
+        #         sign = 1.0
+        #     else:
+        #         sign = -1.0
+        # delta.setX(int(delta.y()*sign*self.aspect_ratio))
+        # event_pos = pp - delta
+
     def board_end_selected_items_scaling(self, event):
         self.scaling_ongoing = False
-        print("end scaling")
+        cf = self.LibraryData().current_folder()
+        self.init_selection_bounding_box_widget(cf)        
 
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
