@@ -161,6 +161,9 @@ class BoardMixin():
         self.rotation_activation_areas = []
         self.rotation_ongoing = False
 
+
+        self.ACTIVATION_AREA_SIZE = 12
+
         self.current_board_index = 0
 
         self.board_bounding_rect = QRectF()
@@ -466,25 +469,16 @@ class BoardMixin():
         self.rotation_activation_areas = []
         if self.selection_bounding_box is not None:
 
-            SIZE = 12
-
             c = QColor(18, 118, 127)
             pen = QPen(c, 2)
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
             painter.drawPolygon(self.selection_bounding_box)
 
-            pen = painter.pen()
-            pen.setWidth(SIZE)
-            pen.setCapStyle(Qt.RoundCap)
-            painter.setPen(pen)
+            default_pen = painter.pen()
 
-            # scale activation zone
-            for index, point in enumerate(self.selection_bounding_box):
-                painter.drawPoint(point)
-
-
-            # roration activation zone
+            # roration activation areas
+            painter.setPen(QPen(Qt.red))
             for index, point in enumerate(self.selection_bounding_box):
                 length = self.selection_bounding_box.size()
                 prev_point_index = (index-1) % length
@@ -494,8 +488,8 @@ class BoardMixin():
 
                 a = QVector2D(point - prev_point).normalized().toPointF()
                 b = QVector2D(point - next_point).normalized().toPointF()
-                a *= SIZE*2
-                b *= SIZE*2
+                a *= self.ACTIVATION_AREA_SIZE*2
+                b *= self.ACTIVATION_AREA_SIZE*2
                 points = [
                     point,
                     point + a,
@@ -504,10 +498,17 @@ class BoardMixin():
                 ]
 
                 rotation_activation_area = QPolygonF(points)
-                painter.setPen(QPen(Qt.red))
                 painter.drawPolygon(rotation_activation_area)
 
                 self.rotation_activation_areas.append(rotation_activation_area)
+
+            # scale activation areas
+            default_pen.setWidthF(self.ACTIVATION_AREA_SIZE)
+            default_pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(default_pen)
+
+            for index, point in enumerate(self.selection_bounding_box):
+                painter.drawPoint(point)
 
     def board_draw_origin_compass(self, painter):
 
