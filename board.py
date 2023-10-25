@@ -155,18 +155,17 @@ class BoardMixin():
         self.selected_items = []
         self.selection_bounding_box = None
 
+        self.ACTIVATION_AREA_SIZE = 12
+        self.board_bounding_rect = QRectF()
+
         self.start_translation_pos = None
         self.translation_ongoing = False
-
         self.rotation_activation_areas = []
         self.rotation_ongoing = False
 
-
-        self.ACTIVATION_AREA_SIZE = 12
+        self.scaling_ongoing = False
 
         self.current_board_index = 0
-
-        self.board_bounding_rect = QRectF()
 
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
@@ -854,6 +853,29 @@ class BoardMixin():
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
 
+    def is_scaling_activation_area_clicked(self, event):
+        if self.selection_bounding_box is not None:
+            for index, point in enumerate(self.selection_bounding_box):
+                diff = point - QPointF(event.pos())
+                if QVector2D(diff).length() < self.ACTIVATION_AREA_SIZE:
+                    length = self.selection_bounding_box.size()
+                    self.selection_pivot_point_index = (index+2) % length
+                    pivot_point = self.selection_bounding_box[self.selection_pivot_point_index]
+                    return True
+        self.selection_pivot_point_index = None
+        return False
+
+    def board_start_selected_items_scaling(self, event):
+        self.scaling_ongoing = True
+        print('start scaling')
+
+    def board_do_selected_items_scaling(self, event):
+        print("scaling moving")
+
+    def board_end_selected_items_scaling(self, event):
+        self.scaling_ongoing = False
+        print("end scaling")
+
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
@@ -863,7 +885,10 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
             if not alt:
 
-                if self.is_rotation_activation_area_clicked(event):
+                if self.is_scaling_activation_area_clicked(event):
+                    self.board_start_selected_items_scaling(event)
+
+                elif self.is_rotation_activation_area_clicked(event):
                     self.board_start_selected_items_rotation(event)
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
@@ -893,7 +918,10 @@ class BoardMixin():
 
         if event.buttons() == Qt.LeftButton:
 
-            if self.rotation_ongoing:
+            if self.scaling_ongoing:
+                self.board_do_selected_items_scaling(event)
+
+            elif self.rotation_ongoing:
                 self.board_do_selected_items_rotation(event)
 
             elif no_mod and not self.selection_ongoing:
@@ -926,7 +954,7 @@ class BoardMixin():
         alt = event.modifiers() & Qt.AltModifier
 
         if event.button() == Qt.LeftButton:
-            if not alt and not self.translation_ongoing and not self.rotation_ongoing:
+            if not alt and not self.translation_ongoing and not self.rotation_ongoing and not self.scaling_ongoing:
                 self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
                 # if self.selection_rect is not None:
                 self.selection_start_point = None
@@ -936,6 +964,9 @@ class BoardMixin():
 
             if self.rotation_ongoing:
                 self.board_end_selected_items_rotation(event)
+
+            if self.scaling_ongoing:
+                self.board_end_selected_items_scaling(event)
 
             if self.translation_ongoing:
                 self.board_end_selected_items_translation(event)
