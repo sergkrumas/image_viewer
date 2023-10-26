@@ -894,12 +894,16 @@ class BoardMixin():
         self.scaling_ongoing = True
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
 
-        length = self.selection_bounding_box.size()
+        bbw = self.selection_bounding_box.boundingRect().width()
+        bbh = self.selection_bounding_box.boundingRect().height()
+        self.selection_bounding_box_aspect_ratio = bbw/bbh        
+
+        points_count = self.selection_bounding_box.size()
         index = self.scaling_active_point_index
 
-        scaling_pivot_point_index = (index+2) % length
-        prev_point_index = (scaling_pivot_point_index-1) % length
-        next_point_index = (scaling_pivot_point_index+1) % length
+        scaling_pivot_point_index = (index+2) % points_count
+        prev_point_index = (scaling_pivot_point_index-1) % points_count
+        next_point_index = (scaling_pivot_point_index+1) % points_count
         prev_point = self.selection_bounding_box[prev_point_index]
         next_point = self.selection_bounding_box[next_point_index]
         self.scaling_pivot_point = QPointF(self.selection_bounding_box[scaling_pivot_point_index])
@@ -932,23 +936,27 @@ class BoardMixin():
         return x_factor, y_factor
 
     def board_do_selected_items_scaling(self, event):
-        proportional_scaling = QApplication.queryKeyboardModifiers() == Qt.ShiftModifier
+        mutli_item_mode = len(self.selected_items) > 1
+        proportional_scaling = mutli_item_mode or QApplication.queryKeyboardModifiers() == Qt.ShiftModifier
 
         for bi in self.selected_items:
 
             self.scaling_vector = scaling_vector = QPointF(event.pos()) - self.scaling_pivot_point
 
-            x_axis = QVector2D(self.scaling_x_axis).normalized()
-            y_axis = QVector2D(self.scaling_y_axis).normalized()
-            x_sign = math.copysign(1.0, QVector2D.dotProduct(x_axis, QVector2D(self.scaling_vector).normalized()))
-            y_sign = math.copysign(1.0, QVector2D.dotProduct(y_axis, QVector2D(self.scaling_vector).normalized()))
-            aspect_ratio = bi.aspect_ratio()
-            psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()            
-            self.proportional_scaling_vector = QVector2D(psv).normalized().toPointF()
-            factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
-            self.proportional_scaling_vector *= factor
-
             if proportional_scaling:
+                x_axis = QVector2D(self.scaling_x_axis).normalized()
+                y_axis = QVector2D(self.scaling_y_axis).normalized()
+                x_sign = math.copysign(1.0, QVector2D.dotProduct(x_axis, QVector2D(self.scaling_vector).normalized()))
+                y_sign = math.copysign(1.0, QVector2D.dotProduct(y_axis, QVector2D(self.scaling_vector).normalized()))
+                if mutli_item_mode:
+                    aspect_ratio = self.selection_bounding_box_aspect_ratio
+                else:
+                    aspect_ratio = bi.aspect_ratio()
+                psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()            
+                self.proportional_scaling_vector = QVector2D(psv).normalized().toPointF()
+                factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
+                self.proportional_scaling_vector *= factor
+
                 self.scaling_vector = scaling_vector = self.proportional_scaling_vector
 
             # scaling component
@@ -956,7 +964,7 @@ class BoardMixin():
 
             bi.board_scale_x = bi.__board_scale_x * x_factor
             bi.board_scale_y = bi.__board_scale_y * y_factor
-            if proportional_scaling:
+            if proportional_scaling and not mutli_item_mode:
                 bi.board_scale_x = math.copysign(1.0, bi.board_scale_x)*abs(bi.board_scale_y)
 
             # position component
