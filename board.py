@@ -943,7 +943,7 @@ class BoardMixin():
             x_sign = math.copysign(1.0, QVector2D.dotProduct(x_axis, QVector2D(self.scaling_vector).normalized()))
             y_sign = math.copysign(1.0, QVector2D.dotProduct(y_axis, QVector2D(self.scaling_vector).normalized()))
             aspect_ratio = bi.aspect_ratio()
-            psv = x_sign*x_axis.toPointF() + y_sign/aspect_ratio*y_axis.toPointF()
+            psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()            
             self.proportional_scaling_vector = QVector2D(psv).normalized().toPointF()
             factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
             self.proportional_scaling_vector *= factor
@@ -953,14 +953,16 @@ class BoardMixin():
 
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(self.scaling_x_axis, self.scaling_y_axis, scaling_vector)
+
             bi.board_scale_x = bi.__board_scale_x * x_factor
             bi.board_scale_y = bi.__board_scale_y * y_factor
             if proportional_scaling:
-                bi.board_scale_x = bi.board_scale_y
+                bi.board_scale_x = math.copysign(1.0, bi.board_scale_x)*abs(bi.board_scale_y)
 
             # position component
             pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
             scaling = QTransform()
+            # эти нормализованные координаты актуальны для пропорционального и не для пропорционального редактирования
             scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
             mapped_scaling_vector = scaling.map(scaling_vector)
 
