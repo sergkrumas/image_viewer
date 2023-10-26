@@ -935,13 +935,17 @@ class BoardMixin():
         y_factor = QPointF.dotProduct(y_axis_normalized, vector)/y_axis_length
         return x_factor, y_factor
 
-    def board_do_selected_items_scaling(self, event):
+    def board_do_selected_items_scaling(self, event, refresh=False):
         mutli_item_mode = len(self.selected_items) > 1
         proportional_scaling = mutli_item_mode or QApplication.queryKeyboardModifiers() == Qt.ShiftModifier
 
+        if refresh:
+            event_pos = event
+        else:
+            event_pos = event.pos()
         for bi in self.selected_items:
 
-            self.scaling_vector = scaling_vector = QPointF(event.pos()) - self.scaling_pivot_point
+            self.scaling_vector = scaling_vector = QPointF(event_pos) - self.scaling_pivot_point
 
             if proportional_scaling:
                 x_axis = QVector2D(self.scaling_x_axis).normalized()
@@ -989,6 +993,16 @@ class BoardMixin():
         self.proportional_scaling_vector = None
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
+
+    def boards_do_scaling_key_callback(self):
+        if self.scaling_ongoing:
+            self.board_do_selected_items_scaling(self.mapped_cursor_pos(), refresh=True)
+
+    def boards_key_release_callback(self, event):
+        self.boards_do_scaling_key_callback()
+
+    def boards_key_press_callback(self, event):
+        self.boards_do_scaling_key_callback()
 
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier

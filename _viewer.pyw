@@ -2713,6 +2713,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update()
 
     def keyReleaseEvent(self, event):
+        key = event.key()
+
+        self.boards_key_release_callback(event)
 
         if self.check_thumbnails_fullscreen():
             return
@@ -2723,7 +2726,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self._key_pressed = False
             self._key_unreleased = False
 
-        key = event.key()
         if key == Qt.Key_Tab:
             self.cycle_change_page()
 
@@ -2784,6 +2786,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def keyPressEvent(self, event):
         key = event.key()
+
+        self.boards_key_press_callback(event)
 
         if self.check_thumbnails_fullscreen():
             if key == Qt.Key_Escape:
