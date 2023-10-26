@@ -966,6 +966,9 @@ class BoardMixin():
         center_is_pivot = QApplication.queryKeyboardModifiers() & Qt.AltModifier
         proportional_scaling = mutli_item_mode or QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
 
+        # отключаем модификатор alt для группы выделенных айтемов 
+        center_is_pivot = center_is_pivot and not mutli_item_mode
+
         if refresh:
             event_pos = event
         else:
