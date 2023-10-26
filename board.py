@@ -72,6 +72,10 @@ class BoardItem():
             rel_pos = self.board_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
+    def aspect_ratio(self):
+        rect = self.get_size_rect(scaled=False)
+        return rect.width()/rect.height()
+
     def get_size_rect(self, scaled=False):
         if scaled:
             if self.type == self.types.ITEM_IMAGE:
@@ -155,7 +159,7 @@ class BoardMixin():
         self.selected_items = []
         self.selection_bounding_box = None
 
-        self.ACTIVATION_AREA_SIZE = 12
+        self.ACTIVATION_AREA_SIZE = 16
         self.board_bounding_rect = QRectF()
 
         self.start_translation_pos = None
@@ -168,6 +172,7 @@ class BoardMixin():
         self.current_board_index = 0
 
         self.scaling_vector = None
+        self.proportional_scaling_vector = None
 
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
@@ -522,9 +527,12 @@ class BoardMixin():
                 painter.setPen(QPen(Qt.green, 4))
                 painter.drawLine(pivot, pivot+y_axis)
                 if self.scaling_vector is not None:
-                    scaling_vector = self.scaling_vector
-                    painter.setPen(QPen(Qt.yellow, 4))                    
-                    painter.drawLine(pivot, pivot + scaling_vector)
+                    painter.setPen(QPen(Qt.yellow, 4))
+                    painter.drawLine(pivot, pivot + self.scaling_vector)
+
+                if self.proportional_scaling_vector is not None:
+                    painter.setPen(QPen(Qt.darkGray, 4))
+                    painter.drawLine(pivot, pivot + self.proportional_scaling_vector)
 
 
     def board_draw_origin_compass(self, painter):
@@ -924,15 +932,31 @@ class BoardMixin():
         return x_factor, y_factor
 
     def board_do_selected_items_scaling(self, event):
-
-        scaling_vector = QPointF(event.pos()) - self.scaling_pivot_point
-        self.scaling_vector = scaling_vector
+        proportional_scaling = QApplication.queryKeyboardModifiers() == Qt.ShiftModifier
 
         for bi in self.selected_items:
+
+            self.scaling_vector = scaling_vector = QPointF(event.pos()) - self.scaling_pivot_point
+
+            x_axis = QVector2D(self.scaling_x_axis).normalized()
+            y_axis = QVector2D(self.scaling_y_axis).normalized()
+            x_sign = math.copysign(1.0, QVector2D.dotProduct(x_axis, QVector2D(self.scaling_vector).normalized()))
+            y_sign = math.copysign(1.0, QVector2D.dotProduct(y_axis, QVector2D(self.scaling_vector).normalized()))
+            aspect_ratio = bi.aspect_ratio()
+            psv = x_sign*x_axis.toPointF() + y_sign/aspect_ratio*y_axis.toPointF()
+            self.proportional_scaling_vector = QVector2D(psv).normalized().toPointF()
+            factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
+            self.proportional_scaling_vector *= factor
+
+            if proportional_scaling:
+                self.scaling_vector = scaling_vector = self.proportional_scaling_vector
+
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(self.scaling_x_axis, self.scaling_y_axis, scaling_vector)
             bi.board_scale_x = bi.__board_scale_x * x_factor
             bi.board_scale_y = bi.__board_scale_y * y_factor
+            if proportional_scaling:
+                bi.board_scale_x = bi.board_scale_y
 
             # position component
             pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
@@ -948,21 +972,13 @@ class BoardMixin():
         # bounding box update
         self.update_selection_bouding_box()
 
-        # pp = self.get_pivot_point().point
-        # delta = pp - event.pos()
-        # sign = math.copysign(1.0, delta.x())
-        # if delta.y() < 0:
-        #     if delta.x() < 0:
-        #         sign = 1.0
-        #     else:
-        #         sign = -1.0
-        # delta.setX(int(delta.y()*sign*self.aspect_ratio))
-        # event_pos = pp - delta
 
     def board_end_selected_items_scaling(self, event):
         self.scaling_ongoing = False
+        self.scaling_vector = None
+        self.proportional_scaling_vector = None
         cf = self.LibraryData().current_folder()
-        self.init_selection_bounding_box_widget(cf)        
+        self.init_selection_bounding_box_widget(cf)
 
     def board_mousePressEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
