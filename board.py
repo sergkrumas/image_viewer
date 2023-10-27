@@ -961,18 +961,15 @@ class BoardMixin():
         y_factor = QPointF.dotProduct(y_axis_normalized, vector)/y_axis_length
         return x_factor, y_factor
 
-    def board_do_selected_items_scaling(self, event, refresh=False):
+    def board_do_selected_items_scaling(self, event_pos, refresh=False):
         mutli_item_mode = len(self.selected_items) > 1
-        center_is_pivot = QApplication.queryKeyboardModifiers() & Qt.AltModifier
-        proportional_scaling = mutli_item_mode or QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
+        alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
+        shift_mod = QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
+        center_is_pivot = alt_mod
+        proportional_scaling = mutli_item_mode or shift_mod
 
         # отключаем модификатор alt для группы выделенных айтемов 
         center_is_pivot = center_is_pivot and not mutli_item_mode
-
-        if refresh:
-            event_pos = event
-        else:
-            event_pos = event.pos()
 
         if center_is_pivot:
             pivot = self.scaling_pivot_center_point
@@ -1100,7 +1097,7 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
 
             if self.scaling_ongoing:
-                self.board_do_selected_items_scaling(event)
+                self.board_do_selected_items_scaling(event.pos())
 
             elif self.rotation_ongoing:
                 self.board_do_selected_items_rotation(event)
