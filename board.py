@@ -65,6 +65,7 @@ class BoardItem():
 
         self._selected = False
         self._touched = False
+        self._show_file_info_overlay = False
 
         if BOARD_DEBUG:
             self.item_scale_x = 0.5
@@ -294,7 +295,6 @@ class BoardMixin():
         else:
             self.images_drawn += 1
             transform = board_item.get_transform_obj(board=self)
-            no_local_scale_transform = board_item.get_transform_obj(board=self, apply_local_scale=False)
 
             painter.setTransform(transform)
             item_rect = board_item.get_size_rect()
@@ -306,19 +306,7 @@ class BoardMixin():
 
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(item_rect)
-            text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
-            alignment = Qt.AlignCenter
-            painter.setTransform(no_local_scale_transform)
-            # _text_rect = item_rect
-            _text_rect = board_item.get_size_rect(scaled=True)
 
-            # есть изображения, ширина которых меньше ширины этой надписи,
-            # поэтому надо увеличивать ширину прямоугольника для текста, чтобы текст не образало
-            _center = _text_rect.center()
-            _text_rect.setWidth(_text_rect.width()*2)
-            _text_rect.moveCenter(_center)
-
-            painter.drawText(_text_rect, alignment, text)
 
             painter.setTransform(transform)
             image_to_draw = None
@@ -338,6 +326,21 @@ class BoardMixin():
             painter.resetTransform()
 
             selection_area_bounding_rect = selection_area.boundingRect()
+
+            if board_item._show_file_info_overlay:
+                text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+                alignment = Qt.AlignCenter
+
+                old_pen = painter.pen()
+                text_rect = calculate_text_rect(painter.font(), selection_area_bounding_rect, text, alignment)
+                painter.setBrush(QBrush(Qt.white))
+                painter.setPen(Qt.NoPen)
+                painter.drawRect(text_rect)
+                painter.setPen(QPen(Qt.black, 1))
+                painter.setBrush(Qt.NoBrush)
+                painter.drawText(text_rect, alignment, text)
+                painter.setPen(old_pen)
+
 
             if board_item == self.board_item_under_mouse and board_item.animated:
 
@@ -1337,6 +1340,15 @@ class BoardMixin():
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
         elif shift:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
+
+    def board_toggle_item_info_overlay(self):
+        cf = self.LibraryData().current_folder()
+        for bi in cf.board_items_list:
+            item_selection_area = bi.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            if is_under_mouse or bi._selected:
+                bi._show_file_info_overlay = not bi._show_file_info_overlay
+        self.update()
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()

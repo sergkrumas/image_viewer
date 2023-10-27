@@ -2924,6 +2924,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif check_scancode_for(event, "M"):
                 self.board_toggle_minimap()
 
+            elif check_scancode_for(event, "I"):
+                self.board_toggle_item_info_overlay()
+
             elif key == Qt.Key_Home:
                 self.board_viewport_show_first_item()
 
