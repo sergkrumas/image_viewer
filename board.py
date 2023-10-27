@@ -882,7 +882,9 @@ class BoardMixin():
 
     def is_scaling_activation_area_clicked(self, event):
         if self.selection_bounding_box is not None:
-            for index, point in enumerate(self.selection_bounding_box):
+            enumerated = list(enumerate(self.selection_bounding_box))
+            enumerated.insert(0, enumerated.pop(2))
+            for index, point in enumerated:
                 diff = point - QPointF(event.pos())
                 if QVector2D(diff).length() < self.ACTIVATION_AREA_SIZE:
                     self.scaling_active_point_index = index
