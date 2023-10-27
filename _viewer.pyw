@@ -2978,7 +2978,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter = QPainter()
         painter.begin(save_pixmap)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)        
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
         painter.setRenderHint(QPainter.Antialiasing, True)
         im_rect = self.get_image_viewport_rect()
         painter.drawPixmap(im_rect.toRect(), pixmap)

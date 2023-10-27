@@ -996,7 +996,7 @@ class BoardMixin():
         center_is_pivot = alt_mod
         proportional_scaling = mutli_item_mode or shift_mod
 
-        # отключаем модификатор alt для группы выделенных айтемов 
+        # отключаем модификатор alt для группы выделенных айтемов
         center_is_pivot = center_is_pivot and not mutli_item_mode
 
         if center_is_pivot:
@@ -1016,7 +1016,7 @@ class BoardMixin():
         for bi in self.selected_items:
             __scaling_vector =  QVector2D(QPointF(event_pos) - pivot) # не вытаскивать вычисления вектора из цикла!
             # принудительно задаётся минимальный скейл, значение в экранных координатах
-            # MIN_LENGTH = 100.0 
+            # MIN_LENGTH = 100.0
             # if __scaling_vector.length() < MIN_LENGTH:
             #     __scaling_vector = __scaling_vector.normalized()*MIN_LENGTH
             self.scaling_vector = scaling_vector = __scaling_vector.toPointF()
@@ -1030,7 +1030,7 @@ class BoardMixin():
                     aspect_ratio = self.selection_bounding_box_aspect_ratio
                 else:
                     aspect_ratio = bi.aspect_ratio()
-                psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()            
+                psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()
                 self.proportional_scaling_vector = QVector2D(psv).normalized().toPointF()
                 factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
                 self.proportional_scaling_vector *= factor
