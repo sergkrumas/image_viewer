@@ -809,6 +809,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             # preview
             image_data.source_width = ow = source.width()
             image_data.source_height = oh = source.height()
+            if LibraryData().is_svg_file(image_data.filepath):
+                image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
+                image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
             preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
             image_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
             if ow != 0:

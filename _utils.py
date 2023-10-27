@@ -50,6 +50,9 @@ from PIL import Image
 
 import win32con, win32api
 
+
+DEFAULT_SVG_SCALE_FACTOR = 20
+
 SCANCODES_FROM_LATIN_CHAR = {
     "Q": 16,
     "W": 17,
@@ -607,7 +610,7 @@ def load_image_respect_orientation(filepath, highres_svg=False):
         img = imgReader.read()
         return QPixmap().fromImage(img)
 
-def load_svg(path, scale_factor=20):
+def load_svg(path, scale_factor=DEFAULT_SVG_SCALE_FACTOR):
     renderer =  QSvgRenderer(path)
     size = renderer.defaultSize()
     rastered_image = QImage(
