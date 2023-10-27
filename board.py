@@ -51,15 +51,15 @@ class BoardItem():
         self.pixmap = None
         self.animated = False
 
-        self.board_scale_x = 1.0
-        self.board_scale_y = 1.0
-        self.board_position = QPointF()
-        self.board_rotation = 0
+        self.item_scale_x = 1.0
+        self.item_scale_y = 1.0
+        self.item_position = QPointF()
+        self.item_rotation = 0
 
-        self.__board_scale_x = None
-        self.__board_scale_y = None
-        self.__board_position = None
-        self.__board_rotation = None
+        self.__item_scale_x = None
+        self.__item_scale_y = None
+        self.__item_position = None
+        self.__item_rotation = None
 
         self.board_index = 0
 
@@ -67,14 +67,14 @@ class BoardItem():
         self._touched = False
 
         if BOARD_DEBUG:
-            self.board_scale_x = 0.5
-            self.board_rotation = 10
+            self.item_scale_x = 0.5
+            self.item_rotation = 10
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
         _scale_y = board.board_scale_y
         if rel_pos is None:
-            rel_pos = self.board_position
+            rel_pos = self.item_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
     def aspect_ratio(self):
@@ -84,8 +84,8 @@ class BoardItem():
     def get_size_rect(self, scaled=False):
         if scaled:
             if self.type == self.types.ITEM_IMAGE:
-                scale_x = self.board_scale_x
-                scale_y = self.board_scale_y
+                scale_x = self.item_scale_x
+                scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_FOLDER:
                 raise NotImplemented
             elif self.type == self.types.ITEM_GROUP:
@@ -120,14 +120,14 @@ class BoardItem():
         global_scaling = QTransform()
         translation = QTransform()
         if apply_local_scale:
-            local_scaling.scale(self.board_scale_x, self.board_scale_y)
-        rotation.rotate(self.board_rotation)
+            local_scaling.scale(self.item_scale_x, self.item_scale_y)
+        rotation.rotate(self.item_rotation)
         if apply_translation:
             if apply_global_scale:
                 pos = self.calculate_absolute_position(board=board)
                 translation.translate(pos.x(), pos.y())
             else:
-                translation.translate(self.board_position.x(), self.board_position.y())
+                translation.translate(self.item_position.x(), self.item_position.y())
         if apply_global_scale:
             global_scaling.scale(board.board_scale_x, board.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
@@ -232,7 +232,7 @@ class BoardMixin():
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
                 board_item.board_index = self.retrieve_new_board_item_index()
-                board_item.board_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+                board_item.item_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
         self.build_board_bounding_rect(folder_data)
@@ -674,7 +674,7 @@ class BoardMixin():
             for board_item in cf.board_items_list:
                 image_data = board_item.image_data
 
-                delta = board_item.board_position - self.board_bounding_rect.topLeft()
+                delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
                     delta.x()/self.board_bounding_rect.width(),
                     delta.y()/self.board_bounding_rect.height()
@@ -767,7 +767,7 @@ class BoardMixin():
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board_items_list:
-            board_item.start_translation_pos = QPointF(board_item.board_position)
+            board_item.start_translation_pos = QPointF(board_item.item_position)
 
     def board_DO_selected_items_TRANSLATION(self, event):
         if self.start_translation_pos:
@@ -777,7 +777,7 @@ class BoardMixin():
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             for board_item in current_folder.board_items_list:
                 if board_item._selected:
-                    board_item.board_position = board_item.start_translation_pos + delta
+                    board_item.item_position = board_item.start_translation_pos + delta
             self.init_selection_bounding_box_widget(current_folder)
         else:
             self.translation_ongoing = False
@@ -846,10 +846,10 @@ class BoardMixin():
         if viewport_zoom_changed:
             for bi in self.selected_items:
                 # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
-                # if bi.__board_rotation is not None:
-                #     bi.board_rotation = bi.__board_rotation
-                if bi.__board_position is not None:
-                    bi.board_position = bi.__board_position
+                # if bi.__item_rotation is not None:
+                #     bi.item_rotation = bi.__item_rotation
+                if bi.__item_position is not None:
+                    bi.item_position = bi.__item_position
 
             self.update_selection_bouding_box()
 
@@ -858,8 +858,8 @@ class BoardMixin():
         radius_vector = QPointF(event_pos) - pivot
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         for bi in self.selected_items:
-            bi.__board_rotation = bi.board_rotation
-            bi.__board_position = bi.board_position
+            bi.__item_rotation = bi.item_rotation
+            bi.__item_position = bi.item_position
 
     def step_rotation(self, rotation_value):
         values = [
@@ -892,17 +892,17 @@ class BoardMixin():
         rotation.rotate(rotation_delta_degrees)
         for bi in self.selected_items:
             # rotation component
-            bi.board_rotation = bi.__board_rotation + rotation_delta_degrees
+            bi.item_rotation = bi.__item_rotation + rotation_delta_degrees
             if not mutli_item_mode and ctrl_mod:
-                bi.board_rotation = self.step_rotation(bi.board_rotation)
+                bi.item_rotation = self.step_rotation(bi.item_rotation)
             # position component
-            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
+            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__item_position)
             pos_radius_vector = pos - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
             new_absolute_position = pivot + pos_radius_vector
             rel_pos_global_scaled = new_absolute_position - self.board_origin
-            new_board_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
-            bi.board_position = new_board_position
+            new_item_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+            bi.item_position = new_item_position
         # bounding box transformation
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
@@ -935,12 +935,12 @@ class BoardMixin():
 
         if viewport_zoom_changed:
             for bi in self.selected_items:
-                if bi.__board_scale_x is not None:
-                    bi.board_scale_x = bi.__board_scale_x
-                if bi.__board_scale_y is not None:
-                    bi.board_scale_y = bi.__board_scale_y
-                if bi.__board_position is not None:
-                    bi.board_position = bi.__board_position
+                if bi.__item_scale_x is not None:
+                    bi.item_scale_x = bi.__item_scale_x
+                if bi.__item_scale_y is not None:
+                    bi.item_scale_y = bi.__item_scale_y
+                if bi.__item_position is not None:
+                    bi.item_position = bi.__item_position
 
             self.update_selection_bouding_box()
 
@@ -995,9 +995,9 @@ class BoardMixin():
 
 
         for bi in self.selected_items:
-            bi.__board_scale_x = bi.board_scale_x
-            bi.__board_scale_y = bi.board_scale_y
-            bi.__board_position = bi.board_position
+            bi.__item_scale_x = bi.item_scale_x
+            bi.__item_scale_y = bi.item_scale_y
+            bi.__item_position = bi.item_position
             position_vec = bi.calculate_absolute_position(board=self) - self.scaling_pivot_corner_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
 
@@ -1067,24 +1067,24 @@ class BoardMixin():
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
 
-            bi.board_scale_x = bi.__board_scale_x * x_factor
-            bi.board_scale_y = bi.__board_scale_y * y_factor
+            bi.item_scale_x = bi.__item_scale_x * x_factor
+            bi.item_scale_y = bi.__item_scale_y * y_factor
             if proportional_scaling and not mutli_item_mode and not center_is_pivot:
-                bi.board_scale_x = math.copysign(1.0, bi.board_scale_x)*abs(bi.board_scale_y)
+                bi.item_scale_x = math.copysign(1.0, bi.item_scale_x)*abs(bi.item_scale_y)
 
             # position component
             if center_is_pivot:
-                bi.board_position = bi.__board_position
+                bi.item_position = bi.__item_position
             else:
-                pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
+                pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__item_position)
                 scaling = QTransform()
                 # эти нормализованные координаты актуальны для пропорционального и не для пропорционального редактирования
                 scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_absolute_position = pivot + mapped_scaling_vector
                 rel_pos_global_scaled = new_absolute_position - self.board_origin
-                new_board_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
-                bi.board_position = new_board_position
+                new_item_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+                bi.item_position = new_item_position
 
 
 
@@ -1356,7 +1356,7 @@ class BoardMixin():
             board_scale_y = self.board_scale_y
 
             board_item = image_data.board_item
-            image_pos = QPointF(board_item.board_position.x()*board_scale_x, board_item.board_position.y()*board_scale_y)
+            image_pos = QPointF(board_item.item_position.x()*board_scale_x, board_item.item_position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
             self.board_origin = - image_pos + viewport_center_pos
@@ -1456,7 +1456,7 @@ class BoardMixin():
             delta = QPointF(self.get_center_position() - self.board_origin)
             current_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
 
-            item_point = item_to_center_viewport.board_position
+            item_point = item_to_center_viewport.item_position
 
             pos1 = QPointF(current_pos.x()*self.board_scale_x, current_pos.y()*self.board_scale_y)
             pos2 = QPointF(item_point.x()*self.board_scale_x, item_point.y()*self.board_scale_y)
@@ -1532,7 +1532,7 @@ class BoardMixin():
                 else:
                     sorted_list = board_items_list
                 for board_item in sorted_list:
-                    point = board_item.board_position
+                    point = board_item.item_position
                     _list.append([point, None, board_item])
 
             self.fly_pairs = get_cycled_pairs(_list)
