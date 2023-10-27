@@ -758,13 +758,13 @@ class BoardMixin():
                 return True
         return False
 
-    def board_start_selected_items_translation(self, event):
+    def board_START_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board_items_list:
             board_item.start_translation_pos = QPointF(board_item.board_position)
 
-    def board_do_selected_items_translation(self, event):
+    def board_DO_selected_items_TRANSLATION(self, event):
         if self.start_translation_pos:
             self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
@@ -777,7 +777,7 @@ class BoardMixin():
         else:
             self.translation_ongoing = False
 
-    def board_end_selected_items_translation(self, event):
+    def board_FINISH_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = None
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board_items_list:
@@ -836,7 +836,7 @@ class BoardMixin():
                 return True
         return False
 
-    def board_start_selected_items_rotation(self, event):
+    def board_START_selected_items_ROTATION(self, event):
         self.rotation_ongoing = True
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
         pivot = self.selection_bounding_box.boundingRect().center()
@@ -846,7 +846,7 @@ class BoardMixin():
             bi.__board_rotation = bi.board_rotation
             bi.__board_position = bi.board_position
 
-    def board_do_selected_items_rotation(self, event):
+    def board_DO_selected_items_ROTATION(self, event):
         pivot = self.selection_bounding_box.boundingRect().center()
         radius_vector = QPointF(event.pos()) - pivot
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
@@ -875,7 +875,7 @@ class BoardMixin():
         transform = translate_to_coord_origin * rotation * translate_back_to_place
         self.selection_bounding_box = transform.map(self.__selection_bounding_box)
 
-    def board_end_selected_items_rotation(self, event):
+    def board_FINISH_selected_items_ROTATION(self, event):
         self.rotation_ongoing = False
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
@@ -890,7 +890,7 @@ class BoardMixin():
         self.scaling_active_point_index = None
         return False
 
-    def board_start_selected_items_scaling(self, event):
+    def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
 
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
@@ -961,7 +961,7 @@ class BoardMixin():
         y_factor = QPointF.dotProduct(y_axis_normalized, vector)/y_axis_length
         return x_factor, y_factor
 
-    def board_do_selected_items_scaling(self, event_pos, refresh=False):
+    def board_DO_selected_items_SCALING(self, event_pos, refresh=False):
         mutli_item_mode = len(self.selected_items) > 1
         alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
         shift_mod = QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
@@ -1036,7 +1036,7 @@ class BoardMixin():
         self.update_selection_bouding_box()
 
 
-    def board_end_selected_items_scaling(self, event):
+    def board_FINISH_selected_items_SCALING(self, event):
         self.scaling_ongoing = False
         self.scaling_vector = None
         self.proportional_scaling_vector = None
@@ -1046,7 +1046,7 @@ class BoardMixin():
 
     def boards_do_scaling_key_callback(self):
         if self.scaling_ongoing:
-            self.board_do_selected_items_scaling(self.mapped_cursor_pos(), refresh=True)
+            self.board_DO_selected_items_SCALING(self.mapped_cursor_pos(), refresh=True)
 
     def boards_key_release_callback(self, event):
         self.boards_do_scaling_key_callback()
@@ -1064,13 +1064,13 @@ class BoardMixin():
             if not alt:
 
                 if self.is_scaling_activation_area_clicked(event):
-                    self.board_start_selected_items_scaling(event)
+                    self.board_START_selected_items_SCALING(event)
 
                 elif self.is_rotation_activation_area_clicked(event):
-                    self.board_start_selected_items_rotation(event)
+                    self.board_START_selected_items_ROTATION(event)
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
-                    self.board_start_selected_items_translation(event)
+                    self.board_START_selected_items_TRANSLATION(event)
                     self.update_selection_bouding_box()
 
                 else:
@@ -1097,13 +1097,13 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
 
             if self.scaling_ongoing:
-                self.board_do_selected_items_scaling(event.pos())
+                self.board_DO_selected_items_SCALING(event.pos())
 
             elif self.rotation_ongoing:
-                self.board_do_selected_items_rotation(event)
+                self.board_DO_selected_items_ROTATION(event)
 
             elif no_mod and not self.selection_ongoing:
-                self.board_do_selected_items_translation(event)
+                self.board_DO_selected_items_TRANSLATION(event)
                 self.update_selection_bouding_box()
 
             elif self.selection_ongoing is not None and not self.translation_ongoing:
@@ -1141,13 +1141,13 @@ class BoardMixin():
                 self.selection_ongoing = False
 
             if self.rotation_ongoing:
-                self.board_end_selected_items_rotation(event)
+                self.board_FINISH_selected_items_ROTATION(event)
 
             if self.scaling_ongoing:
-                self.board_end_selected_items_scaling(event)
+                self.board_FINISH_selected_items_SCALING(event)
 
             if self.translation_ongoing:
-                self.board_end_selected_items_translation(event)
+                self.board_FINISH_selected_items_TRANSLATION(event)
                 self.selection_start_point = None
                 self.selection_end_point = None
                 self.selection_rect = None
