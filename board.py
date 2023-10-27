@@ -861,17 +861,40 @@ class BoardMixin():
             bi.__board_rotation = bi.board_rotation
             bi.__board_position = bi.board_position
 
+    def step_rotation(self, rotation_value):
+        values = [
+            -360.0, -315.0, -270.0, -225.0, -180.0, -135.0, -90.0, -45.0,
+            0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 360.0
+        ]
+        values = list(sorted(values))
+        intervals = [(values[n], values[n]+values[n+1]/2.0, values[n+1]) for n in range(len(values)-1)]
+
+        for interval_a, interval_mid, interval_b in intervals:
+            if interval_a < rotation_value < interval_b:
+                if rotation_value > interval_mid:
+                    _rotation_value = interval_b
+                else:
+                    _rotation_value = interval_a
+                return _rotation_value % 360.0
+        return 0.0
+
     def board_DO_selected_items_ROTATION(self, event_pos):
+        mutli_item_mode = len(self.selected_items) > 1
+        ctrl_mod = QApplication.queryKeyboardModifiers() & Qt.ControlModifier
         pivot = self.selection_bounding_box.boundingRect().center()
         radius_vector = QPointF(event_pos) - pivot
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
         rotation_delta_degrees = math.degrees(self.rotation_delta)
+        if mutli_item_mode and ctrl_mod:
+            rotation_delta_degrees = self.step_rotation(rotation_delta_degrees)
         rotation = QTransform()
         rotation.rotate(rotation_delta_degrees)
         for bi in self.selected_items:
             # rotation component
             bi.board_rotation = bi.__board_rotation + rotation_delta_degrees
+            if not mutli_item_mode and ctrl_mod:
+                bi.board_rotation = self.step_rotation(bi.board_rotation)
             # position component
             pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__board_position)
             pos_radius_vector = pos - pivot
