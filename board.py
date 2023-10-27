@@ -59,6 +59,7 @@ class BoardItem():
         self.__board_scale_x = None
         self.__board_scale_y = None
         self.__board_position = None
+        self.__board_rotation = None
 
         self.board_index = 0
 
@@ -840,19 +841,29 @@ class BoardMixin():
                 return True
         return False
 
-    def board_START_selected_items_ROTATION(self, event):
+    def board_START_selected_items_ROTATION(self, event_pos, viewport_zoom_changed=False):
         self.rotation_ongoing = True
+        if viewport_zoom_changed:
+            for bi in self.selected_items:
+                # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
+                # if bi.__board_rotation is not None:
+                #     bi.board_rotation = bi.__board_rotation
+                if bi.__board_position is not None:
+                    bi.board_position = bi.__board_position
+
+            self.update_selection_bouding_box()
+
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
         pivot = self.selection_bounding_box.boundingRect().center()
-        radius_vector = QPointF(event.pos()) - pivot
+        radius_vector = QPointF(event_pos) - pivot
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         for bi in self.selected_items:
             bi.__board_rotation = bi.board_rotation
             bi.__board_position = bi.board_position
 
-    def board_DO_selected_items_ROTATION(self, event):
+    def board_DO_selected_items_ROTATION(self, event_pos):
         pivot = self.selection_bounding_box.boundingRect().center()
-        radius_vector = QPointF(event.pos()) - pivot
+        radius_vector = QPointF(event_pos) - pivot
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
         rotation_delta_degrees = math.degrees(self.rotation_delta)
@@ -1089,7 +1100,7 @@ class BoardMixin():
                     self.board_START_selected_items_SCALING(event)
 
                 elif self.is_rotation_activation_area_clicked(event):
-                    self.board_START_selected_items_ROTATION(event)
+                    self.board_START_selected_items_ROTATION(event.pos())
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
                     self.board_START_selected_items_TRANSLATION(event)
@@ -1122,7 +1133,7 @@ class BoardMixin():
                 self.board_DO_selected_items_SCALING(event.pos())
 
             elif self.rotation_ongoing:
-                self.board_DO_selected_items_ROTATION(event)
+                self.board_DO_selected_items_ROTATION(event.pos())
 
             elif no_mod and not self.selection_ongoing:
                 self.board_DO_selected_items_TRANSLATION(event)
@@ -1243,12 +1254,18 @@ class BoardMixin():
             self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
         self.update_selection_bouding_box()
 
+        event_pos = self.mapped_cursor_pos()
         if self.scaling_ongoing:
             # пользователь вознамерился зумить посреди процесса скейла айтемов (нажал кнопку мыши и ещё не отпустил),
             # это значит, что инициализацию надо провести заново, но с нюансами
             self.board_START_selected_items_SCALING(None, viewport_zoom_changed=True)
             # вызываю, чтобы дебажная графика обновилась сразу, а не после того, как двинется курсор мыши
-            self.board_DO_selected_items_SCALING(self.mapped_cursor_pos())
+            self.board_DO_selected_items_SCALING(event_pos)
+
+        if self.rotation_ongoing:
+            # то же самое, что и для скейла
+            self.board_START_selected_items_ROTATION(event_pos, viewport_zoom_changed=True)
+            self.board_DO_selected_items_ROTATION(event_pos)
 
         self.update()
 
