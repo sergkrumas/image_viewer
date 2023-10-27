@@ -56,6 +56,10 @@ class BoardItem():
         self.board_position = QPointF()
         self.board_rotation = 0
 
+        self.__board_scale_x = None
+        self.__board_scale_y = None
+        self.__board_position = None
+
         self.board_index = 0
 
         self._selected = False
@@ -892,8 +896,19 @@ class BoardMixin():
         self.scaling_active_point_index = None
         return False
 
-    def board_START_selected_items_SCALING(self, event):
+    def board_START_selected_items_SCALING(self, event, viewport_zoom_changed=False):
         self.scaling_ongoing = True
+
+        if viewport_zoom_changed:
+            for bi in self.selected_items:
+                if bi.__board_scale_x is not None:
+                    bi.board_scale_x = bi.__board_scale_x
+                if bi.__board_scale_y is not None:
+                    bi.board_scale_y = bi.__board_scale_y
+                if bi.__board_position is not None:
+                    bi.board_position = bi.__board_position
+
+            self.update_selection_bouding_box()
 
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
 
@@ -963,7 +978,7 @@ class BoardMixin():
         y_factor = QPointF.dotProduct(y_axis_normalized, vector)/y_axis_length
         return x_factor, y_factor
 
-    def board_DO_selected_items_SCALING(self, event_pos, refresh=False):
+    def board_DO_selected_items_SCALING(self, event_pos):
         mutli_item_mode = len(self.selected_items) > 1
         alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
         shift_mod = QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
@@ -1053,7 +1068,7 @@ class BoardMixin():
 
     def boards_do_scaling_key_callback(self):
         if self.scaling_ongoing:
-            self.board_DO_selected_items_SCALING(self.mapped_cursor_pos(), refresh=True)
+            self.board_DO_selected_items_SCALING(self.mapped_cursor_pos())
 
     def boards_key_release_callback(self, event):
         self.boards_do_scaling_key_callback()
@@ -1227,6 +1242,13 @@ class BoardMixin():
         if self.selection_rect:
             self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
         self.update_selection_bouding_box()
+
+        if self.scaling_ongoing:
+            # пользователь вознамерился зумить посреди процесса скейла айтемов (нажал кнопку мыши и ещё не отпустил),
+            # это значит, что инициализацию надо провести заново, но с нюансами
+            self.board_START_selected_items_SCALING(None, viewport_zoom_changed=True)
+            # вызываю, чтобы дебажная графика обновилась сразу, а не после того, как двинется курсор мыши
+            self.board_DO_selected_items_SCALING(self.mapped_cursor_pos())
 
         self.update()
 
