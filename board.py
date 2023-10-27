@@ -986,7 +986,12 @@ class BoardMixin():
         self.scaling_pivot_point_y_axis = scaling_y_axis
 
         for bi in self.selected_items:
-            self.scaling_vector = scaling_vector = QPointF(event_pos) - pivot
+            __scaling_vector =  QVector2D(QPointF(event_pos) - pivot) # не вытаскивать вычисления вектора из цикла!
+            # принудительно задаётся минимальный скейл, значение в экранных координатах
+            # MIN_LENGTH = 100.0 
+            # if __scaling_vector.length() < MIN_LENGTH:
+            #     __scaling_vector = __scaling_vector.normalized()*MIN_LENGTH
+            self.scaling_vector = scaling_vector = __scaling_vector.toPointF()
 
             if proportional_scaling:
                 x_axis = QVector2D(scaling_x_axis).normalized()
