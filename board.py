@@ -835,7 +835,9 @@ class BoardMixin():
                 item_selection_area = board_item.get_selection_area(board=self)
                 is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if add_to_selection and board_item._selected:
-                    pass
+                    # subtract item from selection!
+                    if is_under_mouse:
+                        board_item._selected = False
                 else:
                     board_item._selected = is_under_mouse
         self.init_selection_bounding_box_widget(current_folder)
