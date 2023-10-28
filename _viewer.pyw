@@ -2958,6 +2958,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_PageUp:
                 self.board_move_viewport(_next=True)
 
+            elif key in [Qt.Key_Return, Qt.Key_Enter]:
+                self.board_navigate_camera_via_minimap()
 
         self.update()
 

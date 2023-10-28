@@ -674,15 +674,35 @@ class BoardMixin():
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
 
-    def build_board_bounding_rect(self, folder_data):
+    def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
         points = []
-        points.append(self.board_origin)
+        # points.append(self.board_origin) #мешает при использовании board_navigate_camera_via_minimap, поэтому убрал нафег
         for board_item in folder_data.board_items_list:
-            rf = board_item.get_selection_area(board=self, apply_global_scale=False).boundingRect()
+            rf = board_item.get_selection_area(board=self, apply_global_scale=apply_global_scale).boundingRect()
             points.append(rf.topLeft())
             points.append(rf.bottomRight())
         p1, p2 = get_bounding_points(points)
-        self.board_bounding_rect = build_valid_rectF(p1, p2)
+        result = build_valid_rectF(p1, p2)
+        self.board_bounding_rect = result
+
+    def board_navigate_camera_via_minimap(self):
+        if not self.board_show_minimap:
+            return
+        if self.minimap_rect.contains(self.mapped_cursor_pos()):
+            rel_pos = self.mapped_cursor_pos() - self.minimap_rect.topLeft()
+            norm_rel_pos = QPointF(rel_pos.x()/self.minimap_rect.width(), rel_pos.y()/self.minimap_rect.height())
+            cf = self.LibraryData().current_folder()
+            self.build_board_bounding_rect(cf, apply_global_scale=True)
+            board_origin = QPointF(self.board_bounding_rect.width()*norm_rel_pos.x(), self.board_bounding_rect.height()*norm_rel_pos.y())
+            board_origin = - board_origin + QPointF(self.rect().width()/2.0, self.rect().height()/2.0)
+            board_origin = board_origin + (self.board_origin - self.board_bounding_rect.topLeft())
+            self.board_origin = board_origin
+            # восстанавливаем прежний bounding rect
+            self.build_board_bounding_rect(cf, apply_global_scale=False)
+            self.show_center_label("Камера перемещена!")
+        else:
+            self.show_center_label("Вне прямоугольника! Отмена", error=True)
+        self.update()
 
     def board_draw_minimap(self, painter):
         if not self.board_show_minimap:
@@ -700,6 +720,7 @@ class BoardMixin():
             map_height = self.board_bounding_rect.height()*factor
             minimap_rect = QRectF(0, 0, map_width, map_height)
             minimap_rect.moveCenter(self.get_center_position())
+            self.minimap_rect = minimap_rect
 
             # backplate
             minimap_backplate = minimap_rect.adjusted(-10, -10, 10, 10)
