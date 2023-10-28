@@ -1388,8 +1388,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_for_center_label_fade_effect()
         self.threads_info_watcher()
         self.retrieve_request_data_from_file()
-        self.animate_noise_cells_effect()
-        self.viewport_image_animation()
+
+        if self.is_viewer_page_active():
+            self.animate_noise_cells_effect()
+            self.viewport_image_animation()
+
+        elif self.is_board_page_active():
+            self.board_timer_handler()
 
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())

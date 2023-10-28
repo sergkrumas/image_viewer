@@ -646,17 +646,6 @@ class ControlPanel(QWidget, UtilsMixin):
                 text = "страница доски"
 
         self.control_panel_label.setText(text)
-        # movie progress bar
-        if MW.animated:
-            MW.update()
-
-        # global cursor
-        # SettingsWindow = self.SettingsWindow
-        # settings_win_under_mouse = hasattr(SettingsWindow, 'instance') \
-        #                                 and SettingsWindow.instance.isVisible() \
-        #                                 and SettingsWindow.instance.underMouse()
-        # if settings_win_under_mouse:
-        #     MW.setCursor(Qt.PointingHandCursor)
 
         if not MW.isActiveWindow():
             MW.setCursor(Qt.ArrowCursor)

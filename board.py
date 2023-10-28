@@ -184,6 +184,8 @@ class BoardMixin():
 
         self.current_board_index = 0
 
+        self.board_selection_transform_box_opacity = 1.0
+
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
         self.build_board_bounding_rect(cf)
@@ -244,6 +246,33 @@ class BoardMixin():
 
         folder_data.board_ready = True
         self.update()
+
+    def board_timer_handler(self):
+        if self.isActiveWindow():
+            self.board_selection_transform_box_opacity = 1.0
+        else:
+            if self.underMouse():
+                # to 1.0
+                value = 1.0
+                if not self.is_there_any_task_with_anim_id("transforom_widget_fading") and self.board_selection_transform_box_opacity != value:
+                    self.animate_properties(
+                        [
+                            (self, "board_selection_transform_box_opacity", self.board_selection_transform_box_opacity, value, self.update),
+                        ],
+                        anim_id="transforom_widget_fading",
+                        duration=0.3,
+                    )
+            else:
+                # to 0.0
+                value = 0.0
+                if not self.is_there_any_task_with_anim_id("transforom_widget_fading") and self.board_selection_transform_box_opacity != value:
+                    self.animate_properties(
+                        [
+                            (self, "board_selection_transform_box_opacity", self.board_selection_transform_box_opacity, value, self.update),
+                        ],
+                        anim_id="transforom_widget_fading",
+                        duration=0.3,
+                    )
 
     def board_draw_content(self, painter, folder_data):
 
@@ -487,6 +516,7 @@ class BoardMixin():
         self.rotation_activation_areas = []
         if self.selection_bounding_box is not None:
 
+            painter.setOpacity(self.board_selection_transform_box_opacity)
             c = QColor(18, 118, 127)
             pen = QPen(c, 2)
             painter.setPen(pen)
@@ -533,7 +563,6 @@ class BoardMixin():
                 x_axis = self.scaling_pivot_point_x_axis
                 y_axis = self.scaling_pivot_point_y_axis
 
-
                 painter.setPen(QPen(Qt.red, 4))
                 painter.drawLine(pivot, pivot+x_axis)
                 painter.setPen(QPen(Qt.green, 4))
@@ -545,6 +574,8 @@ class BoardMixin():
                 if self.proportional_scaling_vector is not None:
                     painter.setPen(QPen(Qt.darkGray, 4))
                     painter.drawLine(pivot, pivot + self.proportional_scaling_vector)
+
+            painter.setOpacity(1.0)
 
 
     def board_draw_origin_compass(self, painter):
@@ -767,27 +798,6 @@ class BoardMixin():
     def isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
-    def any_item_area_under_mouse(self, add_selection):
-        current_folder = self.LibraryData().current_folder()
-        if self.is_flyover_ongoing():
-            return False
-        for board_item in current_folder.board_items_list:
-            item_selection_area = board_item.get_selection_area(board=self)
-            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
-            # стало не нужным, когда я поменял местами выделение и перемещемение в MousePressEvent
-            if is_under_mouse and not board_item._selected:
-                if not add_selection:
-                    for bi in current_folder.board_items_list:
-                        bi._selected = False
-                board_item._selected = True
-                # вытаскиваем айтем на передний план при отрисовке
-                current_folder.board_items_list.remove(board_item)
-                current_folder.board_items_list.append(board_item)
-                return True
-            if is_under_mouse and board_item._selected:
-                return True
-        return False
-
     def board_START_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
@@ -815,6 +825,29 @@ class BoardMixin():
         self.translation_ongoing = False
         self.build_board_bounding_rect(current_folder)
 
+    def any_item_area_under_mouse(self, add_selection):
+        self.prevent_item_deselection = False
+        current_folder = self.LibraryData().current_folder()
+        if self.is_flyover_ongoing():
+            return False
+        for board_item in current_folder.board_items_list:
+            item_selection_area = board_item.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+
+            if is_under_mouse and not board_item._selected:
+                if not add_selection:
+                    for bi in current_folder.board_items_list:
+                        bi._selected = False
+                board_item._selected = True
+                # вытаскиваем айтем на передний план при отрисовке
+                current_folder.board_items_list.remove(board_item)
+                current_folder.board_items_list.append(board_item)
+                self.prevent_item_deselection = True
+                return True
+            if is_under_mouse and board_item._selected:
+                return True
+        return False
+
     def board_selection_callback(self, add_to_selection):
         if self.is_flyover_ongoing():
             return
@@ -836,7 +869,7 @@ class BoardMixin():
                 is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if add_to_selection and board_item._selected:
                     # subtract item from selection!
-                    if is_under_mouse:
+                    if is_under_mouse and not self.prevent_item_deselection:
                         board_item._selected = False
                 else:
                     board_item._selected = is_under_mouse
@@ -1270,6 +1303,8 @@ class BoardMixin():
             elif alt:
                 if self.transformations_allowed:
                     self.set_default_boardviewport_scale(keep_position=True)
+
+        self.prevent_item_deselection = False
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
