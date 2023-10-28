@@ -930,6 +930,7 @@ class BoardMixin():
         self.rotation_ongoing = False
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
+        self.build_board_bounding_rect(cf)        
 
     def is_scaling_activation_area_clicked(self, event):
         if self.selection_bounding_box is not None:
@@ -1112,6 +1113,7 @@ class BoardMixin():
         self.scaling_pivot_point = None
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
+        self.build_board_bounding_rect(cf)        
 
     def boards_do_scaling_key_callback(self):
         if self.scaling_ongoing:
