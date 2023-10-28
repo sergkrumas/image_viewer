@@ -465,9 +465,9 @@ class BoardMixin():
 
         self.board_draw_user_points(painter, cf)
 
-        self.board_region_zoom_in_draw(painter)
         self.board_draw_selection_frames(painter)
         self.board_draw_selection_transform_box(painter)
+        self.board_region_zoom_in_draw(painter)
 
         if self.Globals.DEBUG:
             self.board_draw_origin_compass(painter)
@@ -1203,14 +1203,15 @@ class BoardMixin():
                 self.board_DO_selected_items_TRANSLATION(event)
                 self.update_selection_bouding_box()
 
+            elif self.board_region_zoom_in_input_started:
+                self.board_region_zoom_in_mouseMoveEvent(event)
+
             elif self.selection_ongoing is not None and not self.translation_ongoing:
                 self.selection_end_point = QPointF(event.pos())
                 if self.selection_start_point:
                     self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
                     self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
 
-            elif self.board_region_zoom_in_input_started:
-                self.board_region_zoom_in_mouseMoveEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed and self.board_translating:
