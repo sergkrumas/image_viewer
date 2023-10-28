@@ -2787,6 +2787,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def keyPressEvent(self, event):
         key = event.key()
 
+        ctrl_mod = event.modifiers() & Qt.ControlModifier
+
         self.boards_key_press_callback(event)
 
         if self.check_thumbnails_fullscreen():
@@ -2855,7 +2857,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif key == Qt.Key_Pause:
             self.change_page(self.pages.START_PAGE)
 
-        elif check_scancode_for(event, ("W", "S", "A", "D")):
+        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod:
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
                 length *= 20.0
@@ -2913,7 +2915,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif check_scancode_for(event, "R"):
                 self.start_inframed_image_saving(event)
             elif check_scancode_for(event, "M"):
-                self.mirror_current_image(event.modifiers() & Qt.ControlModifier)
+                self.mirror_current_image(ctrl_mod)
 
 
         elif self.is_board_page_active():
@@ -2926,6 +2928,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             elif check_scancode_for(event, "I"):
                 self.board_toggle_item_info_overlay()
+
+            elif check_scancode_for(event, "A") and ctrl_mod:
+                self.board_select_all_items()
 
             elif key == Qt.Key_Home:
                 self.board_viewport_show_first_item()

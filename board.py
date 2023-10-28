@@ -21,7 +21,6 @@
 from _utils import *
 import math
 
-BOARD_DEBUG = True
 
 class BoardLibraryDataMixin():
 
@@ -66,10 +65,6 @@ class BoardItem():
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
-
-        if BOARD_DEBUG:
-            self.item_scale_x = 0.5
-            self.item_rotation = 10
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
@@ -822,6 +817,12 @@ class BoardMixin():
             if board_item._selected:
                 self.selected_items.append(board_item)
         self.update_selection_bouding_box()
+
+    def board_select_all_items(self):
+        cf = self.LibraryData().current_folder()
+        for bi in cf.board_items_list:
+            bi._selected = True
+        self.update()
 
     def update_selection_bouding_box(self):
         self.selection_bounding_box = None
