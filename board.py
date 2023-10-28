@@ -68,8 +68,8 @@ class BoardItem():
 
     def info_text(self):
         if self.type == self.types.ITEM_IMAGE:
-            image_data = self.image_data 
-            return f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}' 
+            image_data = self.image_data
+            return f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
         elif self.type == self.types.ITEM_FOLDER:
             raise NotImplemented
         elif self.type == self.types.ITEM_GROUP:
@@ -956,7 +956,7 @@ class BoardMixin():
         self.rotation_ongoing = False
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
-        self.build_board_bounding_rect(cf)        
+        self.build_board_bounding_rect(cf)
 
     def is_scaling_activation_area_clicked(self, event):
         if self.selection_bounding_box is not None:
@@ -1139,7 +1139,7 @@ class BoardMixin():
         self.scaling_pivot_point = None
         cf = self.LibraryData().current_folder()
         self.init_selection_bounding_box_widget(cf)
-        self.build_board_bounding_rect(cf)        
+        self.build_board_bounding_rect(cf)
 
     def boards_do_scaling_key_callback(self):
         if self.scaling_ongoing:
