@@ -862,7 +862,8 @@ class BoardMixin():
         current_folder = self.LibraryData().current_folder()
         if self.is_flyover_ongoing():
             return False
-        for board_item in current_folder.board_items_list:
+        # reversed для того, чтобы картинки на переднем плане чекались первыми
+        for board_item in reversed(current_folder.board_items_list):
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
 
@@ -896,7 +897,8 @@ class BoardMixin():
                     else:
                         board_item._selected = False
         else:
-            for board_item in current_folder.board_items_list:
+            # reversed для того, чтобы картинки на переднем плане чекались первыми
+            for board_item in reversed(current_folder.board_items_list):
                 item_selection_area = board_item.get_selection_area(board=self)
                 is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if add_to_selection and board_item._selected:
