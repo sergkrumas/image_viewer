@@ -1371,16 +1371,25 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if thread.isFinished():
                 ThumbnailsThread.threads_pool.remove(thread)
 
-    def on_timer(self):
-        self.update_for_center_label_fade_effect()
-        self.threads_info_watcher()
-        if not Globals.USE_SOCKETS:
-            ServerOrClient.retrieve_server_data(open_request)
+    def animate_noise_cells_effect(self):
         if self.STNG_show_noise_cells and noise:
             self.noise_time += 0.005
             self.update()
+
+    def viewport_image_animation(self):
         if self.animated:
             self.tick_animation()
+
+    def retrieve_request_data_from_file(self):
+        if not Globals.USE_SOCKETS:
+            ServerOrClient.retrieve_server_data(open_request)
+
+    def on_timer(self):
+        self.update_for_center_label_fade_effect()
+        self.threads_info_watcher()
+        self.retrieve_request_data_from_file()
+        self.animate_noise_cells_effect()
+        self.viewport_image_animation()
 
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())
