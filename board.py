@@ -66,6 +66,15 @@ class BoardItem():
         self._touched = False
         self._show_file_info_overlay = False
 
+    def info_text(self):
+        if self.type == self.types.ITEM_IMAGE:
+            image_data = self.image_data 
+            return f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}' 
+        elif self.type == self.types.ITEM_FOLDER:
+            raise NotImplemented
+        elif self.type == self.types.ITEM_GROUP:
+            raise NotImplemented
+
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
         _scale_y = board.board_scale_y
@@ -323,7 +332,7 @@ class BoardMixin():
             selection_area_bounding_rect = selection_area.boundingRect()
 
             if board_item._show_file_info_overlay:
-                text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+                text = board_item.info_text()
                 alignment = Qt.AlignCenter
 
                 old_pen = painter.pen()
@@ -694,6 +703,23 @@ class BoardMixin():
                 selection_area_scaled.translate(p)
 
                 painter.drawPolygon(selection_area_scaled)
+
+                bounding_rect_selection_area_scaled = selection_area_scaled.boundingRect()
+                if bounding_rect_selection_area_scaled.contains(self.mapped_cursor_pos()):
+                    text = board_item.info_text()
+                    alignment = Qt.AlignCenter
+
+                    old_pen = painter.pen()
+                    text_rect = calculate_text_rect(painter.font(), bounding_rect_selection_area_scaled, text, alignment)
+                    painter.setBrush(QBrush(Qt.white))
+                    painter.setPen(Qt.NoPen)
+                    painter.drawRect(text_rect)
+                    painter.setPen(QPen(Qt.black, 1))
+                    painter.setBrush(Qt.NoBrush)
+                    painter.drawText(text_rect, alignment, text)
+                    painter.setPen(old_pen)
+
+
 
             # origin point
             center_point_rel = -self.board_bounding_rect.topLeft()
