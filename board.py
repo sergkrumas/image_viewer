@@ -21,6 +21,7 @@
 from _utils import *
 import math
 
+COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
 class BoardLibraryDataMixin():
 
@@ -40,12 +41,9 @@ class BoardItem():
         ITEM_FOLDER = 2
         ITEM_GROUP = 3
 
-    def __init__(self, item_type, image_data, items):
+    def __init__(self, item_type):
         super().__init__()
         self.type = item_type
-        self.image_data = image_data
-        image_data.board_item = self
-        items.append(self)
 
         self.pixmap = None
         self.animated = False
@@ -65,6 +63,18 @@ class BoardItem():
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
+
+    def make_copy(self, board, folder_data):
+        copied_item = BoardItem(self.type)
+        attributes = self.__dict__.items()
+        for attr_name, attr_value in attributes:
+            type_obj = type(attr_value)
+            if type_obj is QPointF:
+                attr_value = type_obj(attr_value)
+            setattr(copied_item, attr_name, attr_value)
+        copied_item.board_index = board.retrieve_new_board_item_index()
+        folder_data.board_items_list.append(copied_item)
+        return copied_item
 
     def info_text(self):
         if self.type == self.types.ITEM_IMAGE:
@@ -237,7 +247,10 @@ class BoardMixin():
 
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
-                board_item = BoardItem(BoardItem.types.ITEM_IMAGE, image_data, items_list)
+                board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+                board_item.image_data = image_data
+                image_data.board_item = board_item
+                folder_data.board_items_list.append(board_item)
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.item_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
@@ -473,7 +486,6 @@ class BoardMixin():
             i += LINES_INTERVAL_Y
 
     def board_draw_user_points(self, painter, cf):
-
         painter.setPen(QPen(Qt.red, 5))
         for point, board_scale_x, board_scale_y in cf.board_user_points:
             p = self.board_origin + QPointF(point.x()*self.board_scale_x, point.y()*self.board_scale_y)
@@ -576,7 +588,6 @@ class BoardMixin():
                     painter.drawLine(pivot, pivot + self.proportional_scaling_vector)
 
             painter.setOpacity(1.0)
-
 
     def board_draw_origin_compass(self, painter):
 
@@ -1327,6 +1338,28 @@ class BoardMixin():
 
         self.prevent_item_deselection = False
 
+    def get_relative_position(self, viewport_pos):
+        delta = QPointF(viewport_pos - self.board_origin)
+        return QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+
+    def board_paste_selected_items(self):
+        selected_items = []
+        selection_center = self.get_relative_position(self.selection_bounding_box.boundingRect().center())
+        rel_cursor_pos = self.get_relative_position(self.mapped_cursor_pos())
+        for bi in self.LibraryData().current_folder().board_items_list:
+            if bi._selected:
+                selected_items.append(bi)
+                bi._selected = False
+        if selected_items:
+            cf = self.LibraryData().current_folder()
+            for sel_item in selected_items:
+                new_item = sel_item.make_copy(self, cf)
+                # new_item.item_position += QPointF(100, 100)
+                delta = new_item.item_position - selection_center
+                new_item.item_position = rel_cursor_pos + delta
+                new_item._selected = True
+            self.init_selection_bounding_box_widget(cf)
+
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, board_origin=None, board_scale_x=None, board_scale_y=None):
 
@@ -1446,6 +1479,16 @@ class BoardMixin():
             if is_under_mouse or bi._selected:
                 bi._show_file_info_overlay = not bi._show_file_info_overlay
         self.update()
+
+    def board_control_c(self):
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
+
+    def board_control_v(self):
+        text = QApplication.clipboard().text()
+        if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
+            self.board_paste_selected_items()
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()

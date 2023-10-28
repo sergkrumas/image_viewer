@@ -2865,8 +2865,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif check_scancode_for(event, "L"):
             self.change_page(self.pages.LIBRARY_PAGE)
 
-        elif check_scancode_for(event, "V"):
-            self.change_page(self.pages.VIEWER_PAGE)
+        # elif check_scancode_for(event, "V"):
+        #     self.change_page(self.pages.VIEWER_PAGE)
 
         elif key == Qt.Key_Pause:
             self.change_page(self.pages.START_PAGE)
@@ -2945,6 +2945,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             elif check_scancode_for(event, "A") and ctrl_mod:
                 self.board_select_all_items()
+
+            elif check_scancode_for(event, "C") and ctrl_mod:
+                self.board_control_c()
+
+            elif check_scancode_for(event, "V") and ctrl_mod:
+                self.board_control_v()
 
             elif key == Qt.Key_Home:
                 self.board_viewport_show_first_item()
