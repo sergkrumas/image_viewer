@@ -743,7 +743,8 @@ class BoardMixin():
 
     def any_item_area_under_mouse(self, add_selection):
         current_folder = self.LibraryData().current_folder()
-
+        if self.is_flyover_ongoing():
+            return False
         for board_item in current_folder.board_items_list:
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
@@ -789,6 +790,8 @@ class BoardMixin():
         self.build_board_bounding_rect(current_folder)
 
     def board_selection_callback(self, add_to_selection):
+        if self.is_flyover_ongoing():
+            return
         current_folder = self.LibraryData().current_folder()
         if self.selection_rect is not None:
             selection_rect_area = QPolygonF(self.selection_rect)
@@ -817,6 +820,12 @@ class BoardMixin():
             if board_item._selected:
                 self.selected_items.append(board_item)
         self.update_selection_bouding_box()
+
+    def board_unselect_all_items(self):
+        cf = self.LibraryData().current_folder()
+        for board_item in cf.board_items_list:
+            board_item._selected = False
+        self.init_selection_bounding_box_widget(cf)
 
     def board_select_all_items(self):
         cf = self.LibraryData().current_folder()
@@ -1443,6 +1452,7 @@ class BoardMixin():
         return min_distance_board_item
 
     def board_move_viewport(self, _previous=False, _next=False):
+        self.board_unselect_all_items()
 
         cf = self.LibraryData().current_folder()
         nearest_item = self.board_get_nearest_item(cf, by_window_center=True)
@@ -1517,7 +1527,11 @@ class BoardMixin():
     def get_original_items_order(self, items_list):
         return list(sorted(items_list, key=lambda x: x.board_index))
 
+    def is_flyover_ongoing(self):
+        return bool(self.fly_pairs)
+
     def board_fly_over(self, user_call=False):
+        self.board_unselect_all_items()
 
         if user_call and self.fly_pairs:
             self.cancel_all_anim_tasks()
@@ -1614,6 +1628,7 @@ class BoardMixin():
         return self.LibraryData().current_folder().board_ready
 
     def board_viewport_show_first_item(self):
+        self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
             if cf.board_items_list:
@@ -1621,6 +1636,7 @@ class BoardMixin():
                 self.board_thumbnails_click_handler(items_list[0].image_data)
 
     def board_viewport_show_last_item(self):
+        self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
            if cf.board_items_list:
@@ -1659,6 +1675,7 @@ class BoardMixin():
                 self.board_origin = self.board_orig_origin
             self.board_region_zoom_in_init()
             self.update()
+            self.board_unselect_all_items()            
 
     def board_region_zoom_build_magnifier_input_rect(self):
         if self.board_INPUT_POINT1 is not None and self.board_INPUT_POINT2 is not None:
@@ -1715,6 +1732,7 @@ class BoardMixin():
             self.board_orig_scale_y = self.board_scale_y
             self.board_orig_origin = self.board_origin
             # self.setCursor(Qt.CrossCursor)
+            self.board_unselect_all_items()
 
     def board_region_zoom_in_mouseMoveEvent(self, event):
         if not self.board_zoom_region_defined:
