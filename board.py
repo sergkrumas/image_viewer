@@ -1675,7 +1675,7 @@ class BoardMixin():
                 self.board_origin = self.board_orig_origin
             self.board_region_zoom_in_init()
             self.update()
-            self.board_unselect_all_items()            
+            self.board_unselect_all_items()
 
     def board_region_zoom_build_magnifier_input_rect(self):
         if self.board_INPUT_POINT1 is not None and self.board_INPUT_POINT2 is not None:
