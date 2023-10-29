@@ -2859,17 +2859,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.toggle_stay_on_top()
             self.update()
 
-        elif check_scancode_for(event, "B"):
+        elif key == Qt.Key_1:
+            self.change_page(self.pages.START_PAGE)
+
+        elif key == Qt.Key_2:
+            self.change_page(self.pages.VIEWER_PAGE)
+
+        elif key == Qt.Key_3:
             self.change_page(self.pages.BOARD_PAGE)
 
-        elif check_scancode_for(event, "L"):
+        elif key == Qt.Key_4:
             self.change_page(self.pages.LIBRARY_PAGE)
-
-        # elif check_scancode_for(event, "V"):
-        #     self.change_page(self.pages.VIEWER_PAGE)
-
-        elif key == Qt.Key_Pause:
-            self.change_page(self.pages.START_PAGE)
 
         elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod:
             length = 1.0
