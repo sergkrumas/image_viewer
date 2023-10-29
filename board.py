@@ -970,21 +970,10 @@ class BoardMixin():
             bi.__item_position = bi.item_position
 
     def step_rotation(self, rotation_value):
-        values = [
-            -360.0, -315.0, -270.0, -225.0, -180.0, -135.0, -90.0, -45.0,
-            0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0, 360.0
-        ]
-        values = list(sorted(values))
-        intervals = [(values[n], values[n]+values[n+1]/2.0, values[n+1]) for n in range(len(values)-1)]
-
-        for interval_a, interval_mid, interval_b in intervals:
-            if interval_a < rotation_value < interval_b:
-                if rotation_value > interval_mid:
-                    _rotation_value = interval_b
-                else:
-                    _rotation_value = interval_a
-                return _rotation_value % 360.0
-        return 0.0
+        interval = 45.0
+        # формулу подбирал в графическом калькуляторе desmos.com/calculator
+        value = math.floor((rotation_value-interval/2.0)/interval)*interval+interval
+        return value
 
     def board_DO_selected_items_ROTATION(self, event_pos):
         mutli_item_mode = len(self.selected_items) > 1
