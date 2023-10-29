@@ -1384,10 +1384,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not Globals.USE_SOCKETS:
             ServerOrClient.retrieve_server_data(open_request)
 
+    def control_timer_handler(self):
+        CP = Globals.control_panel
+        if CP is not None:
+            CP.control_panel_timer_handler()
+
     def on_timer(self):
         self.update_for_center_label_fade_effect()
         self.threads_info_watcher()
         self.retrieve_request_data_from_file()
+        self.control_timer_handler()
 
         if self.is_viewer_page_active():
             self.animate_noise_cells_effect()
@@ -3101,10 +3107,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def recreate_control_panel(self, requested_page=None):
         MW = Globals.main_window
-        if Globals.control_panel is not None:
-            Globals.control_panel.timer.stop()
-            Globals.control_panel.close()
-            Globals.control_panel.setParent(None)
+        CP = Globals.control_panel
+        if CP is not None:
+            CP.close()
+            CP.setParent(None)
             Globals.control_panel = None
 
         CP = Globals.control_panel = ControlPanel(self, requested_page=requested_page)

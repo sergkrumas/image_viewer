@@ -590,10 +590,6 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.place_and_resize()
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.control_panel_timer_handler)
-        self.timer.start(20)
-
         self.last_cursor_pos = QCursor().pos()
         self.opacity_effect = QGraphicsOpacityEffect(self)
         # по какой-то неизвестной причине нельзя задавать 1.0,
