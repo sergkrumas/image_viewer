@@ -201,6 +201,8 @@ class BoardMixin():
 
         self.load_svg_cursors()
 
+        self.selection_color = QColor(18, 118, 127)
+
     def load_svg_cursors(self):
         folder_path = os.path.dirname(__file__)
         filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
@@ -327,7 +329,7 @@ class BoardMixin():
 
     def draw_selection(self, painter, folder_data):
         old_pen = painter.pen()
-        pen = QPen(Qt.green, 1)
+        pen = QPen(self.selection_color, 1)
         painter.setPen(pen)
 
         for board_item in folder_data.board_items_list:
@@ -534,7 +536,7 @@ class BoardMixin():
 
     def board_draw_selection_frames(self, painter):
         if self.selection_rect is not None:
-            c = QColor(18, 118, 127)
+            c = self.selection_color
             painter.setPen(QPen(c))
             c.setAlphaF(0.5)
             brush = QBrush(c)
@@ -546,8 +548,7 @@ class BoardMixin():
         if self.selection_bounding_box is not None:
 
             painter.setOpacity(self.board_selection_transform_box_opacity)
-            c = QColor(18, 118, 127)
-            pen = QPen(c, 2)
+            pen = QPen(self.selection_color, 2)
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
             painter.drawPolygon(self.selection_bounding_box)
