@@ -1652,7 +1652,7 @@ class FinderWindow(QWidget):
             QTextEdit{
                 color: white;
                 background-color: transparent;
-                border: none; 
+                border: none;
             }
 
             """
