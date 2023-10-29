@@ -201,6 +201,8 @@ class BoardMixin():
 
         self.load_svg_cursors()
 
+        self.board_debug_transform_widget = False
+
         self.selection_color = QColor(18, 118, 127)
 
     def load_svg_cursors(self):
@@ -574,9 +576,9 @@ class BoardMixin():
                     point + a + b,
                     point + b,
                 ]
-
                 raa = QPolygonF(points)
-                painter.drawPolygon(raa)
+                if self.board_debug_transform_widget:
+                    painter.drawPolygon(raa)
 
                 self.rotation_activation_areas.append((index, raa))
 
@@ -588,7 +590,7 @@ class BoardMixin():
             for index, point in enumerate(self.selection_bounding_box):
                 painter.drawPoint(point)
 
-            if self.scaling_ongoing and self.scaling_pivot_point is not None:
+            if self.board_debug_transform_widget and self.scaling_ongoing and self.scaling_pivot_point is not None:
                 pivot = self.scaling_pivot_point
                 x_axis = self.scaling_pivot_point_x_axis
                 y_axis = self.scaling_pivot_point_y_axis

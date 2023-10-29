@@ -3214,6 +3214,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         rerun_extended_mode = None
         open_in_sep_app = None
 
+        board_transform_widget_debug_draw = None
+
         self.contextMenuActivated = True
 
         minimize_window = contextMenu.addAction("Свернуть")
@@ -3261,6 +3263,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     else:
                         text = "Развернуть окно на два монитора"
                     toggle_two_monitors_wide = contextMenu.addAction(text)
+
+        elif self.is_board_page_active():
+
+            board_transform_widget_debug_draw = contextMenu.addAction("Отображать отладочную графику виджета трансформации")
+            board_transform_widget_debug_draw.setCheckable(True)
+            board_transform_widget_debug_draw.setChecked(self.board_debug_transform_widget)
 
         elif self.is_viewer_page_active():
 
@@ -3316,6 +3324,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if action is not None:
             if action == show_in_explorer:
                 Globals.control_panel.show_in_folder()
+            elif action == board_transform_widget_debug_draw:
+                self.board_debug_transform_widget = not self.board_debug_transform_widget
+                self.update()
             elif action == open_separated:
                 open_in_separated_app_copy(folder_data)
             elif action == toggle_two_monitors_wide:
