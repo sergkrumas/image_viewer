@@ -1111,8 +1111,8 @@ class BoardMixin():
         next_point = self.selection_bounding_box[next_point_index]
         self.scaling_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
 
-        x_axis = QVector2D(next_point - self.scaling_pivot_corner_point).toPointF()
-        y_axis = QVector2D(prev_point - self.scaling_pivot_corner_point).toPointF()
+        x_axis = QVector2D(next_point - self.scaling_pivot_corner_point).normalized().toPointF()
+        y_axis = QVector2D(prev_point - self.scaling_pivot_corner_point).normalized().toPointF()
 
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
