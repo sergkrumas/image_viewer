@@ -548,7 +548,7 @@ class BoardMixin():
         if self.selection_bounding_box is not None:
 
             painter.setOpacity(self.board_selection_transform_box_opacity)
-            pen = QPen(self.selection_color, 2)
+            pen = QPen(self.selection_color, 4)
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
             painter.drawPolygon(self.selection_bounding_box)
