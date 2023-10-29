@@ -709,7 +709,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def get_animation_task_class(self):
 
-        class AnimationTask(QTimer):
+        class AnimationTask():
             def __init__(self, parent, anim_id, task_generation, easing, duration, anim_tracks, callback_on_finish, callback_on_start, user_data):
                 super().__init__()
 
