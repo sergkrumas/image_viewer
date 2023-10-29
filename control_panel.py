@@ -669,6 +669,9 @@ class ControlPanel(QWidget, UtilsMixin):
                     MW.setCursor(Qt.SizeAllCursor)
                 else:
                     MW.setCursor(Qt.ArrowCursor)
+            elif MW.is_board_page_active():
+                # курсор определяется в mouseMoveEvent
+                pass
             else:
                 MW.setCursor(Qt.ArrowCursor)
 

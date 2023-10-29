@@ -196,6 +196,24 @@ class BoardMixin():
 
         self.board_selection_transform_box_opacity = 1.0
 
+        self.scale_rastr_source = None
+        self.rotate_rastr_source = None
+
+        self.load_svg_cursors()
+
+    def load_svg_cursors(self):
+        folder_path = os.path.dirname(__file__)
+        filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
+        filepath_rotate_svg = os.path.join(folder_path, "cursors", "rotate.svg")
+
+        scale_rastr_source = QPixmap(filepath_scale_svg)
+        rotate_rastr_source = QPixmap(filepath_rotate_svg)
+
+        if not scale_rastr_source.isNull():
+            self.scale_rastr_source = scale_rastr_source
+        if not rotate_rastr_source.isNull():
+            self.rotate_rastr_source = rotate_rastr_source
+
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
         self.build_board_bounding_rect(cf)
@@ -288,7 +306,6 @@ class BoardMixin():
                     )
 
     def board_draw_content(self, painter, folder_data):
-
         if not folder_data.board_ready:
             self.prepare_board(folder_data)
         else:
@@ -557,10 +574,10 @@ class BoardMixin():
                     point + b,
                 ]
 
-                rotation_activation_area = QPolygonF(points)
-                painter.drawPolygon(rotation_activation_area)
+                raa = QPolygonF(points)
+                painter.drawPolygon(raa)
 
-                self.rotation_activation_areas.append(rotation_activation_area)
+                self.rotation_activation_areas.append((index, raa))
 
             # scale activation areas
             default_pen.setWidthF(self.ACTIVATION_AREA_SIZE)
@@ -695,6 +712,53 @@ class BoardMixin():
         p1, p2 = get_bounding_points(points)
         result = build_valid_rectF(p1, p2)
         self.board_bounding_rect = result
+
+    def get_widget_cursor(self, source_pixmap, angle):
+        pixmap = QPixmap(source_pixmap.size())
+        pixmap.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(pixmap)
+        transform = QTransform()
+        transform1 = QTransform()
+        transform2 = QTransform()
+        transform3 = QTransform()
+        rect = QRectF(source_pixmap.rect())
+        center = rect.center()
+        transform1.translate(-center.x(), -center.y())
+        transform2.rotate(angle)
+        transform3.translate(center.x(), center.y())
+        transform = transform1 * transform2 * transform3
+        painter.setTransform(transform)
+        painter.drawPixmap(rect, source_pixmap, rect)
+        painter.end()
+        pixmap = pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        return QCursor(pixmap)
+
+    def board_cursor_setter(self):
+        if self.scaling_ongoing:
+            if self.scale_rastr_source is not None:
+                cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
+                self.setCursor(cursor)
+            else:
+                self.setCursor(Qt.PointingHandCursor)
+        elif self.rotation_ongoing:
+            if self.rotate_rastr_source is not None:
+                cursor = self.get_widget_cursor(self.rotate_rastr_source, self.board_get_cursor_angle())
+                self.setCursor(cursor)
+            else:
+                self.setCursor(Qt.OpenHandCursor)
+        elif self.selection_bounding_box is not None:
+            if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
+                cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
+                self.setCursor(cursor)
+
+            elif self.is_over_rotation_activation_area(self.mapped_cursor_pos()):
+                cursor = self.get_widget_cursor(self.rotate_rastr_source, self.board_get_cursor_angle())
+                self.setCursor(cursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
 
     def board_navigate_camera_via_minimap(self):
         if not self.board_show_minimap:
@@ -943,10 +1007,12 @@ class BoardMixin():
                 bounding_box.bottomLeft(),
             ])
 
-    def is_rotation_activation_area_clicked(self, event):
-        for raa in self.rotation_activation_areas:
-            if raa.containsPoint(event.pos(), Qt.WindingFill):
+    def is_over_rotation_activation_area(self, position):
+        for index, raa in self.rotation_activation_areas:
+            if raa.containsPoint(position, Qt.WindingFill):
+                self.widget_active_point_index = index
                 return True
+        self.widget_active_point_index = None
         return False
 
     def board_START_selected_items_ROTATION(self, event_pos, viewport_zoom_changed=False):
@@ -972,7 +1038,9 @@ class BoardMixin():
     def step_rotation(self, rotation_value):
         interval = 45.0
         # формулу подбирал в графическом калькуляторе desmos.com/calculator
-        value = math.floor((rotation_value-interval/2.0)/interval)*interval+interval
+        # value = math.floor((rotation_value-interval/2.0)/interval)*interval+interval
+        # ниже упрощённый вариант
+        value = (math.floor(rotation_value/interval-0.5)+1.0)*interval
         return value
 
     def board_DO_selected_items_ROTATION(self, event_pos):
@@ -1016,17 +1084,35 @@ class BoardMixin():
         self.init_selection_bounding_box_widget(cf)
         self.build_board_bounding_rect(cf)
 
-    def is_scaling_activation_area_clicked(self, event):
+    def is_over_scaling_activation_area(self, position):
         if self.selection_bounding_box is not None:
             enumerated = list(enumerate(self.selection_bounding_box))
             enumerated.insert(0, enumerated.pop(2))
             for index, point in enumerated:
-                diff = point - QPointF(event.pos())
+                diff = point - QPointF(position)
                 if QVector2D(diff).length() < self.ACTIVATION_AREA_SIZE:
                     self.scaling_active_point_index = index
+                    self.widget_active_point_index = index
                     return True
         self.scaling_active_point_index = None
+        self.widget_active_point_index = None
         return False
+
+    def board_get_cursor_angle(self):
+        points_count = self.selection_bounding_box.size()
+        index = self.widget_active_point_index
+        pivot_point_index = (index+2) % points_count
+        prev_point_index = (pivot_point_index-1) % points_count
+        next_point_index = (pivot_point_index+1) % points_count
+        prev_point = self.selection_bounding_box[prev_point_index]
+        next_point = self.selection_bounding_box[next_point_index]
+        self.scaling_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
+
+        x_axis = QVector2D(next_point - self.scaling_pivot_corner_point).toPointF()
+        y_axis = QVector2D(prev_point - self.scaling_pivot_corner_point).toPointF()
+
+        __vector  = x_axis + y_axis
+        return math.degrees(math.atan2(__vector.y(), __vector.x()))
 
     def board_START_selected_items_SCALING(self, event, viewport_zoom_changed=False):
         self.scaling_ongoing = True
@@ -1051,16 +1137,15 @@ class BoardMixin():
 
         points_count = self.selection_bounding_box.size()
 
-
         # заранее высчитываем пивот и оси для модификатора Alt;
         # для удобства вычислений оси заимствуем у нулевой точки и укорачиваем их в два раза
         index = 0
-        scaling_pivot_point_index = (index+2) % points_count
-        prev_point_index = (scaling_pivot_point_index-1) % points_count
-        next_point_index = (scaling_pivot_point_index+1) % points_count
+        pivot_point_index = (index+2) % points_count
+        prev_point_index = (pivot_point_index-1) % points_count
+        next_point_index = (pivot_point_index+1) % points_count
         prev_point = self.selection_bounding_box[prev_point_index]
         next_point = self.selection_bounding_box[next_point_index]
-        spp = QPointF(self.selection_bounding_box[scaling_pivot_point_index])
+        spp = QPointF(self.selection_bounding_box[pivot_point_index])
 
         self.scaling_pivot_center_point = self.selection_bounding_box_center
 
@@ -1070,15 +1155,14 @@ class BoardMixin():
         self.scaling_from_center_x_axis = __x_axis/2.0
         self.scaling_from_center_y_axis = __y_axis/2.0
 
-
         # высчитываем пивот и оси для обычного скейла относительно угла
         index = self.scaling_active_point_index
-        scaling_pivot_point_index = (index+2) % points_count
-        prev_point_index = (scaling_pivot_point_index-1) % points_count
-        next_point_index = (scaling_pivot_point_index+1) % points_count
+        pivot_point_index = (index+2) % points_count
+        prev_point_index = (pivot_point_index-1) % points_count
+        next_point_index = (pivot_point_index+1) % points_count
         prev_point = self.selection_bounding_box[prev_point_index]
         next_point = self.selection_bounding_box[next_point_index]
-        self.scaling_pivot_corner_point = QPointF(self.selection_bounding_box[scaling_pivot_point_index])
+        self.scaling_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
 
         x_axis = QVector2D(next_point - self.scaling_pivot_corner_point).toPointF()
         y_axis = QVector2D(prev_point - self.scaling_pivot_corner_point).toPointF()
@@ -1088,9 +1172,6 @@ class BoardMixin():
 
         self.scaling_x_axis = x_axis
         self.scaling_y_axis = y_axis
-
-
-
 
         for bi in self.selected_items:
             bi.__item_scale_x = bi.item_scale_x
@@ -1184,11 +1265,8 @@ class BoardMixin():
                 new_item_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
                 bi.item_position = new_item_position
 
-
-
         # bounding box update
         self.update_selection_bouding_box()
-
 
     def board_FINISH_selected_items_SCALING(self, event):
         self.scaling_ongoing = False
@@ -1218,10 +1296,10 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
             if not alt:
 
-                if self.is_scaling_activation_area_clicked(event):
+                if self.is_over_scaling_activation_area(event.pos()):
                     self.board_START_selected_items_SCALING(event)
 
-                elif self.is_rotation_activation_area_clicked(event):
+                elif self.is_over_rotation_activation_area(event.pos()):
                     self.board_START_selected_items_ROTATION(event.pos())
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
@@ -1279,6 +1357,7 @@ class BoardMixin():
                 self.board_origin = end_value
                 self.update_selection_bouding_box()
 
+        self.board_cursor_setter()
         self.update()
 
     def board_mouseReleaseEvent(self, event):
