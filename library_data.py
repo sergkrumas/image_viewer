@@ -762,7 +762,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance):
 
         current_image = folder_data.current_image()
-        if not thread_instance.run_from_library:
+        if thread_instance is not None and not thread_instance.run_from_library:
             images_list = list(get_index_centered_list(folder_data.images_list,
                                                                       folder_data.current_image()))
         else:
@@ -1329,8 +1329,8 @@ class FolderData():
     def set_current_index(self, index):
         self.before_index = self._index
         self._index = index
-        folder_data = self
-        mw = LibraryData.globals.main_window
+        # folder_data = self
+        # mw = LibraryData.globals.main_window
         # mw.update_thumbnails_row_relative_offset(folder_data)
 
     def is_fav_folder(self):

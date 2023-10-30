@@ -3216,6 +3216,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         open_in_sep_app = None
 
         board_transform_widget_debug_draw = None
+        board_add_item_folder = None
 
         self.contextMenuActivated = True
 
@@ -3271,6 +3272,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             board_transform_widget_debug_draw.setCheckable(True)
             board_transform_widget_debug_draw.setChecked(self.board_debug_transform_widget)
 
+            contextMenu.addSeparator()
+
+            board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
+
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
@@ -3325,6 +3330,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if action is not None:
             if action == show_in_explorer:
                 Globals.control_panel.show_in_folder()
+            elif action == board_add_item_folder:
+                self.board_add_item_folder()
             elif action == board_transform_widget_debug_draw:
                 self.board_debug_transform_widget = not self.board_debug_transform_widget
                 self.update()

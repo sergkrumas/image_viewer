@@ -300,10 +300,14 @@ def open_in_google_chrome(filepath):
 def show_in_folder_windows(filepath):
     os.system('explorer /select,"%s"' % filepath)
 
-def fit_rect_into_rect(source_rect, input_rect):
+def fit_rect_into_rect(source_rect, input_rect, float_mode=False):
     # main_rect = input_rect or self.rect()
-    main_rect = QRect(input_rect)
-    size_rect = QRect(source_rect)
+    if float_mode:
+        main_rect = QRectF(input_rect)
+        size_rect = QRectF(source_rect)
+    else:
+        main_rect = QRect(input_rect)
+        size_rect = QRect(source_rect)
     w = size_rect.width()
     h = size_rect.height()
     nw = size_rect.width()
@@ -333,7 +337,11 @@ def fit_rect_into_rect(source_rect, input_rect):
     center = main_rect.center()
     new_width = int(nw)
     new_height = int(nh)
-    return QRectF(QPointF(center) - QPointF(new_width/2-1, new_height/2-1), QSizeF(new_width, new_height)).toRect()
+    result = QRectF(QPointF(center) - QPointF(new_width/2-1, new_height/2-1), QSizeF(new_width, new_height))
+    if float_mode:
+        return result
+    else:
+        return result.toRect()
 
 def build_valid_rect(p1, p2):
     MAX = sys.maxsize
