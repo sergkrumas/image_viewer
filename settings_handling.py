@@ -434,8 +434,9 @@ class SettingsWindow(QWidget):
         'browse_images_only': (False, 'Показывать только изображения'),
 
         '---006': ('Страница доски'),
-        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры на странице доски'),
+        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры'),
         'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),
+        'board_draw_grid': (False, 'Показывать сетку'),
 
         '---003': ('Прозрачность страниц'),
         'viewer_page_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),

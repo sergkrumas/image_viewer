@@ -516,7 +516,8 @@ class BoardMixin():
 
         cf = self.LibraryData().current_folder()
         if cf.previews_done:
-            self.board_draw_grid(painter)
+            if self.Globals.DEBUG or self.STNG_board_draw_grid:
+                self.board_draw_grid(painter)
             self.board_draw_content(painter, cf)
         else:
             self.board_draw_wait_label(painter)
