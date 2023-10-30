@@ -421,7 +421,6 @@ class SettingsWindow(QWidget):
         'show_image_metadata': (True, 'Показывать метаданные изображения'),
         'show_noise_cells': (True, 'Показывать анимированнную сетку'),
         'browse_images_only': (False, 'Показывать только изображения'),
-        'legacy_image_scaling': (False, 'Активировать прежний способ масштабирования изображений (раньшебылолучше)'),
         'effects': (True, 'Анимационные эффекты'),
         'animated_zoom': (True, 'Анимированный зум изображения'),
         'autosave_on_reordering': (True, 'Автоматически сохранять в файл задаваемый порядок изображений через панель миниатюр'),
