@@ -205,6 +205,8 @@ class BoardMixin():
 
         self.selection_color = QColor(18, 118, 127)
 
+        self.STNG_board_draw_origin_compass_enabled = False
+
     def load_svg_cursors(self):
         folder_path = os.path.dirname(__file__)
         filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
@@ -531,7 +533,7 @@ class BoardMixin():
         self.board_draw_selection_transform_box(painter)
         self.board_region_zoom_in_draw(painter)
 
-        if self.Globals.DEBUG:
+        if self.Globals.DEBUG or self.STNG_board_draw_origin_compass_enabled:
             self.board_draw_origin_compass(painter)
 
         self.board_draw_minimap(painter)
@@ -655,6 +657,7 @@ class BoardMixin():
         text = f'{dist:.2f}\n{scale_percent_x:,}% {scale_percent_y:,}%'.replace(',', ' ')
         font = painter.font()
         font.setPixelSize(10)
+        font.setWeight(1900)
         painter.setFont(font)
         max_rect = self.rect()
         alignment = Qt.AlignCenter

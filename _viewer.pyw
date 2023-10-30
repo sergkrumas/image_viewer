@@ -501,11 +501,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.center_label_info_type = self.label_type.SCALE
         self.center_label_error = False
 
-        SettingsWindow.settings_init(self)
-
         self.setMouseTracking(True)
         self.installEventFilter(self)
         self.setAcceptDrops(True)
+
+        self.board_init()
+        self.tagging_init()
+
+        SettingsWindow.settings_init(self)
 
         self.previews_list_active_item = None
         self.previews_list = None
@@ -573,9 +576,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         QMenu::item:checked {
         }
         """
-
-        self.board_init()
-        self.tagging_init()
 
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
