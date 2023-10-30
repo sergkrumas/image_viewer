@@ -433,7 +433,8 @@ class SettingsWindow(QWidget):
 
         'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
 
-        'board_draw_origin_compass_enabled': (True, 'Показывать компас и уровень зума камеры на странице доски'),
+        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры на странице доски'),
+        'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),        
     }
 
     isWindowVisible = False

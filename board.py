@@ -205,8 +205,6 @@ class BoardMixin():
 
         self.selection_color = QColor(18, 118, 127)
 
-        self.STNG_board_draw_origin_compass_enabled = False
-
     def load_svg_cursors(self):
         folder_path = os.path.dirname(__file__)
         filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
@@ -524,7 +522,7 @@ class BoardMixin():
             self.board_draw_wait_label(painter)
 
 
-        if self.Globals.DEBUG:
+        if self.Globals.DEBUG or self.STNG_board_draw_board_origin:
             self.board_draw_board_origin(painter)
 
         self.board_draw_user_points(painter, cf)
@@ -533,7 +531,7 @@ class BoardMixin():
         self.board_draw_selection_transform_box(painter)
         self.board_region_zoom_in_draw(painter)
 
-        if self.Globals.DEBUG or self.STNG_board_draw_origin_compass_enabled:
+        if self.Globals.DEBUG or self.STNG_board_draw_origin_compass:
             self.board_draw_origin_compass(painter)
 
         self.board_draw_minimap(painter)
