@@ -921,10 +921,9 @@ class BoardMixin():
         folder_data = self.LibraryData().current_folder()
 
         if folder_path:
-            files = self.LibraryData().list_interest_files(folder_path, deep_scan=False)
+            files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
             item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-            
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)            
+            self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
             bi = BoardItem(BoardItem.types.ITEM_FOLDER)
             bi.item_folder_data = item_folder_data
             bi.board_index = self.retrieve_new_board_item_index()

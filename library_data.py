@@ -744,10 +744,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepath.lower().endswith(exts)
 
     @staticmethod
-    def list_interest_files(folder_path, deep_scan=False):
+    def list_interest_files(folder_path, deep_scan=False, all_allowed=None):
         filepaths = []
-
-        all_allowed = not settings_handling.SettingsWindow.get_setting_value("browse_images_only")
+        if all_allowed is None:
+            all_allowed = not settings_handling.SettingsWindow.get_setting_value("browse_images_only")
         if os.path.exists(folder_path):
             for cur_dir, dirs, files in os.walk(folder_path):
                 for name in files:
