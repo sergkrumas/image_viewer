@@ -1396,11 +1396,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.control_timer_handler()
 
         if self.is_viewer_page_active():
-            self.animate_noise_cells_effect()
             self.viewport_image_animation()
 
         elif self.is_board_page_active():
             self.board_timer_handler()
+
+        self.animate_noise_cells_effect()
 
     def is_cursor_over_image(self):
         return self.cursor_in_rect(self.get_image_viewport_rect())

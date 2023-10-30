@@ -380,6 +380,10 @@ class SettingsWindow(QWidget):
             # convert tuples to lists
             for key in cls.matrix.keys():
                 cls.matrix[key] = list(cls.matrix[key])
+            # удаляем старые неактуальные ключи настроек
+            for key in list(cls.matrix.keys()):
+                if key not in cls.backup_matrix.keys():
+                    cls.matrix.pop(key)
             # copy actual comments from program file, not from settings file
             for key in cls.matrix.keys():
                 if key in cls.backup_matrix.keys():
@@ -402,9 +406,19 @@ class SettingsWindow(QWidget):
             json.dump(data, file, indent=True, ensure_ascii=False)
 
     matrix = {
+        '---001': ('Основное'),
+        'run_on_windows_startup': (True, 'Запускать при старте Windows'),
         'do_not_show_start_dialog': (True, 'Запускать лайтовый (упрощённый) режим сразу, то есть без диалога'),
         'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
         'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
+        'hide_to_tray_on_close': (True, 'Прятаться в трей при закрытии окна'),
+        'hide_on_app_start': (False, 'Прятать окно в трей на старте'),
+        'show_console_output': (True, 'Показывать поверх контента консольный вывод'),
+        'effects': (True, 'Анимационные эффекты'),
+        'show_noise_cells': (True, 'Показывать анимированнные ячейки поверх всего'),
+
+        '---002': ('Страница вьвера'),
+        'animated_zoom': (True, 'Анимированный зум изображения'),
         'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
         'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в нижней панели вьювера'),
         'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
@@ -414,26 +428,25 @@ class SettingsWindow(QWidget):
         'show_image_center': (False, 'Показывать центр'),
         'show_deep_secrets_at_zoom': (True, 'Показывать рандомную вселенскую истину при сильном увеличении'),
         'autohide_control_panel': (True, 'Автоматически скрывать панель миниатюр и кнопок'),
-        'hide_to_tray_on_close': (True, 'Прятаться в трей при закрытии окна'),
-        'show_console_output': (True, 'Показывать поверх контента консольный вывод'),
         'use_global_view_history': (False, 'Выключить историю просмотра для каждой папки отдельно и включить глобальную'),
-        'hide_on_app_start': (False, 'Прятать окно в трей на старте'),
         'show_image_metadata': (True, 'Показывать метаданные изображения'),
-        'show_noise_cells': (True, 'Показывать анимированнную сетку'),
-        'browse_images_only': (False, 'Показывать только изображения'),
-        'effects': (True, 'Анимационные эффекты'),
-        'animated_zoom': (True, 'Анимированный зум изображения'),
         'autosave_on_reordering': (True, 'Автоматически сохранять в файл задаваемый порядок изображений через панель миниатюр'),
+        'browse_images_only': (False, 'Показывать только изображения'),
 
+        '---006': ('Страница доски'),
+        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры на странице доски'),
+        'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),
+
+        '---003': ('Прозрачность страниц'),
         'viewer_page_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),
         'library_page_transparency': (0.9, (0.0, 1.0), 'Прозрачность страницы библиотеки'),
+
+        '---004': ('Слайдшоу на странице вьювера'),
         'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
         'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
 
+        '---005': ('Пути'),
         'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
-
-        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры на странице доски'),
-        'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),        
     }
 
     isWindowVisible = False
@@ -489,6 +502,7 @@ class SettingsWindow(QWidget):
         # ui init
         main_style = "font-size: 11pt; font-family: 'Consolas'"
         style = "color: white; " + main_style
+        style_partition_label = "color: black; background-color: gray; padding-left: 20px; " + main_style
         main_style_button = "font-size: 13pt; padding: 5px 0px;"
         checkbox_style = """
             QCheckBox {
@@ -563,26 +577,35 @@ class SettingsWindow(QWidget):
         self.central_widget.setObjectName("central")
         central_widget_layout = QVBoxLayout()
 
-
-        chb = QCheckBox("Запускать при старте Windows")
-        self.checkboxes_widgets['run_on_windows_startup'] = chb
-        chb.setChecked(is_app_in_startup(self.STARTUP_CONFIG[0]))
-        chb.setStyleSheet(checkbox_style)
-        chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
-        central_widget_layout.addWidget(chb)
-
-        for id, params in self.matrix.items():
+        for index, (id, params) in enumerate(self.matrix.items()):
 
             current_val = params[0]
             text = params[-1]
 
-            if isinstance(current_val, bool):
+            if id.startswith('---'):
+                label = QLabel()
+                text = ''.join(params).upper()
+                label.setText(f"<b>{text}</b>")
+                label.setStyleSheet(style_partition_label)
+                layout = QVBoxLayout()
+                layout.addWidget(label)
+                if index != 0:
+                    central_widget_layout.addSpacing(40)
+                central_widget_layout.addLayout(layout)
+                central_widget_layout.addSpacing(10)
+
+            elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
                 self.checkboxes_widgets[id] = chb
-                chb.setChecked(current_val)
                 chb.setStyleSheet(checkbox_style)
-                chb.stateChanged.connect(self.on_change_handler)
+                if id == 'run_on_windows_startup':
+                    chb.setChecked(is_app_in_startup(self.STARTUP_CONFIG[0]))
+                    chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
+                else:
+                    chb.setChecked(current_val)
+                    chb.stateChanged.connect(self.on_change_handler)
                 central_widget_layout.addWidget(chb)
+
             elif isinstance(current_val, float):
                 range_ = params[1]
                 a, b = range_
@@ -600,6 +623,7 @@ class SettingsWindow(QWidget):
                 layout.addWidget(sb)
                 central_widget_layout.addLayout(layout)
                 central_widget_layout.addSpacing(20)
+
             elif isinstance(current_val, str):
                 label = QLabel()
                 label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
