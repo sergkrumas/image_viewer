@@ -908,6 +908,14 @@ class BoardMixin():
             painter.setPen(QPen(Qt.yellow, 1))
             painter.drawRect(miniviewport_rect)
 
+    def board_select_items(self, items):
+        current_folder = self.LibraryData().current_folder()
+        for bi in current_folder.board_items_list:
+            bi._selected = False
+        for item in items:
+            item._selected = True
+        self.init_selection_bounding_box_widget(current_folder)
+
     def board_add_item_folder(self):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
         folder_data = self.LibraryData().current_folder()
@@ -921,7 +929,10 @@ class BoardMixin():
             bi.item_folder_data = item_folder_data
             bi.board_index = self.retrieve_new_board_item_index()
             folder_data.board_items_list.append(bi)
+            # располагаем в центре экрана
+            bi.item_position = self.get_relative_position(self.rect().center())
             self.update_scroll_status(bi)
+            self.board_select_items([bi])
 
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
