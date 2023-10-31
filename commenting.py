@@ -180,7 +180,7 @@ class CommentingMixin():
                 self.comment_data = CommentData.create_comment(self.LibraryData, ci, left, top, right, bottom)
         self.update()
 
-    def image_comment_update_rect(self, event):        
+    def image_comment_update_rect(self, event):
         if self.comment_data is not None:
             self.COMMENT_RECT_INPUT_POINT2 = event.pos()
             left, top, right, bottom = self.get_comment_rect_info()
@@ -192,13 +192,13 @@ class CommentingMixin():
 
     def image_comment_mouseMoveEvent(self, event):
         if self.Globals.lite_mode:
-            return        
+            return
         self.image_comment_update_rect(event)
         self.update()
 
     def image_comment_mouseReleaseEvent(self, event):
         if self.Globals.lite_mode:
-            return        
+            return
         self.image_comment_update_rect(event)
         self.LibraryData().store_comments_list()
         if self.comment_data_candidate is None:
@@ -452,7 +452,7 @@ class CommentWindow(QWidget):
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
-        
+
         self.resize(1000, 400)
         # show at center
         CommentWindow.pos_at_center(self)
