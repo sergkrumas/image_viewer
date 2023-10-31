@@ -2733,6 +2733,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             im_data.anim_paused = not im_data.anim_paused
         self.update()
 
+    def start_lite_process(self, path):
+        start_lite_process(path)
+
     def keyReleaseEvent(self, event):
         key = event.key()
 
@@ -3218,6 +3221,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_transform_widget_debug_draw = None
         board_add_item_folder = None
 
+        board_open_in_app_copy = None
+
         self.contextMenuActivated = True
 
         minimize_window = contextMenu.addAction("Свернуть")
@@ -3276,6 +3281,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
 
+            contextMenu.addSeparator()
+
+            board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
@@ -3332,6 +3340,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 Globals.control_panel.show_in_folder()
             elif action == board_add_item_folder:
                 self.board_add_item_folder()
+            elif action == board_open_in_app_copy:
+                self.board_open_in_app_copy()
             elif action == board_transform_widget_debug_draw:
                 self.board_debug_transform_widget = not self.board_debug_transform_widget
                 self.update()

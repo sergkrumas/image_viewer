@@ -1686,6 +1686,24 @@ class BoardMixin():
     def set_default_boardviewport_origin(self):
         self.board_origin = QPointF(300, 300)
 
+    def retrieve_selected_item(self):
+        cf = self.LibraryData().current_folder()
+        for bi in cf.board_items_list:
+            if bi.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
+                if bi._selected:
+                    return bi
+        return None
+
+    def board_open_in_app_copy(self):
+        item = self.retrieve_selected_item()
+        if item is not None:
+            if item.type == BoardItem.types.ITEM_IMAGE:
+                pass
+                filepath = item.image_data.filepath
+            elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
+                pass
+                filepath = item.item_folder_data.current_image().filepath
+            self.start_lite_process(filepath)
     def animate_scale_update(self):
 
         # надо менять и значение self.board_origin для того,
