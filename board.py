@@ -1704,6 +1704,18 @@ class BoardMixin():
                 pass
                 filepath = item.item_folder_data.current_image().filepath
             self.start_lite_process(filepath)
+
+    def board_open_in_google_chrome(self):
+        item = self.retrieve_selected_item()
+        if item is not None:
+            if item.type == BoardItem.types.ITEM_IMAGE:
+                pass
+                filepath = item.image_data.filepath
+            elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
+                pass
+                filepath = item.item_folder_data.current_image().filepath
+            open_in_google_chrome(filepath)
+
     def animate_scale_update(self):
 
         # надо менять и значение self.board_origin для того,

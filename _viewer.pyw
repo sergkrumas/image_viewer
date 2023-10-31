@@ -3222,6 +3222,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_add_item_folder = None
 
         board_open_in_app_copy = None
+        board_open_in_google_chrome = None
 
         self.contextMenuActivated = True
 
@@ -3284,6 +3285,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             contextMenu.addSeparator()
 
             board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
+            board_open_in_google_chrome = contextMenu.addAction("Открыть в Google Chrome")
+
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
@@ -3342,6 +3345,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_add_item_folder()
             elif action == board_open_in_app_copy:
                 self.board_open_in_app_copy()
+            elif action == board_open_in_google_chrome:
+                self.board_open_in_google_chrome()
             elif action == board_transform_widget_debug_draw:
                 self.board_debug_transform_widget = not self.board_debug_transform_widget
                 self.update()
