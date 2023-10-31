@@ -63,6 +63,8 @@ class BoardItem():
         self.item_width = 300
         self.item_height = 300
 
+        self.group_name = ""
+
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
@@ -84,9 +86,10 @@ class BoardItem():
             image_data = self.image_data
             return f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
         elif self.type == self.types.ITEM_FOLDER:
-            return "FOLDER"
+            path = self.item_folder_data.folder_path
+            return f'FOLDER {path}'
         elif self.type == self.types.ITEM_GROUP:
-            raise NotImplemented
+            return f'GROUP {self.group_name}'
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
@@ -108,7 +111,8 @@ class BoardItem():
                 scale_x = self.item_scale_x
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_GROUP:
-                raise NotImplemented
+                scale_x = self.item_scale_x
+                scale_y = self.item_scale_y
         else:
             scale_x = 1.0
             scale_y = 1.0
@@ -117,7 +121,7 @@ class BoardItem():
         elif self.type == self.types.ITEM_FOLDER:
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_GROUP:
-            raise NotImplemented
+            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
 
     def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
@@ -358,7 +362,7 @@ class BoardMixin():
 
         if board_item.type == BoardItem.types.ITEM_IMAGE:
             image_data = board_item.image_data
-        elif board_item.type == BoardItem.types.ITEM_FOLDER:
+        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             image_data = board_item.item_folder_data.current_image()
 
         selection_area = board_item.get_selection_area(board=self)
@@ -373,7 +377,7 @@ class BoardMixin():
             painter.setTransform(transform)
             item_rect = board_item.get_size_rect()
 
-            if board_item.type == BoardItem.types.ITEM_FOLDER:
+            if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
                 item_rect = fit_rect_into_rect(QRect(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
 
             item_rect.moveCenter(QPointF(0, 0))
@@ -421,7 +425,9 @@ class BoardMixin():
 
 
             if board_item == self.board_item_under_mouse:
-                if board_item.type == BoardItem.types.ITEM_FOLDER or (board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated):
+                is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
+
+                if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP] or is_animation_file:
 
                     alignment = Qt.AlignCenter | Qt.AlignVCenter
                     text_rect = calculate_text_rect(painter.font(), selection_area_bounding_rect, board_item.status, alignment)
@@ -487,7 +493,7 @@ class BoardMixin():
 
         if board_item.type == BoardItem.types.ITEM_IMAGE:
             filepath = board_item.image_data.filepath
-        elif board_item.type == BoardItem.types.ITEM_FOLDER:
+        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             filepath = board_item.item_folder_data.current_image().filepath
         try:
             board_item.pixmap = QPixmap()
@@ -1554,7 +1560,7 @@ class BoardMixin():
             if frame_count > 0:
                 current_frame += 1
             board_item.status = f'{current_frame}/{frame_count}'
-        elif board_item.type == BoardItem.types.ITEM_FOLDER:
+        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             current_image_num = board_item.item_folder_data._index
             images_count = len(board_item.item_folder_data.images_list)
             if current_image_num > 0:
@@ -1600,8 +1606,8 @@ class BoardMixin():
             self.context_menu_allowed = False
             if board_item.type == board_item.types.ITEM_IMAGE:
                 if board_item.animated:
-            elif board_item.type == board_item.types.ITEM_FOLDER:
                     self.board_item_scroll_animation_file(board_item, scroll_value)
+            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
                 self.board_item_scroll_folder(board_item, scroll_value)
         elif no_mod:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
