@@ -826,7 +826,11 @@ class BoardMixin():
             painter.drawRect(minimap_rect)
 
             for board_item in cf.board_items_list:
-                image_data = board_item.image_data
+
+                if board_item.type == BoardItem.types.ITEM_IMAGE:
+                    image_data = board_item.image_data
+                elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                    image_data = board_item.item_folder_data.current_image()
 
                 delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
