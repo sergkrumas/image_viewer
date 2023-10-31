@@ -1561,28 +1561,26 @@ class BoardMixin():
                 current_image_num += 1
             board_item.status = f'{current_image_num}/{images_count}'
 
-    def board_item_scroll_animation(self, board_item, scroll_value):
-        if board_item.type == BoardItem.types.ITEM_IMAGE:
-            frames_list = list(range(0, board_item.movie.frameCount()))
-            if scroll_value > 0:
-                pass
-            else:
-                frames_list = list(reversed(frames_list))
-            frames_list.append(0)
-            i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
-            board_item.movie.jumpToFrame(frames_list[i])
-            board_item.pixmap = board_item.movie.currentPixmap()
+    def board_item_scroll_animation_file(self, board_item, scroll_value):
+        frames_list = list(range(0, board_item.movie.frameCount()))
+        if scroll_value > 0:
+            pass
+        else:
+            frames_list = list(reversed(frames_list))
+        frames_list.append(0)
+        i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
+        board_item.movie.jumpToFrame(frames_list[i])
+        board_item.pixmap = board_item.movie.currentPixmap()
         self.update_scroll_status(board_item)
         self.update()
 
     def board_item_scroll_folder(self, board_item, scroll_value):
-        if board_item.type == BoardItem.types.ITEM_FOLDER:
-            if scroll_value > 0:
-                board_item.item_folder_data.next_image()
-            else:
-                board_item.item_folder_data.previous_image()
-            # заставляем подгрузится
-            board_item.pixmap = None
+        if scroll_value > 0:
+            board_item.item_folder_data.next_image()
+        else:
+            board_item.item_folder_data.previous_image()
+        # заставляем подгрузится
+        board_item.pixmap = None
         self.update_scroll_status(board_item)
         self.update()
 
@@ -1602,8 +1600,8 @@ class BoardMixin():
             self.context_menu_allowed = False
             if board_item.type == board_item.types.ITEM_IMAGE:
                 if board_item.animated:
-                    self.board_item_scroll_animation(board_item, scroll_value)
             elif board_item.type == board_item.types.ITEM_FOLDER:
+                    self.board_item_scroll_animation_file(board_item, scroll_value)
                 self.board_item_scroll_folder(board_item, scroll_value)
         elif no_mod:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
