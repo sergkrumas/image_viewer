@@ -1109,7 +1109,10 @@ class BoardMixin():
         if mutli_item_mode and ctrl_mod:
             rotation_delta_degrees = self.step_rotation(rotation_delta_degrees)
         rotation = QTransform()
-        rotation.rotate(rotation_delta_degrees)
+        if ctrl_mod:
+            rotation.rotate(self.step_rotation(rotation_delta_degrees))
+        else:
+            rotation.rotate(rotation_delta_degrees)
         for bi in self.selected_items:
             # rotation component
             bi.item_rotation = bi.__item_rotation + rotation_delta_degrees
