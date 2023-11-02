@@ -1146,6 +1146,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.frame_delay = self.movie.nextFrameDelay()
             self.pixmap = self.movie.currentPixmap()
             self.get_rotated_pixmap(force_update=True)
+            self.update()
 
     def is_animated_file_valid(self):
         self.movie.jumpToFrame(0)
