@@ -2047,16 +2047,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             pr.setFont(font)
             return old_font
 
-        pic = QPicture()
-        p = QPainter(pic)
-        set_font(p)
-        # if not large: #debug
-        #   text = "{text}\n{Globals.control_panel.window_opacity:.2f}"
-        r = self.rect()
-        brect = p.drawText(r.x(), r.y(), r.width(), r.height(), Qt.AlignCenter, text)
-        p.end()
-        del p
-        del pic
+        old_font = set_font(painter)
+        brect = painter.boundingRect(self.rect(), Qt.AlignCenter, text)
 
         # backplate
         opacity = self.scale_label_opacity()
@@ -2080,7 +2072,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # back to normal
             painter.setOpacity(1.0*opacity)
 
-        old_font = set_font(painter)
 
         if large:
             # c = QColor("#e1db74")
@@ -2256,7 +2247,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 n += 1
                 max_rect = QRect(0, 0, self.rect().width(), self.rect().height())
                 alignment = Qt.AlignLeft
-                text_rect = calculate_text_rect(font, max_rect, message, alignment)
+                text_rect = painter.boundingRect(max_rect, alignment, message)
+                # text_rect.adjust(0, 0, 0, 100)
                 painter.setOpacity(0.7)
                 text_rect.moveTopLeft(QPoint(255, 50+n*(text_rect.height()+3)))
                 painter.setPen(Qt.NoPen)

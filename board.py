@@ -257,7 +257,7 @@ class BoardMixin():
 
         painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
         text = "  ".join("ПОДОЖДИ")
-        text_rect = calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
@@ -413,7 +413,7 @@ class BoardMixin():
                 alignment = Qt.AlignCenter
 
                 old_pen = painter.pen()
-                text_rect = calculate_text_rect(painter.font(), selection_area_bounding_rect, text, alignment)
+                text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, text)
                 painter.setBrush(QBrush(Qt.white))
                 painter.setPen(Qt.NoPen)
                 painter.drawRect(text_rect)
@@ -429,7 +429,7 @@ class BoardMixin():
                 if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP] or is_animation_file:
 
                     alignment = Qt.AlignCenter | Qt.AlignVCenter
-                    text_rect = calculate_text_rect(painter.font(), selection_area_bounding_rect, board_item.status, alignment)
+                    text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, board_item.status)
                     text_rect.adjust(-5, -5, 5, 5)
                     text_rect.moveTopLeft(selection_area[0])
 
@@ -680,7 +680,7 @@ class BoardMixin():
         alignment = Qt.AlignCenter
 
 
-        text_rect = calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = painter.boundingRect(max_rect, alignment, text)
 
         text_rect.moveCenter(text_rect_center)
         painter.setBrush(QBrush(QColor(10, 10, 10)))
@@ -716,12 +716,12 @@ class BoardMixin():
         alignment = Qt.AlignCenter
 
         text = "НАЧАЛО"
-        text_rect = calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
         text = "КООРДИНАТ"
-        text_rect = calculate_text_rect(font, max_rect, text, alignment)
+        text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
 
@@ -864,7 +864,7 @@ class BoardMixin():
                     alignment = Qt.AlignCenter
 
                     old_pen = painter.pen()
-                    text_rect = calculate_text_rect(painter.font(), bounding_rect_selection_area_scaled, text, alignment)
+                    text_rect = painter.boundingRect(bounding_rect_selection_area_scaled, alignment, text)
                     painter.setBrush(QBrush(Qt.white))
                     painter.setPen(Qt.NoPen)
                     painter.drawRect(text_rect)
