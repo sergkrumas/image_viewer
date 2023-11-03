@@ -28,68 +28,6 @@ import traceback, os
 class ServerOrClient():
 
     @classmethod
-    def retrieve_server_data(cls, open_request):
-        Globals = cls.globals
-        path_str = None
-        if os.path.exists(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME):
-            try:
-                with open(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME, "r") as file:
-                    file.seek(0)
-                    path_str = file.read()
-                os.remove(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME)
-                open_request(path_str)
-            except:
-                pass
-
-    @classmethod
-    def remove_server_data(cls):
-        Globals = cls.globals
-        if os.path.exists(Globals.NO_SOCKETS_SERVER_FILENAME):
-            os.remove(Globals.NO_SOCKETS_SERVER_FILENAME)
-
-    @classmethod
-    def server_or_client_via_files(cls, path, input_path_dialog_callback):
-        Globals = cls.globals
-        # КОД ПЕРЕДАЧИ ДАННЫХ ОТ ВТОРОЙ КОПИИ ПРИЛОЖЕНИЯ К ПЕРВОЙ
-        if os.path.exists(Globals.NO_SOCKETS_SERVER_FILENAME) and os.path.exists(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME):
-            # в случае, если пошло что-то не так,
-            # эти два файла останутся.
-            # Нужно их обязательно удалить
-            os.remove(Globals.NO_SOCKETS_SERVER_FILENAME)
-            os.remove(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME)
-            sys.exit()
-        # становимся второй копией приложения
-        if os.path.exists(Globals.NO_SOCKETS_SERVER_FILENAME):
-            if os.path.exists(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME):
-                # что-то пошло не так:
-                # удаляем файл и сразу закрываемся
-                os.remove(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME)
-                print("removing crash traces")
-                sys.exit()
-            else:
-                # передаём входящие данные к первой копии приложения и сразу закрываемся
-                if not path:
-                    path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
-                if path:
-                    with open(Globals.NO_SOCKETS_CLIENT_DATA_FILENAME, "w+") as file:
-                        file.write(path)
-                    print("data trasferred")
-                else:
-                    print("nothing to open")
-                sys.exit()
-        # становимся первой копией, создав специальный файл
-        else:
-            open(Globals.NO_SOCKETS_SERVER_FILENAME, "w+").close()
-            # если мы не запущены из отладчика,
-            # то заправшиваем у пользователя папку для просмотра
-            path = input_path_dialog_callback(path)
-        return path
-
-
-
-
-
-    @classmethod
     def server_or_client_via_sockets(
             cls,
             path,

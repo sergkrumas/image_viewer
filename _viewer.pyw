@@ -56,13 +56,10 @@ class Globals():
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
     force_full_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
-    NO_SOCKETS_SERVER_FILENAME = "server.data"
-    NO_SOCKETS_CLIENT_DATA_FILENAME = "dat.data"
 
     THUMBNAIL_WIDTH = 50
     AUGMENTED_THUBNAIL_INCREMENT = 20
     PREVIEW_WIDTH = 200
-    USE_SOCKETS = True
     DEBUG = True
 
     VIEW_HISTORY_SIZE = 20
@@ -1381,10 +1378,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.animated:
             self.tick_animation()
 
-    def retrieve_request_data_from_file(self):
-        if not Globals.USE_SOCKETS:
-            ServerOrClient.retrieve_server_data(open_request)
-
     def control_timer_handler(self):
         CP = Globals.control_panel
         if CP is not None:
@@ -1393,7 +1386,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def on_timer(self):
         self.update_for_center_label_fade_effect()
         self.threads_info_watcher()
-        self.retrieve_request_data_from_file()
         self.control_timer_handler()
 
         if self.is_viewer_page_active():
@@ -3558,8 +3550,6 @@ def excepthook(exc_type, exc_value, exc_tb):
         crash_log.write("\n")
         crash_log.write(traceback_lines)
     print(traceback_lines)
-    if not Globals.USE_SOCKETS:
-        ServerOrClient.remove_server_data()
     app = QApplication.instance()
     stray_icon = app.property("stray_icon")
     if stray_icon:
@@ -3591,8 +3581,6 @@ def _restart_app(aftercrash=False):
     subprocess.Popen(args)
 
 def exit_threads():
-    if not Globals.USE_SOCKETS:
-        ServerOrClient.remove_server_data()
     # принудительно глушим все потоки, что ещё работают
     for thread in ThumbnailsThread.threads_pool:
         thread.terminate()
@@ -3777,14 +3765,11 @@ def _main():
     ServerOrClient.globals = Globals
 
     if not Globals.lite_mode:
-        if Globals.USE_SOCKETS:
-            path = ServerOrClient.server_or_client_via_sockets(
-                path,
-                open_request,
-                choose_start_option_callback,
-            )
-        else:
-            path = ServerOrClient.server_or_client_via_files(path, input_path_dialog)
+        path = ServerOrClient.server_or_client_via_sockets(
+            path,
+            open_request,
+            choose_start_option_callback,
+        )
 
     Globals.is_path_exists = os.path.exists(path)
 
