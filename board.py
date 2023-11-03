@@ -448,10 +448,8 @@ class BoardMixin():
         if board_item.pixmap is None:
             return
 
-        dist = calculate_distance(
-                board_item.calculate_absolute_position(board=self),
-                self.get_center_position()
-        )
+        dist = QVector2D(self.get_center_position() - board_item.calculate_absolute_position(board=self)).length()
+
         if dist > 10000.0:
             board_item.pixmap = None
             board_item.movie = None
@@ -1751,7 +1749,7 @@ class BoardMixin():
         for board_item in folder_data.board_items_list:
 
             pos = board_item.calculate_absolute_position(board=self)
-            distance = calculate_distance(pos, cursor_pos)
+            distance = QVector2D(pos - cursor_pos).length()
             if distance < min_distance:
                 min_distance = distance
                 min_distance_board_item = board_item
@@ -1776,7 +1774,7 @@ class BoardMixin():
             first_item = _list[0]
             second_item = _list[1]
             pos = first_item.calculate_absolute_position(board=self)
-            distance = calculate_distance(pos, self.get_center_position())
+            distance = QVector2D(pos - self.get_center_position()).length()
             if distance < 5.0:
                 # если цент картинки практически совпадает с центром вьюпорта, то выбираем следующую картинку
                 item_to_center_viewport = second_item
