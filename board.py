@@ -187,7 +187,6 @@ class BoardMixin():
         self.selected_items = []
         self.selection_bounding_box = None
 
-        self.ACTIVATION_AREA_SIZE = 16
         self.board_bounding_rect = QRectF()
 
         self.start_translation_pos = None
@@ -590,8 +589,8 @@ class BoardMixin():
 
                 a = QVector2D(point - prev_point).normalized().toPointF()
                 b = QVector2D(point - next_point).normalized().toPointF()
-                a *= self.ACTIVATION_AREA_SIZE*2
-                b *= self.ACTIVATION_AREA_SIZE*2
+                a *= self.STNG_transform_widget_activation_area_size*2
+                b *= self.STNG_transform_widget_activation_area_size*2
                 points = [
                     point,
                     point + a,
@@ -605,7 +604,7 @@ class BoardMixin():
                 self.rotation_activation_areas.append((index, raa))
 
             # scale activation areas
-            default_pen.setWidthF(self.ACTIVATION_AREA_SIZE)
+            default_pen.setWidthF(self.STNG_transform_widget_activation_area_size)
             default_pen.setCapStyle(Qt.RoundCap)
             painter.setPen(default_pen)
 
@@ -1148,7 +1147,7 @@ class BoardMixin():
             enumerated.insert(0, enumerated.pop(2))
             for index, point in enumerated:
                 diff = point - QPointF(position)
-                if QVector2D(diff).length() < self.ACTIVATION_AREA_SIZE:
+                if QVector2D(diff).length() < self.STNG_transform_widget_activation_area_size:
                     self.scaling_active_point_index = index
                     self.widget_active_point_index = index
                     return True
