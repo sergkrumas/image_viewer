@@ -1904,8 +1904,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # для одной и той же дельты увеличения или уменьшения
             if animated_zoom_enabled:
                 gen = self.get_current_animation_task_generation(anim_id="zoom")
-                scale_speed = 2.5
-                scale_speed -= 1.4*(min(20, gen)/20)
+                # scale_speed = 2.5 - 1.4*(min(20, gen)/20)
+                start_speed = 4.3
+                scale_speed = start_speed - (start_speed-1.1)*(min(20, gen)/25)
                 # msg = f'zoom generation: {gen}, result speed value: {scale_speed}'
                 # print(msg)
             else:
@@ -1981,7 +1982,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             current_image_rect = self.get_image_viewport_rect()
             wanna_image_rect = self.get_image_viewport_rect(od=(center_position, scale))
             gen = self.get_current_animation_task_generation(anim_id="zoom")
-            duration = fit(gen, 0, 20, 0.8, 1.7)
+            duration = fit(gen, 0, 20, 0.8, 1.2)
             self.animate_properties(
                 [
                     (None, "image_rect", current_image_rect, wanna_image_rect, update_function),
