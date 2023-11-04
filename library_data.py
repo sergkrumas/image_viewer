@@ -988,8 +988,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.update()
             MW.activateWindow()
 
-            if MW.is_start_page_active():
-                MW.current_page = MW.pages.VIEWER_PAGE
+            MW.change_page(MW.pages.VIEWER_PAGE, force=True)
 
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()

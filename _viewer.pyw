@@ -470,7 +470,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.set_window_title("")
         self.set_window_style()
 
-        self.current_page = self.pages.VIEWER_PAGE
+        self.current_page = self.pages.START_PAGE
 
         self.transformations_allowed = True
         self.animated = False
@@ -604,7 +604,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 break
         self.change_page(next_page)
 
-    def change_page(self, requested_page):
+    def change_page(self, requested_page, force=False):
         # if self.is_viewer_page_active() and page == self.pages.LIBRARY_PAGE:
         #     self.prepare_library_page()
         # if self.is_library_page_active() and page == self.pages.VIEWER_PAGE:
@@ -620,7 +620,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.current_page == requested_page:
             return
 
-        if self.handling_input:
+        if self.handling_input and not force:
             return
 
         if self.current_page == self.pages.VIEWER_PAGE:
@@ -639,7 +639,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_columns()
             self.autoscroll_set_or_reset()
-            Globals.control_panel.setVisible(False)
+            if Globals.control_panel is not None:
+                Globals.control_panel.setVisible(False)
             self.previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
@@ -656,7 +657,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.transformations_allowed = True
 
         elif requested_page == self.pages.START_PAGE:
-            Globals.control_panel.setVisible(False)
+            if Globals.control_panel is not None:
+                Globals.control_panel.setVisible(False)
             self.transformations_allowed = False
 
         elif requested_page == self.pages.BOARD_PAGE:
@@ -3759,7 +3761,7 @@ def _main():
     ControlPanel.globals = Globals
     ControlPanel.LibraryData = LibraryData
     ControlPanel.SettingsWindow = SettingsWindow
-    CP = MW.recreate_control_panel()
+    # CP = MW.recreate_control_panel()
     # обработка входящих данных
     if path:
         LibraryData().handle_input_data(path)
