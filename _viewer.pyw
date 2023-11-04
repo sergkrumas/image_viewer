@@ -211,7 +211,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         btn_rect = self.get_corner_button_rect(corner_attr=corner_attr, big=big)
         top_right_corner = getattr(self.rect(), corner_attr)()
         diff = top_right_corner - self.mapped_cursor_pos()
-        distance = math.sqrt(pow(diff.x(), 2) + pow(diff.y(), 2))
+        distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
         n = 4 if big else 1
         case1 = distance < self.CORNER_BUTTON_RADIUS*n
