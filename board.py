@@ -66,6 +66,8 @@ class BoardItem():
 
         self.group_name = ""
 
+        self.board_items_list = []
+
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
@@ -90,7 +92,7 @@ class BoardItem():
             path = self.item_folder_data.folder_path
             return f'FOLDER {path}'
         elif self.type == self.types.ITEM_GROUP:
-            return f'GROUP {self.group_name}'
+            return f'GROUP {self.board_group_index} {self.group_name}'
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
@@ -157,6 +159,20 @@ class BoardItem():
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
+    def update_scroll_status(self):
+        if self.type == BoardItem.types.ITEM_IMAGE:
+            current_frame = self.movie.currentFrameNumber()
+            frame_count = self.movie.frameCount()
+            if frame_count > 0:
+                current_frame += 1
+            self.status = f'{current_frame}/{frame_count}'
+        elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+            current_image_num = self.item_folder_data._index
+            images_count = len(self.item_folder_data.images_list)
+            if images_count > 0:
+                current_image_num += 1
+            self.status = f'{current_image_num}/{images_count}'
+
 class BoardMixin():
 
     def board_init(self):
@@ -213,6 +229,9 @@ class BoardMixin():
         self.board_debug_transform_widget = False
 
         self.selection_color = QColor(18, 118, 127)
+
+        self.item_group_under_mouse = None
+        self.group_inside_selection_items = False
 
     def load_svg_cursors(self):
         folder_path = os.path.dirname(__file__)
@@ -387,9 +406,17 @@ class BoardMixin():
 
             item_rect.moveCenter(QPointF(0, 0))
 
-            pen = painter.pen()
-            pen.setCosmetic(True) # не скейлить пен
-            painter.setPen(pen)
+            if_0 = self.item_group_under_mouse is not None
+            if_1 = board_item is self.item_group_under_mouse
+            if if_0 and if_1:
+                pen = QPen(QColor(220, 50, 50), 1)
+                pen.setCosmetic(True) # не скейлить пен
+                pen.setWidthF(10.0)
+                painter.setPen(pen)
+            else:
+                pen = QPen(Qt.white, 1)
+                pen.setCosmetic(True) # не скейлить пен
+                painter.setPen(pen)
 
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(item_rect)
@@ -477,7 +504,7 @@ class BoardMixin():
             board_item.movie.jumpToFrame(0)
             board_item.pixmap = board_item.movie.currentPixmap()
             board_item.animated = True
-            self.update_scroll_status(board_item)
+            board_item.update_scroll_status()
             if board_item.movie.frameRect().isNull():
                 board_item.pixmap = None
             else:
@@ -939,9 +966,10 @@ class BoardMixin():
         bi.board_group_index = self.retrieve_new_board_item_group_index()
         folder_data.board_items_list.append(bi)
         # располагаем в центре экрана
-        bi.item_position = self.get_relative_position(self.mapped_cursor_pos())
-        self.update_scroll_status(bi)
+        bi.item_position = self.get_relative_position(self.context_menu_exec_point)
+        bi.update_scroll_status()
         self.board_select_items([bi])
+        self.update()
 
     def board_add_item_folder(self):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
@@ -957,7 +985,7 @@ class BoardMixin():
             folder_data.board_items_list.append(bi)
             # располагаем в центре экрана
             bi.item_position = self.get_relative_position(self.rect().center())
-            self.update_scroll_status(bi)
+            bi.update_scroll_status()
             self.board_select_items([bi])
 
     def isLeftClickAndNoModifiers(self, event):
@@ -982,6 +1010,7 @@ class BoardMixin():
                 if board_item._selected:
                     board_item.item_position = board_item.start_translation_pos + delta
             self.init_selection_bounding_box_widget(current_folder)
+            self.check_item_group_under_mouse()
         else:
             self.translation_ongoing = False
 
@@ -992,6 +1021,45 @@ class BoardMixin():
             board_item.start_translation_pos = None
         self.translation_ongoing = False
         self.build_board_bounding_rect(current_folder)
+        self.move_selected_items_to_item_group()
+        self.check_item_group_under_mouse(reset=True)
+
+    def move_selected_items_to_item_group(self):
+        if self.item_group_under_mouse is not None:
+            group_item = self.item_group_under_mouse
+            item_fd = group_item.item_folder_data
+            group_board_item_list = group_item.board_items_list
+
+            current_folder = self.LibraryData().current_folder()
+            board_item_list = current_folder.board_items_list
+            for bi in self.selected_items:
+                if bi.type is not bi.types.ITEM_GROUP:
+                    board_item_list.remove(bi)
+                    group_board_item_list.append(bi)
+                    if bi.type is bi.types.ITEM_IMAGE:
+                        current_folder.images_list.remove(bi.image_data)
+                        item_fd.images_list.append(bi.image_data)
+                        bi.image_data.folder_data = item_fd
+
+            group_item.update_scroll_status()
+
+            self.board_select_items([group_item])
+
+    def check_item_group_under_mouse(self, reset=False):
+        self.item_group_under_mouse = None
+        self.group_inside_selection_items = False
+        if reset:
+            return
+        self.group_inside_selection_items = any(bi.type == BoardItem.types.ITEM_GROUP for bi in self.selected_items)
+        if not self.group_inside_selection_items:
+            cf = self.LibraryData().current_folder()
+            for bi in cf.board_items_list:
+                if bi.type is BoardItem.types.ITEM_GROUP:
+                    item_selection_area = bi.get_selection_area(board=self)
+                    is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                    if is_under_mouse:
+                        self.item_group_under_mouse = bi
+                        break
 
     def any_item_area_under_mouse(self, add_selection):
         self.prevent_item_deselection = False
@@ -1573,20 +1641,6 @@ class BoardMixin():
     def board_do_scale(self, scroll_value):
         self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
 
-    def update_scroll_status(self, board_item):
-        if board_item.type == BoardItem.types.ITEM_IMAGE:
-            current_frame = board_item.movie.currentFrameNumber()
-            frame_count = board_item.movie.frameCount()
-            if frame_count > 0:
-                current_frame += 1
-            board_item.status = f'{current_frame}/{frame_count}'
-        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-            current_image_num = board_item.item_folder_data._index
-            images_count = len(board_item.item_folder_data.images_list)
-            if images_count > 0:
-                current_image_num += 1
-            board_item.status = f'{current_image_num}/{images_count}'
-
     def board_item_scroll_animation_file(self, board_item, scroll_value):
         frames_list = list(range(0, board_item.movie.frameCount()))
         if scroll_value > 0:
@@ -1597,7 +1651,7 @@ class BoardMixin():
         i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
         board_item.movie.jumpToFrame(frames_list[i])
         board_item.pixmap = board_item.movie.currentPixmap()
-        self.update_scroll_status(board_item)
+        board_item.update_scroll_status()
         self.update()
 
     def board_item_scroll_folder(self, board_item, scroll_value):
@@ -1607,7 +1661,7 @@ class BoardMixin():
             board_item.item_folder_data.previous_image()
         # заставляем подгрузится
         board_item.pixmap = None
-        self.update_scroll_status(board_item)
+        board_item.update_scroll_status()
         self.update()
 
     def board_wheelEvent(self, event):

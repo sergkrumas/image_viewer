@@ -1437,7 +1437,7 @@ class ImageData():
             self.image_metadata = dict()
             self.disk_size = 0
             # надо для boards, иначе будет вылет
-            self.preview = generate_info_pixmap("Нет изображений", "", size=1000, no_background=True)
+            self.preview = generate_info_pixmap("В группе\nнет изображений", "", size=1000, no_background=False)
             self.source_width = self.preview.width()
             self.source_height = self.preview.height()
 
