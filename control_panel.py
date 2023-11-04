@@ -377,7 +377,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 super().__init__()
                 self.point = point
                 diff = point - MW.rect().center()
-                self.distance = math.sqrt(pow(diff.x(), 2) + pow(diff.y(), 2))
+                self.distance = QVector2D(diff).length()
             def __lt__(self, other):
                 return self.distance > other.distance
         window_rect = QRectF(MW.rect())

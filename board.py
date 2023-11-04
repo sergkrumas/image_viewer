@@ -655,7 +655,7 @@ class BoardMixin():
         ellipse_rect.moveCenter(curpos)
         painter.drawEllipse(ellipse_rect)
 
-        dist = distance(pos, curpos)
+        dist = QVector2D(pos - curpos).length()
         radius += 10
         radians_angle += math.pi
         if dist < radius:
