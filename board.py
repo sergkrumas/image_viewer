@@ -377,7 +377,7 @@ class BoardMixin():
             item_rect = board_item.get_size_rect()
 
             if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                item_rect = fit_rect_into_rect(QRect(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
+                item_rect = fit_rect_into_rect(QRectF(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
 
             item_rect.moveCenter(QPointF(0, 0))
 
@@ -387,7 +387,6 @@ class BoardMixin():
 
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(item_rect)
-
 
             painter.setTransform(transform)
             image_to_draw = None
@@ -1560,7 +1559,7 @@ class BoardMixin():
         elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             current_image_num = board_item.item_folder_data._index
             images_count = len(board_item.item_folder_data.images_list)
-            if current_image_num > 0:
+            if images_count > 0:
                 current_image_num += 1
             board_item.status = f'{current_image_num}/{images_count}'
 
