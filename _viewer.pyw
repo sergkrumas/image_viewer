@@ -3763,6 +3763,9 @@ def _main():
     # обработка входящих данных
     if path:
         LibraryData().handle_input_data(path)
+    else:
+        # без запроса
+        LibraryData().create_empty_virtual_folder()
     if args.forcelibrarypage:
         MW.change_page(MW.pages.LIBRARY_PAGE)
 

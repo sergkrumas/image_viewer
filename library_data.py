@@ -651,6 +651,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         with open(self.get_fav_list_path(), "w+", encoding="utf8") as fav_file:
             fav_file.write(data_to_write)
 
+    def create_empty_virtual_folder(self):
+        # создаётся одна виртуальная папка, чтобы приложение не крашилось при перелистывании страниц,
+        # ведь код каждой из страниц подразумевает, что существует какая-то папка
+        self.empty_virtual_folder = self.create_folder_data("Стартовая виртуальная папка", [], image_filepath=None, virtual=True, make_current=True)
+        self.empty_virtual_folder.previews_done = True
+
     def get_comm_virutal_folder(self):
         return self.comments_folder
 

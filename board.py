@@ -762,12 +762,15 @@ class BoardMixin():
     def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
         points = []
         # points.append(self.board_origin) #мешает при использовании board_navigate_camera_via_minimap, поэтому убрал нафег
-        for board_item in folder_data.board_items_list:
-            rf = board_item.get_selection_area(board=self, apply_global_scale=apply_global_scale).boundingRect()
-            points.append(rf.topLeft())
-            points.append(rf.bottomRight())
-        p1, p2 = get_bounding_points(points)
-        result = build_valid_rectF(p1, p2)
+        if folder_data.board_items_list:
+            for board_item in folder_data.board_items_list:
+                rf = board_item.get_selection_area(board=self, apply_global_scale=apply_global_scale).boundingRect()
+                points.append(rf.topLeft())
+                points.append(rf.bottomRight())
+            p1, p2 = get_bounding_points(points)
+            result = build_valid_rectF(p1, p2)
+        else:
+            result = self.rect()
         self.board_bounding_rect = result
 
     def get_widget_cursor(self, source_pixmap, angle):
