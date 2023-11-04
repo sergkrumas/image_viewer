@@ -361,7 +361,10 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         Slideshow.globals = self.globals
         Slideshow.LibraryData = self.LibraryData
-        Slideshow.start_slideshow()
+        if self.LibraryData().current_folder().images_list:
+            Slideshow.start_slideshow()
+        else:
+            MW.show_center_label("Нет изображений для показа", error=True)
         MW.update()
 
     def show_next(self):
