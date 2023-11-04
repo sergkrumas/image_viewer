@@ -677,3 +677,55 @@ def shift_list_to_became_first(_list, should_be_the_first_in_list, reverse=False
     part2.extend(part1)
     result = part2
     return result
+
+def generate_info_pixmap(title, message, size=1000, no_background=False):
+
+    pxm = QPixmap(size, size)
+    p = QPainter()
+    p.begin(pxm)
+
+    p.setRenderHint(QPainter.HighQualityAntialiasing, True)
+    p.fillRect(QRect(0, 0, size, size), QBrush(QColor(0, 0, 0)))
+
+    p.setPen(Qt.NoPen)
+    if not no_background:
+        gradient = QLinearGradient(QPointF(0, size/2).toPoint(), QPoint(0, size))
+        gradient.setColorAt(1.0, Qt.red)
+        gradient.setColorAt(0.0, Qt.yellow)
+        brush = QBrush(gradient)
+        points = QPolygonF([
+            QPoint(size//2, size//2),
+            QPoint(size//2, size//2) + QPoint(size//40*3, size//8)*1.4,
+            QPoint(size//2, size//2) + QPoint(-size//40*3, size//8)*1.4,
+        ])
+        pp = QPainterPath()
+        pp.addPolygon(points)
+        p.fillPath(pp, brush)
+        p.setBrush(QBrush(Qt.black))
+        p.drawRect(size//2-10, size//2-10 + 150, 20, 20)
+        points = QPolygonF([
+            QPoint(size//2+15, size//2-15 + 60),
+            QPoint(size//2-15, size//2-15 + 60),
+            QPoint(size//2-10, size//2+75 + 60),
+            QPoint(size//2+10, size//2+75 + 60),
+        ])
+        p.drawPolygon(points)
+
+    p.setPen(QColor(255, 0, 0))
+    font = p.font()
+    font.setPixelSize(50)
+    font.setWeight(1900)
+    p.setFont(font)
+    r = QRectF(0, size/2, size, size/2).toRect()
+    p.drawText(r, Qt.AlignCenter | Qt.TextWordWrap, title.upper())
+    p.setPen(QColor(255, 0, 0))
+    font = p.font()
+    font.setPixelSize(20)
+    font.setWeight(100)
+    font.setFamily("Consolas")
+    p.setFont(font)
+    p.setPen(QColor(255, 255, 255))
+    p.drawText(QRect(0, 0, size, size-50).adjusted(20, 20, -20, -20), Qt.TextWordWrap, message)
+
+    p.end()
+    return pxm

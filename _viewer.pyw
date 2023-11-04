@@ -1070,65 +1070,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if correct:
             self.correct_scale()
 
-    def generate_info_pixmap(self, label, text, size=1000, no_background=False):
-
-        if not self.image_data.is_supported_filetype:
-            if LibraryData.is_text_file(self.image_data.filepath):
-                with open(self.image_data.filepath, "rb") as file:
-                    text = file.read(500).decode("utf-8", "ignore") + "..."
-
-                    label = ""
-
-        pxm = QPixmap(size, size)
-        p = QPainter()
-        p.begin(pxm)
-
-        p.setRenderHint(QPainter.HighQualityAntialiasing, True)
-        p.fillRect(QRect(0, 0, size, size), QBrush(QColor(0, 0, 0)))
-
-        p.setPen(Qt.NoPen)
-        if not no_background:
-            gradient = QLinearGradient(QPointF(0, size/2).toPoint(), QPoint(0, size))
-            gradient.setColorAt(1.0, Qt.red)
-            gradient.setColorAt(0.0, Qt.yellow)
-            brush = QBrush(gradient)
-            points = QPolygonF([
-                QPoint(size//2, size//2),
-                QPoint(size//2, size//2) + QPoint(size//40*3, size//8)*1.4,
-                QPoint(size//2, size//2) + QPoint(-size//40*3, size//8)*1.4,
-            ])
-            pp = QPainterPath()
-            pp.addPolygon(points)
-            p.fillPath(pp, brush)
-            p.setBrush(QBrush(Qt.black))
-            p.drawRect(size//2-10, size//2-10 + 150, 20, 20)
-            points = QPolygonF([
-                QPoint(size//2+15, size//2-15 + 60),
-                QPoint(size//2-15, size//2-15 + 60),
-                QPoint(size//2-10, size//2+75 + 60),
-                QPoint(size//2+10, size//2+75 + 60),
-            ])
-            p.drawPolygon(points)
-
-        p.setPen(QColor(255, 0, 0))
-        font = p.font()
-        font.setPixelSize(50)
-        font.setWeight(1900)
-        p.setFont(font)
-        r = QRectF(0, size/2, size, size/2).toRect()
-        p.drawText(r, Qt.AlignCenter | Qt.TextWordWrap, label.upper())
-        p.setPen(QColor(255, 0, 0))
-        font = p.font()
-        font.setPixelSize(20)
-        font.setWeight(100)
-        font.setFamily("Consolas")
-        p.setFont(font)
-        p.setPen(QColor(255, 255, 255))
-        p.drawText(QRect(0, 0, size, size-50).adjusted(20, 20, -20, -20), Qt.TextWordWrap, text)
-
-        p.end()
-        return pxm
-
     def animation_stamp(self):
         self.frame_delay = self.movie.nextFrameDelay()
         self.frame_time = time.time()
@@ -1226,9 +1167,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.tags_list = LibraryData().get_tags_for_image_data(image_data)
         self.update()
 
-    def error_pixmap_and_reset(self, title, msg, no_background=False):
+    def error_pixmap_and_reset(self, title, message, no_background=False):
         self.error = True
-        self.pixmap = self.generate_info_pixmap(title, msg, no_background=no_background)
+        if not self.image_data.is_supported_filetype:
+            if LibraryData.is_text_file(self.image_data.filepath):
+                with open(self.image_data.filepath, "rb") as file:
+                    message = file.read(500).decode("utf-8", "ignore") + "..."
+                    title = ""
+        self.pixmap = generate_info_pixmap(title, message, no_background=no_background)
         self.image_filepath = None
         self.transformations_allowed = False
         self.animated = False
