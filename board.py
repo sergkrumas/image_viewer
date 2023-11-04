@@ -59,6 +59,7 @@ class BoardItem():
         self.__item_rotation = None
 
         self.board_index = 0
+        self.board_group_index = None
 
         self.item_width = 300
         self.item_height = 300
@@ -199,7 +200,8 @@ class BoardMixin():
         self.proportional_scaling_vector = None
         self.scaling_pivot_point = None
 
-        self.current_board_index = 0
+        self.current_board_item_index = 0
+        self.current_board_item_group_index = 0
 
         self.board_selection_transform_box_opacity = 1.0
 
@@ -262,8 +264,12 @@ class BoardMixin():
         painter.drawText(text_rect, alignment, text)
 
     def retrieve_new_board_item_index(self):
-        self.current_board_index += 1
-        return self.current_board_index
+        self.current_board_item_index += 1
+        return self.current_board_item_index
+
+    def retrieve_new_board_item_group_index(self):
+        self.current_board_item_group_index += 1
+        return self.current_board_item_group_index
 
     def prepare_board(self, folder_data):
 
@@ -491,16 +497,21 @@ class BoardMixin():
             filepath = board_item.image_data.filepath
         elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             filepath = board_item.item_folder_data.current_image().filepath
-        try:
-            board_item.pixmap = QPixmap()
-            if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
-                __load_animated(filepath)
-            elif self.LibraryData().is_svg_file(filepath):
-                __load_svg(filepath)
-            else:
-                __load_static(filepath)
-        except Exception as e:
-            board_item.pixmap = QPixmap()
+
+        if filepath == "":
+            # для пустых групп (item_GROUP)
+            board_item.pixmap = board_item.item_folder_data.current_image().preview
+        else:
+            try:
+                board_item.pixmap = QPixmap()
+                if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
+                    __load_animated(filepath)
+                elif self.LibraryData().is_svg_file(filepath):
+                    __load_svg(filepath)
+                else:
+                    __load_static(filepath)
+            except Exception as e:
+                board_item.pixmap = QPixmap()
 
     def board_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.board_scale_x
@@ -918,6 +929,19 @@ class BoardMixin():
         for item in items:
             item._selected = True
         self.init_selection_bounding_box_widget(current_folder)
+
+    def board_add_item_group(self):
+        folder_data = self.LibraryData().current_folder()
+        item_folder_data = self.LibraryData().create_folder_data("folder_path", [], image_filepath=None, make_current=False, virtual=True)
+        bi = BoardItem(BoardItem.types.ITEM_GROUP)
+        bi.item_folder_data = item_folder_data
+        bi.board_index = self.retrieve_new_board_item_index()
+        bi.board_group_index = self.retrieve_new_board_item_group_index()
+        folder_data.board_items_list.append(bi)
+        # располагаем в центре экрана
+        bi.item_position = self.get_relative_position(self.mapped_cursor_pos())
+        self.update_scroll_status(bi)
+        self.board_select_items([bi])
 
     def board_add_item_folder(self):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))

@@ -1419,6 +1419,10 @@ class ImageData():
         self.anim_paused = False
         self.svg_scale_factor = 20
         self.anim_cur_frame = 0
+
+        self.source_width = 0
+        self.source_height = 0
+
         if self.filepath and not LibraryData().globals.lite_mode:
             if LibraryData.is_interest_file(self.filepath):
                 self.md5, self.md5_tuple = generate_md5(self.filepath)
@@ -1432,9 +1436,10 @@ class ImageData():
             self.md5, self.md5_tuple = "", ()
             self.image_metadata = dict()
             self.disk_size = 0
-
-        self.source_width = 0
-        self.source_height = 0
+            # надо для boards, иначе будет вылет
+            self.preview = generate_info_pixmap("Нет изображений", "", size=1000, no_background=True)
+            self.source_width = self.preview.width()
+            self.source_height = self.preview.height()
 
         self.board_item = None
 
