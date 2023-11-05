@@ -408,7 +408,8 @@ class BoardMixin():
 
             if_0 = self.item_group_under_mouse is not None
             if_1 = board_item is self.item_group_under_mouse
-            if if_0 and if_1:
+            if_x = all((if_0, if_1))
+            if if_x:
                 pen = QPen(QColor(220, 50, 50), 1)
                 pen.setCosmetic(True) # не скейлить пен
                 pen.setWidthF(10.0)
@@ -417,6 +418,10 @@ class BoardMixin():
                 pen = QPen(Qt.white, 1)
                 pen.setCosmetic(True) # не скейлить пен
                 painter.setPen(pen)
+
+
+            if if_0 and board_item in self.selected_items:
+                painter.setOpacity(0.5)
 
             painter.setBrush(Qt.NoBrush)
             painter.drawRect(item_rect)
@@ -436,6 +441,7 @@ class BoardMixin():
             if image_to_draw:
                 painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
+            painter.setOpacity(1.0)
             painter.resetTransform()
 
             selection_area_bounding_rect = selection_area.boundingRect()
@@ -590,7 +596,22 @@ class BoardMixin():
         if self.Globals.DEBUG or self.STNG_board_draw_origin_compass:
             self.board_draw_origin_compass(painter)
 
+        self.board_draw_cursor_text(painter)
+
         self.board_draw_minimap(painter)
+
+    def board_draw_cursor_text(self, painter):
+        if self.item_group_under_mouse:
+            pos = self.mapped_cursor_pos()
+            count = len(self.selected_items)
+            text = f'Добавить в группу ({count})'
+            bounding_rect = painter.boundingRect(QRect(0, 0, 500, 500), Qt.AlignLeft, text)
+            painter.setBrush(QBrush(Qt.black))
+            painter.setPen(Qt.NoPen)
+            bounding_rect.moveCenter(pos)
+            painter.drawRect(bounding_rect.adjusted(-2, -2, 2, 2))
+            painter.setPen(Qt.white)
+            painter.drawText(bounding_rect, Qt.AlignLeft, text)
 
     def board_draw_selection_frames(self, painter):
         if self.selection_rect is not None:
