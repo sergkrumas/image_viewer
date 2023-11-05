@@ -974,11 +974,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
-            if MW.is_library_page_active():
+
+            if not MW.is_viewer_page_active():
                 # выходим из страницы библиотеки для показа картинки
-                MW.change_page(MW.pages.VIEWER_PAGE)
+                MW.change_page(MW.pages.VIEWER_PAGE, force=True)
+
             MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
-            # MW.update_thumbnails_row_relative_offset(fd, only_set=True)
+
             fd.current_image().update_fav_button_state()
             if MW.isAnimationEffectsAllowed():
                 MW.animate_properties(
@@ -987,8 +989,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 )
             MW.update()
             MW.activateWindow()
-
-            MW.change_page(MW.pages.VIEWER_PAGE, force=True)
 
             LibraryData().add_current_image_to_view_history()
             LibraryData().store_session_file()

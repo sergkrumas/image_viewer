@@ -867,7 +867,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         before_offset = -THUMBNAIL_WIDTH*before_index
         new_offset = -THUMBNAIL_WIDTH*new_index
-        if self.isThumbnailsRowSlidingAnimationEffectAllowed() and (not only_set) and (not now_offset == new_offset):
+        if self.isThumbnailsRowSlidingAnimationEffectAllowed() and (not only_set) and (not now_offset == new_offset) and (now_offset != 0):
             self.animate_properties(
                 [
                     (folder_data, "relative_thumbnails_row_offset_x", before_offset, new_offset, Globals.control_panel.update),
