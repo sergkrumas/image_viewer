@@ -3273,8 +3273,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     action_title = "Перейти из избранного в папку с этим изображением"
                     go_to_folder = contextMenu.addAction(action_title)
 
-        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         self.context_menu_exec_point = self.mapped_cursor_pos()
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         self.contextMenuActivated = False
         if action is not None:
             if action == show_in_explorer:
