@@ -2049,8 +2049,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.frameless_mode:
             if self.is_library_page_active():
                 painter.setOpacity(self.STNG_library_page_transparency)
-            else:
+            elif self.is_board_page_active():
+                painter.setOpacity(self.STNG_board_page_transparency)
+            elif self.is_viewer_page_active():
                 painter.setOpacity(self.STNG_viewer_page_transparency)
+            elif self.is_start_page_active():
+                painter.setOpacity(self.STNG_start_page_transparency)
+
             painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
             painter.drawRect(self.rect())
             painter.setOpacity(1.0)
