@@ -492,7 +492,12 @@ class BoardMixin():
             board_item.pixmap = None
             board_item.movie = None
 
-            filepath = board_item.image_data.filepath
+            if board_item.type == BoardItem.types.ITEM_IMAGE:
+                image_data = board_item.image_data
+            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                image_data = board_item.item_folder_data.current_image()
+
+            filepath = image_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
 
@@ -1739,7 +1744,11 @@ class BoardMixin():
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
-                self.board_thumbnails_click_handler(board_item.image_data)
+                if board_item.type == BoardItem.types.ITEM_IMAGE:
+                    image_data = board_item.image_data
+                elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                    image_data = board_item.item_folder_data.current_image()
+                self.board_thumbnails_click_handler(image_data)
                 break
 
     def board_thumbnails_click_handler(self, image_data):
@@ -1894,11 +1903,15 @@ class BoardMixin():
 
 
             board_item = item_to_center_viewport
-            image_data = board_item.image_data
+
+            if board_item.type == BoardItem.types.ITEM_IMAGE:
+                image_data = board_item.image_data
+            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                image_data = board_item.item_folder_data.current_image()
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+            item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
 
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             bx = fitted_rect.width()/item_rect.width()
