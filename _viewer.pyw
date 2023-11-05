@@ -2060,7 +2060,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.drawRect(self.rect())
             painter.setOpacity(1.0)
         else:
-            painter.setBrush(QBrush(Qt.gray, Qt.SolidPattern))
+            painter.setBrush(QBrush(QColor(10, 10, 10), Qt.SolidPattern))
             painter.drawRect(self.rect())
 
         # draw current page
