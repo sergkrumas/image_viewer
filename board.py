@@ -1745,28 +1745,28 @@ class BoardMixin():
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
-                if board_item.type == BoardItem.types.ITEM_IMAGE:
-                    image_data = board_item.image_data
-                elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                    image_data = board_item.item_folder_data.current_image()
-                self.board_thumbnails_click_handler(image_data)
+                self.board_thumbnails_click_handler(None, board_item=board_item)
                 break
 
-    def board_thumbnails_click_handler(self, image_data):
+    def board_thumbnails_click_handler(self, image_data, board_item=None):
 
-        if image_data.board_item is None:
+        if board_item is None and (image_data is not None) and image_data.board_item is None:
             self.show_center_label("Этот элемент не представлен на доске", error=True)
         else:
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            board_item = image_data.board_item
+            if board_item is not None:
+                pass
+            else:
+                board_item = image_data.board_item
+
             image_pos = QPointF(board_item.item_position.x()*board_scale_x, board_item.item_position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
             self.board_origin = - image_pos + viewport_center_pos
 
-            item_rect = image_data.board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
+            item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
@@ -1994,7 +1994,6 @@ class BoardMixin():
 
             if bx is None:
                 board_item = by
-                image_data = by.image_data
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
 
@@ -2050,7 +2049,8 @@ class BoardMixin():
         if self.is_board_ready():
             if cf.board_items_list:
                 items_list = self.get_original_items_order(cf.board_items_list)
-                self.board_thumbnails_click_handler(items_list[0].image_data)
+                item = items_list[0]
+                self.board_thumbnails_click_handler(None, item)
 
     def board_viewport_show_last_item(self):
         self.board_unselect_all_items()
@@ -2058,7 +2058,15 @@ class BoardMixin():
         if self.is_board_ready():
            if cf.board_items_list:
                 items_list = self.get_original_items_order(cf.board_items_list)
-                self.board_thumbnails_click_handler(items_list[-1].image_data)
+                item = items_list[-1]
+                self.board_thumbnails_click_handler(None, item)
+
+    def board_retrieve_image_data(self, board_item):
+        if board_item.type == BoardItem.types.ITEM_IMAGE:
+            image_data = board_item.image_data
+        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+            image_data = board_item.item_folder_data.current_image()
+        return image_data
 
     def board_region_zoom_in_init(self):
         self.board_magnifier_input_rect = None
