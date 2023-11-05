@@ -314,7 +314,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         ci = cf.current_image()
         if ci in cf.images_list: #служебные объекты ImageData не находятся в списке
             if cf.virtual:
-                MW.show_center_label("Из виртуальных нельзя удалять изображения", error=True)
+                MW.show_center_label("Из виртуальных папок нельзя удалять изображения", error=True)
                 return
             # prepare
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
