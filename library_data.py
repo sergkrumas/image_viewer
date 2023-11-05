@@ -290,23 +290,27 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def save_board_data(self):
         cf = self.current_folder()
+        board = cf.board
         MW = self.globals.main_window
-        cf.board_scale_x = MW.board_scale_x
-        cf.board_scale_y = MW.board_scale_y
-        cf.board_origin = MW.board_origin
+        board.board_scale_x = MW.board_scale_x
+        board.board_scale_y = MW.board_scale_y
+        board.board_origin = MW.board_origin
+        MW.board_save_board_data(board, cf)
 
     def load_board_data(self):
         cf = self.current_folder()
+        board = cf.board
         MW = self.globals.main_window
-        if cf.board_scale_x is None:
+        if board.board_scale_x is None:
             MW.set_default_boardviewport_scale()
         else:
-            MW.board_scale_x = cf.board_scale_x
-            MW.board_scale_y = cf.board_scale_y
-        if cf.board_origin is None:
+            MW.board_scale_x = board.board_scale_x
+            MW.board_scale_y = board.board_scale_y
+        if board.board_origin is None:
             MW.set_default_boardviewport_origin()
         else:
-            MW.board_origin = cf.board_origin
+            MW.board_origin = board.board_origin
+        MW.board_load_board_data(board, cf)
 
     def delete_current_image(self):
         MW = self.globals.main_window
@@ -1031,6 +1035,24 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # 3) исправить запись
         pass
 
+class BoardData():
+
+    def __init__(self):
+
+        self.board_origin = None
+        self.board_scale_x = None
+        self.board_scale_y = None
+        self.board_ready = False
+
+        self.board_user_points = []
+        self.board_items_list = []
+
+        self.board_bounding_rect = None
+
+        self.referer_board_folder = None
+
+        self.current_board_item_index = 0
+        self.current_board_item_group_index = 0
 
 class FolderData():
 
@@ -1220,13 +1242,7 @@ class FolderData():
         self.sort_type = "original"
         self.sort_type_reversed = False
 
-        self.board_origin = None
-        self.board_scale_x = None
-        self.board_scale_y = None
-        self.board_ready = False
-
-        self.board_user_points = []
-        self.board_items_list = []
+        self.board = BoardData()
 
         self.preview_error = False
 

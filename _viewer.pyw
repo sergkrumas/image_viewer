@@ -2696,6 +2696,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_Down:
                 LibraryData().choose_next_folder()
 
+        elif self.is_board_page_active():
+            if key in [Qt.Key_Return, Qt.Key_Enter]:
+                self.board_dive_inside_board_item()
+            elif key in [Qt.Key_Backspace]:
+                self.board_dive_inside_board_item(back_to_referer=True)
+
         elif self.is_viewer_page_active():
 
             if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:

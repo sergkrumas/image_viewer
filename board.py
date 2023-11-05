@@ -66,8 +66,6 @@ class BoardItem():
 
         self.group_name = ""
 
-        self.board_items_list = []
-
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
@@ -81,7 +79,7 @@ class BoardItem():
                 attr_value = type_obj(attr_value)
             setattr(copied_item, attr_name, attr_value)
         copied_item.board_index = board.retrieve_new_board_item_index()
-        folder_data.board_items_list.append(copied_item)
+        folder_data.board.board_items_list.append(copied_item)
         return copied_item
 
     def info_text(self):
@@ -180,23 +178,21 @@ class BoardMixin():
         self.board_origin = self.get_center_position()
         self.board_scale_x = 1.0
         self.board_scale_y = 1.0
-
-        self.board_translating = False
-
-        self.board_show_minimap = False
-
-        self.pr_viewport = QPointF(0, 0)
-
-        self.fly_pairs = []
-        self._board_scale_x = 1.0
-        self._board_scale_y = 1.0
-
-        self.board_item_under_mouse = None
-        self.images_drawn = 0
-
-        self.context_menu_allowed = True
-
         self.board_region_zoom_in_init()
+        self.scale_rastr_source = None
+        self.rotate_rastr_source = None
+        self.load_svg_cursors()
+        self.selection_color = QColor(18, 118, 127)
+
+        self.board_camera_translation_ongoing = False
+        self.start_translation_pos = None
+        self.translation_ongoing = False
+        self.rotation_activation_areas = []
+        self.rotation_ongoing = False
+        self.scaling_ongoing = False
+        self.scaling_vector = None
+        self.proportional_scaling_vector = None
+        self.scaling_pivot_point = None
 
         self.selection_rect = None
         self.selection_start_point = None
@@ -204,34 +200,74 @@ class BoardMixin():
         self.selected_items = []
         self.selection_bounding_box = None
 
+        self.board_show_minimap = False
+        self.images_drawn = 0
+        self.pr_viewport = QPointF(0, 0)
+        self.fly_pairs = []
+        self._board_scale_x = 1.0
+        self._board_scale_y = 1.0
+        self.board_selection_transform_box_opacity = 1.0
+        self.board_debug_transform_widget = False
+        self.context_menu_allowed = True
+
+        self.board_item_under_mouse = None
+        self.item_group_under_mouse = None
+        self.group_inside_selection_items = False
+
         self.board_bounding_rect = QRectF()
-
-        self.start_translation_pos = None
-        self.translation_ongoing = False
-        self.rotation_activation_areas = []
-        self.rotation_ongoing = False
-
-        self.scaling_ongoing = False
-        self.scaling_vector = None
-        self.proportional_scaling_vector = None
-        self.scaling_pivot_point = None
-
         self.current_board_item_index = 0
         self.current_board_item_group_index = 0
 
-        self.board_selection_transform_box_opacity = 1.0
+    def board_dive_inside_board_item(self, back_to_referer=False):
+        if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
+            self.show_center_label("Нельзя погружаться во время незавершённых операций с доской", error=True)
+            return
+        cf = self.LibraryData().current_folder()
+        __folder_data = None
+        if back_to_referer:
+            referer = cf.board.referer_board_folder
+            if referer is not None:
+                __folder_data = referer
+        else:
+            item = None
+            for bi in cf.board.board_items_list:
+                item_selection_area = bi.get_selection_area(board=self)
+                is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                if is_under_mouse:
+                    item = bi
+                    break
+            if bi.type not in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                self.show_center_label("Нырять можно только в группы и папки!", error=True)
+                return
+            if item is not None:
+                __folder_data = item.item_folder_data
+            else:
+                self.show_center_label("Наведи курсор на группу!", error=True)
+                return
+        if __folder_data is not None:
+            self.LibraryData().save_board_data()
+            self.LibraryData().choose_that_folder(__folder_data, write_view_history=False)
+            self.LibraryData().load_board_data()
+            self.LibraryData().current_folder().board.referer_board_folder = cf
+            self.init_selection_bounding_box_widget(__folder_data)
+        else:
+            self.show_center_label("Некуда возвращаться!", error=True)
+        self.update()
 
-        self.scale_rastr_source = None
-        self.rotate_rastr_source = None
+    def board_save_board_data(self, board_lib_obj, folder_data):
+        board_lib_obj.board_bounding_rect = self.board_bounding_rect
+        board_lib_obj.current_board_item_index = self.current_board_item_index
+        board_lib_obj.current_board_item_group_index = self.current_board_item_group_index
 
-        self.load_svg_cursors()
-
-        self.board_debug_transform_widget = False
-
-        self.selection_color = QColor(18, 118, 127)
-
+        self.board_item_under_mouse = None
         self.item_group_under_mouse = None
         self.group_inside_selection_items = False
+
+    def board_load_board_data(self, board_lib_obj, folder_data):
+        if board_lib_obj.board_bounding_rect is not None:
+            self.board_bounding_rect = board_lib_obj.board_bounding_rect
+        self.current_board_item_index = board_lib_obj.current_board_item_index
+        self.current_board_item_group_index = board_lib_obj.current_board_item_group_index
 
     def load_svg_cursors(self):
         folder_path = os.path.dirname(__file__)
@@ -297,21 +333,21 @@ class BoardMixin():
         else:
             offset = QPointF(0, 0)
 
-        items_list = folder_data.board_items_list = []
+        items_list = folder_data.board.board_items_list = []
 
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
                 board_item.image_data = image_data
                 image_data.board_item = board_item
-                folder_data.board_items_list.append(board_item)
+                folder_data.board.board_items_list.append(board_item)
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.item_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
         self.build_board_bounding_rect(folder_data)
 
-        folder_data.board_ready = True
+        folder_data.board.board_ready = True
         self.update()
 
     def board_timer_handler(self):
@@ -342,7 +378,7 @@ class BoardMixin():
                     )
 
     def board_draw_content(self, painter, folder_data):
-        if not folder_data.board_ready:
+        if not self.is_board_ready():
             self.prepare_board(folder_data)
         else:
 
@@ -354,7 +390,7 @@ class BoardMixin():
 
             self.images_drawn = 0
             self.board_item_under_mouse = None
-            for board_item in folder_data.board_items_list:
+            for board_item in folder_data.board.board_items_list:
                 self.board_draw_item(painter, board_item)
 
             self.draw_selection(painter, folder_data)
@@ -366,7 +402,7 @@ class BoardMixin():
         pen = QPen(self.selection_color, 1)
         painter.setPen(pen)
 
-        for board_item in folder_data.board_items_list:
+        for board_item in folder_data.board.board_items_list:
             if board_item._selected:
                 painter.drawPolygon(board_item.get_selection_area(board=self))
 
@@ -567,7 +603,7 @@ class BoardMixin():
 
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
-        for point, board_scale_x, board_scale_y in cf.board_user_points:
+        for point, board_scale_x, board_scale_y in cf.board.board_user_points:
             p = self.board_origin + QPointF(point.x()*self.board_scale_x, point.y()*self.board_scale_y)
             painter.drawPoint(p)
 
@@ -596,7 +632,27 @@ class BoardMixin():
 
         self.board_draw_cursor_text(painter)
 
+        self.board_draw_diving_notification(painter, cf)
+
         self.board_draw_minimap(painter)
+
+    def board_draw_diving_notification(self, painter, folder_data):
+        referer = folder_data.board.referer_board_folder
+        if referer is not None:
+            folder_name = referer.folder_path
+            text = f"клавиша Backspace ➜ вернуться на доску папки {folder_name}"
+            font = painter.font()
+            font.setPixelSize(20)
+            painter.setFont(font)
+            text_rect = painter.boundingRect(QRect(0, 0, 500, 500), Qt.AlignLeft, text)
+            text_rect.moveTopLeft(QPoint(150, 150))
+            _text_rect = text_rect.adjusted(-4, -4, 4, 4)
+            painter.setBrush(QBrush(QColor(220, 50, 50)))
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(_text_rect)
+            painter.setPen(QPen(Qt.white, 2))
+            painter.setBrush(Qt.NoBrush)
+            painter.drawText(text_rect, Qt.AlignLeft, text)
 
     def board_draw_cursor_text(self, painter):
         if self.item_group_under_mouse:
@@ -782,8 +838,8 @@ class BoardMixin():
     def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
         points = []
         # points.append(self.board_origin) #мешает при использовании board_navigate_camera_via_minimap, поэтому убрал нафег
-        if folder_data.board_items_list:
-            for board_item in folder_data.board_items_list:
+        if folder_data.board.board_items_list:
+            for board_item in folder_data.board.board_items_list:
                 rf = board_item.get_selection_area(board=self, apply_global_scale=apply_global_scale).boundingRect()
                 points.append(rf.topLeft())
                 points.append(rf.bottomRight())
@@ -866,7 +922,7 @@ class BoardMixin():
         painter.resetTransform()
 
         cf = self.LibraryData().current_folder()
-        if cf.board_ready:
+        if self.is_board_ready():
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20, 220)))
 
             minimap_rect = self.board_bounding_rect
@@ -885,7 +941,7 @@ class BoardMixin():
             painter.setPen(QPen(QColor(50, 50, 50), 1))
             painter.drawRect(minimap_rect)
 
-            for board_item in cf.board_items_list:
+            for board_item in cf.board.board_items_list:
 
                 image_data = self.board_retrieve_image_data(board_item)
 
@@ -971,7 +1027,7 @@ class BoardMixin():
 
     def board_select_items(self, items):
         current_folder = self.LibraryData().current_folder()
-        for bi in current_folder.board_items_list:
+        for bi in current_folder.board.board_items_list:
             bi._selected = False
         for item in items:
             item._selected = True
@@ -979,12 +1035,14 @@ class BoardMixin():
 
     def board_add_item_group(self):
         folder_data = self.LibraryData().current_folder()
-        item_folder_data = self.LibraryData().create_folder_data("folder_path", [], image_filepath=None, make_current=False, virtual=True)
+        item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
         bi = BoardItem(BoardItem.types.ITEM_GROUP)
         bi.item_folder_data = item_folder_data
         bi.board_index = self.retrieve_new_board_item_index()
         bi.board_group_index = self.retrieve_new_board_item_group_index()
-        folder_data.board_items_list.append(bi)
+        folder_data.board.board_items_list.append(bi)
+        item_folder_data.previews_done = True
+        item_folder_data.board.board_ready = True
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
         bi.update_scroll_status()
@@ -1002,7 +1060,7 @@ class BoardMixin():
             bi = BoardItem(BoardItem.types.ITEM_FOLDER)
             bi.item_folder_data = item_folder_data
             bi.board_index = self.retrieve_new_board_item_index()
-            folder_data.board_items_list.append(bi)
+            folder_data.board.board_items_list.append(bi)
             # располагаем в центре экрана
             bi.item_position = self.get_relative_position(self.rect().center())
             bi.update_scroll_status()
@@ -1017,7 +1075,7 @@ class BoardMixin():
     def board_START_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
-        for board_item in current_folder.board_items_list:
+        for board_item in current_folder.board.board_items_list:
             board_item.start_translation_pos = QPointF(board_item.item_position)
 
     def board_DO_selected_items_TRANSLATION(self, event):
@@ -1026,7 +1084,7 @@ class BoardMixin():
             current_folder = self.LibraryData().current_folder()
             delta = event.pos() - self.start_translation_pos
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
-            for board_item in current_folder.board_items_list:
+            for board_item in current_folder.board.board_items_list:
                 if board_item._selected:
                     board_item.item_position = board_item.start_translation_pos + delta
             self.init_selection_bounding_box_widget(current_folder)
@@ -1037,7 +1095,7 @@ class BoardMixin():
     def board_FINISH_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = None
         current_folder = self.LibraryData().current_folder()
-        for board_item in current_folder.board_items_list:
+        for board_item in current_folder.board.board_items_list:
             board_item.start_translation_pos = None
         self.translation_ongoing = False
         self.build_board_bounding_rect(current_folder)
@@ -1048,10 +1106,10 @@ class BoardMixin():
         if self.item_group_under_mouse is not None:
             group_item = self.item_group_under_mouse
             item_fd = group_item.item_folder_data
-            group_board_item_list = group_item.board_items_list
+            group_board_item_list = item_fd.board.board_items_list
 
             current_folder = self.LibraryData().current_folder()
-            board_item_list = current_folder.board_items_list
+            board_item_list = current_folder.board.board_items_list
             for bi in self.selected_items:
                 if bi.type is not bi.types.ITEM_GROUP:
                     board_item_list.remove(bi)
@@ -1073,7 +1131,7 @@ class BoardMixin():
         self.group_inside_selection_items = any(bi.type == BoardItem.types.ITEM_GROUP for bi in self.selected_items)
         if not self.group_inside_selection_items:
             cf = self.LibraryData().current_folder()
-            for bi in cf.board_items_list:
+            for bi in cf.board.board_items_list:
                 if bi.type is BoardItem.types.ITEM_GROUP:
                     item_selection_area = bi.get_selection_area(board=self)
                     is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
@@ -1087,18 +1145,18 @@ class BoardMixin():
         if self.is_flyover_ongoing():
             return False
         # reversed для того, чтобы картинки на переднем плане чекались первыми
-        for board_item in reversed(current_folder.board_items_list):
+        for board_item in reversed(current_folder.board.board_items_list):
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
 
             if is_under_mouse and not board_item._selected:
                 if not add_selection:
-                    for bi in current_folder.board_items_list:
+                    for bi in current_folder.board.board_items_list:
                         bi._selected = False
                 board_item._selected = True
                 # вытаскиваем айтем на передний план при отрисовке
-                current_folder.board_items_list.remove(board_item)
-                current_folder.board_items_list.append(board_item)
+                current_folder.board.board_items_list.remove(board_item)
+                current_folder.board.board_items_list.append(board_item)
                 self.prevent_item_deselection = True
                 return True
             if is_under_mouse and board_item._selected:
@@ -1111,7 +1169,7 @@ class BoardMixin():
         current_folder = self.LibraryData().current_folder()
         if self.selection_rect is not None:
             selection_rect_area = QPolygonF(self.selection_rect)
-            for board_item in current_folder.board_items_list:
+            for board_item in current_folder.board.board_items_list:
                 item_selection_area = board_item.get_selection_area(board=self)
                 if item_selection_area.intersects(selection_rect_area):
                     board_item._selected = True
@@ -1122,7 +1180,7 @@ class BoardMixin():
                         board_item._selected = False
         else:
             # reversed для того, чтобы картинки на переднем плане чекались первыми
-            for board_item in reversed(current_folder.board_items_list):
+            for board_item in reversed(current_folder.board.board_items_list):
                 item_selection_area = board_item.get_selection_area(board=self)
                 is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if add_to_selection and board_item._selected:
@@ -1135,20 +1193,20 @@ class BoardMixin():
 
     def init_selection_bounding_box_widget(self, folder_data):
         self.selected_items = []
-        for board_item in folder_data.board_items_list:
+        for board_item in folder_data.board.board_items_list:
             if board_item._selected:
                 self.selected_items.append(board_item)
         self.update_selection_bouding_box()
 
     def board_unselect_all_items(self):
         cf = self.LibraryData().current_folder()
-        for board_item in cf.board_items_list:
+        for board_item in cf.board.board_items_list:
             board_item._selected = False
         self.init_selection_bounding_box_widget(cf)
 
     def board_select_all_items(self):
         cf = self.LibraryData().current_folder()
-        for bi in cf.board_items_list:
+        for bi in cf.board.board_items_list:
             bi._selected = True
         self.update()
 
@@ -1479,7 +1537,7 @@ class BoardMixin():
 
         elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed:
-                self.board_translating = True
+                self.board_camera_translation_ongoing = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
                 self.start_origin_pos = self.board_origin
                 self.update()
@@ -1513,7 +1571,7 @@ class BoardMixin():
 
 
         elif event.buttons() == Qt.MiddleButton:
-            if self.transformations_allowed and self.board_translating:
+            if self.transformations_allowed and self.board_camera_translation_ongoing:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
                 start_value = self.board_origin
                 # delta = end_value-start_value
@@ -1558,12 +1616,12 @@ class BoardMixin():
                 cf = self.LibraryData().current_folder()
                 delta = QPointF(event.pos() - self.board_origin)
                 delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
-                cf.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
+                cf.board.board_user_points.append([delta, self.board_scale_x, self.board_scale_y])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
                 if self.transformations_allowed:
-                    self.board_translating = False
+                    self.board_camera_translation_ongoing = False
                     self.update()
             elif alt:
                 if self.transformations_allowed:
@@ -1579,7 +1637,7 @@ class BoardMixin():
         selected_items = []
         selection_center = self.get_relative_position(self.selection_bounding_box.boundingRect().center())
         rel_cursor_pos = self.get_relative_position(self.mapped_cursor_pos())
-        for bi in self.LibraryData().current_folder().board_items_list:
+        for bi in self.LibraryData().current_folder().board.board_items_list:
             if bi._selected:
                 selected_items.append(bi)
                 bi._selected = False
@@ -1693,7 +1751,7 @@ class BoardMixin():
         control_panel_undermouse = self.is_control_panel_under_mouse()
         if control_panel_undermouse:
             return
-        elif self.board_translating:
+        elif self.board_camera_translation_ongoing:
             return
         elif self.board_item_under_mouse is not None and event.buttons() == Qt.RightButton:
             board_item = self.board_item_under_mouse
@@ -1712,7 +1770,7 @@ class BoardMixin():
 
     def board_toggle_item_info_overlay(self):
         cf = self.LibraryData().current_folder()
-        for bi in cf.board_items_list:
+        for bi in cf.board.board_items_list:
             item_selection_area = bi.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse or bi._selected:
@@ -1731,7 +1789,7 @@ class BoardMixin():
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()
-        for board_item in cf.board_items_list:
+        for board_item in cf.board.board_items_list:
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
@@ -1782,11 +1840,11 @@ class BoardMixin():
             self.board_scale_y = 1.0
 
     def set_default_boardviewport_origin(self):
-        self.board_origin = QPointF(300, 300)
+        self.board_origin = QPointF(600, 100)
 
     def retrieve_selected_item(self):
         cf = self.LibraryData().current_folder()
-        for bi in cf.board_items_list:
+        for bi in cf.board.board_items_list:
             if bi.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
                 if bi._selected:
                     return bi
@@ -1844,7 +1902,7 @@ class BoardMixin():
             cursor_pos = self.get_center_position()
         else:
             cursor_pos = self.mapped_cursor_pos()
-        for board_item in folder_data.board_items_list:
+        for board_item in folder_data.board.board_items_list:
 
             pos = board_item.calculate_absolute_position(board=self)
             distance = QVector2D(pos - cursor_pos).length()
@@ -1860,13 +1918,13 @@ class BoardMixin():
         cf = self.LibraryData().current_folder()
         nearest_item = self.board_get_nearest_item(cf, by_window_center=True)
 
-        if nearest_item is not None and len(cf.board_items_list) > 1:
+        if nearest_item is not None and len(cf.board.board_items_list) > 1:
             if _previous:
                 reverse = True
             elif _next:
                 reverse = False
 
-            items_list = self.get_original_items_order(cf.board_items_list)
+            items_list = self.get_original_items_order(cf.board.board_items_list)
             _list = shift_list_to_became_first(items_list, nearest_item, reverse=reverse)
 
             first_item = _list[0]
@@ -1952,12 +2010,12 @@ class BoardMixin():
         if not self.fly_pairs:
             _list = []
 
-            if cf.board_user_points:
-                for point, bx, by in cf.board_user_points:
+            if cf.board.board_user_points:
+                for point, bx, by in cf.board.board_user_points:
                     _list.append([point, bx, by])
             else:
                 nearest_item = self.board_get_nearest_item(cf)
-                board_items_list = self.get_original_items_order(cf.board_items_list)
+                board_items_list = self.get_original_items_order(cf.board.board_items_list)
                 if nearest_item:
                     sorted_list = shift_list_to_became_first(board_items_list, nearest_item)
                 else:
@@ -2028,14 +2086,14 @@ class BoardMixin():
         )
 
     def is_board_ready(self):
-        return self.LibraryData().current_folder().board_ready
+        return self.LibraryData().current_folder().board.board_ready
 
     def board_viewport_show_first_item(self):
         self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
-            if cf.board_items_list:
-                items_list = self.get_original_items_order(cf.board_items_list)
+            if cf.board.board_items_list:
+                items_list = self.get_original_items_order(cf.board.board_items_list)
                 item = items_list[0]
                 self.board_thumbnails_click_handler(None, item)
 
@@ -2043,8 +2101,8 @@ class BoardMixin():
         self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
-           if cf.board_items_list:
-                items_list = self.get_original_items_order(cf.board_items_list)
+           if cf.board.board_items_list:
+                items_list = self.get_original_items_order(cf.board.board_items_list)
                 item = items_list[-1]
                 self.board_thumbnails_click_handler(None, item)
 
