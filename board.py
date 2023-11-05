@@ -70,6 +70,13 @@ class BoardItem():
         self._touched = False
         self._show_file_info_overlay = False
 
+    def board_retrieve_image_data(self):
+        if self.type == BoardItem.types.ITEM_IMAGE:
+            image_data = self.image_data
+        elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+            image_data = self.item_folder_data.current_image()
+        return image_data        
+
     def make_copy(self, board, folder_data):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
@@ -420,7 +427,7 @@ class BoardMixin():
 
     def board_draw_item(self, painter, board_item):
 
-        image_data = self.board_retrieve_image_data(board_item)
+        image_data = board_item.board_retrieve_image_data()
 
         selection_area = board_item.get_selection_area(board=self)
 
@@ -525,7 +532,7 @@ class BoardMixin():
             board_item.pixmap = None
             board_item.movie = None
 
-            image_data = self.board_retrieve_image_data(board_item)
+            image_data = board_item.board_retrieve_image_data()
             filepath = image_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
@@ -943,7 +950,7 @@ class BoardMixin():
 
             for board_item in cf.board.board_items_list:
 
-                image_data = self.board_retrieve_image_data(board_item)
+                image_data = board_item.board_retrieve_image_data()
 
                 delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
@@ -1953,7 +1960,7 @@ class BoardMixin():
 
             board_item = item_to_center_viewport
 
-            image_data = self.board_retrieve_image_data(board_item)
+            image_data = board_item.board_retrieve_image_data()
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
@@ -2105,13 +2112,6 @@ class BoardMixin():
                 items_list = self.get_original_items_order(cf.board.board_items_list)
                 item = items_list[-1]
                 self.board_thumbnails_click_handler(None, item)
-
-    def board_retrieve_image_data(self, board_item):
-        if board_item.type == BoardItem.types.ITEM_IMAGE:
-            image_data = board_item.image_data
-        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-            image_data = board_item.item_folder_data.current_image()
-        return image_data
 
     def board_region_zoom_in_init(self):
         self.board_magnifier_input_rect = None
