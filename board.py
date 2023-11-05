@@ -713,7 +713,7 @@ class BoardMixin():
 
         ellipse_rect = QRect(0, 0, radius*2, radius*2)
         ellipse_rect.moveCenter(curpos)
-        painter.setBrush(Qt.NoBrush)        
+        painter.setBrush(Qt.NoBrush)
         painter.drawEllipse(ellipse_rect)
 
         dist = QVector2D(pos - curpos).length()
