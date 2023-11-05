@@ -384,10 +384,7 @@ class BoardMixin():
 
     def board_draw_item(self, painter, board_item):
 
-        if board_item.type == BoardItem.types.ITEM_IMAGE:
-            image_data = board_item.image_data
-        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-            image_data = board_item.item_folder_data.current_image()
+        image_data = self.board_retrieve_image_data(board_item)
 
         selection_area = board_item.get_selection_area(board=self)
 
@@ -492,11 +489,7 @@ class BoardMixin():
             board_item.pixmap = None
             board_item.movie = None
 
-            if board_item.type == BoardItem.types.ITEM_IMAGE:
-                image_data = board_item.image_data
-            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                image_data = board_item.item_folder_data.current_image()
-
+            image_data = self.board_retrieve_image_data(board_item)
             filepath = image_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
@@ -894,10 +887,7 @@ class BoardMixin():
 
             for board_item in cf.board_items_list:
 
-                if board_item.type == BoardItem.types.ITEM_IMAGE:
-                    image_data = board_item.image_data
-                elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                    image_data = board_item.item_folder_data.current_image()
+                image_data = self.board_retrieve_image_data(board_item)
 
                 delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
@@ -1905,10 +1895,7 @@ class BoardMixin():
 
             board_item = item_to_center_viewport
 
-            if board_item.type == BoardItem.types.ITEM_IMAGE:
-                image_data = board_item.image_data
-            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                image_data = board_item.item_folder_data.current_image()
+            image_data = self.board_retrieve_image_data(board_item)
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
