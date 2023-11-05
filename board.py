@@ -322,7 +322,23 @@ class BoardMixin():
         painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
         text = "  ".join("ПОДОЖДИ")
         text_rect = painter.boundingRect(max_rect, alignment, text)
-        text_rect.moveCenter(self.rect().center() + QPoint(0, -80))
+        pos = self.rect().center() + QPoint(0, -80)
+        text_rect.moveCenter(pos)
+        painter.drawText(text_rect, alignment, text)
+
+        font = painter.font()
+        font.setPixelSize(15)
+        # font.setWeight(900)
+        painter.setFont(font)
+
+        text = " ".join("создаются превьюшки").upper()
+        text_rect = painter.boundingRect(text_rect, alignment, text)
+        brush = QBrush(Qt.black)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(text_rect.adjusted(-3, -3, 3, 3))
+        painter.setPen(QPen(Qt.white))
+
         painter.drawText(text_rect, alignment, text)
 
     def retrieve_new_board_item_index(self):
