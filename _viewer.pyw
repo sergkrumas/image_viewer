@@ -1326,6 +1326,40 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.animated:
             self.tick_animation()
 
+    def cursor_setter(self):
+        CP = Globals.control_panel
+        if self.isActiveWindow():
+            if self.over_corner_menu_item():
+                self.setCursor(Qt.PointingHandCursor)
+            elif self.over_corner_button() or self.over_corner_button(corner_attr="topLeft"):
+                self.setCursor(Qt.PointingHandCursor)
+            elif self.is_library_page_active():
+                if self.previews_list_active_item:
+                    self.setCursor(Qt.PointingHandCursor)
+                else:
+                    self.setCursor(Qt.ArrowCursor)
+
+            elif self.is_viewer_page_active():
+                if self.region_zoom_in_input_started:
+                    self.setCursor(Qt.CrossCursor)
+                elif CP and any(btn.underMouse() for btn in CP.buttons_list):
+                    self.setCursor(Qt.PointingHandCursor)
+                elif CP and CP.thumbnails_click(define_cursor_shape=True):
+                    self.setCursor(Qt.PointingHandCursor)
+                elif self.is_cursor_over_image() and \
+                        (not self.is_library_page_active()) and \
+                        not (CP and CP.globals.control_panel.underMouse()):
+                    self.setCursor(Qt.SizeAllCursor)
+                else:
+                    self.setCursor(Qt.ArrowCursor)
+            elif self.is_board_page_active():
+                # курсор определяется в mouseMoveEvent
+                pass
+            else:
+                self.setCursor(Qt.ArrowCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+
     def control_timer_handler(self):
         CP = Globals.control_panel
         if CP is not None:
@@ -1335,6 +1369,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_for_center_label_fade_effect()
         self.threads_info_watcher()
         self.control_timer_handler()
+        self.cursor_setter()
 
         if self.is_viewer_page_active():
             self.viewport_image_animation()
