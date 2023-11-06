@@ -1435,7 +1435,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 for item_rect, item_data in self.folders_list:
                     if item_rect.contains(event.pos()):
                         # здесь устанавливаем текующую папку
-                        LibraryData().choose_that_folder(item_data)
+                        LibraryData().make_folder_current(item_data)
 
             if self.previews_list:
                 for item_rect, item_data in self.previews_list:

@@ -259,7 +259,7 @@ class BoardMixin():
                 return
         if __folder_data is not None:
             self.LibraryData().save_board_data()
-            self.LibraryData().choose_that_folder(__folder_data, write_view_history=False)
+            self.LibraryData().make_folder_current(__folder_data, write_view_history=False)
             self.LibraryData().load_board_data()
             self.LibraryData().current_folder().board.referer_board_folder = cf
             self.init_selection_bounding_box_widget(__folder_data)

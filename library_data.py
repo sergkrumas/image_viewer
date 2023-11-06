@@ -167,7 +167,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if make_current:
             # индекс задаём только после удаления дубликатов
-            self.choose_that_folder(folder_data, write_view_history=False)
+            self.make_folder_current(folder_data, write_view_history=False)
         else:
             # make_current = False только у папок тегов
             current_folder = self.current_folder()
@@ -179,7 +179,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             self.folders.insert(n, folder_data)
 
             # сохраняем текущую папку текущей
-            self.choose_that_folder(current_folder, write_view_history=False)
+            self.make_folder_current(current_folder, write_view_history=False)
 
         return folder_data
 
@@ -207,7 +207,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.set_window_title(MW.current_image_details())
         MW.update()
 
-    def choose_that_folder(self, folder_data, write_view_history=True):
+    def make_folder_current(self, folder_data, write_view_history=True):
         self._index = self.folders.index(folder_data)
         self._current_folder = self.folders[self._index]
         if write_view_history:
