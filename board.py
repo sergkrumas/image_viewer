@@ -20,6 +20,7 @@
 
 from _utils import *
 import math
+import time
 
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
@@ -1818,9 +1819,71 @@ class BoardMixin():
         cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
 
     def board_control_v(self):
-        text = QApplication.clipboard().text()
+        app = QApplication.instance()
+        cb = app.clipboard()
+        text = cb.text()
+        mdata = cb.mimeData()
+        cf = self.LibraryData().current_folder()
+
+        pixmap = None
         if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
             self.board_paste_selected_items()
+
+        elif mdata and mdata.hasText():
+            path = mdata.text()
+            qt_supported_exts = (
+                ".jpg", ".jpeg", ".jfif",
+                ".bmp",
+                ".gif",
+                ".png",
+                ".tif", ".tiff",
+                ".webp",
+            )
+            svg_exts = (
+                ".svg",
+                ".svgz"
+            )
+            PREFIX = "file:///"
+            if path.startswith(PREFIX):
+                filepath = path[len(PREFIX):]
+                _gif_file = self.LibraryData().is_gif_file(filepath)
+                _webp_animated_file = self.LibraryData().is_webp_file(filepath) and self.LibraryData().is_webp_file_animated(filepath)
+                if _gif_file or _webp_animated_file:
+                    return filepath
+                # supported exts
+                elif path.lower().endswith(qt_supported_exts):
+                    pixmap = QPixmap(filepath)
+                # svg-files
+                elif path.lower().endswith(svg_exts):
+                    pixmap = load_svg(filepath, scale_factor=20)
+
+
+
+        elif mdata and mdata.hasImage():
+            pixmap = QPixmap().fromImage(mdata.imageData())
+
+            folder_path = cf.folder_path
+
+            filename = f'{time.time()}.jpg'
+            filepath = os.path.join(folder_path, filename)
+            pixmap.save(filepath)
+
+        if pixmap is not None:
+
+            image_data = self.LibraryData().create_image_data(filepath, cf)
+            # image_data.source_width = pixmap.width()
+            # image_data.source_height = pixmap.height()
+
+            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+            board_item.image_data = image_data
+            image_data.board_item = board_item
+            cf.board.board_items_list.append(board_item)
+            board_item.board_index = self.retrieve_new_board_item_index()
+            board_item.item_position = self.get_relative_position(self.mapped_cursor_pos())
+            cf.images_list.append(image_data)
+
+            # делаем превьюшку и миинатюрку для этой картинки
+            self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()

@@ -121,6 +121,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 content_path = None
         return content_path
 
+    def create_image_data(self, *args):
+        return ImageData(*args)
+
     def update_progressbar(self):
         app = QApplication.instance()
         stray_icon = app.property("stray_icon")
