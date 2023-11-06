@@ -1669,6 +1669,14 @@ class BoardMixin():
 
         self.prevent_item_deselection = False
 
+    def board_delete_selected_board_items(self):
+        cf = self.LibraryData().current_folder()
+        board_items_list = cf.board.board_items_list
+        for bi in self.selected_items:
+            board_items_list.remove(bi)
+        self.init_selection_bounding_box_widget(cf)
+        self.update()
+
     def get_relative_position(self, viewport_pos):
         delta = QPointF(viewport_pos - self.board_origin)
         return QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)

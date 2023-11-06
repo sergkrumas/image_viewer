@@ -2741,6 +2741,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_dive_inside_board_item()
             elif key in [Qt.Key_Backspace]:
                 self.board_dive_inside_board_item(back_to_referer=True)
+            elif key in [Qt.Key_Delete]:
+                self.board_delete_selected_board_items()
 
         elif self.is_viewer_page_active():
 
