@@ -1079,6 +1079,8 @@ class BoardMixin():
         folder_data.board.board_items_list.append(bi)
         item_folder_data.previews_done = True
         item_folder_data.board.board_ready = True
+        item_folder_data.board.board_root_folder = folder_data
+        item_folder_data.board.board_root_item = bi
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
         bi.update_corner_info()

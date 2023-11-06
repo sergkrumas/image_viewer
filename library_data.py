@@ -1057,6 +1057,9 @@ class BoardData():
         self.current_board_item_index = 0
         self.current_board_item_group_index = 0
 
+        self.board_root_folder = None
+        self.board_root_item = None
+
 class FolderData():
 
     def check_insert_position(self, index):
