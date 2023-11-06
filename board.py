@@ -165,19 +165,23 @@ class BoardItem():
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
-    def update_scroll_status(self):
+    def update_corner_info(self):
         if self.type == BoardItem.types.ITEM_IMAGE:
             current_frame = self.movie.currentFrameNumber()
             frame_count = self.movie.frameCount()
             if frame_count > 0:
                 current_frame += 1
-            self.status = f'{current_frame}/{frame_count}'
+            self.status = f'{current_frame}/{frame_count} ANIMATION'
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             current_image_num = self.item_folder_data._index
             images_count = len(self.item_folder_data.images_list)
             if images_count > 0:
                 current_image_num += 1
-            self.status = f'{current_image_num}/{images_count}'
+            if self.type == BoardItem.types.ITEM_FOLDER:
+                item_type = "FOLDER"
+            elif self.type == BoardItem.types.ITEM_GROUP:
+                item_type = "GROUP"
+            self.status = f'{current_image_num}/{images_count} {item_type}'
 
 class BoardMixin():
 
@@ -574,7 +578,7 @@ class BoardMixin():
             board_item.movie.jumpToFrame(0)
             board_item.pixmap = board_item.movie.currentPixmap()
             board_item.animated = True
-            board_item.update_scroll_status()
+            board_item.update_corner_info()
             if board_item.movie.frameRect().isNull():
                 board_item.pixmap = None
             else:
@@ -1077,7 +1081,7 @@ class BoardMixin():
         item_folder_data.board.board_ready = True
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
-        bi.update_scroll_status()
+        bi.update_corner_info()
         self.board_select_items([bi])
         self.update()
 
@@ -1098,7 +1102,7 @@ class BoardMixin():
             folder_data.board.board_items_list.append(bi)
             # располагаем в центре экрана
             bi.item_position = self.get_relative_position(self.rect().center())
-            bi.update_scroll_status()
+            bi.update_corner_info()
             self.board_select_items([bi])
             self.long_loading = False
 
@@ -1155,7 +1159,7 @@ class BoardMixin():
                         item_fd.images_list.append(bi.image_data)
                         bi.image_data.folder_data = item_fd
 
-            group_item.update_scroll_status()
+            group_item.update_corner_info()
 
             self.board_select_items([group_item])
 
@@ -1765,7 +1769,7 @@ class BoardMixin():
         i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
         board_item.movie.jumpToFrame(frames_list[i])
         board_item.pixmap = board_item.movie.currentPixmap()
-        board_item.update_scroll_status()
+        board_item.update_corner_info()
         self.update()
 
     def board_item_scroll_folder(self, board_item, scroll_value):
@@ -1775,7 +1779,7 @@ class BoardMixin():
             board_item.item_folder_data.previous_image()
         # заставляем подгрузится
         board_item.pixmap = None
-        board_item.update_scroll_status()
+        board_item.update_corner_info()
         self.update()
 
     def board_wheelEvent(self, event):
