@@ -750,6 +750,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             ".svg",
             ".svgz",
             ".ico",
+            ".cur",
             ".tif", ".tiff",
             ".webp",
             ".avif", ".heif", ".heic",
