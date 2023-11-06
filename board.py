@@ -216,6 +216,7 @@ class BoardMixin():
         self.board_selection_transform_box_opacity = 1.0
         self.board_debug_transform_widget = False
         self.context_menu_allowed = True
+        self.long_loading = False
 
         self.board_item_under_mouse = None
         self.item_group_under_mouse = None
@@ -311,7 +312,12 @@ class BoardMixin():
 
         painter.setFont(old_font)
 
-    def board_draw_wait_label(self, painter):
+    def board_draw_wait_long_loading_label(self, painter):
+        if self.long_loading:
+            self.board_draw_wait_label(painter, socondary_text="загрузка данных")
+
+    def board_draw_wait_label(self, painter, primary_text="ПОДОЖДИ",
+                    socondary_text="создаются превьюшки"):
         font = painter.font()
         font.setPixelSize(100)
         font.setWeight(1900)
@@ -320,7 +326,7 @@ class BoardMixin():
         alignment = Qt.AlignCenter
 
         painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
-        text = "  ".join("ПОДОЖДИ")
+        text = "  ".join(primary_text)
         text_rect = painter.boundingRect(max_rect, alignment, text)
         pos = self.rect().center() + QPoint(0, -80)
         text_rect.moveCenter(pos)
@@ -331,7 +337,7 @@ class BoardMixin():
         # font.setWeight(900)
         painter.setFont(font)
 
-        text = " ".join("создаются превьюшки").upper()
+        text = " ".join(socondary_text).upper()
         text_rect = painter.boundingRect(text_rect, alignment, text)
         brush = QBrush(Qt.black)
         painter.setBrush(brush)
@@ -658,6 +664,8 @@ class BoardMixin():
         self.board_draw_diving_notification(painter, cf)
 
         self.board_draw_minimap(painter)
+
+        self.board_draw_wait_long_loading_label(painter)
 
     def board_draw_diving_notification(self, painter, folder_data):
         referer = folder_data.board.referer_board_folder
@@ -1077,6 +1085,9 @@ class BoardMixin():
         folder_data = self.LibraryData().current_folder()
 
         if folder_path:
+            self.long_loading = True
+            self.update()
+            processAppEvents()
             files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
             item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
             self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
@@ -1088,6 +1099,7 @@ class BoardMixin():
             bi.item_position = self.get_relative_position(self.rect().center())
             bi.update_scroll_status()
             self.board_select_items([bi])
+            self.long_loading = False
 
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
