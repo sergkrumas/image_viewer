@@ -1147,7 +1147,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.error_pixmap_and_reset("Нет изображений", "", no_background=True)
         else:
             if not LibraryData().is_supported_file(filepath):
-                self.error_pixmap_and_reset("Невозможно\nотобразить", "Этот файл не поддерживается")
+                filename = os.path.basename(filepath)
+                self.error_pixmap_and_reset("Невозможно\nотобразить", f"Этот файл не поддерживается\n{filename}")
             else:
                 try:
                     if LibraryData().is_gif_file(filepath) or LibraryData().is_webp_file_animated(filepath):
