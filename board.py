@@ -261,7 +261,8 @@ class BoardMixin():
             self.LibraryData().save_board_data()
             self.LibraryData().make_folder_current(__folder_data, write_view_history=False)
             self.LibraryData().load_board_data()
-            self.LibraryData().current_folder().board.referer_board_folder = cf
+            if not back_to_referer:
+                self.LibraryData().current_folder().board.referer_board_folder = cf
             self.init_selection_bounding_box_widget(__folder_data)
         else:
             self.show_center_label("Некуда возвращаться!", error=True)
