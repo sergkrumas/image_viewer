@@ -259,11 +259,48 @@ class BoardMixin():
                 if is_under_mouse:
                     item = bi
                     break
-            if bi.type not in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                self.show_center_label("Нырять можно только в группы и папки!", error=True)
+
+            case1 = bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
+            case2 = bi.type == BoardItem.types.ITEM_IMAGE and bi.animated
+            if not (case1 or case2):
+                self.show_center_label("Нырять можно только в группы, папки и анимированные картинки!", error=True)
                 return
-            if item is not None:
+            if item is not None and hasattr(item, 'item_folder_data'):
                 __folder_data = item.item_folder_data
+            elif case2:
+                __folder_data = fd = self.LibraryData().create_folder_data("ANIMATED FILE Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+                bi.item_folder_data = fd
+
+                movie = item.movie
+                offset = QPointF(0, 0)
+                create_image_data = self.LibraryData().create_image_data
+                for i in range(movie.frameCount()):
+                    movie.jumpToFrame(i)
+                    pixmap = item.movie.currentPixmap()
+                    fd_bi = BoardItem(BoardItem.types.ITEM_IMAGE)
+                    fd_bi.pixmap = pixmap
+
+                    fd_bi.image_data = create_image_data("", fd_bi)
+                    fd_bi.image_data.board_item = fd_bi
+                    fd.images_list.append(fd_bi.image_data)
+
+                    fd.board.board_items_list.append(fd_bi)
+                    fd_bi.board_index = i
+                    fd_bi.item_scale_x = 1.0
+                    fd_bi.item_scale_y = 1.0
+
+                    fd_bi.item_position = offset + QPointF(pixmap.width(), pixmap.height())/2
+                    offset += QPointF(pixmap.width(), 0)
+                self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None, from_board_items=True)
+
+
+                self.build_board_bounding_rect(fd)
+
+                fd.previews_done = True
+                fd.board.board_ready = True
+                fd.board.board_root_folder = cf
+                fd.board.board_root_item = bi
+
             else:
                 self.show_center_label("Наведи курсор на группу!", error=True)
                 return

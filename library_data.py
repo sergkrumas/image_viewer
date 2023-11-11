@@ -773,7 +773,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepaths
 
     @staticmethod
-    def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance):
+    def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance, from_board_items=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
@@ -792,13 +792,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 # switch to main thread
                 thread_instance.msleep(1)
 
-            try:
-                # try only for .avif-files
-                source = load_image_respect_orientation(image_data.filepath)
+            if from_board_items:
+                print("....!!!!!!!!!")
+                source = image_data.board_item.pixmap
                 image_data.preview_error = False
-            except:
-                source = QPixmap()
-                image_data.preview_error = True
+            else:
+                try:
+                    # try only for .avif-files
+                    source = load_image_respect_orientation(image_data.filepath)
+                    image_data.preview_error = False
+                except:
+                    source = QPixmap()
+                    image_data.preview_error = True
 
             if source.isNull():
                 source = Globals.ERROR_PREVIEW_PIXMAP
