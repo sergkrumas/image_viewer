@@ -3266,8 +3266,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             contextMenu.addSeparator()
 
             board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
-            board_add_item_group = contextMenu.addAction("Добавить новую группу на доску")
-            board_add_item_frame = contextMenu.addAction("Добавить фрейм")
+            command_label = "Добавить новую группу на доску"
+            sel_count = self.board_selected_items_count()
+            if sel_count > 0:
+                command_label = f'{command_label} и добавить в неё выделенные айтемы: {sel_count}'
+            board_add_item_group = contextMenu.addAction(command_label)
+            board_add_item_frame = contextMenu.addAction("Добавить фрейм на доску")
 
             contextMenu.addSeparator()
 

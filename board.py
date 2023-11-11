@@ -1136,6 +1136,8 @@ class BoardMixin():
         item_folder_data.board.board_root_item = bi
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
+        if self.board_selected_items_count() > 0:
+            self.move_selected_items_to_item_group(item_group=bi)
         bi.update_corner_info()
         self.board_select_items([bi])
         self.update()
@@ -1232,25 +1234,32 @@ class BoardMixin():
         self.move_selected_items_to_item_group()
         self.check_item_group_under_mouse(reset=True)
 
-    def move_selected_items_to_item_group(self):
+    def move_selected_items_to_item_group(self, item_group=None):
         if self.item_group_under_mouse is not None:
             group_item = self.item_group_under_mouse
-            item_fd = group_item.item_folder_data
-            group_board_item_list = item_fd.board.board_items_list
+            update_selection = True
+        elif item_group is not None:
+            group_item = item_group
+            update_selection = False
+        else:
+            return
 
-            current_folder = self.LibraryData().current_folder()
-            board_item_list = current_folder.board.board_items_list
-            for bi in self.selected_items:
-                if bi.type is not bi.types.ITEM_GROUP:
-                    board_item_list.remove(bi)
-                    group_board_item_list.append(bi)
-                    if bi.type is bi.types.ITEM_IMAGE:
-                        current_folder.images_list.remove(bi.image_data)
-                        item_fd.images_list.append(bi.image_data)
-                        bi.image_data.folder_data = item_fd
+        item_fd = group_item.item_folder_data
+        group_board_item_list = item_fd.board.board_items_list
 
-            group_item.update_corner_info()
+        current_folder = self.LibraryData().current_folder()
+        board_item_list = current_folder.board.board_items_list
+        for bi in self.selected_items:
+            if bi.type is not bi.types.ITEM_GROUP:
+                board_item_list.remove(bi)
+                group_board_item_list.append(bi)
+                if bi.type is bi.types.ITEM_IMAGE:
+                    current_folder.images_list.remove(bi.image_data)
+                    item_fd.images_list.append(bi.image_data)
+                    bi.image_data.folder_data = item_fd
 
+        group_item.update_corner_info()
+        if update_selection:
             self.board_select_items([group_item])
 
     def check_item_group_under_mouse(self, reset=False):
@@ -2312,6 +2321,9 @@ class BoardMixin():
 
     def is_board_ready(self):
         return self.LibraryData().current_folder().board.board_ready
+
+    def board_selected_items_count(self):
+        return len(self.selected_items)
 
     def board_viewport_show_first_item(self):
         self.board_unselect_all_items()
