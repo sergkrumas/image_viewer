@@ -3273,6 +3273,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             board_add_item_group = contextMenu.addAction(command_label)
             board_add_item_frame = contextMenu.addAction("Добавить фрейм на доску")
 
+            board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
+
             contextMenu.addSeparator()
 
             board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
@@ -3337,6 +3339,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_add_item_folder()
             elif action == board_add_item_group:
                 self.board_add_item_group()
+            elif action == board_load_highres:
+                self.board_load_highres()
             elif action == board_add_item_frame:
                 self.board_add_item_frame()
             elif action == board_open_in_app_copy:

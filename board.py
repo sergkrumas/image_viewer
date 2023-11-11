@@ -1122,6 +1122,16 @@ class BoardMixin():
             item._selected = True
         self.init_selection_bounding_box_widget(current_folder)
 
+    def board_load_highres(self):
+        self.long_loading = True
+        self.update()
+        processAppEvents()
+        items = self.LibraryData().current_folder().board.board_items_list
+        for bi in items:
+            self.trigger_board_item_pixmap_loading(bi)
+        self.long_loading = False
+        self.update()
+
     def board_add_item_group(self):
         folder_data = self.LibraryData().current_folder()
         item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
