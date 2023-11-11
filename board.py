@@ -757,9 +757,49 @@ class BoardMixin():
 
         self.board_draw_diving_notification(painter, cf)
 
+        self.board_draw_board_info(painter, cf)
+
         self.board_draw_minimap(painter)
 
         self.board_draw_wait_long_loading_label(painter)
+
+    def board_draw_board_info(self, painter, current_folder):
+        before_font = painter.font()
+        before_pen = painter.pen()
+
+        lines = []
+        board = current_folder.board
+        if current_folder.virtual:
+            lines.append(f'Доска виртуальной папки {current_folder.folder_path}')
+        else:
+            lines.append(f'Доска папки {current_folder.folder_path}')
+        lines.append(f'Текущий индекс айтема: {self.current_board_item_index}')
+        lines.append(f'Текущий индекс айтема-группы: {self.current_board_item_group_index}')
+        lines.append(f'Board bounding rect: {self.board_bounding_rect}')
+
+        lines.append('')
+
+        if board.referer_board_folder is not None:
+            lines.append(f'Вы зашли на эту доску из доски папки {board.referer_board_folder.folder_path}')
+        if board.board_root_folder is not None:
+            lines.append(f'Родительская папка этой доски: {board.board_root_folder.folder_path}')
+        if board.board_root_item is not None:
+            lines.append(f'Название родительского айтема этой доски: {board.board_root_item.item_name}')
+
+        text = "\n".join(lines)
+        painter.setPen(QPen(Qt.white, 1))
+        font = painter.font()
+        font.setPixelSize(20)
+        font.setWeight(300)
+        painter.setFont(font)
+        pos = self.board_origin + QPoint(100, -100)
+        alignment = Qt.AlignLeft
+        rect = painter.boundingRect(self.rect(), alignment, text)
+        rect.moveBottomLeft(pos.toPoint())
+        painter.drawText(rect, alignment, text)
+
+        painter.setFont(before_font)
+        painter.setPen(before_pen)
 
     def board_draw_diving_notification(self, painter, folder_data):
         referer = folder_data.board.referer_board_folder
