@@ -3206,8 +3206,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         board_open_in_app_copy = None
         board_open_in_google_chrome = None
-
         board_add_item_group = None
+        board_add_item_frame = None
 
         self.contextMenuActivated = True
 
@@ -3267,6 +3267,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
             board_add_item_group = contextMenu.addAction("Добавить новую группу на доску")
+            board_add_item_frame = contextMenu.addAction("Добавить фрейм")
 
             contextMenu.addSeparator()
 
@@ -3332,6 +3333,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_add_item_folder()
             elif action == board_add_item_group:
                 self.board_add_item_group()
+            elif action == board_add_item_frame:
+                self.board_add_item_frame()
             elif action == board_open_in_app_copy:
                 self.board_open_in_app_copy()
             elif action == board_open_in_google_chrome:

@@ -37,10 +37,13 @@ class BoardLibraryDataMixin():
 
 class BoardItem():
 
+    FRAME_PADDING = 40.0
+
     class types():
         ITEM_IMAGE = 1
         ITEM_FOLDER = 2
         ITEM_GROUP = 3
+        ITEM_FRAME = 4
 
     def __init__(self, item_type):
         super().__init__()
@@ -65,7 +68,7 @@ class BoardItem():
         self.item_width = 300
         self.item_height = 300
 
-        self.group_name = ""
+        self.item_name = ""
 
         self._selected = False
         self._touched = False
@@ -76,7 +79,7 @@ class BoardItem():
             image_data = self.image_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             image_data = self.item_folder_data.current_image()
-        return image_data        
+        return image_data
 
     def make_copy(self, board, folder_data):
         copied_item = BoardItem(self.type)
@@ -98,7 +101,9 @@ class BoardItem():
             path = self.item_folder_data.folder_path
             return f'FOLDER {path}'
         elif self.type == self.types.ITEM_GROUP:
-            return f'GROUP {self.board_group_index} {self.group_name}'
+            return f'GROUP {self.board_group_index} {self.item_name}'
+        elif self.type == self.types.ITEM_FRAME:
+            return f'FRAME'
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
@@ -122,6 +127,9 @@ class BoardItem():
             elif self.type == self.types.ITEM_GROUP:
                 scale_x = self.item_scale_x
                 scale_y = self.item_scale_y
+            elif self.type == self.types.ITEM_FRAME:
+                scale_x = self.item_scale_x
+                scale_y = self.item_scale_y
         else:
             scale_x = 1.0
             scale_y = 1.0
@@ -130,6 +138,8 @@ class BoardItem():
         elif self.type == self.types.ITEM_FOLDER:
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_GROUP:
+            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+        elif self.type == self.types.ITEM_FRAME:
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
 
     def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
@@ -352,6 +362,7 @@ class BoardMixin():
         painter.setPen(QPen(Qt.white))
 
         painter.drawText(text_rect, alignment, text)
+        painter.setBrush(Qt.NoBrush)
 
     def retrieve_new_board_item_index(self):
         self.current_board_item_index += 1
@@ -455,100 +466,139 @@ class BoardMixin():
 
     def board_draw_item(self, painter, board_item):
 
-        image_data = board_item.board_retrieve_image_data()
+        if board_item.type in [BoardItem.types.ITEM_FRAME]:
 
-        selection_area = board_item.get_selection_area(board=self)
+            FRAME_PADDING = BoardItem.FRAME_PADDING
 
-        if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
-            self.trigger_board_item_pixmap_unloading(board_item)
+            area = board_item.get_selection_area(board=self)
+            pen = QPen(Qt.white, 2, Qt.DashLine)
+            pen.setCosmetic(True) # не скейлить пен
+            painter.setPen(pen)
+            painter.setBrush(Qt.NoBrush)
+
+            path = QPainterPath()
+            path.addRoundedRect(area.boundingRect(), FRAME_PADDING*self.board_scale_x, FRAME_PADDING*self.board_scale_y)
+            painter.drawPath(path)
+            pos = area.boundingRect().topLeft()
+            zoom_delta = QPointF(FRAME_PADDING*self.board_scale_x, 0)
+            font = painter.font()
+            before_font = painter.font()
+            font.setPixelSize(30)
+            painter.setFont(font)
+
+            text = board_item.item_name
+            alignment = Qt.AlignLeft
+            rect = painter.boundingRect(area.boundingRect(), alignment, text)
+            rect.moveBottomLeft(pos+zoom_delta)
+            show_text = True
+            if rect.width() > area.boundingRect().width():
+                show_text = False
+                if area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill):
+                    show_text = True
+            else:
+                show_text = True
+
+            if show_text:
+                painter.drawText(rect, alignment, text)
+
+            painter.setFont(before_font)
 
         else:
-            self.images_drawn += 1
-            transform = board_item.get_transform_obj(board=self)
 
-            painter.setTransform(transform)
-            item_rect = board_item.get_size_rect()
+            image_data = board_item.board_retrieve_image_data()
 
-            if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                item_rect = fit_rect_into_rect(QRectF(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
+            selection_area = board_item.get_selection_area(board=self)
 
-            item_rect.moveCenter(QPointF(0, 0))
+            if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
+                self.trigger_board_item_pixmap_unloading(board_item)
 
-            if_0 = self.item_group_under_mouse is not None
-            if_1 = board_item is self.item_group_under_mouse
-            if_x = all((if_0, if_1))
-            if if_x:
-                pen = QPen(QColor(220, 50, 50), 1)
-                pen.setCosmetic(True) # не скейлить пен
-                pen.setWidthF(10.0)
-                painter.setPen(pen)
             else:
-                pen = QPen(Qt.white, 1)
-                pen.setCosmetic(True) # не скейлить пен
-                painter.setPen(pen)
+                self.images_drawn += 1
+                transform = board_item.get_transform_obj(board=self)
+
+                painter.setTransform(transform)
+                item_rect = board_item.get_size_rect()
+
+                if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+                    item_rect = fit_rect_into_rect(QRectF(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
+
+                item_rect.moveCenter(QPointF(0, 0))
+
+                if_0 = self.item_group_under_mouse is not None
+                if_1 = board_item is self.item_group_under_mouse
+                if_x = all((if_0, if_1))
+                if if_x:
+                    pen = QPen(QColor(220, 50, 50), 1)
+                    pen.setCosmetic(True) # не скейлить пен
+                    pen.setWidthF(10.0)
+                    painter.setPen(pen)
+                else:
+                    pen = QPen(Qt.white, 1)
+                    pen.setCosmetic(True) # не скейлить пен
+                    painter.setPen(pen)
 
 
-            if if_0 and board_item in self.selected_items:
-                painter.setOpacity(0.5)
+                if if_0 and board_item in self.selected_items:
+                    painter.setOpacity(0.5)
 
-            painter.setBrush(Qt.NoBrush)
-            painter.drawRect(item_rect)
-
-            painter.setTransform(transform)
-            image_to_draw = None
-            selection_area_rect = selection_area.boundingRect()
-            if selection_area_rect.width() < 250 or selection_area_rect.height() < 250:
-                image_to_draw = image_data.preview
-            else:
-                self.trigger_board_item_pixmap_loading(board_item)
-                image_to_draw = board_item.pixmap
-
-            if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
-                self.board_item_under_mouse = board_item
-
-            if image_to_draw:
-                painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
-
-            painter.setOpacity(1.0)
-            painter.resetTransform()
-
-            selection_area_bounding_rect = selection_area.boundingRect()
-
-            if board_item._show_file_info_overlay:
-                text = board_item.info_text()
-                alignment = Qt.AlignCenter
-
-                old_pen = painter.pen()
-                text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, text)
-                painter.setBrush(QBrush(Qt.white))
-                painter.setPen(Qt.NoPen)
-                painter.drawRect(text_rect)
-                painter.setPen(QPen(Qt.black, 1))
                 painter.setBrush(Qt.NoBrush)
-                painter.drawText(text_rect, alignment, text)
-                painter.setPen(old_pen)
+                painter.drawRect(item_rect)
+
+                painter.setTransform(transform)
+                image_to_draw = None
+                selection_area_rect = selection_area.boundingRect()
+                if selection_area_rect.width() < 250 or selection_area_rect.height() < 250:
+                    image_to_draw = image_data.preview
+                else:
+                    self.trigger_board_item_pixmap_loading(board_item)
+                    image_to_draw = board_item.pixmap
+
+                if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
+                    self.board_item_under_mouse = board_item
+
+                if image_to_draw:
+                    painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
+
+                painter.setOpacity(1.0)
+                painter.resetTransform()
+
+                selection_area_bounding_rect = selection_area.boundingRect()
+
+                if board_item._show_file_info_overlay:
+                    text = board_item.info_text()
+                    alignment = Qt.AlignCenter
+
+                    old_pen = painter.pen()
+                    text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, text)
+                    painter.setBrush(QBrush(Qt.white))
+                    painter.setPen(Qt.NoPen)
+                    painter.drawRect(text_rect)
+                    painter.setPen(QPen(Qt.black, 1))
+                    painter.setBrush(Qt.NoBrush)
+                    painter.drawText(text_rect, alignment, text)
+                    painter.setPen(old_pen)
 
 
-            if board_item == self.board_item_under_mouse:
-                is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
+                if board_item == self.board_item_under_mouse:
+                    is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
 
-                if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP] or is_animation_file:
+                    if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP] or is_animation_file:
 
-                    alignment = Qt.AlignCenter | Qt.AlignVCenter
-                    text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, board_item.status)
-                    text_rect.adjust(-5, -5, 5, 5)
-                    text_rect.moveTopLeft(selection_area[0])
+                        alignment = Qt.AlignCenter | Qt.AlignVCenter
+                        text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, board_item.status)
+                        text_rect.adjust(-5, -5, 5, 5)
+                        text_rect.moveTopLeft(selection_area[0])
 
-                    if text_rect.width() < selection_area_bounding_rect.width():
-                        path = QPainterPath()
-                        path.addRoundedRect(QRectF(text_rect), 5, 5)
-                        painter.setPen(Qt.NoPen)
-                        painter.setBrush(QBrush(QColor(50, 60, 90)))
-                        painter.drawPath(path)
+                        if text_rect.width() < selection_area_bounding_rect.width():
+                            path = QPainterPath()
+                            path.addRoundedRect(QRectF(text_rect), 5, 5)
+                            painter.setPen(Qt.NoPen)
+                            painter.setBrush(QBrush(QColor(50, 60, 90)))
+                            painter.drawPath(path)
 
-                        painter.setPen(QPen(Qt.white, 1))
-                        painter.drawText(text_rect, alignment, board_item.status)
-                        painter.setBrush(Qt.NoBrush)
+                            painter.setPen(QPen(Qt.white, 1))
+                            painter.drawText(text_rect, alignment, board_item.status)
+                            painter.setBrush(Qt.NoBrush)
 
     def trigger_board_item_pixmap_unloading(self, board_item):
         if board_item.pixmap is None:
@@ -703,6 +753,7 @@ class BoardMixin():
             painter.drawRect(bounding_rect.adjusted(-2, -2, 2, 2))
             painter.setPen(Qt.white)
             painter.drawText(bounding_rect, Qt.AlignLeft, text)
+            painter.setBrush(Qt.NoBrush)
 
     def board_draw_selection_frames(self, painter):
         if self.selection_rect is not None:
@@ -1108,6 +1159,28 @@ class BoardMixin():
             bi.update_corner_info()
             self.board_select_items([bi])
             self.long_loading = False
+            self.update()
+
+    def board_add_item_frame(self):
+
+        if self.selection_bounding_box is None:
+            self.show_center_label('Не выделено ни одного айтема!', error=True)
+        else:
+            folder_data = self.LibraryData().current_folder()
+            bi = BoardItem(BoardItem.types.ITEM_FRAME)
+            bi.board_index = self.retrieve_new_board_item_index()
+            folder_data.board.board_items_list.append(bi)
+
+            selection_bounding_rect = self.selection_bounding_box.boundingRect()
+            bi.item_position = self.get_relative_position(selection_bounding_rect.center())
+            bi.item_width = selection_bounding_rect.width() / self.board_scale_x
+            bi.item_height = selection_bounding_rect.height() / self.board_scale_y
+            bi.item_width += BoardItem.FRAME_PADDING
+            bi.item_height += BoardItem.FRAME_PADDING
+            bi.item_name = "FRAME ITEM"
+            self.board_select_items([bi])
+
+        self.update()
 
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
@@ -1118,8 +1191,17 @@ class BoardMixin():
     def board_START_selected_items_TRANSLATION(self, event):
         self.start_translation_pos = event.pos()
         current_folder = self.LibraryData().current_folder()
-        for board_item in current_folder.board.board_items_list:
+        items_list = current_folder.board.board_items_list
+        for board_item in items_list:
             board_item.start_translation_pos = QPointF(board_item.item_position)
+            board_item._children_items = []
+            if board_item.type == BoardItem.types.ITEM_FRAME:
+                item_frame_area = board_item.get_selection_area(board=self)
+                for bi in current_folder.board.board_items_list[:]:
+                    bi_area = bi.get_selection_area(board=self)
+                    center_point = bi_area.boundingRect().center()
+                    if item_frame_area.containsPoint(QPointF(center_point), Qt.WindingFill):
+                        board_item._children_items.append(bi)
 
     def board_DO_selected_items_TRANSLATION(self, event):
         if self.start_translation_pos:
@@ -1130,6 +1212,9 @@ class BoardMixin():
             for board_item in current_folder.board.board_items_list:
                 if board_item._selected:
                     board_item.item_position = board_item.start_translation_pos + delta
+                    if board_item.type == BoardItem.types.ITEM_FRAME:
+                        for ch_bi in board_item._children_items:
+                            ch_bi.item_position = ch_bi.start_translation_pos + delta
             self.init_selection_bounding_box_widget(current_folder)
             self.check_item_group_under_mouse()
         else:
@@ -1140,6 +1225,7 @@ class BoardMixin():
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board.board_items_list:
             board_item.start_translation_pos = None
+            board_item._children_items = []
         self.translation_ongoing = False
         self.build_board_bounding_rect(current_folder)
         self.move_selected_items_to_item_group()
@@ -1193,9 +1279,15 @@ class BoardMixin():
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
 
             if is_under_mouse and not board_item._selected:
+                if board_item.type == BoardItem.types.ITEM_FRAME:
+                    _other_items = self.find_all_items_under_this_pos(current_folder, self.mapped_cursor_pos())
+                    if len(_other_items) > 1:
+                        continue
+
                 if not add_selection:
                     for bi in current_folder.board.board_items_list:
                         bi._selected = False
+
                 board_item._selected = True
                 # вытаскиваем айтем на передний план при отрисовке
                 current_folder.board.board_items_list.remove(board_item)
@@ -1205,6 +1297,15 @@ class BoardMixin():
             if is_under_mouse and board_item._selected:
                 return True
         return False
+
+    def find_all_items_under_this_pos(self, folder_data, pos):
+        undermouse_items = []
+        for board_item in folder_data.board.board_items_list:
+            item_selection_area = board_item.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
+            if is_under_mouse:
+                undermouse_items.append(board_item)
+        return undermouse_items
 
     def board_selection_callback(self, add_to_selection):
         if self.is_flyover_ongoing():
@@ -1231,7 +1332,14 @@ class BoardMixin():
                     if is_under_mouse and not self.prevent_item_deselection:
                         board_item._selected = False
                 else:
-                    board_item._selected = is_under_mouse
+                    if board_item.type == BoardItem.types.ITEM_FRAME:
+                        _other_items = self.find_all_items_under_this_pos(current_folder, self.mapped_cursor_pos())
+                        if len(_other_items) > 1:
+                            board_item._selected = False
+                        else:
+                            board_item._selected = is_under_mouse
+                    else:
+                        board_item._selected = is_under_mouse
         self.init_selection_bounding_box_widget(current_folder)
 
     def init_selection_bounding_box_widget(self, folder_data):
@@ -1283,8 +1391,9 @@ class BoardMixin():
                 # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
                 # if bi.__item_rotation is not None:
                 #     bi.item_rotation = bi.__item_rotation
-                if bi.__item_position is not None:
-                    bi.item_position = bi.__item_position
+                if bi.type != BoardItem.types.ITEM_FRAME:
+                    if bi.__item_position is not None:
+                        bi.item_position = bi.__item_position
 
             self.update_selection_bouding_box()
 
@@ -1321,6 +1430,8 @@ class BoardMixin():
             rotation.rotate(rotation_delta_degrees)
         for bi in self.selected_items:
             # rotation component
+            if bi.type == BoardItem.types.ITEM_FRAME:
+                continue
             bi.item_rotation = bi.__item_rotation + rotation_delta_degrees
             if not mutli_item_mode and ctrl_mod:
                 bi.item_rotation = self.step_rotation(bi.item_rotation)
