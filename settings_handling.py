@@ -437,6 +437,7 @@ class SettingsWindow(QWidget):
         'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры'),
         'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),
         'board_draw_grid': (False, 'Показывать сетку'),
+        'board_unloading': (False, 'Оперативно выгружать картинки, если они не просматриваются в данный момент'),
         'transform_widget_activation_area_size': (16.0, (12.0, 20.0), 'Размер зон активации скейла или вращения'),
 
         '---003': ('Прозрачность страниц в полноэкранном режиме'),

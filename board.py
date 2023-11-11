@@ -510,7 +510,8 @@ class BoardMixin():
             selection_area = board_item.get_selection_area(board=self)
 
             if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
-                self.trigger_board_item_pixmap_unloading(board_item)
+                if self.STNG_board_unloading:
+                    self.trigger_board_item_pixmap_unloading(board_item)
 
             else:
                 self.images_drawn += 1
