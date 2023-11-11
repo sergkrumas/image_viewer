@@ -793,7 +793,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 thread_instance.msleep(1)
 
             if from_board_items:
-                print("....!!!!!!!!!")
                 source = image_data.board_item.pixmap
                 image_data.preview_error = False
             else:
