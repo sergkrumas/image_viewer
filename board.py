@@ -21,6 +21,7 @@
 from _utils import *
 import math
 import time
+import urllib.request
 
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
@@ -68,6 +69,8 @@ class BoardItem():
         self.item_width = 300
         self.item_height = 300
 
+        self.item_image_source = None
+
         self.item_name = ""
 
         self._selected = False
@@ -96,7 +99,10 @@ class BoardItem():
     def info_text(self):
         if self.type == self.types.ITEM_IMAGE:
             image_data = self.image_data
-            return f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+            text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+            if self.item_image_source is not None:
+                text = f'{text}\n{self.item_image_source}'
+            return text
         elif self.type == self.types.ITEM_FOLDER:
             path = self.item_folder_data.folder_path
             return f'FOLDER {path}'
@@ -2080,33 +2086,51 @@ class BoardMixin():
                 elif path.lower().endswith(svg_exts):
                     pixmap = load_svg(filepath, scale_factor=20)
 
-
-
         elif mdata and mdata.hasImage():
             pixmap = QPixmap().fromImage(mdata.imageData())
+            filepath = os.path.join(cf.folder_path, f'{time.time()}.jpg')
 
-            folder_path = cf.folder_path
-
-            filename = f'{time.time()}.jpg'
-            filepath = os.path.join(folder_path, filename)
             pixmap.save(filepath)
 
         if pixmap is not None:
+            self.board_create_new_board_item_image(filepath, cf)
 
-            image_data = self.LibraryData().create_image_data(filepath, cf)
-            # image_data.source_width = pixmap.width()
-            # image_data.source_height = pixmap.height()
+    def board_download_file(self, url):
+        cf = self.LibraryData().current_folder()
+        self.long_loading = True
+        self.update()
+        processAppEvents()
+        response = urllib.request.urlopen(url)
+        filename = os.path.basename(response.url)
+        name, ext = os.path.splitext(filename)
+        if "?" in ext:
+            ext = ext[:ext.index("?")]
+        if not self.LibraryData().is_supported_file(ext):
+            mime_type = response.headers.get('content-type', '')
+            if mime_type == '':
+                ext = 'unknown'
+            else:
+                if ';' in mime_type:
+                    mime_type = mime_type.split(";")[0]
+                ext = mime_type.split("/")[1]
+        filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
+        urllib.request.urlretrieve(url, filepath)
+        self.board_create_new_board_item_image(filepath, cf, source_url=url)
+        self.long_loading = False
+        self.update()
 
-            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-            board_item.image_data = image_data
-            image_data.board_item = board_item
-            cf.board.board_items_list.append(board_item)
-            board_item.board_index = self.retrieve_new_board_item_index()
-            board_item.item_position = self.get_relative_position(self.mapped_cursor_pos())
-            cf.images_list.append(image_data)
-
-            # делаем превьюшку и миинатюрку для этой картинки
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+    def board_create_new_board_item_image(self, filepath, current_folder, source_url=None):
+        image_data = self.LibraryData().create_image_data(filepath, current_folder)
+        board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+        board_item.image_data = image_data
+        board_item.item_image_source = source_url
+        image_data.board_item = board_item
+        current_folder.board.board_items_list.append(board_item)
+        board_item.board_index = self.retrieve_new_board_item_index()
+        board_item.item_position = self.get_relative_position(self.mapped_cursor_pos())
+        current_folder.images_list.append(image_data)
+        # делаем превьюшку и миинатюрку для этой картинки
+        self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()

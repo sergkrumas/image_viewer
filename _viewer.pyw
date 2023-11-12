@@ -179,7 +179,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif event.mimeData().hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
-
             paths = []
             for url in event.mimeData().urls():
                 if url.isLocalFile():
@@ -188,11 +187,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     #     path = os.path.dirname(path)
                     paths.append(path)
                 else:
-                    print(url.url())
+                    url = url.url()
+                    if self.is_board_page_active():
+                        self.board_download_file(url)
+                    else:
+                        print(url)
             all_but_last = paths[:-1]
             last_path = paths[-1:]
-            to_print = f'Drop Event Data {paths}'
-            print(to_print)
+            if Globals.DEBUG:
+                to_print = f'Drop Event Data Local Paths: {paths}'
+                print(to_print)
             for path in all_but_last:
                 LibraryData().handle_input_data(path, pre_load=True)
             for path in last_path:
