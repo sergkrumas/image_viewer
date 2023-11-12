@@ -3122,7 +3122,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def paste_from_clipboard(self):
         if self.pixmap:
             new_pixmap = QPixmap.fromImage(QApplication.clipboard().image())
-            if not new_pixmap.isNull(): 
+            if not new_pixmap.isNull():
                 self.copied_from_clipboard = True
                 self.pixmap = new_pixmap
                 self.get_rotated_pixmap(force_update=True)
