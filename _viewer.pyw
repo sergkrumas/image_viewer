@@ -3208,6 +3208,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_open_in_google_chrome = None
         board_add_item_group = None
         board_add_item_frame = None
+        board_load_highres = None
 
         self.contextMenuActivated = True
 
