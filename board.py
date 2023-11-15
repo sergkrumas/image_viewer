@@ -2138,10 +2138,13 @@ class BoardMixin():
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
-                self.board_thumbnails_click_handler(None, board_item=board_item)
+                self.board_fit_content_on_screen(None, board_item=board_item)
                 break
 
-    def board_thumbnails_click_handler(self, image_data, board_item=None, use_selection=False):
+    def board_thumbnails_click_handler(self, image_data):
+        self.board_fit_content_on_screen(image_data)
+
+    def board_fit_content_on_screen(self, image_data, board_item=None, use_selection=False):
 
         if board_item is None and (image_data is not None) and image_data.board_item is None:
             self.show_center_label("Этот элемент не представлен на доске", error=True)
@@ -2175,7 +2178,7 @@ class BoardMixin():
         self.update()
 
     def board_fit_selected_items_on_screen(self):
-        self.board_thumbnails_click_handler(None, use_selection=True)
+        self.board_fit_content_on_screen(None, use_selection=True)
 
     def set_default_boardviewport_scale(self, keep_position=False, center_as_pivot=False):
         if center_as_pivot:
@@ -2451,7 +2454,7 @@ class BoardMixin():
             if cf.board.board_items_list:
                 items_list = self.get_original_items_order(cf.board.board_items_list)
                 item = items_list[0]
-                self.board_thumbnails_click_handler(None, item)
+                self.board_fit_content_on_screen(None, item)
 
     def board_viewport_show_last_item(self):
         self.board_unselect_all_items()
@@ -2460,7 +2463,7 @@ class BoardMixin():
            if cf.board.board_items_list:
                 items_list = self.get_original_items_order(cf.board.board_items_list)
                 item = items_list[-1]
-                self.board_thumbnails_click_handler(None, item)
+                self.board_fit_content_on_screen(None, item)
 
     def board_region_zoom_in_init(self):
         self.board_magnifier_input_rect = None
