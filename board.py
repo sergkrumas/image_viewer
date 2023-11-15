@@ -2141,7 +2141,7 @@ class BoardMixin():
                 self.board_thumbnails_click_handler(None, board_item=board_item)
                 break
 
-    def board_thumbnails_click_handler(self, image_data, board_item=None):
+    def board_thumbnails_click_handler(self, image_data, board_item=None, use_selection=False):
 
         if board_item is None and (image_data is not None) and image_data.board_item is None:
             self.show_center_label("Этот элемент не представлен на доске", error=True)
@@ -2149,25 +2149,33 @@ class BoardMixin():
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            if board_item is not None:
-                pass
+            if use_selection:
+                content_pos = self.selection_bounding_box.boundingRect().center() - self.board_origin
             else:
-                board_item = image_data.board_item
-
-            image_pos = QPointF(board_item.item_position.x()*board_scale_x, board_item.item_position.y()*board_scale_y)
+                if board_item is not None:
+                    pass
+                else:
+                    board_item = image_data.board_item
+                content_pos = QPointF(board_item.item_position.x()*board_scale_x, board_item.item_position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
-            self.board_origin = - image_pos + viewport_center_pos
+            self.board_origin = - content_pos + viewport_center_pos
 
-            item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
-            fitted_rect = fit_rect_into_rect(item_rect, self.rect())
+            if use_selection:
+                content_rect = self.selection_bounding_box.boundingRect().toRect()
+            else:
+                content_rect = board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
+            fitted_rect = fit_rect_into_rect(content_rect, self.rect())
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
-                factor_x=fitted_rect.width()/item_rect.width(),
-                factor_y=fitted_rect.height()/item_rect.height(),
+                factor_x=fitted_rect.width()/content_rect.width(),
+                factor_y=fitted_rect.height()/content_rect.height(),
             )
 
         self.update()
+
+    def board_fit_selected_items_on_screen(self):
+        self.board_thumbnails_click_handler(None, use_selection=True)
 
     def set_default_boardviewport_scale(self, keep_position=False, center_as_pivot=False):
         if center_as_pivot:

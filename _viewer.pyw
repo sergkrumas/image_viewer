@@ -2964,6 +2964,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key in [Qt.Key_Return, Qt.Key_Enter]:
                 self.board_navigate_camera_via_minimap()
 
+            elif key in [Qt.Key_Plus]:
+                self.board_fit_selected_items_on_screen()
+
         self.update()
 
     def toggle_test_animation(self):
