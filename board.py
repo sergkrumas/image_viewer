@@ -1518,7 +1518,10 @@ class BoardMixin():
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         for bi in self.selected_items:
             bi.__item_rotation = bi.item_rotation
-            bi.__item_position = bi.item_position
+            bi.__item_position = QPointF(bi.item_position)
+
+            bi.__item_rotation_init = bi.item_rotation
+            bi.__item_position_init = QPointF(bi.item_position)
 
     def step_rotation(self, rotation_value):
         interval = 45.0
@@ -1568,11 +1571,22 @@ class BoardMixin():
         transform = translate_to_coord_origin * rotation * translate_back_to_place
         self.selection_bounding_box = transform.map(self.__selection_bounding_box)
 
-    def board_FINISH_selected_items_ROTATION(self, event):
+    def board_FINISH_selected_items_ROTATION(self, event, cancel=False):
         self.rotation_ongoing = False
         cf = self.LibraryData().current_folder()
-        self.init_selection_bounding_box_widget(cf)
-        self.build_board_bounding_rect(cf)
+        if cancel:
+            for bi in self.selected_items:
+                bi.item_rotation = bi.__item_rotation_init
+                bi.item_position = QPointF(bi.__item_position_init)
+        else:
+            self.init_selection_bounding_box_widget(cf)
+            self.build_board_bounding_rect(cf)
+
+    def board_CANCEL_selected_items_ROTATION(self):
+        if self.rotation_ongoing:
+            self.board_FINISH_selected_items_ROTATION(None, cancel=True)
+            self.update_selection_bouding_box()
+            self.transform_cancelled = True
 
     def is_over_scaling_activation_area(self, position):
         if self.selection_bounding_box is not None:
@@ -1786,7 +1800,10 @@ class BoardMixin():
         if event.buttons() == Qt.LeftButton:
             if not alt:
 
-                if self.is_over_scaling_activation_area(event.pos()):
+                if self.transform_cancelled:
+                    pass
+
+                elif self.is_over_scaling_activation_area(event.pos()):
                     self.board_START_selected_items_SCALING(event)
 
                 elif self.is_over_rotation_activation_area(event.pos()):
