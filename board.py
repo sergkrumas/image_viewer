@@ -1290,12 +1290,18 @@ class BoardMixin():
     def isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
-    def board_START_selected_items_TRANSLATION(self, event):
-        self.start_translation_pos = event.pos()
+    def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
+        self.start_translation_pos = QPointF(event_pos)
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.board_items_list
+        if viewport_zoom_changed:
+            for board_item in items_list:
+                board_item.item_position = board_item.__item_position
+
         for board_item in items_list:
-            board_item.start_translation_pos = QPointF(board_item.item_position)
+            board_item.__item_position = QPointF(board_item.item_position)
+            if not viewport_zoom_changed:
+                board_item.__item_position_init = QPointF(board_item.item_position)
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
                 item_frame_area = board_item.get_selection_area(board=self)
@@ -1305,18 +1311,18 @@ class BoardMixin():
                     if item_frame_area.containsPoint(QPointF(center_point), Qt.WindingFill):
                         board_item._children_items.append(bi)
 
-    def board_DO_selected_items_TRANSLATION(self, event):
+    def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
             self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
-            delta = event.pos() - self.start_translation_pos
+            delta = event_pos - self.start_translation_pos
             delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
             for board_item in current_folder.board.board_items_list:
                 if board_item._selected:
-                    board_item.item_position = board_item.start_translation_pos + delta
+                    board_item.item_position = board_item.__item_position + delta
                     if board_item.type == BoardItem.types.ITEM_FRAME:
                         for ch_bi in board_item._children_items:
-                            ch_bi.item_position = ch_bi.start_translation_pos + delta
+                            ch_bi.item_position = ch_bi.__item_position + delta
             self.init_selection_bounding_box_widget(current_folder)
             self.check_item_group_under_mouse()
         else:
@@ -1327,9 +1333,9 @@ class BoardMixin():
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board.board_items_list:
             if cancel:
-                board_item.item_position = QPointF(board_item.start_translation_pos)
+                board_item.item_position = QPointF(board_item.__item_position_init)
             else:
-                board_item.start_translation_pos = None
+                board_item.__item_position = None
             board_item._children_items = []
         self.translation_ongoing = False
         if cancel:
@@ -1834,7 +1840,7 @@ class BoardMixin():
                     self.board_START_selected_items_ROTATION(event.pos())
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
-                    self.board_START_selected_items_TRANSLATION(event)
+                    self.board_START_selected_items_TRANSLATION(event.pos())
                     self.update_selection_bouding_box()
 
                 else:
@@ -1870,7 +1876,7 @@ class BoardMixin():
                 self.board_DO_selected_items_ROTATION(event.pos())
 
             elif no_mod and not self.selection_ongoing:
-                self.board_DO_selected_items_TRANSLATION(event)
+                self.board_DO_selected_items_TRANSLATION(event.pos())
                 self.update_selection_bouding_box()
 
             elif self.board_region_zoom_in_input_started:
@@ -2038,6 +2044,11 @@ class BoardMixin():
             # то же самое, что и для скейла
             self.board_START_selected_items_ROTATION(event_pos, viewport_zoom_changed=True)
             self.board_DO_selected_items_ROTATION(event_pos)
+
+        # не даёт нужного эффекта пока
+        # if self.translation_ongoing or self.start_translation_pos:
+        #     self.board_START_selected_items_TRANSLATION(event_pos, viewport_zoom_changed=True)
+        #     self.board_DO_selected_items_TRANSLATION(event_pos)
 
         self.update()
 
