@@ -2012,7 +2012,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return 1.0
 
     def draw_center_label(self, painter, text, large=False):
-        painter.resetTransform()
         def set_font(pr):
             font = pr.font()
             old_font = pr.font() #copy
@@ -2028,6 +2027,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return old_font
 
         old_font = set_font(painter)
+        painter.setPen(QPen(Qt.white, 1)) # boundingRect returns zero QRect, if there's no pen
         brect = painter.boundingRect(self.rect(), Qt.AlignCenter, text)
 
         # backplate
@@ -2843,6 +2843,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif check_scancode_for(event, "G"):
             pass
+            # self.show_center_label("DEBUG")
             # self.toggle_test_animation()
             # self.hide_center_label()
             # import time
