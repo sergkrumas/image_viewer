@@ -179,7 +179,7 @@ class HelpWidget(QWidget):
         vl = QVBoxLayout()
 
         exit_btn = QPushButton("Закрыть")
-        exit_btn.clicked.connect(lambda: toggle_infopanel(parent))
+        exit_btn.clicked.connect(lambda: parent.toggle_infopanel())
         exit_btn.setStyleSheet(self.button_style)
         exit_btn.setObjectName("exit")
 
