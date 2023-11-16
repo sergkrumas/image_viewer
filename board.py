@@ -1291,7 +1291,7 @@ class BoardMixin():
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
     def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
-        self.start_translation_pos = QPointF(event_pos)
+        self.start_translation_pos = QPointF(self.get_relative_position(event_pos))
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.board_items_list
         if viewport_zoom_changed:
@@ -1315,8 +1315,7 @@ class BoardMixin():
         if self.start_translation_pos:
             self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
-            delta = event_pos - self.start_translation_pos
-            delta = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+            delta = QPointF(self.get_relative_position(event_pos)) - self.start_translation_pos
             for board_item in current_folder.board.board_items_list:
                 if board_item._selected:
                     board_item.item_position = board_item.__item_position + delta
@@ -2044,11 +2043,6 @@ class BoardMixin():
             # то же самое, что и для скейла
             self.board_START_selected_items_ROTATION(event_pos, viewport_zoom_changed=True)
             self.board_DO_selected_items_ROTATION(event_pos)
-
-        # не даёт нужного эффекта пока
-        # if self.translation_ongoing or self.start_translation_pos:
-        #     self.board_START_selected_items_TRANSLATION(event_pos, viewport_zoom_changed=True)
-        #     self.board_DO_selected_items_TRANSLATION(event_pos)
 
         self.update()
 
