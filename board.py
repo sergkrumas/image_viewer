@@ -239,6 +239,8 @@ class BoardMixin():
         self.context_menu_allowed = True
         self.long_loading = False
 
+        self.transform_cancelled = False
+
         self.board_item_under_mouse = None
         self.item_group_under_mouse = None
         self.group_inside_selection_items = False
@@ -1316,16 +1318,26 @@ class BoardMixin():
         else:
             self.translation_ongoing = False
 
-    def board_FINISH_selected_items_TRANSLATION(self, event):
+    def board_FINISH_selected_items_TRANSLATION(self, event, cancel=False):
         self.start_translation_pos = None
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board.board_items_list:
-            board_item.start_translation_pos = None
+            if cancel:
+                board_item.item_position = QPointF(board_item.start_translation_pos)
+            else:
+                board_item.start_translation_pos = None
             board_item._children_items = []
         self.translation_ongoing = False
-        self.build_board_bounding_rect(current_folder)
-        self.move_selected_items_to_item_group()
-        self.check_item_group_under_mouse(reset=True)
+        if not cancel:
+            self.build_board_bounding_rect(current_folder)
+            self.move_selected_items_to_item_group()
+            self.check_item_group_under_mouse(reset=True)
+
+    def board_CANCEL_selected_items_TRANSLATION(self):
+        if self.translation_ongoing:
+            self.board_FINISH_selected_items_TRANSLATION(None, cancel=True)
+            self.update_selection_bouding_box()
+            self.transform_cancelled = True
 
     def move_selected_items_to_item_group(self, item_group=None):
         if self.item_group_under_mouse is not None:
@@ -1843,6 +1855,10 @@ class BoardMixin():
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
+
+        if self.transform_cancelled:
+            self.transform_cancelled = False
+            return
 
         if event.button() == Qt.LeftButton:
             if not alt and not self.translation_ongoing and not self.rotation_ongoing and not self.scaling_ongoing:

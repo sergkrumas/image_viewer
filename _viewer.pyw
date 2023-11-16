@@ -2815,7 +2815,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
         if key == Qt.Key_Escape:
-            if self.contextMenuActivated:
+            if self.translation_ongoing:
+                self.board_CANCEL_selected_items_TRANSLATION()
+            elif self.contextMenuActivated:
                 self.contextMenuActivated = False
             elif self.input_rect:
                 self.region_zoom_in_cancel()
