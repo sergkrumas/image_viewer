@@ -1349,6 +1349,7 @@ class BoardMixin():
             self.board_FINISH_selected_items_TRANSLATION(None, cancel=True)
             self.update_selection_bouding_box()
             self.transform_cancelled = True
+            print('cancel translation')
 
     def move_selected_items_to_item_group(self, item_group=None):
         if self.item_group_under_mouse is not None:
@@ -1601,6 +1602,7 @@ class BoardMixin():
             self.board_FINISH_selected_items_ROTATION(None, cancel=True)
             self.update_selection_bouding_box()
             self.transform_cancelled = True
+            print('cancel rotation')
 
     def is_over_scaling_activation_area(self, position):
         if self.selection_bounding_box is not None:
@@ -1812,6 +1814,7 @@ class BoardMixin():
             self.board_FINISH_selected_items_SCALING(None, cancel=True)
             self.update_selection_bouding_box()
             self.transform_cancelled = True
+            print('cancel scaling')
 
     def boards_do_scaling_key_callback(self):
         if self.scaling_ongoing:

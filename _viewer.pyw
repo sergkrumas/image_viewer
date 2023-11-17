@@ -2817,13 +2817,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if key == Qt.Key_Escape:
             if self.start_translation_pos or self.translation_ongoing:
                 self.board_CANCEL_selected_items_TRANSLATION()
-                print('cancel translation')
             elif self.rotation_ongoing:
                 self.board_CANCEL_selected_items_ROTATION()
-                print('cancel rotation')
             elif self.scaling_ongoing:
                 self.board_CANCEL_selected_items_SCALING()
-                print('cancel scaling')
             elif self.contextMenuActivated:
                 self.contextMenuActivated = False
             elif self.input_rect:
