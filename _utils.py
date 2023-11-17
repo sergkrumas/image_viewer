@@ -357,7 +357,7 @@ def build_valid_rectF(p1, p2):
         right = max(p.x(), right)
         top = min(p.y(), top)
         bottom = max(p.y(), bottom)
-    return QRectF(QPointF(int(left), int(top)), QPointF(int(right), int(bottom)))
+    return QRectF(QPointF(left, top), QPointF(right, bottom))
 
 def is_webp_file_animated(filepath):
     result = False
