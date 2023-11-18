@@ -443,6 +443,8 @@ class BoardMixin():
         self.build_board_bounding_rect(folder_data)
 
         folder_data.board.board_ready = True
+        if self.STNG_board_move_to_current_on_first_open:
+            self.board_fit_content_on_screen(folder_data.current_image())
         self.update()
 
     def board_timer_handler(self):
