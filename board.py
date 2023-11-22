@@ -81,6 +81,11 @@ class BoardItem():
         self._touched = False
         self._show_file_info_overlay = False
 
+    @property
+    def calc_area(self):
+        r = self.get_size_rect(scaled=True)
+        return abs(r.width() * r.height())
+
     def board_retrieve_image_data(self):
         if self.type == BoardItem.types.ITEM_IMAGE:
             image_data = self.image_data
@@ -1402,6 +1407,7 @@ class BoardMixin():
         current_folder = self.LibraryData().current_folder()
         if self.is_flyover_ongoing():
             return False
+        min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
         # reversed для того, чтобы картинки на переднем плане чекались первыми
         for board_item in reversed(current_folder.board.board_items_list):
             item_selection_area = board_item.get_selection_area(board=self)
@@ -1409,8 +1415,7 @@ class BoardMixin():
 
             if is_under_mouse and not board_item._selected:
                 if board_item.type == BoardItem.types.ITEM_FRAME:
-                    _other_items = self.find_all_items_under_this_pos(current_folder, self.mapped_cursor_pos())
-                    if len(_other_items) > 1:
+                    if min_item is not board_item:
                         continue
 
                 if not add_selection:
@@ -1426,6 +1431,13 @@ class BoardMixin():
             if is_under_mouse and board_item._selected:
                 return True
         return False
+
+    def find_min_area_item(self, folder_data, pos):
+        found_items = self.find_all_items_under_this_pos(folder_data, pos)
+        found_items = list(sorted(found_items, key=lambda x: x.calc_area))
+        if found_items:
+            return found_items[0]
+        return None
 
     def find_all_items_under_this_pos(self, folder_data, pos):
         undermouse_items = []
@@ -1452,6 +1464,7 @@ class BoardMixin():
                     else:
                         board_item._selected = False
         else:
+            min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
             # reversed для того, чтобы картинки на переднем плане чекались первыми
             for board_item in reversed(current_folder.board.board_items_list):
                 item_selection_area = board_item.get_selection_area(board=self)
@@ -1462,8 +1475,7 @@ class BoardMixin():
                         board_item._selected = False
                 else:
                     if board_item.type == BoardItem.types.ITEM_FRAME:
-                        _other_items = self.find_all_items_under_this_pos(current_folder, self.mapped_cursor_pos())
-                        if len(_other_items) > 1:
+                        if min_item is not board_item:
                             board_item._selected = False
                         else:
                             board_item._selected = is_under_mouse
