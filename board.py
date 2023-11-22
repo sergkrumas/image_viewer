@@ -1311,12 +1311,14 @@ class BoardMixin():
                 board_item.__item_position_init = QPointF(board_item.item_position)
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
+                this_frame_area = board_item.calc_area
                 item_frame_area = board_item.get_selection_area(board=self)
                 for bi in current_folder.board.board_items_list[:]:
                     bi_area = bi.get_selection_area(board=self)
                     center_point = bi_area.boundingRect().center()
                     if item_frame_area.containsPoint(QPointF(center_point), Qt.WindingFill):
-                        board_item._children_items.append(bi)
+                        if bi.type != BoardItem.types.ITEM_FRAME or (bi.type == BoardItem.types.ITEM_FRAME and bi.calc_area < this_frame_area):
+                            board_item._children_items.append(bi)
 
     def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
