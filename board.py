@@ -1020,7 +1020,7 @@ class BoardMixin():
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
 
-    def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
+    def _get_board_bounding_rect(self, folder_data, apply_global_scale=False):
         points = []
         # points.append(self.board_origin) #мешает при использовании board_navigate_camera_via_minimap, поэтому убрал нафег
         if folder_data.board.board_items_list:
@@ -1031,8 +1031,11 @@ class BoardMixin():
             p1, p2 = get_bounding_points(points)
             result = build_valid_rectF(p1, p2)
         else:
-            result = self.rect()
-        self.board_bounding_rect = result
+            result = QRectF(self.rect())
+        return result
+
+    def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
+        self.board_bounding_rect = self._get_board_bounding_rect(folder_data, apply_global_scale=apply_global_scale)
 
     def get_widget_cursor(self, source_pixmap, angle):
         pixmap = QPixmap(source_pixmap.size())
@@ -1376,6 +1379,14 @@ class BoardMixin():
 
         current_folder = self.LibraryData().current_folder()
         board_item_list = current_folder.board.board_items_list
+
+        if group_board_item_list:
+            item_board_bb = self._get_board_bounding_rect(item_fd)
+        else:
+            item_board_bb = QRectF()
+
+        topLeftCorner = item_board_bb.topRight()
+
         for bi in self.selected_items:
             if bi.type is not bi.types.ITEM_GROUP:
                 board_item_list.remove(bi)
@@ -1384,6 +1395,8 @@ class BoardMixin():
                     current_folder.images_list.remove(bi.image_data)
                     item_fd.images_list.append(bi.image_data)
                     bi.image_data.folder_data = item_fd
+                    bi.item_position = topLeftCorner + QPointF(bi.image_data.source_width, bi.image_data.source_height)/2
+                    topLeftCorner += QPointF(bi.image_data.source_width, 0)
 
         group_item.update_corner_info()
         if update_selection:
