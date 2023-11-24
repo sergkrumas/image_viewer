@@ -1128,7 +1128,8 @@ class BoardMixin():
 
             for board_item in cf.board.board_items_list:
 
-                image_data = board_item.board_retrieve_image_data()
+                # крашится на item_frame-ах, потому что у них изображений нет
+                # image_data = board_item.board_retrieve_image_data()
 
                 delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
