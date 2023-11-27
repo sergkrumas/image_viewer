@@ -1246,18 +1246,24 @@ class BoardMixin():
         else:
             folder_data = cf.board.board_root_folder
 
+        gi = self.get_removed_items_group(folder_data)
+
+        # здесь решаем что удалить безвозвратно
         for bi in self.selected_items:
             if bi.type is BoardItem.types.ITEM_FRAME:
                 board_items_list.remove(bi)
             if bi.type is BoardItem.types.ITEM_IMAGE:
                 pass
-            # if bi.type is BoardItem.types.ITEM_GROUP:
-            #     if bi.image_data.filepath:
-            #         pass
+            if bi.type is BoardItem.types.ITEM_GROUP:
+                if bi.board_group_index > 9:
+                    self.move_items_to_group(
+                        item_group=gi,
+                        items=bi.item_folder_data.board.board_items_list,
+                        items_folder=bi.item_folder_data
+                    )
+                    board_items_list.remove(bi)
 
-        gi = self.get_removed_items_group(folder_data)
-
-        self.move_selected_items_to_item_group(gi)
+        self.move_items_to_group(item_group=gi, items=self.selected_items)
 
         self.init_selection_bounding_box_widget(cf)
         self.update()
@@ -1302,7 +1308,7 @@ class BoardMixin():
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
-            self.move_selected_items_to_item_group(item_group=bi)
+            self.move_items_to_group(item_group=bi, items=self.selected_items)
         bi.update_corner_info()
         self.board_select_items([bi])
         self.update()
@@ -1328,6 +1334,60 @@ class BoardMixin():
             self.board_select_items([bi])
             self.long_loading = False
             self.update()
+
+    def move_items_to_group(self, item_group=None, items=None, items_folder=None):
+        if items_folder is None:
+            items_folder = self.LibraryData().current_folder()
+            default = True
+        else:
+            default = False
+        if self.item_group_under_mouse is not None:
+            group_item = self.item_group_under_mouse
+            update_selection = True
+        elif item_group is not None:
+            group_item = item_group
+            update_selection = False
+        else:
+            return
+
+        item_fd = group_item.item_folder_data
+        group_board_item_list = item_fd.board.board_items_list
+
+        board_item_list = items_folder.board.board_items_list
+
+        if group_board_item_list:
+            item_board_bb = self._get_board_bounding_rect(item_fd)
+        else:
+            item_board_bb = QRectF()
+
+        topLeftCorner = item_board_bb.topRight()
+
+        for bi in items[:]:
+
+            if bi.type is bi.types.ITEM_GROUP:
+                continue
+            if bi.type is bi.types.ITEM_FRAME:
+                continue
+            if bi in board_item_list:
+                board_item_list.remove(bi)
+            else:
+                # значит элемент был перемещён или удалён ранее и нам не надо его обрабатывать здесь
+                continue
+            group_board_item_list.append(bi)
+            if bi.type is bi.types.ITEM_IMAGE:
+                items_folder.images_list.remove(bi.image_data)
+                item_fd.images_list.append(bi.image_data)
+                bi.image_data.folder_data = item_fd
+
+            rect = bi.get_size_rect(scaled=True)
+            item_width = rect.width()
+            item_height = rect.height()
+            bi.item_position = topLeftCorner + QPointF(item_width, item_height)/2
+            topLeftCorner += QPointF(item_width, 0)
+
+        group_item.update_corner_info()
+        if update_selection:
+            self.board_select_items([group_item])
 
     def board_add_item_frame(self):
 
@@ -1409,7 +1469,7 @@ class BoardMixin():
             pass
         else:
             self.build_board_bounding_rect(current_folder)
-            self.move_selected_items_to_item_group()
+            self.move_items_to_group(items=self.selected_items)
             self.check_item_group_under_mouse(reset=True)
 
     def board_CANCEL_selected_items_TRANSLATION(self):
@@ -1418,55 +1478,6 @@ class BoardMixin():
             self.update_selection_bouding_box()
             self.transform_cancelled = True
             print('cancel translation')
-
-    def move_selected_items_to_item_group(self, item_group=None):
-        if self.item_group_under_mouse is not None:
-            group_item = self.item_group_under_mouse
-            update_selection = True
-        elif item_group is not None:
-            group_item = item_group
-            update_selection = False
-        else:
-            return
-
-        item_fd = group_item.item_folder_data
-        group_board_item_list = item_fd.board.board_items_list
-
-        current_folder = self.LibraryData().current_folder()
-        board_item_list = current_folder.board.board_items_list
-
-        if group_board_item_list:
-            item_board_bb = self._get_board_bounding_rect(item_fd)
-        else:
-            item_board_bb = QRectF()
-
-        topLeftCorner = item_board_bb.topRight()
-
-        for bi in self.selected_items:
-            if bi.type is bi.types.ITEM_GROUP:
-                continue
-            if bi.type is bi.types.ITEM_FRAME:
-                continue
-            if bi in board_item_list:
-                board_item_list.remove(bi)
-            else:
-                # значит элемент был перемещён или удалён ранее и нам не надо его обрабатывать здесь
-                continue
-            group_board_item_list.append(bi)
-            if bi.type is bi.types.ITEM_IMAGE:
-                current_folder.images_list.remove(bi.image_data)
-                item_fd.images_list.append(bi.image_data)
-                bi.image_data.folder_data = item_fd
-
-            rect = bi.get_size_rect(scaled=True)
-            item_width = rect.width()
-            item_height = rect.height()
-            bi.item_position = topLeftCorner + QPointF(item_width, item_height)/2
-            topLeftCorner += QPointF(item_width, 0)
-
-        group_item.update_corner_info()
-        if update_selection:
-            self.board_select_items([group_item])
 
     def check_item_group_under_mouse(self, reset=False):
         self.item_group_under_mouse = None

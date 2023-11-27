@@ -1062,7 +1062,7 @@ class BoardData():
         self.referer_board_folder = None
 
         self.current_board_item_index = 0
-        self.current_board_item_group_index = 0
+        self.current_board_item_group_index = 10
 
         self.board_root_folder = None
         self.board_root_item = None
