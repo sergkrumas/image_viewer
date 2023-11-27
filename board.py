@@ -1233,16 +1233,19 @@ class BoardMixin():
         self.update()
 
     def board_add_item_group(self):
-        folder_data = self.LibraryData().current_folder()
+        current_folder_data = self.LibraryData().current_folder()
+        if current_folder_data.virtual:
+            self.show_center_label('Нельзя создавать айтемы-группы в досках виртуальных папок', error=True)
+            return
         item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
         bi = BoardItem(BoardItem.types.ITEM_GROUP)
         bi.item_folder_data = item_folder_data
         bi.board_index = self.retrieve_new_board_item_index()
         bi.board_group_index = self.retrieve_new_board_item_group_index()
-        folder_data.board.board_items_list.append(bi)
+        current_folder_data.board.board_items_list.append(bi)
         item_folder_data.previews_done = True
         item_folder_data.board.board_ready = True
-        item_folder_data.board.board_root_folder = folder_data
+        item_folder_data.board.board_root_folder = current_folder_data
         item_folder_data.board.board_root_item = bi
         # располагаем в центре экрана
         bi.item_position = self.get_relative_position(self.context_menu_exec_point)
