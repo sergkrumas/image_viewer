@@ -1290,27 +1290,57 @@ class BoardMixin():
 
         return gi
 
+    def board_retrieve_current_from_group_item(self):
+        gi = self.is_context_menu_executed_over_group_item()
+        current_folder = self.LibraryData().current_folder()
+        current_board = current_folder.board
+        if len(gi.item_folder_data.board.board_items_list) == 0:
+            self.show_center_label('Нечего удалять, группа пуста', error=True)
+            return
+
+        if gi is not None:
+            item_folder_data = gi.item_folder_data
+            im_data = self.LibraryData().delete_current_image(item_folder_data, force=True)
+            bi = im_data.board_item
+            item_folder_data.board.board_items_list.remove(bi)
+
+            current_board.board_items_list.append(bi)
+            bi.image_data.folder_data = current_folder
+            current_folder.images_list.append(im_data)
+
+            pos = self.get_relative_position(gi.get_selection_area(board=self).boundingRect().topRight())
+            size_rect = bi.get_size_rect(scaled=False)
+            offset = QPointF(size_rect.width()/2, size_rect.height()/2)
+            bi.item_position = (pos + offset)
+            bi._selected = False
+
+            gi.update_corner_info()
+            gi.pixmap = None
+        else:
+            self.show_center_label('Айтем-группа не найдена!', error=True)
+        self.update()
+
     def board_add_item_group(self):
         current_folder_data = self.LibraryData().current_folder()
         if current_folder_data.virtual:
             self.show_center_label('Нельзя создавать айтемы-группы в досках виртуальных папок', error=True)
             return
         item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
-        bi = BoardItem(BoardItem.types.ITEM_GROUP)
-        bi.item_folder_data = item_folder_data
-        bi.board_index = self.retrieve_new_board_item_index()
-        bi.board_group_index = self.retrieve_new_board_item_group_index()
-        current_folder_data.board.board_items_list.append(bi)
+        gi = BoardItem(BoardItem.types.ITEM_GROUP)
+        gi.item_folder_data = item_folder_data
+        gi.board_index = self.retrieve_new_board_item_index()
+        gi.board_group_index = self.retrieve_new_board_item_group_index()
+        current_folder_data.board.board_items_list.append(gi)
         item_folder_data.previews_done = True
         item_folder_data.board.board_ready = True
         item_folder_data.board.board_root_folder = current_folder_data
-        item_folder_data.board.board_root_item = bi
+        item_folder_data.board.board_root_item = gi
         # располагаем в центре экрана
-        bi.item_position = self.get_relative_position(self.context_menu_exec_point)
+        gi.item_position = self.get_relative_position(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
-            self.move_items_to_group(item_group=bi, items=self.selected_items)
-        bi.update_corner_info()
-        self.board_select_items([bi])
+            self.move_items_to_group(item_group=gi, items=self.selected_items)
+        gi.update_corner_info()
+        self.board_select_items([gi])
         self.update()
 
     def board_add_item_folder(self):
@@ -1324,14 +1354,14 @@ class BoardMixin():
             files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
             item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
             self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
-            bi = BoardItem(BoardItem.types.ITEM_FOLDER)
-            bi.item_folder_data = item_folder_data
-            bi.board_index = self.retrieve_new_board_item_index()
-            folder_data.board.board_items_list.append(bi)
+            fi = BoardItem(BoardItem.types.ITEM_FOLDER)
+            fi.item_folder_data = item_folder_data
+            fi.board_index = self.retrieve_new_board_item_index()
+            folder_data.board.board_items_list.append(fi)
             # располагаем в центре экрана
-            bi.item_position = self.get_relative_position(self.rect().center())
-            bi.update_corner_info()
-            self.board_select_items([bi])
+            fi.item_position = self.get_relative_position(self.rect().center())
+            fi.update_corner_info()
+            self.board_select_items([fi])
             self.long_loading = False
             self.update()
 
@@ -1479,18 +1509,29 @@ class BoardMixin():
             self.transform_cancelled = True
             print('cancel translation')
 
-    def check_item_group_under_mouse(self, reset=False):
+    def is_context_menu_executed_over_group_item(self):
+        self.check_item_group_under_mouse(use_context_menu_exec_point=True)
+        group_item = self.item_group_under_mouse
+        self.check_item_group_under_mouse(reset=True)
+        return group_item
+
+    def check_item_group_under_mouse(self, reset=False, use_context_menu_exec_point=False):
         self.item_group_under_mouse = None
         self.group_inside_selection_items = False
         if reset:
             return
         self.group_inside_selection_items = any(bi.type == BoardItem.types.ITEM_GROUP for bi in self.selected_items)
-        if not self.group_inside_selection_items:
+
+        if use_context_menu_exec_point:
+            pos = self.context_menu_exec_point
+        else:
+            pos = self.mapped_cursor_pos()
+        if not self.group_inside_selection_items or use_context_menu_exec_point:
             cf = self.LibraryData().current_folder()
             for bi in cf.board.board_items_list:
                 if bi.type is BoardItem.types.ITEM_GROUP:
                     item_selection_area = bi.get_selection_area(board=self)
-                    is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                    is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
                     if is_under_mouse:
                         self.item_group_under_mouse = bi
                         break

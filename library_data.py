@@ -317,25 +317,32 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.board_origin = board.board_origin
         MW.board_load_board_data(board, cf)
 
-    def delete_current_image(self):
+    def delete_current_image(self, folder_data=None, force=False):
         MW = self.globals.main_window
-        cf = self.current_folder()
+        if folder_data is None:
+            cf = self.current_folder()
+        else:
+            cf = folder_data
         ci = cf.current_image()
         if ci in cf.images_list: #служебные объекты ImageData не находятся в списке
-            if cf.virtual:
+            if cf.virtual and not force:
                 MW.show_center_label("Из виртуальных папок нельзя удалять изображения", error=True)
                 return
             # prepare
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
-            delete_to_recyclebin(ci.filepath)
-            MW.show_center_label(f"Файл\n{ci.filepath}\n удален в корзину")
+            if not force:
+                delete_to_recyclebin(ci.filepath)
+                MW.show_center_label(f"Файл\n{ci.filepath}\n удален в корзину")
             cf.images_list.remove(ci)
             # show next
             im_data = self.current_folder().current_image()
-            MW.show_image(im_data)
-            cf.current_image().load_ui_data()
-            MW.set_window_title(MW.current_image_details())
+            if not force:
+                MW.show_image(im_data)
+                cf.current_image().load_ui_data()
+                MW.set_window_title(MW.current_image_details())
             LibraryData.update_current_folder_columns()
+            if force:
+                return ci
         else:
             MW.show_center_label("Это не удалить!", error=True)
         MW.update()

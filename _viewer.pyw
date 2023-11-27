@@ -3228,6 +3228,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.contextMenuActivated = True
 
+        self.context_menu_exec_point = self.mapped_cursor_pos()
+
         minimize_window = contextMenu.addAction("Свернуть")
         contextMenu.addSeparator()
 
@@ -3292,6 +3294,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
 
+            if bool(self.is_context_menu_executed_over_group_item()):
+                board_retrieve_current_from_group_item = contextMenu.addAction('Вынуть текущую картинку из группы')
+
             contextMenu.addSeparator()
 
             board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
@@ -3346,7 +3351,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     action_title = "Перейти из избранного в папку с этим изображением"
                     go_to_folder = contextMenu.addAction(action_title)
 
-        self.context_menu_exec_point = self.mapped_cursor_pos()
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         self.contextMenuActivated = False
         if action is not None:
@@ -3367,6 +3371,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif action == board_transform_widget_debug_draw:
                 self.board_debug_transform_widget = not self.board_debug_transform_widget
                 self.update()
+            elif action == board_retrieve_current_from_group_item:
+                self.board_retrieve_current_from_group_item()
             elif action == open_separated:
                 open_in_separated_app_copy(folder_data)
             elif action == toggle_two_monitors_wide:
