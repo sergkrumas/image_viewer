@@ -1237,26 +1237,35 @@ class BoardMixin():
         board_items_list = cf.board.board_items_list
 
         board_root_item = cf.board.board_root_item
-        if board_root_item.type == BoardItem.types.ITEM_IMAGE and board_root_item.animated:
+        if board_root_item and board_root_item.type == BoardItem.types.ITEM_IMAGE and board_root_item.animated:
             self.show_center_label('Нельзя удалять айтемы из доски анимированного файла', error=True)
             return
 
+        if board_root_item is None:
+            folder_data = cf
+        else:
+            folder_data = cf.board.board_root_folder
 
-        gi = self.get_removed_items_group(cf)
+        for bi in self.selected_items:
+            if bi.type is BoardItem.types.ITEM_FRAME:
+                board_items_list.remove(bi)
+            if bi.type is BoardItem.types.ITEM_IMAGE:
+                pass
+            # if bi.type is BoardItem.types.ITEM_GROUP:
+            #     if bi.image_data.filepath:
+            #         pass
+
+        gi = self.get_removed_items_group(folder_data)
+
         self.move_selected_items_to_item_group(gi)
-
-        # for bi in self.selected_items:
-        #     board_items_list.remove(bi)
 
         self.init_selection_bounding_box_widget(cf)
         self.update()
 
     def get_removed_items_group(self, folder_data):
-        gi = None
         for bi in folder_data.board.board_items_list:
             if bi.board_group_index == 0:
-                gi = bi
-                return gi
+                return bi
 
         item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
@@ -1434,15 +1443,25 @@ class BoardMixin():
         topLeftCorner = item_board_bb.topRight()
 
         for bi in self.selected_items:
-            if bi.type is not bi.types.ITEM_GROUP:
-                board_item_list.remove(bi)
-                group_board_item_list.append(bi)
-                if bi.type is bi.types.ITEM_IMAGE:
-                    current_folder.images_list.remove(bi.image_data)
-                    item_fd.images_list.append(bi.image_data)
-                    bi.image_data.folder_data = item_fd
-                    bi.item_position = topLeftCorner + QPointF(bi.image_data.source_width, bi.image_data.source_height)/2
-                    topLeftCorner += QPointF(bi.image_data.source_width, 0)
+            if bi.type is bi.types.ITEM_GROUP:
+                continue
+            if bi.type is bi.types.ITEM_FRAME:
+                continue
+            board_item_list.remove(bi)
+            group_board_item_list.append(bi)
+            if bi.type is bi.types.ITEM_IMAGE:
+                current_folder.images_list.remove(bi.image_data)
+                item_fd.images_list.append(bi.image_data)
+                bi.image_data.folder_data = item_fd
+
+            if bi.type is bi.types.ITEM_IMAGE:
+                item_width = bi.image_data.source_width
+                item_height = bi.image_data.source_height
+            else:
+                item_width = bi.item_width
+                item_height = bi.item_height
+            bi.item_position = topLeftCorner + QPointF(item_width, item_height)/2
+            topLeftCorner += QPointF(item_width, 0)
 
         group_item.update_corner_info()
         if update_selection:
