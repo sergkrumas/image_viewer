@@ -2848,7 +2848,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.toggle_to_frameless_mode()
 
         elif check_scancode_for(event, "G"):
-            pass
+
+            board_status = f'translation ongoing: {self.translation_ongoing}, rotation ongoing: {self.rotation_ongoing}, scale ongoing: {self.scaling_ongoing}, start_translation_pos: {self.start_translation_pos}'
+            print(board_status)
             # self.show_center_label("DEBUG")
             # self.toggle_test_animation()
             # self.hide_center_label()

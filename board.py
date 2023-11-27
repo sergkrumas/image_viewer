@@ -1946,6 +1946,8 @@ class BoardMixin():
             return
 
         if event.button() == Qt.LeftButton:
+            self.start_translation_pos = None
+
             if not alt and not self.translation_ongoing and not self.rotation_ongoing and not self.scaling_ongoing:
                 self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
                 # if self.selection_rect is not None:
