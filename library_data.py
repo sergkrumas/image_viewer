@@ -154,16 +154,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if make_current:
             self.folders.append(folder_data)
 
-        # удаление дубликатов и копирование модификаторов с них
-        for fd in LibraryData().folders:
-            if os.path.normpath(fd.folder_path) == os.path.normpath(folder_path):
-                if fd != folder_data:
-                    # folder_data.set_modifiers(fd.get_modifiers())
-                    LibraryData().folders.remove(fd)
-                    to_print = f"dublicated folder item removed from LibraryData: {fd.folder_path}"
-                    print(to_print)
-                    # break
-                    # иногда дубликатов получается больше, чем 2, поэтому break отменяется
+        # виртуальные папки могут носить одинаковые названия, а названия как раз прописаны в folder_path 
+        if not virtual:
+            # удаление дубликатов и копирование модификаторов с них
+            for fd in LibraryData().folders:
+                if os.path.normpath(fd.folder_path) == os.path.normpath(folder_path):
+                    if fd != folder_data:
+                        # folder_data.set_modifiers(fd.get_modifiers())
+                        LibraryData().folders.remove(fd)
+                        to_print = f"dublicated folder item removed from LibraryData: {fd.folder_path}"
+                        print(to_print)
+                        # break
+                        # иногда дубликатов получается больше, чем 2, поэтому break отменяется
 
         if make_current:
             # индекс задаём только после удаления дубликатов
