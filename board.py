@@ -1447,7 +1447,11 @@ class BoardMixin():
                 continue
             if bi.type is bi.types.ITEM_FRAME:
                 continue
-            board_item_list.remove(bi)
+            if bi in board_item_list:
+                board_item_list.remove(bi)
+            else:
+                # значит элемент был перемещён или удалён ранее и нам не надо его обрабатывать здесь
+                continue
             group_board_item_list.append(bi)
             if bi.type is bi.types.ITEM_IMAGE:
                 current_folder.images_list.remove(bi.image_data)
