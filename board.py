@@ -70,8 +70,8 @@ class BoardItem():
         self.board_index = 0
         self.board_group_index = None
 
-        self.item_width = 300
-        self.item_height = 300
+        self.item_width = 1000
+        self.item_height = 1000
 
         self.item_image_source = None
 
