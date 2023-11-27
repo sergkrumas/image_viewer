@@ -1458,12 +1458,9 @@ class BoardMixin():
                 item_fd.images_list.append(bi.image_data)
                 bi.image_data.folder_data = item_fd
 
-            if bi.type is bi.types.ITEM_IMAGE:
-                item_width = bi.image_data.source_width
-                item_height = bi.image_data.source_height
-            else:
-                item_width = bi.item_width
-                item_height = bi.item_height
+            rect = bi.get_size_rect(scaled=True)
+            item_width = rect.width()
+            item_height = rect.height()
             bi.item_position = topLeftCorner + QPointF(item_width, item_height)/2
             topLeftCorner += QPointF(item_width, 0)
 
