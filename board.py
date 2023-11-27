@@ -256,7 +256,7 @@ class BoardMixin():
 
         self.board_bounding_rect = QRectF()
         self.current_board_item_index = 0
-        self.current_board_item_group_index = 0
+        self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -1232,6 +1232,49 @@ class BoardMixin():
         self.long_loading = False
         self.update()
 
+    def board_delete_selected_board_items(self):
+        cf = self.LibraryData().current_folder()
+        board_items_list = cf.board.board_items_list
+
+        board_root_item = cf.board.board_root_item
+        if board_root_item.type == BoardItem.types.ITEM_IMAGE and board_root_item.animated:
+            self.show_center_label('Нельзя удалять айтемы из доски анимированного файла', error=True)
+            return
+
+
+        gi = self.get_removed_items_group(cf)
+        self.move_selected_items_to_item_group(gi)
+
+        # for bi in self.selected_items:
+        #     board_items_list.remove(bi)
+
+        self.init_selection_bounding_box_widget(cf)
+        self.update()
+
+    def get_removed_items_group(self, folder_data):
+        gi = None
+        for bi in folder_data.board.board_items_list:
+            if bi.board_group_index == 0:
+                gi = bi
+                return gi
+
+        item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+        gi = BoardItem(BoardItem.types.ITEM_GROUP)
+
+        gi.item_folder_data = item_folder_data
+        gi.board_index = self.retrieve_new_board_item_index()
+        gi.board_group_index = 0 # index reserved for group of removed items
+        folder_data.board.board_items_list.append(gi)
+        item_folder_data.previews_done = True
+        item_folder_data.board.board_ready = True
+        item_folder_data.board.board_root_folder = folder_data
+        item_folder_data.board.board_root_item = gi
+        gi.item_position = - QPointF(gi.item_width, gi.item_height)/2.0
+
+        gi.update_corner_info()
+
+        return gi
+
     def board_add_item_group(self):
         current_folder_data = self.LibraryData().current_folder()
         if current_folder_data.virtual:
@@ -1988,14 +2031,6 @@ class BoardMixin():
                     self.set_default_boardviewport_scale(keep_position=True)
 
         self.prevent_item_deselection = False
-
-    def board_delete_selected_board_items(self):
-        cf = self.LibraryData().current_folder()
-        board_items_list = cf.board.board_items_list
-        for bi in self.selected_items:
-            board_items_list.remove(bi)
-        self.init_selection_bounding_box_widget(cf)
-        self.update()
 
     def get_relative_position(self, viewport_pos):
         delta = QPointF(viewport_pos - self.board_origin)
