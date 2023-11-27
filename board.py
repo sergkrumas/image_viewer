@@ -1567,11 +1567,8 @@ class BoardMixin():
                     if is_under_mouse and not self.prevent_item_deselection:
                         board_item._selected = False
                 else:
-                    if board_item.type == BoardItem.types.ITEM_FRAME:
-                        if min_item is not board_item:
-                            board_item._selected = False
-                        else:
-                            board_item._selected = is_under_mouse
+                    if min_item is not board_item:
+                        board_item._selected = False
                     else:
                         board_item._selected = is_under_mouse
         self.init_selection_bounding_box_widget(current_folder)
