@@ -3225,6 +3225,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_add_item_group = None
         board_add_item_frame = None
         board_load_highres = None
+        board_retrieve_current_from_group_item = None
 
         self.contextMenuActivated = True
 
