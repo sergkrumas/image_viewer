@@ -2648,7 +2648,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     callback_on_finish=callback_on_finish
                 )
         else:
-            self.close()
+            super().close()
 
     def require_window_closing(self):
         if Globals.lite_mode:
@@ -2668,6 +2668,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.CENTER_LABEL_TIME_LIMIT = 2.0
         # show center label on screen
         self.center_label_time = time.time()
+
+    def hide(self):
+        # Этот метод вызывается, если закрывать окно через меню панели задач
+        # или через кнопку "закрыть" у миниатюры окна во всё той же панели задач Windows.
+        # По идее, если мы в упрощённом режиме, то здесь надо сразу закрывать и приложение тоже,
+        # иначе приложение останется висеть в памяти и в диспетчере задач.
+        if Globals.lite_mode:
+            QApplication.instance().quit()
+        else:  
+            super().hide()
 
     def hide_center_label(self):
         self.CENTER_LABEL_TIME_LIMIT = 2.0
