@@ -578,6 +578,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     errors = True
             if errors:
                 to_print = f'Файл сессии повреждён и должен быть удалён {path}'
+                print(to_print)
                 # очень интересно посмотреть на повреждения, поэтому файл пока что не удаляется
                 # os.remove(path)
         for item in data:
@@ -593,7 +594,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 )
         if LibraryData().globals.is_path_exists:
             # сохраняем заново, чтобы отвалилось всё то,
-            # что корректно не открылось в handle_input_data
+            # что не удалось корректно открыть в handle_input_data
+            # print('store session data after loading')
             LibraryData().store_session_file()
 
 
@@ -605,8 +607,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # когда папка не сохранится, потому что данных нет
         folders_list = []
         for fd in LibraryData().folders:
+            filepath = fd.current_image().filepath
             ok_1 = not fd.virtual
-            ok_2 = fd.current_image().filepath
+            ok_2 = bool(filepath)
             if all((ok_1, ok_2)):
                 folders_list.append(fd)
         data_to_out = []
@@ -1012,6 +1015,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.activateWindow()
 
             LibraryData().add_current_image_to_view_history()
+            # print('store session file from handle_input_data')
             LibraryData().store_session_file()
 
             if not Globals.DEBUG:
@@ -1026,6 +1030,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             for n, image_data in enumerate(fd.images_list):
                 if compare_md5_strings(image_data.md5, content_hash):
                     fd.set_current_index(n)
+                    break
 
         if not pre_load:
             MW.handling_input = False
