@@ -3732,10 +3732,12 @@ def _main():
             subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
             sys.exit()
 
+    _was_DEBUG = Globals.DEBUG
     if sys.argv[0].lower().endswith("_viewer.pyw"):
         Globals.DEBUG = True
     else:
         Globals.DEBUG = False
+
 
     sys.stdout = HookConsoleOutput()
 
@@ -3779,6 +3781,10 @@ def _main():
         Globals.aftercrash = True
     Globals.lite_mode = args.lite
     Globals.force_full_mode = args.full
+
+    if _was_DEBUG and Globals.FORCE_FULL_DEBUG:
+        Globals.lite_mode = False
+        Globals.force_full_mode = True
 
     if Globals.lite_mode:
         app_icon = QIcon()
