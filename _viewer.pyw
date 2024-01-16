@@ -52,26 +52,26 @@ class Globals():
     FAV_BIG_ICON = None
     TAG_BIG_ICON = None
     COMMENTS_BIG_ICON = None
+    NULL_PIXMAP = None
     ERROR_PREVIEW_PIXMAP = None
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
     force_full_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
+    is_path_exists = False
+    started_from_sublime_text = False
+    aftercrash = False
+
+    DEBUG = True
+    FORCE_FULL_DEBUG = True
+    CRASH_SIMULATOR = True
 
     THUMBNAIL_WIDTH = 50
     AUGMENTED_THUBNAIL_INCREMENT = 20
-    PREVIEW_WIDTH = 200
-    DEBUG = True
-
     VIEW_HISTORY_SIZE = 20
-
-    is_path_exists = False
-
-    AFTERCRASH = False
-    CRASH_SIMULATOR = True
+    MULTIROW_THUMBNAILS_PADDING = 30
+    PREVIEW_WIDTH = 200
 
     USE_GLOBAL_LIST_VIEW_HISTORY = False
-
-    started_from_sublime_text = False
 
     SECRET_HINTS_FILEPATH = "deep_secrets.txt"
     SESSION_FILENAME = "session.txt"
@@ -81,10 +81,6 @@ class Globals():
     TAGS_ROOT = "tags"
     USERROTATIONS_FILENAME = "viewer.ini"
     DEFAULT_PATHS_FILENAME = "default_paths.txt"
-
-    MULTIROW_THUMBNAILS_PADDING = 30
-
-    NULL_PIXMAP = None
 
     app_title = "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
     github_repo = "https://github.com/sergkrumas/image_viewer"
@@ -3780,7 +3776,7 @@ def _main():
     if args.frame:
         frameless_mode = False
     if args.aftercrash:
-        Globals.AFTERCRASH = True
+        Globals.aftercrash = True
     Globals.lite_mode = args.lite
     Globals.force_full_mode = args.full
 
@@ -3791,7 +3787,7 @@ def _main():
         app.setWindowIcon(app_icon)
         app.setQuitOnLastWindowClosed(True)
 
-    if Globals.AFTERCRASH:
+    if Globals.aftercrash:
         filepath = get_crashlog_filepath()
         msg0 = f"Информация о краше сохранена в файл\n\t{filepath}"
         msg = f"Программа аварийно завершила работу! Application crash! \n{msg0}\n\nПерезапустить? Restart app?"
