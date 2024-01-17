@@ -3795,6 +3795,7 @@ def _main():
     if _was_DEBUG and Globals.FORCE_FULL_DEBUG:
         Globals.lite_mode = False
         Globals.force_full_mode = True
+        path = get_predefined_path_if_started_from_sublimeText()
 
     if Globals.lite_mode:
         app_icon = QIcon()
