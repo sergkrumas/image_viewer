@@ -363,7 +363,8 @@ class ClickableLabel(QLabel):
         self.mousePressEvent = self.mouseHandler
         self.tag_string = tag.name
         self.setMaximumHeight(50)
-        self.setText(tag.name)
+        label_text = f'{tag.name} ({len(tag.records)})'
+        self.setText(label_text)
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
 
     def set_check(self, check):
@@ -380,10 +381,10 @@ class ClickableLabel(QLabel):
         text = self.plainTextEditWidget.document().toPlainText()
         tags_list = text_to_list(text)
         if self.checked:
-            tags_list.append(self.text())
+            tags_list.append(self.tag_string)
         else:
             try:
-                tags_list.remove(self.text())
+                tags_list.remove(self.tag_string)
             except:
                 pass
         self.plainTextEditWidget.document().setPlainText( list_to_text(tags_list) )
@@ -745,7 +746,7 @@ class TaggingForm(QWidget):
             # set labels checked
             found_tags = [l.lower() for l in found_tags]
             for label_tag_element in self.tagslabels_list:
-                if label_tag_element.text().lower() in found_tags:
+                if label_tag_element.tag_string.lower() in found_tags:
                     label_tag_element.set_check(True)
         self.update()
 
