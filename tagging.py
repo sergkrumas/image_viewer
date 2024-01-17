@@ -395,6 +395,7 @@ class ClickableLabel(QLabel):
             self.updateLinkedTextWidget()
             self.updateParent.update()
         elif event.button() == Qt.RightButton:
+            self.parent().parent().showMinimized()
             print_tag_to_html(self.tag)
 
     def paintEvent(self, event):
