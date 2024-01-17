@@ -2653,6 +2653,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def require_window_closing(self):
         if Globals.lite_mode:
             self.animated_or_not_animated_close(QApplication.instance().quit)
+        elif Globals.FORCE_FULL_DEBUG and Globals.DEBUG:
+            QApplication.instance().quit()
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
         else:
