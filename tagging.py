@@ -355,6 +355,7 @@ class ClickableLabel(QLabel):
     def __init__(self, tag, label_type=None):
         super().__init__()
         self.checked = False
+        self.default_checked_value = False
         self.font_size = 15
         self.tag = tag
         self.type = label_type
@@ -362,13 +363,25 @@ class ClickableLabel(QLabel):
         self.setFont(QFont("Times", self.font_size, QFont.Bold))
         self.mousePressEvent = self.mouseHandler
         self.tag_string = tag.name
+        self.tag_records_count = len(tag.records)
         self.setMaximumHeight(50)
-        label_text = f'{tag.name} ({len(tag.records)})'
-        self.setText(label_text)
+        self.update_label()
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
 
-    def set_check(self, check):
+    def update_label(self):
+        count = self.tag_records_count
+        if self.checked and not self.default_checked_value:
+            count += 1
+        if not self.checked and self.default_checked_value:
+            count -= 1
+        label_text = f'{self.tag_string} ({count})'
+        self.setText(label_text)
+
+    def set_check(self, check, init=False):
+        if init:
+            self.default_checked_value = check
         self.checked = check
+        self.update_label()
 
     def setUpdateParent(self, up):
         self.updateParent = up
@@ -747,7 +760,7 @@ class TaggingForm(QWidget):
             found_tags = [l.lower() for l in found_tags]
             for label_tag_element in self.tagslabels_list:
                 if label_tag_element.tag_string.lower() in found_tags:
-                    label_tag_element.set_check(True)
+                    label_tag_element.set_check(True, init=True)
         self.update()
 
     def closeEvent(self, event):
