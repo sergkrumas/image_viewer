@@ -409,8 +409,26 @@ class ClickableLabel(QLabel):
             self.updateLinkedTextWidget()
             self.updateParent.update()
         elif event.button() == Qt.RightButton:
-            self.parent().parent().showMinimized()
-            print_tag_to_html(self.tag)
+            contextMenu = QMenu()
+            context_menu_stylesheet = self.parent().parent().context_menu_stylesheet
+            contextMenu.setStyleSheet(context_menu_stylesheet)
+
+            action_show_images = contextMenu.addAction('Показать изображения')
+            action_edit_description = contextMenu.addAction('Редактирование описания тега')
+            contextMenu.addSeparator()
+            action_delete = contextMenu.addAction(f'Удалить тег "{self.tag_string}" и всю его информацию')
+
+            cur_action = contextMenu.exec_(QCursor().pos())
+            if cur_action is None:
+                pass
+            elif cur_action == action_show_images:
+                self.parent().parent().showMinimized()
+                print_tag_to_html(self.tag)
+            elif cur_action == action_edit_description:
+                pass
+            elif cur_action == action_delete:
+                pass
+
 
     def paintEvent(self, event):
         qp = QPainter()
