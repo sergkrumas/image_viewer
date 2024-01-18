@@ -2678,7 +2678,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # иначе приложение останется висеть в памяти и в диспетчере задач.
         if Globals.lite_mode:
             QApplication.instance().quit()
-        else:  
+        else:
             super().hide()
 
     def hide_center_label(self):

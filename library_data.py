@@ -154,7 +154,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if make_current:
             self.folders.append(folder_data)
 
-        # виртуальные папки могут носить одинаковые названия, а названия как раз прописаны в folder_path 
+        # виртуальные папки могут носить одинаковые названия, а названия как раз прописаны в folder_path
         if not virtual:
             # удаление дубликатов и копирование модификаторов с них
             for fd in LibraryData().folders:
