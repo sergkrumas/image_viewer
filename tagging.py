@@ -240,6 +240,77 @@ class TaggingLibraryDataMixin():
             else:
                 raise Exception("impossible")
 
+    def apply_new_tag_list_to_current_image_data(self, before_tags_list, new_tags_list):
+
+        im_data = self.current_folder().current_image()
+
+        image_record = TagListRecord(im_data.md5, im_data.disk_size, im_data.filepath)
+
+        base_tags_list = [tag.name for tag in get_base_tags()]
+
+        # TODO: попробовать переписать обработку тегов таким способом:
+        # old_set = {1, 2, 3, 7}
+        # new_set = {2, 3, 5}
+        # old_set = {3, 1, 2}
+        # new_set = {1, 4}
+        # sd = old_set.symmetric_difference(new_set)
+        # #то, чего нет в new_set
+        # deleted = old_set.intersection(sd)
+        # print( deleted )
+        # #то, чего нет в old_set
+        # added = new_set.intersection(sd)
+        # print( added )
+
+
+        # обработка добавленных тегов
+        for tag_text in new_tags_list:
+            if tag_text in base_tags_list:
+                # заносим существующий тег
+                tag = get_base_tag(tag_text)
+                # сохранение в данных изображения и в базе тегов
+
+                # это изображение уже может быть в базе, поэтому сначала проверяем есть ли оно там
+                is_there_any_record = False
+                for record in tag.records:
+                    if compare_md5_strings(record.md5_str, im_data.md5):
+                        is_there_any_record = True
+                        break
+                if not is_there_any_record:
+                    tag.records.append(image_record)
+                    self.store_tag_to_disk(tag)
+                    self.update_or_create_tag_virtual_folder(im_data, tag)
+
+            else:
+                # создаём новый тег в базе и тоже отмечаем
+                Vars.CURRENT_MAX_TAG_ID += 1
+                tag = Tag(Vars.CURRENT_MAX_TAG_ID, tag_text, "")
+                Vars.TAGS_BASE[Vars.CURRENT_MAX_TAG_ID] = tag
+
+                # сохранение в данных изображения и в базе
+                tag.records.append(image_record)
+                self.store_tag_to_disk(tag)
+                self.update_or_create_tag_virtual_folder(im_data, tag)
+
+        # обработка снятых тегов
+        tags_list_set = set(new_tags_list)
+        before_tags_list_set = set([tag.name for tag in before_tags_list])
+        deleted_tags_set = before_tags_list_set - tags_list_set
+
+        # info = "deleted tags " + ", ".join(deleted_tags)
+
+        def delete_record(tag, idata):
+            for record in tag.records[:]:
+                if compare_md5_strings(record.md5_str, idata.md5):
+                    tag.records.remove(record)
+
+        for deleted_tag_name in deleted_tags_set:
+            for tag in get_base_tags():
+                if tag.name == deleted_tag_name:
+                    delete_record(tag, im_data)
+                    self.store_tag_to_disk(tag)
+                    self.update_or_create_tag_virtual_folder(im_data, tag, delete=True)
+
+        return im_data
 
 
 class TaggingMixing():
@@ -403,6 +474,7 @@ class ClickableLabel(QLabel):
         self.plainTextEditWidget.document().setPlainText( list_to_text(tags_list) )
 
     def mouseHandler(self, event):
+        main_window = self.parent().parent()
         if event.button() == Qt.LeftButton:
             self.checked = not self.checked
             self.updateParent.tagslist_edit.off_competer_for_one_call = True
@@ -410,7 +482,7 @@ class ClickableLabel(QLabel):
             self.updateParent.update()
         elif event.button() == Qt.RightButton:
             contextMenu = QMenu()
-            context_menu_stylesheet = self.parent().parent().context_menu_stylesheet
+            context_menu_stylesheet = main_window.context_menu_stylesheet
             contextMenu.setStyleSheet(context_menu_stylesheet)
 
             action_show_images = contextMenu.addAction('Показать изображения')
@@ -422,7 +494,7 @@ class ClickableLabel(QLabel):
             if cur_action is None:
                 pass
             elif cur_action == action_show_images:
-                self.parent().parent().showMinimized()
+                main_window.showMinimized()
                 print_tag_to_html(self.tag)
             elif cur_action == action_edit_description:
                 pass
@@ -679,88 +751,6 @@ class TaggingForm(QWidget):
 
         # self.setParent(args[0])
 
-    def save_handler(self):
-        # tagslist_data = self.tagslist_edit.document().toPlainText().strip()
-        # verified_tags = bool(re.fullmatch(  r'^([^.,*]*)', tagslist_data ))
-        # if not verified_tags:
-        #     QMessageBox.warning(self,"Error", "Do not use commas and periods: .,")
-        #     return
-
-        new_tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
-        base_tags_list = [tag.name for tag in get_base_tags()]
-        im_data = self.parent().LibraryData().current_folder().current_image()
-        before_tags_list = self.parent().tags_list
-        # список очищается - это даёт возможность не возиться отдельно с удалёнными тегами
-
-        image_record = TagListRecord(im_data.md5, im_data.disk_size, im_data.filepath)
-
-
-        # TODO: попробовать переписать обработку тегов таким способом:
-        # old_set = {1, 2, 3, 7}
-        # new_set = {2, 3, 5}
-        # old_set = {3, 1, 2}
-        # new_set = {1, 4}
-        # sd = old_set.symmetric_difference(new_set)
-        # #то, чего нет в new_set
-        # deleted = old_set.intersection(sd)
-        # print( deleted )
-        # #то, чего нет в old_set
-        # added = new_set.intersection(sd)
-        # print( added )
-
-
-        # обработка добавленных тегов
-        for tag_text in new_tags_list:
-            if tag_text in base_tags_list:
-                # заносим существующий тег
-                tag = get_base_tag(tag_text)
-                # сохранение в данных изображения и в базе тегов
-
-                # это изображение уже может быть в базе, поэтому сначала проверяем есть ли оно там
-                is_there_any_record = False
-                for record in tag.records:
-                    if compare_md5_strings(record.md5_str, im_data.md5):
-                        is_there_any_record = True
-                        break
-                if not is_there_any_record:
-                    tag.records.append(image_record)
-                    self.parent().LibraryData().store_tag_to_disk(tag)
-                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag)
-
-            else:
-                # создаём новый тег в базе и тоже отмечаем
-                Vars.CURRENT_MAX_TAG_ID += 1
-                tag = Tag(Vars.CURRENT_MAX_TAG_ID, tag_text, "")
-                Vars.TAGS_BASE[Vars.CURRENT_MAX_TAG_ID] = tag
-
-                # сохранение в данных изображения и в базе
-                tag.records.append(image_record)
-                self.parent().LibraryData().store_tag_to_disk(tag)
-                self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag)
-
-        # обработка снятых тегов
-        tags_list_set = set(new_tags_list)
-        before_tags_list_set = set([tag.name for tag in before_tags_list])
-        deleted_tags_set = before_tags_list_set - tags_list_set
-
-        # info = "deleted tags " + ", ".join(deleted_tags)
-
-        def delete_record(tag, idata):
-            for record in tag.records[:]:
-                if compare_md5_strings(record.md5_str, idata.md5):
-                    tag.records.remove(record)
-
-        for deleted_tag_name in deleted_tags_set:
-            for tag in get_base_tags():
-                if tag.name == deleted_tag_name:
-                    delete_record(tag, im_data)
-                    self.parent().LibraryData().store_tag_to_disk(tag)
-                    self.parent().LibraryData().update_or_create_tag_virtual_folder(im_data, tag, delete=True)
-
-        self.parent().tags_list = self.parent().LibraryData().get_tags_for_image_data(im_data)
-
-        self.parent().toggle_tags_overlay()
-
     def init_tagging_UI(self):
         IMAGE_TAGS = self.parent().tags_list
         BASE_TAGS = get_base_tags()
@@ -780,6 +770,23 @@ class TaggingForm(QWidget):
                 if label_tag_element.tag_string.lower() in found_tags:
                     label_tag_element.set_check(True, init=True)
         self.update()
+
+    def save_handler(self):
+
+        main_window = self.parent()
+        LibraryData = main_window.LibraryData
+
+        # tagslist_data = self.tagslist_edit.document().toPlainText().strip()
+        # verified_tags = bool(re.fullmatch(  r'^([^.,*]*)', tagslist_data ))
+        # if not verified_tags:
+        #     QMessageBox.warning(self,"Error", "Do not use commas and periods: .,")
+        #     return
+        tagslist_raw_string = self.tagslist_edit.document().toPlainText()
+        new_tags_list = text_to_list(tagslist_raw_string)
+        im_data = LibraryData().apply_new_tag_list_to_current_image_data(main_window.tags_list, new_tags_list)
+
+        main_window.tags_list = LibraryData().get_tags_for_image_data(im_data)
+        main_window.toggle_tags_overlay()
 
     def closeEvent(self, event):
         pass
