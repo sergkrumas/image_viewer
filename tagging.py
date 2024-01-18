@@ -130,6 +130,26 @@ class TaggingLibraryDataMixin():
         # print(status_string)
         return return_list
 
+    def delete_tag_from_library(self, tag):
+        filename = f"ID{tag.id:04}"
+        info_filepath = os.path.join(self.get_tagging_folderpath(), "%s.info" % filename)
+        list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
+
+        if os.path.exists(info_filepath):
+            os.remove(info_filepath)
+        if os.path.exists(list_filepath):
+            os.remove(list_filepath)
+
+        for key, _tag in Vars.TAGS_BASE.items():
+            if _tag is tag:
+                Vars.TAGS_BASE.pop(key)
+                break
+
+        for fd in self.folders:
+            if fd.virtual and fd.tag_data is tag:
+                self.folders.remove(fd)
+                break
+
     def store_tag_to_disk(self, tag):
         if not os.path.exists(self.get_tagging_folderpath()):
             os.mkdir(self.get_tagging_folderpath())
@@ -438,8 +458,13 @@ class ClickableLabel(QLabel):
         self.setMaximumHeight(50)
         self.setCursor(Qt.PointingHandCursor)
         self.update_label()
-        self.setToolTip(tag.description)
+        self.set_tooltip(tag.description)
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
+
+    def set_tooltip(self, text):
+        text = text if text else "(не задано описание для этого тега)"
+        tool_tip_text = f'<b>ID: {self.tag.id}</b><br>{text}'
+        self.setToolTip(tool_tip_text)
 
     def update_label(self):
         count = self.tag_records_count
@@ -498,17 +523,26 @@ class ClickableLabel(QLabel):
                 cur_action = contextMenu.exec_(QCursor().pos())
                 if cur_action is None:
                     pass
-
                 elif cur_action == action_show_images:
                     main_window.showMinimized()
                     print_tag_to_html(self.tag)
-
                 elif cur_action == action_edit_description:
                     form_window.init_tag_description_editing_mode(self.tag)
-
                 elif cur_action == action_delete:
-                    pass
-
+                    dialog_menu = QMenu()
+                    dialog_menu.setStyleSheet(context_menu_stylesheet)                    
+                    cancel_action = dialog_menu.addAction('Отмена')
+                    dialog_menu.addSeparator()
+                    confirm_action = dialog_menu.addAction('Удалить (подтверждение)')
+                    _action = dialog_menu.exec_(QCursor().pos())
+                    if _action is None:
+                        pass
+                    elif _action == cancel_action:
+                        pass
+                    elif _action == confirm_action:
+                        main_window.LibraryData().delete_tag_from_library(self.tag)
+                        self.setParent(None) # удаление лейбла из интерфейса
+                        self.hide()
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -793,7 +827,7 @@ class TaggingForm(QWidget):
             self.parent().LibraryData().store_tag_to_disk(self.edited_tag)
             for tag_label in self.tagslabels_list:
                 if tag_label.tag is self.edited_tag:
-                    tag_label.setToolTip(self.edited_tag.description)
+                    tag_label.set_tooltip(self.edited_tag.description)
                     break
 
             self.edited_tag = None
