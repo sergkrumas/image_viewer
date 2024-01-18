@@ -432,11 +432,13 @@ class ClickableLabel(QLabel):
         self.type = label_type
         self.inverted = True if label_type == "tags" else False
         self.setFont(QFont("Times", self.font_size, QFont.Bold))
-        self.mousePressEvent = self.mouseHandler
+        self.mousePressEvent = self.mouse_button_handler
         self.tag_string = tag.name
         self.tag_records_count = len(tag.records)
         self.setMaximumHeight(50)
+        self.setCursor(Qt.PointingHandCursor)
         self.update_label()
+        self.setToolTip(tag.description)
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
 
     def update_label(self):
@@ -473,33 +475,39 @@ class ClickableLabel(QLabel):
                 pass
         self.plainTextEditWidget.document().setPlainText( list_to_text(tags_list) )
 
-    def mouseHandler(self, event):
+    def mouse_button_handler(self, event):
+        form_window = self.parent()
         main_window = self.parent().parent()
-        if event.button() == Qt.LeftButton:
-            self.checked = not self.checked
-            self.updateParent.tagslist_edit.off_competer_for_one_call = True
-            self.updateLinkedTextWidget()
-            self.updateParent.update()
-        elif event.button() == Qt.RightButton:
-            contextMenu = QMenu()
-            context_menu_stylesheet = main_window.context_menu_stylesheet
-            contextMenu.setStyleSheet(context_menu_stylesheet)
 
-            action_show_images = contextMenu.addAction('Показать изображения')
-            action_edit_description = contextMenu.addAction('Редактирование описания тега')
-            contextMenu.addSeparator()
-            action_delete = contextMenu.addAction(f'Удалить тег "{self.tag_string}" и всю его информацию')
+        if self.parent().form_mode == self.parent().form_modes.EDIT_TAGS_LIST:
+            if event.button() == Qt.LeftButton:
+                self.checked = not self.checked
+                self.updateParent.tagslist_edit.off_competer_for_one_call = True
+                self.updateLinkedTextWidget()
+                self.updateParent.update()
+            elif event.button() == Qt.RightButton:
+                contextMenu = QMenu()
+                context_menu_stylesheet = main_window.context_menu_stylesheet
+                contextMenu.setStyleSheet(context_menu_stylesheet)
 
-            cur_action = contextMenu.exec_(QCursor().pos())
-            if cur_action is None:
-                pass
-            elif cur_action == action_show_images:
-                main_window.showMinimized()
-                print_tag_to_html(self.tag)
-            elif cur_action == action_edit_description:
-                pass
-            elif cur_action == action_delete:
-                pass
+                action_show_images = contextMenu.addAction('Показать изображения')
+                action_edit_description = contextMenu.addAction('Редактирование описания тега')
+                contextMenu.addSeparator()
+                action_delete = contextMenu.addAction(f'Удалить тег "{self.tag_string}" и всю его информацию')
+
+                cur_action = contextMenu.exec_(QCursor().pos())
+                if cur_action is None:
+                    pass
+
+                elif cur_action == action_show_images:
+                    main_window.showMinimized()
+                    print_tag_to_html(self.tag)
+
+                elif cur_action == action_edit_description:
+                    form_window.init_tag_description_editing_mode(self.tag)
+
+                elif cur_action == action_delete:
+                    pass
 
 
     def paintEvent(self, event):
@@ -638,15 +646,14 @@ class TaggingForm(QWidget):
     """
 
     def updateClickableLables(self):
-        tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
-
-        for child in self.children():
-            if isinstance(child, ClickableLabel):
-                child.set_check(False)
-                if child.type == "tags":
-                    value = child.tag_string in tags_list
-                    child.set_check(value)
-
+        if self.form_mode == self.form_modes.EDIT_TAGS_LIST:
+            tags_list = text_to_list(self.tagslist_edit.document().toPlainText())
+            for child in self.children():
+                if isinstance(child, ClickableLabel):
+                    child.set_check(False)
+                    if child.type == "tags":
+                        value = child.tag_string in tags_list
+                        child.set_check(value)
         self.update()
 
     def paintEvent(self, event):
@@ -667,6 +674,9 @@ class TaggingForm(QWidget):
 
         painter.end()
 
+    class form_modes():
+        EDIT_TAGS_LIST = 'FORM_MODE_EDIT_TAGS_LIST'
+        EDIT_TAG_DESCRIPTION = 'FORM_MODE_EDIT_TAG_DESCRIPTION'
 
     def __init__(self, *args):
         # QWidget.__init__(self, *args)
@@ -692,10 +702,10 @@ class TaggingForm(QWidget):
         self.tagslist_edit.setFixedHeight(140)
         self.tagslist_edit.textChanged.connect(self.updateClickableLables)
 
+        self.edited_tag = None
+        self.form_mode = self.form_modes.EDIT_TAGS_LIST
 
         self.tagslabels_list = []
-
-
 
         def createClickableLabelsGrid(_list):
             elems = []
@@ -730,8 +740,9 @@ class TaggingForm(QWidget):
         vl = QVBoxLayout()
 
         save_btn = QPushButton("Сохранить")
-        save_btn.clicked.connect(self.save_handler)
+        save_btn.clicked.connect(self.save_button_handler)
         save_btn.setStyleSheet(self.button_style)
+        save_btn.setCursor(Qt.PointingHandCursor)
         save_btn.setObjectName("save")
 
         vl.addLayout(self.existing_tags_layout)
@@ -771,11 +782,35 @@ class TaggingForm(QWidget):
                     label_tag_element.set_check(True, init=True)
         self.update()
 
-    def save_handler(self):
+    def init_tag_description_editing_mode(self, tag):
+        self.form_mode = self.form_modes.EDIT_TAG_DESCRIPTION
+        self.edited_tag = tag
+        self.tagslist_edit.document().setPlainText(self.edited_tag.description)
 
+    def save_tag_description(self):
+        if self.edited_tag is not None:
+            self.edited_tag.description = self.tagslist_edit.document().toPlainText()
+            self.parent().LibraryData().store_tag_to_disk(self.edited_tag)
+            for tag_label in self.tagslabels_list:
+                if tag_label.tag is self.edited_tag:
+                    tag_label.setToolTip(self.edited_tag.description)
+                    break
+
+            self.edited_tag = None
+        self.form_mode = self.form_modes.EDIT_TAGS_LIST
+        self.tagslist_edit.off_competer_for_one_call = True        
+        self.init_tagging_UI()
+
+    def save_button_handler(self):
         main_window = self.parent()
         LibraryData = main_window.LibraryData
 
+        if self.form_mode == self.form_modes.EDIT_TAGS_LIST:
+            self.save_tags_list(main_window, LibraryData)
+        elif self.form_mode == self.form_modes.EDIT_TAG_DESCRIPTION:
+            self.save_tag_description()
+
+    def save_tags_list(self, main_window, LibraryData):
         # tagslist_data = self.tagslist_edit.document().toPlainText().strip()
         # verified_tags = bool(re.fullmatch(  r'^([^.,*]*)', tagslist_data ))
         # if not verified_tags:
