@@ -131,9 +131,7 @@ class TaggingLibraryDataMixin():
         return return_list
 
     def delete_tag_from_library(self, tag):
-        filename = f"ID{tag.id:04}"
-        info_filepath = os.path.join(self.get_tagging_folderpath(), "%s.info" % filename)
-        list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
+        info_filepath, list_filepath = self.get_tag_data_filepaths(tag)
 
         if os.path.exists(info_filepath):
             os.remove(info_filepath)
@@ -150,13 +148,17 @@ class TaggingLibraryDataMixin():
                 self.folders.remove(fd)
                 break
 
+    def get_tag_data_filepaths(self, tag):
+        filename = f"ID{tag.id:04}"
+        info_filepath = os.path.join(self.get_tagging_folderpath(), "%s.info" % filename)
+        list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
+        return info_filepath, list_filepath
+
     def store_tag_to_disk(self, tag):
         if not os.path.exists(self.get_tagging_folderpath()):
             os.mkdir(self.get_tagging_folderpath())
 
-        filename = f"ID{tag.id:04}"
-        info_filepath = os.path.join(self.get_tagging_folderpath(), "%s.info" % filename)
-        list_filepath = os.path.join(self.get_tagging_folderpath(), "%s.list" % filename)
+        info_filepath, list_filepath = self.get_tag_data_filepaths(tag)
 
         info_data = "\n".join([str(tag.name), tag.description])
 
@@ -529,7 +531,7 @@ class ClickableLabel(QLabel):
                     form_window.init_tag_description_editing_mode(self.tag)
                 elif cur_action == action_delete:
                     dialog_menu = QMenu()
-                    dialog_menu.setStyleSheet(context_menu_stylesheet)                    
+                    dialog_menu.setStyleSheet(context_menu_stylesheet)
                     cancel_action = dialog_menu.addAction('Отмена')
                     dialog_menu.addSeparator()
                     confirm_action = dialog_menu.addAction('Удалить (подтверждение)')
@@ -833,7 +835,7 @@ class TaggingForm(QWidget):
 
             self.edited_tag = None
         self.form_mode = self.form_modes.EDIT_TAGS_LIST
-        self.tagslist_edit.off_competer_for_one_call = True        
+        self.tagslist_edit.off_competer_for_one_call = True
         self.init_tagging_UI()
 
     def save_button_handler(self):
