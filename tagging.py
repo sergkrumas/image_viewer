@@ -450,7 +450,6 @@ class ClickableLabel(QLabel):
         self.font_size = 15
         self.tag = tag
         self.type = label_type
-        self.inverted = True if label_type == "tags" else False
         self.setFont(QFont("Times", self.font_size, QFont.Bold))
         self.mousePressEvent = self.mouse_button_handler
         self.tag_string = tag.name
@@ -550,21 +549,23 @@ class ClickableLabel(QLabel):
 
         qp.setPen(QColor(168, 34, 3))
 
-        if self.checked:
-            color = Qt.white
+        is_edited_tag = self.tag == self.parent().edited_tag
+        if self.checked or is_edited_tag:
+            if is_edited_tag:
+                color = Qt.black
+            else:
+                color = Qt.white
             fontstyle = QFont.Bold
         else:
             color = Qt.gray
             fontstyle = QFont.Normal
 
         qp.setFont(QFont('Consolas', self.font_size, fontstyle))
-        if self.checked:
-            qolor = QColor("#00ee00")
-            h, s, v, alpha = qolor.getHsvF()
-            s = 0.4 + 0.3 * s * self.y_value / UI_TAGGING_ELEMENTS_IN_A_ROW
-            v = 0.4 + 0.3 * v * self.y_value / UI_TAGGING_ELEMENTS_IN_A_ROW
-            qolor.setHslF(h, s, v)
-            if self.inverted:
+
+        if self.checked or is_edited_tag:
+            if is_edited_tag:
+                qolor = QColor("#dddd00")
+            else:
                 qolor = QColor("#ee0000")
                 h, s, v, alpha = qolor.getHsvF()
                 s = 0.4 + 0.3 * s * self.y_value / UI_TAGGING_ELEMENTS_IN_A_ROW
