@@ -157,7 +157,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # виртуальные папки могут носить одинаковые названия, а названия как раз прописаны в folder_path
         if not virtual:
             # удаление дубликатов и копирование модификаторов с них
-            for fd in LibraryData().folders:
+            for fd in LibraryData().folders[:]:
                 if os.path.normpath(fd.folder_path) == os.path.normpath(folder_path):
                     if fd != folder_data:
                         # folder_data.set_modifiers(fd.get_modifiers())
@@ -597,7 +597,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             # что не удалось корректно открыть в handle_input_data
             # print('store session data after loading')
             LibraryData().store_session_file()
-
 
     @staticmethod
     def store_session_file():

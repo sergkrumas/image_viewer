@@ -3687,7 +3687,7 @@ def get_predefined_path_if_started_from_sublimeText():
                     paths = list(filter(bool, data.split("\n")))
                     if paths:
                         path = paths[-1]
-                        print("\tdefault path is set")
+                        print(f"\tdefault path is set to {path}")
     else:
         path = ""
         Globals.started_from_sublime_text = False
