@@ -115,6 +115,17 @@ class Tag():
 
 class TaggingLibraryDataMixin():
 
+    def retrieve_lost_records_in_tags(self):
+        lost_records = []
+        for tag_id, tag_data in Vars.TAGS_BASE.items():
+            for image_record in tag_data.records:
+                path = image_record.filepath
+                if not os.path.exists(path):
+                    lost_records.append(
+                        (image_record.md5_str, image_record.disk_size, image_record.filepath)
+                    )
+        return lost_records
+
     def get_tagging_folderpath(self):
         folderpath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.TAGS_ROOT)
         create_pathsubfolders_if_not_exist(folderpath)

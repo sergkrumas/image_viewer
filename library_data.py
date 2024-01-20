@@ -1755,19 +1755,28 @@ class FinderWindow(QWidget):
 
     def green_button_handler(self):
 
-        records = LibraryData().retrieve_lost_records_in_comments()
-        if records:
+        records_comments = LibraryData().retrieve_lost_records_in_comments()
+        if records_comments:
             self.append_to_output('Потерянные записи в коментах:')
-        for record in records:
+        for record in records_comments:
             self.append_to_output(str(record))
 
         self.append_to_output("")
 
-        records = LibraryData().retrieve_lost_records_in_favs()
-        if records:
+        records_favs = LibraryData().retrieve_lost_records_in_favs()
+        if records_favs:
             self.append_to_output('Потерянные записи в избранном:')
-        for record in records:
+        for record in records_favs:
             self.append_to_output(str(record))
+
+        self.append_to_output("")
+
+        records_tags = LibraryData().retrieve_lost_records_in_tags()
+        if records_tags:
+            self.append_to_output('Потерянные записи в тегах:')
+        for record in records_tags:
+            self.append_to_output(str(record))
+
 
         # self.hide()
 
