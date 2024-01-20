@@ -629,9 +629,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
         return filepath
 
-    def load_fav_list(self):
+    def get_fav_files_list(self):
         ItemRecord = namedtuple("ItemRecord", "filepath md5 disk_size separator_field")
         files = []
+        records = []
         if os.path.exists(self.get_fav_list_path()):
             print("loading favourite data")
             errors = False
@@ -644,6 +645,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     for item in data:
                         item = ItemRecord(*item)
                         files.append(item.filepath)
+                        records.append(item)
                 except Exception as e:
                     errors = True
             if errors:
@@ -652,6 +654,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 print(to_print)
                 # пока ещё не удаляем, мало ли что
                 # os.remove(self.get_fav_list_path())
+        return files, records
+
+    def load_fav_list(self):
+        files, _ = self.get_fav_files_list()
         self.fav_folder = self.create_folder_data("Избранное", files, image_filepath=None, virtual=True)
 
     def store_fav_list(self):
@@ -1047,13 +1053,19 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def show_finder_window(self):
         FinderWindow(self.globals.main_window).show()
 
+    def retrieve_lost_records_in_favs(self):
+        _, records = self.get_fav_files_list()
+        lost_records = []
+        for record in records:
+            path = record.filepath
+            if not os.path.exists(path):
+                lost_records.append(
+                    (record.md5, record.disk_size, record.filepath)
+                )
+        return lost_records
+
     def scan_for_lost_records(self):
-        lost_files = []
-
-        records = self.retrieve_lost_records_in_comments()
-        lost_files.extend(records)
-
-        return lost_files
+        pass
 
 class BoardData():
 
@@ -1746,6 +1758,14 @@ class FinderWindow(QWidget):
         records = LibraryData().retrieve_lost_records_in_comments()
         if records:
             self.append_to_output('Потерянные записи в коментах:')
+        for record in records:
+            self.append_to_output(str(record))
+
+        self.append_to_output("")
+
+        records = LibraryData().retrieve_lost_records_in_favs()
+        if records:
+            self.append_to_output('Потерянные записи в избранном:')
         for record in records:
             self.append_to_output(str(record))
 
