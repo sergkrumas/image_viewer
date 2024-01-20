@@ -138,6 +138,13 @@ class CommentingLibraryDataMixin():
                     )
         return lost_records
 
+    def restore_comment_record(self, found_path, filepath, md5_str, disk_size):
+        _id = (md5_str, disk_size)
+        comments = self.comments_storage[_id]
+        for comment in comments:
+            if filepath == comment.filepath:
+                comment.filepath = found_path
+
     def get_comments_for_image(self):
         ci = self.current_folder().current_image()
         _id = self.image_data_comment_id(ci)

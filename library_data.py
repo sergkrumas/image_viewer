@@ -1817,8 +1817,9 @@ class FinderWindow(QWidget):
         self.to_output("")
 
         fav_folder = LibraryData().get_fav_virtual_folder()
+        comms_folder = LibraryData().get_comm_virutal_folder()
 
-        def add_to_folder(found_path, folder_data):
+        def add_image_to_folder(found_path, folder_data):
             image_data = ImageData(found_path, folder_data)
             folder_data.images_list.append(image_data)            
 
@@ -1828,9 +1829,16 @@ class FinderWindow(QWidget):
             found_path = search_record(filepath, md5_str, int(disk_size), search_paths)
             if found_path is not None:
                 if r_type == 'fav':
-                    add_to_folder(found_path, fav_folder)
+                    add_image_to_folder(found_path, fav_folder)
                 elif r_type == 'comment':
-                    pass
+                    LibraryData().restore_comment_record(found_path, filepath, md5_str, disk_size)
+                    already_exists = False
+                    for image_data in comms_folder.images_list:
+                        if md5_str == image_data.md5:
+                            already_exists = True
+                            break
+                    if not already_exists:
+                        add_image_to_folder(found_path, comms_folder)
                 elif r_type == 'tag':
                     pass
 
@@ -1842,7 +1850,8 @@ class FinderWindow(QWidget):
         LibraryData().store_fav_list()
         self.to_output(f'База избранного обновлена')
 
-        # LibraryData().store_comments_list()
+        LibraryData().make_viewer_thumbnails_and_library_previews(comms_folder, None)
+        LibraryData().store_comments_list()
         self.to_output(f'База коментов обновлена')
 
     def find_lost_records(self):
