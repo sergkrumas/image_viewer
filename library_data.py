@@ -1779,7 +1779,7 @@ class FinderWindow(QWidget):
 
         if not records:
             self.to_output("Не определено потерянных записей!")
-            return 
+            return
 
         search_paths = []
 
@@ -1821,7 +1821,9 @@ class FinderWindow(QWidget):
 
         def add_image_to_folder(found_path, folder_data):
             image_data = ImageData(found_path, folder_data)
-            folder_data.images_list.append(image_data)            
+            folder_data.images_list.append(image_data)
+
+        tag_records_updated_count = 0
 
         for record in records:
             self.to_output(' '.join(map(str, record)))
@@ -1840,19 +1842,34 @@ class FinderWindow(QWidget):
                     if not already_exists:
                         add_image_to_folder(found_path, comms_folder)
                 elif r_type == 'tag':
-                    pass
+                    tag_records_updated_count += 1
+                    tag = LibraryData().restore_tag_record(found_path, filepath, md5_str, disk_size)
+                    if tag is not None:
+                        for folder_data in LibraryData().folders:
+                            if folder_data.is_tag_folder() and folder_data.tag_data == tag:
+                                add_image_to_folder(found_path, folder_data)
+                                LibraryData().make_viewer_thumbnails_and_library_previews(folder_data, None)
+                                LibraryData().store_tag_to_disk(tag)
+                                break
 
             self.to_output(f'{found_path}')
 
         self.to_output(f'\n')
 
-        LibraryData().make_viewer_thumbnails_and_library_previews(fav_folder, None)
-        LibraryData().store_fav_list()
-        self.to_output(f'База избранного обновлена')
+        if self.records_comments:
+            LibraryData().make_viewer_thumbnails_and_library_previews(comms_folder, None)
+            LibraryData().store_comments_list()
+            self.to_output(f'База коментов обновлена!')
 
-        LibraryData().make_viewer_thumbnails_and_library_previews(comms_folder, None)
-        LibraryData().store_comments_list()
-        self.to_output(f'База коментов обновлена')
+        if self.records_favs:
+            LibraryData().make_viewer_thumbnails_and_library_previews(fav_folder, None)
+            LibraryData().store_fav_list()
+            self.to_output(f'База избранного обновлена!')
+
+        if self.records_tags and tag_records_updated_count > 0:
+            self.to_output(f'База тегов обновлена!')
+
+        self.to_output('\nПроцесс поиска закончен.')
 
     def find_lost_records(self):
         self.records_comments = LibraryData().retrieve_lost_records_in_comments()

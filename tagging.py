@@ -94,7 +94,12 @@ def get_base_tag(tag_name):
             return tag
     return None
 
-TagListRecord = namedtuple('TagListRecord' , 'md5_str disk_size filepath')
+class TagListRecord():
+
+    def __init__(self, md5_str, disk_size, filepath):
+        self.md5_str = md5_str
+        self.disk_size = disk_size
+        self.filepath = filepath
 
 class Tag():
 
@@ -125,6 +130,14 @@ class TaggingLibraryDataMixin():
                         (image_record.md5_str, image_record.disk_size, image_record.filepath, 'tag')
                     )
         return lost_records
+
+    def restore_tag_record(self, found_path, filepath, md5_str, disk_size):
+        for tag_id, tag_data in Vars.TAGS_BASE.items():
+            for image_record in tag_data.records:
+                if filepath == image_record.filepath:
+                    image_record.filepath = found_path
+                    return tag_data
+        return None
 
     def get_tagging_folderpath(self):
         folderpath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.TAGS_ROOT)
