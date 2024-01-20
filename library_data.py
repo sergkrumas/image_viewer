@@ -1060,7 +1060,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             path = record.filepath
             if not os.path.exists(path):
                 lost_records.append(
-                    (record.md5, record.disk_size, record.filepath)
+                    (record.md5, record.disk_size, record.filepath, 'fav')
                 )
         return lost_records
 
@@ -1815,11 +1815,35 @@ class FinderWindow(QWidget):
             return None
 
         self.to_output("")
+
+        fav_folder = LibraryData().get_fav_virtual_folder()
+
+        def add_to_folder(found_path, folder_data):
+            image_data = ImageData(found_path, folder_data)
+            folder_data.images_list.append(image_data)            
+
         for record in records:
             self.to_output(' '.join(map(str, record)))
-            md5_str, disk_size, filepath = record
+            md5_str, disk_size, filepath, r_type = record
             found_path = search_record(filepath, md5_str, int(disk_size), search_paths)
+            if found_path is not None:
+                if r_type == 'fav':
+                    add_to_folder(found_path, fav_folder)
+                elif r_type == 'comment':
+                    pass
+                elif r_type == 'tag':
+                    pass
+
             self.to_output(f'{found_path}')
+
+        self.to_output(f'\n')
+
+        LibraryData().make_viewer_thumbnails_and_library_previews(fav_folder, None)
+        LibraryData().store_fav_list()
+        self.to_output(f'База избранного обновлена')
+
+        # LibraryData().store_comments_list()
+        self.to_output(f'База коментов обновлена')
 
     def find_lost_records(self):
         self.records_comments = LibraryData().retrieve_lost_records_in_comments()

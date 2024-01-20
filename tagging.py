@@ -122,7 +122,7 @@ class TaggingLibraryDataMixin():
                 path = image_record.filepath
                 if not os.path.exists(path):
                     lost_records.append(
-                        (image_record.md5_str, image_record.disk_size, image_record.filepath)
+                        (image_record.md5_str, image_record.disk_size, image_record.filepath, 'tag')
                     )
         return lost_records
 

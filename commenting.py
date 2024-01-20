@@ -134,7 +134,7 @@ class CommentingLibraryDataMixin():
                 path = comment.filepath
                 if not os.path.exists(path):
                     lost_records.append(
-                        (comment.md5, comment.disk_size, comment.filepath)
+                        (comment.md5, comment.disk_size, comment.filepath, 'comment')
                     )
         return lost_records
 
