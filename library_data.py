@@ -1047,14 +1047,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def show_finder_window(self):
         FinderWindow(self.globals.main_window).show()
 
-    def retrieve_lost_records(self):
-        # 1) выявить все записи, где файлы по записанному пути не находятся. Из записи взять размер в байтах и значение md5-хэша
-        # 2) сканировать все файлы в папках для поиска
-                # 1 - проверять совпадение расширения
-                # 2 - проведерять совпадение размера в байтах
-                # 3 - вычислить md5-хэш и проверить совпадение с записанным md5-хэша
-        # 3) исправить запись
-        pass
+    def scan_for_lost_records(self):
+        lost_files = []
+
+        records = self.retrieve_lost_records_in_comments()
+        lost_files.extend(records)
+
+        return lost_files
 
 class BoardData():
 
@@ -1659,7 +1658,7 @@ class FinderWindow(QWidget):
 
         self.output_field = QTextEdit()
         self.output_field.setStyleSheet(editfieled_style)
-        self.output_field.setText("\n"*59)
+        # self.output_field.setText("\n"*10)
 
 
         scroll_bars_style = """
@@ -1743,7 +1742,20 @@ class FinderWindow(QWidget):
         self.hide()
 
     def green_button_handler(self):
-        self.hide()
+
+        records = LibraryData().retrieve_lost_records_in_comments()
+        if records:
+            self.append_to_output('Потерянные записи в коментах:')
+        for record in records:
+            self.append_to_output(str(record))
+
+        # self.hide()
+
+    def append_to_output(self, text):
+        prev_cursor = self.output_field.textCursor()
+        self.output_field.moveCursor(QTextCursor.End)
+        self.output_field.insertPlainText(f'{text}\n')
+        self.output_field.setTextCursor(prev_cursor)
 
     def hide(self):
         FinderWindow.isWindowVisible = False

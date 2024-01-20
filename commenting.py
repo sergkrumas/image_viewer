@@ -127,20 +127,16 @@ class CommentingLibraryDataMixin():
                 break
         comments_folder.images_list.append(image_data)
 
-    def check_lost_image_and_update_base(self, image_data):
-        _id = self.image_data_comment_id(image_data)
-        comments = self.comments_storage[_id]
-
-        any_changed = False
-        for comment in comments:
-            if not os.path.exists(comment.filepath):
-                comment.filepath = image_data.filepath
-                any_changed = True
-
-        if any_changed:
-            self.store_comments_list()
-            self.add_image_to_comments_folder(image_data)
-            self.globals.main_window.show_center_label("Найдено потерянное изображение в базе комментариев!\nБаза обновлена.")
+    def retrieve_lost_records_in_comments(self):
+        lost_records = []
+        for image_id, image_comments in self.comments_storage.items():
+            for comment in image_comments:
+                path = comment.filepath
+                if not os.path.exists(path):
+                    lost_records.append(
+                        (comment.md5, comment.disk_size, comment.filepath)
+                    )
+        return lost_records
 
     def get_comments_for_image(self):
         ci = self.current_folder().current_image()
