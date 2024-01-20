@@ -1672,6 +1672,10 @@ class FinderWindow(QWidget):
         self.output_field.setStyleSheet(editfieled_style)
         # self.output_field.setText("\n"*10)
 
+        self.records_comments = []
+        self.records_favs = []
+        self.records_tags = []
+
 
         scroll_bars_style = """
             QScrollBar {
@@ -1722,12 +1726,15 @@ class FinderWindow(QWidget):
         self.output_field.setStyleSheet(scroll_bars_style)
         main_layout.addWidget(self.output_field)
 
-        green_button = QPushButton("Зелёная")
+        green_button = QPushButton("Определить потерянные записи")
         green_button.clicked.connect(self.green_button_handler)
         green_button.setStyleSheet(main_style_button)
 
+        search_button = QPushButton("Найти потерянные записи")
+        search_button.clicked.connect(self.search_button_handler)
+        search_button.setStyleSheet(main_style_button)
 
-        red_button = QPushButton("Красная")
+        red_button = QPushButton("Закрыть")
         red_button.clicked.connect(self.red_button_handler)
         red_button.setStyleSheet(main_style_button)
         red_button.setCursor(Qt.PointingHandCursor)
@@ -1736,11 +1743,16 @@ class FinderWindow(QWidget):
         green_button.setObjectName("green")
         green_button.setCursor(Qt.PointingHandCursor)
 
+        search_button.setStyleSheet(self.button_style)
+        search_button.setObjectName("green")
+        search_button.setCursor(Qt.PointingHandCursor)
+
         red_button.setStyleSheet(self.button_style)
         red_button.setObjectName("red")
 
         buttons = QHBoxLayout()
         buttons.addWidget(green_button)
+        buttons.addWidget(search_button)
         buttons.addWidget(red_button)
         # main_layout.addSpacing(0)
         main_layout.addLayout(buttons)
@@ -1750,37 +1762,90 @@ class FinderWindow(QWidget):
         FinderWindow.isWindowVisible = True
         self.is_initialized = True
 
+    def search_button_handler(self):
+        self.search_records()
+
     def red_button_handler(self):
         self.hide()
 
     def green_button_handler(self):
+        self.find_lost_records()
 
-        records_comments = LibraryData().retrieve_lost_records_in_comments()
-        if records_comments:
-            self.append_to_output('Потерянные записи в коментах:')
-        for record in records_comments:
-            self.append_to_output(str(record))
+    def search_records(self):
+        records = []
+        records.extend(self.records_comments)
+        records.extend(self.records_favs)
+        records.extend(self.records_tags)
 
-        self.append_to_output("")
+        if not records:
+            self.to_output("Не определено потерянных записей!")
+            return 
 
-        records_favs = LibraryData().retrieve_lost_records_in_favs()
-        if records_favs:
-            self.append_to_output('Потерянные записи в избранном:')
-        for record in records_favs:
-            self.append_to_output(str(record))
+        search_paths = []
 
-        self.append_to_output("")
+        def scan_folder(folder_path, filepath, md5_str, disk_size, deep=False):
+            filepath = filepath.lower()
+            _, ext = os.path.splitext(filepath)
+            for cur_dir, dirs, files in os.walk(folder_path):
+                for filename in files:
+                    cur_filepath = os.path.join(cur_dir, filename).lower()
+                    _, cur_ext = os.path.splitext(cur_filepath)
+                    cur_disk_size = get_file_size(cur_filepath)
+                    if disk_size == cur_disk_size:
+                        if compare_md5_strings(md5_str, generate_md5(cur_filepath)[0]):
+                            return cur_filepath
+                if not deep:
+                    break
+            return None
 
-        records_tags = LibraryData().retrieve_lost_records_in_tags()
-        if records_tags:
-            self.append_to_output('Потерянные записи в тегах:')
-        for record in records_tags:
-            self.append_to_output(str(record))
+        def search_record(filepath, md5_str, disk_size, search_paths):
+            found = False
+            # сначала пытаемся найти в исходной папке, если она существует
+            dirpath = os.path.dirname(filepath)
+            if os.path.exists(dirpath):
+                found_path = scan_folder(dirpath, filepath, md5_str, disk_size)
+                if found_path is not None:
+                    return found_path
 
+            for path in search_paths:
+                found_path = scan_folder(dirpath, filepath, md5_str, disk_size, deep=True)
+                if found_path is not None:
+                    return found_path
 
+            return None
+
+        self.to_output("")
+        for record in records:
+            self.to_output(' '.join(map(str, record)))
+            md5_str, disk_size, filepath = record
+            found_path = search_record(filepath, md5_str, int(disk_size), search_paths)
+            self.to_output(f'{found_path}')
+
+    def find_lost_records(self):
+        self.records_comments = LibraryData().retrieve_lost_records_in_comments()
+        if self.records_comments:
+            self.to_output(f'Потерянные записи в коментах ({len(self.records_comments)}):')
+        for record in self.records_comments:
+            self.to_output(' '.join(map(str, record)))
+
+        self.to_output("")
+
+        self.records_favs = LibraryData().retrieve_lost_records_in_favs()
+        if self.records_favs:
+            self.to_output(f'Потерянные записи в избранном ({len(self.records_favs)}):')
+        for record in self.records_favs:
+            self.to_output(' '.join(map(str, record)))
+
+        self.to_output("")
+
+        self.records_tags = LibraryData().retrieve_lost_records_in_tags()
+        if self.records_tags:
+            self.to_output(f'Потерянные записи в тегах ({len(self.records_tags)}):')
+        for record in self.records_tags:
+            self.to_output(' '.join(map(str, record)))
         # self.hide()
 
-    def append_to_output(self, text):
+    def to_output(self, text):
         prev_cursor = self.output_field.textCursor()
         self.output_field.moveCursor(QTextCursor.End)
         self.output_field.insertPlainText(f'{text}\n')

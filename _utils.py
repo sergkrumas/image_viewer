@@ -85,6 +85,12 @@ SCANCODES_FROM_LATIN_CHAR = {
 }
 
 
+def get_file_size(filepath):
+    try:
+        return os.path.getsize(filepath)
+    except Exception as e:
+        return 0
+
 def check_scancode_for(event, data):
     if data is None:
         return False
