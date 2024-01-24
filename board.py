@@ -86,7 +86,7 @@ class BoardItem():
         r = self.get_size_rect(scaled=True)
         return abs(r.width() * r.height())
 
-    def board_retrieve_image_data(self):
+    def retrieve_image_data(self):
         if self.type == BoardItem.types.ITEM_IMAGE:
             image_data = self.image_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
@@ -561,7 +561,7 @@ class BoardMixin():
 
         else:
 
-            image_data = board_item.board_retrieve_image_data()
+            image_data = board_item.retrieve_image_data()
 
             selection_area = board_item.get_selection_area(board=self)
 
@@ -667,7 +667,7 @@ class BoardMixin():
             board_item.pixmap = None
             board_item.movie = None
 
-            image_data = board_item.board_retrieve_image_data()
+            image_data = board_item.retrieve_image_data()
             filepath = image_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
@@ -1132,7 +1132,7 @@ class BoardMixin():
             for board_item in cf.board.board_items_list:
 
                 # крашится на item_frame-ах, потому что у них изображений нет
-                # image_data = board_item.board_retrieve_image_data()
+                # image_data = board_item.retrieve_image_data()
 
                 delta = board_item.item_position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
@@ -2516,7 +2516,7 @@ class BoardMixin():
 
             board_item = item_to_center_viewport
 
-            image_data = board_item.board_retrieve_image_data()
+            image_data = board_item.retrieve_image_data()
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
