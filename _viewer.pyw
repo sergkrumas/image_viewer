@@ -62,7 +62,7 @@ class Globals():
     aftercrash = False
 
     DEBUG = True
-    FORCE_FULL_DEBUG = True
+    FORCE_FULL_DEBUG = False
     CRASH_SIMULATOR = True
 
     THUMBNAIL_WIDTH = 50
