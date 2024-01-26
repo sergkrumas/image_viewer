@@ -609,14 +609,14 @@ class BoardMixin():
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
 
-                if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
-                    self.board_item_under_mouse = board_item
-
                 if image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
                 painter.setOpacity(1.0)
                 painter.resetTransform()
+
+                if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
+                    self.board_item_under_mouse = board_item
 
                 selection_area_bounding_rect = selection_area.boundingRect()
 
@@ -633,7 +633,6 @@ class BoardMixin():
                     painter.setBrush(Qt.NoBrush)
                     painter.drawText(text_rect, alignment, text)
                     painter.setPen(old_pen)
-
 
                 if board_item == self.board_item_under_mouse:
                     is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
