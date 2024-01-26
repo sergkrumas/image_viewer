@@ -601,7 +601,6 @@ class BoardMixin():
                 painter.setBrush(Qt.NoBrush)
                 painter.drawRect(item_rect)
 
-                painter.setTransform(transform)
                 image_to_draw = None
                 selection_area_rect = selection_area.boundingRect()
                 if selection_area_rect.width() < 250 or selection_area_rect.height() < 250:
