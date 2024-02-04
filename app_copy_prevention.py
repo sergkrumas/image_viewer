@@ -45,13 +45,24 @@ class ServerOrClient():
             server_obj = QLocalServer()
 
             def read_data_callback(server_obj):
-                block = QByteArray()
-                out = QDataStream(block, QIODevice.WriteOnly)
-                out.setVersion(QDataStream.Qt_5_3)
-                out.writeQString("ping")
                 clientConnection = server_obj.nextPendingConnection()
-                clientConnection.write(block)
-                clientConnection.flush()
+
+                # тут надо каким-то образом выждать
+                # пока клиент получит сообщение о коннекте с этим сервером
+                # и отправит нам данные, которые мы сейчас должны прочитать
+                if True:
+                    # или ждём три секунды
+                    clientConnection.waitForReadyRead(3000)
+                else:
+                    # или тянем время отправляя
+                    # бессмысленный и ненужный в данном случае ответ
+                    block = QByteArray()
+                    out = QDataStream(block, QIODevice.WriteOnly)
+                    out.setVersion(QDataStream.Qt_5_3)
+                    out.writeQString("ping")
+                    clientConnection.write(block)
+                    clientConnection.flush()
+
                 path = None
                 try:
                     data = clientConnection.read(2 ** 14)
@@ -125,8 +136,16 @@ class ServerOrClient():
 
                 choose_start_option_callback(do_start_server, path)
 
+            def on_ready_read(client_socket):
+                # читаем ненужный и бессмысленный в данном случае ответ от сервера
+                msg = client_socket.readAll()
+                if msg:
+                    msg = msg.data().decode("utf8")
+                    QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
+
             client_socket.connected.connect(transfer_data_callback)
             client_socket.error.connect(client_socket_error)
+            client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
             client_socket.abort()
             client_socket.connectToServer(SERVER_NAME)
 
