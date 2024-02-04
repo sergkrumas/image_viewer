@@ -123,17 +123,18 @@ class ServerOrClient():
             def client_socket_error(socketError):
                 errors = {
                     QLocalSocket.ServerNotFoundError:
-                        "The host was not found. Please check the host name and port "
-                        "settings.",
+                        "The host was not found. Please check the host name and port settings.",
                     QLocalSocket.ConnectionRefusedError:
-                        "The connection was refused by the peer. Make sure the "
-                        "fortune server is running, and check that the host name and "
-                        "port settings are correct.",
+                        "The connection was refused by the peer. Make sure the server is running,"
+                        "and check that the host name and port settings are correct.",
                     QLocalSocket.PeerClosedError:
                         None,
                 }
-                msg = errors.get(socketError, "The following error occurred: %s." % client_socket.errorString())
-
+                default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
+                msg = errors.get(socketError, default_error_msg)
+                print(msg)
+                # если ошибка и произошла, то в нашем случае только из-за QLocalSocket.ServerNotFoundError,
+                # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
                 choose_start_option_callback(do_start_server, path)
 
             def on_ready_read(client_socket):
