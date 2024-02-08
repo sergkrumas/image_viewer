@@ -152,7 +152,6 @@ class ServerOrClient():
 
         start_client()
 
-        app = QApplication.instance()
         while not SERVER_STARTED:
             processAppEvents(update_only=False)
 
