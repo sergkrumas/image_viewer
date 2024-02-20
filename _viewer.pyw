@@ -1609,7 +1609,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         f_geometry = self.frameGeometry()
         geometry = self.geometry()
         self.frameless_mode = False
-        self.hide()
+        # self.hide() # вызов может спровоцировать закрытие всего приложения
         self.set_window_style()
         # здесь нельзя использовать show(), только showNormal,
         # потому что после show() окно не сразу даёт себя ресайзить,
@@ -1657,7 +1657,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def toggle_to_frameless_mode(self):
         f_geometry = self.frameGeometry()
         geometry = self.geometry()
-        self.hide()
+        # self.hide() # вызов может спровоцировать закрытие всего приложения
         # По какой-то неведомой причине разница между
         # f_geometry.top() и geometry.top() равна 31, а не 11
         # Но чтобы был нужный эффект необходимо прибавлять именно 11, а не 31.
