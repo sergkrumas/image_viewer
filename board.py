@@ -763,7 +763,7 @@ class BoardMixin():
 
         self.board_draw_user_points(painter, cf)
 
-        self.board_draw_selection_frames(painter)
+        self.board_draw_selection_mouse_rect(painter)
         self.board_draw_selection_transform_box(painter)
         self.board_region_zoom_in_draw(painter)
 
@@ -850,7 +850,7 @@ class BoardMixin():
             painter.drawText(bounding_rect, Qt.AlignLeft, text)
             painter.setBrush(Qt.NoBrush)
 
-    def board_draw_selection_frames(self, painter):
+    def board_draw_selection_mouse_rect(self, painter):
         if self.selection_rect is not None:
             c = self.selection_color
             painter.setPen(QPen(c))
