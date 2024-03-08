@@ -22,6 +22,7 @@ from _utils import *
 import math
 import time
 import urllib.request
+import functools
 
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
@@ -351,14 +352,18 @@ class BoardMixin():
         folder_path = os.path.dirname(__file__)
         filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
         filepath_rotate_svg = os.path.join(folder_path, "cursors", "rotate.svg")
+        filepath_translate_svg = os.path.join(folder_path, "cursors", "translate.svg")
 
         scale_rastr_source = QPixmap(filepath_scale_svg)
         rotate_rastr_source = QPixmap(filepath_rotate_svg)
+        translate_rastr_source = QPixmap(filepath_translate_svg)
 
         if not scale_rastr_source.isNull():
             self.scale_rastr_source = scale_rastr_source
         if not rotate_rastr_source.isNull():
             self.rotate_rastr_source = rotate_rastr_source
+        if not translate_rastr_source.isNull():
+            self.translate_rastr_source = translate_rastr_source
 
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
@@ -1056,6 +1061,11 @@ class BoardMixin():
         pixmap = pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         return QCursor(pixmap)
 
+    @functools.cache
+    def get_widget_translation_cursor(self):
+        pixmap = self.translate_rastr_source.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        return QCursor(pixmap)
+
     def board_cursor_setter(self):
         if self.scaling_ongoing:
             if self.scale_rastr_source is not None:
@@ -1076,6 +1086,10 @@ class BoardMixin():
 
             elif self.is_over_rotation_activation_area(self.mapped_cursor_pos()):
                 cursor = self.get_widget_cursor(self.rotate_rastr_source, self.board_get_cursor_angle())
+                self.setCursor(cursor)
+
+            elif self.is_over_translation_activation_area(self.mapped_cursor_pos()):
+                cursor = self.get_widget_translation_cursor()
                 self.setCursor(cursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
@@ -1443,6 +1457,13 @@ class BoardMixin():
 
     def isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
+
+    def is_over_translation_activation_area(self, position):
+        for item in self.selected_items:
+            sa = item.get_selection_area(board=self)
+            if sa.containsPoint(position, Qt.WindingFill):
+                return True
+        return False
 
     def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
         self.start_translation_pos = QPointF(self.get_relative_position(event_pos))
