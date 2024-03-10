@@ -1692,6 +1692,12 @@ class BoardMixin():
         pivot = self.selection_bounding_box.boundingRect().center()
         radius_vector = QPointF(event_pos) - pivot
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
+
+        points_count = self.selection_bounding_box.size()
+        index = self.widget_active_point_index
+        pivot_point_index = (index+2) % points_count
+        self.rotation_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
+
         for bi in self.selected_items:
             bi.__item_rotation = bi.item_rotation
             bi.__item_position = QPointF(bi.item_position)
@@ -1713,7 +1719,12 @@ class BoardMixin():
 
         multi_item_mode = len(self.selected_items) > 1
         ctrl_mod = QApplication.queryKeyboardModifiers() & Qt.ControlModifier
-        pivot = self.selection_bounding_box.boundingRect().center()
+        alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
+        use_corner_pivot = alt_mod
+        if use_corner_pivot:
+            pivot = self.rotation_pivot_corner_point
+        else:
+            pivot = self.selection_bounding_box.boundingRect().center()
         radius_vector = QPointF(event_pos) - pivot
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
@@ -1743,7 +1754,10 @@ class BoardMixin():
         # bounding box transformation
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
-        offset = - self.__selection_bounding_box.boundingRect().center()
+        if use_corner_pivot:
+            offset = - self.rotation_pivot_corner_point
+        else:
+            offset = - self.__selection_bounding_box.boundingRect().center()
         translate_to_coord_origin.translate(offset.x(), offset.y())
         offset = - offset
         translate_back_to_place.translate(offset.x(), offset.y())
