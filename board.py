@@ -379,13 +379,8 @@ class BoardMixin():
         painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "WELCOME TO \n BOARDS")
 
     def board_draw(self, painter):
-        old_font = painter.font()
-        font = QFont(old_font)
-
         self.board_draw_main(painter)
         # board_draw_stub(self, painter)
-
-        painter.setFont(old_font)
 
     def board_draw_wait_long_loading_label(self, painter):
         if self.long_loading:
@@ -505,15 +500,13 @@ class BoardMixin():
             painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), f'perfomance status: {self.images_drawn} images drawn')
 
     def draw_selection(self, painter, folder_data):
-        old_pen = painter.pen()
+        painter.save()
         pen = QPen(self.selection_color, 1)
         painter.setPen(pen)
-
         for board_item in folder_data.board.board_items_list:
             if board_item._selected:
                 painter.drawPolygon(board_item.get_selection_area(board=self))
-
-        painter.setPen(old_pen)
+        painter.restore()
 
     def get_monitor_area(self):
         r = self.rect()
@@ -629,7 +622,7 @@ class BoardMixin():
                     text = board_item.info_text()
                     alignment = Qt.AlignCenter
 
-                    old_pen = painter.pen()
+                    painter.save()
                     text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, text)
                     painter.setBrush(QBrush(Qt.white))
                     painter.setPen(Qt.NoPen)
@@ -637,7 +630,7 @@ class BoardMixin():
                     painter.setPen(QPen(Qt.black, 1))
                     painter.setBrush(Qt.NoBrush)
                     painter.drawText(text_rect, alignment, text)
-                    painter.setPen(old_pen)
+                    painter.restore()
 
                 if board_item == self.board_item_under_mouse:
                     is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
@@ -935,7 +928,7 @@ class BoardMixin():
         pos = self.board_origin
 
         # self.board_origin
-        old_pen = painter.pen()
+        painter.save()
 
         painter.setPen(QPen(QColor(200, 200, 200), 1))
         # painter.drawLine(QPointF(pos).toPoint(), curpos)
@@ -987,7 +980,7 @@ class BoardMixin():
         painter.setPen(QPen(Qt.red))
         painter.drawText(text_rect, alignment, text)
         painter.setBrush(Qt.NoBrush)
-        painter.setPen(old_pen)
+        painter.restore()
 
     def board_draw_board_origin(self, painter):
         pos = self.board_origin
