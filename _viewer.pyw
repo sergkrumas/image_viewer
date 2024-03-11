@@ -2010,7 +2010,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def draw_center_label(self, painter, text, large=False):
         def set_font(pr):
             font = pr.font()
-            old_font = pr.font() #copy
             if large:
                 # font.setPixelSize(self.rect().height()//8)
                 font.setPixelSize(40)
@@ -2020,9 +2019,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # font.setFamily("Consolas")
             # font.setWeight(900)
             pr.setFont(font)
-            return old_font
 
-        old_font = set_font(painter)
+        painter.save()
+        set_font(painter)
         painter.setPen(QPen(Qt.white, 1)) # boundingRect returns zero QRect, if there's no pen
         brect = painter.boundingRect(self.rect(), Qt.AlignCenter, text)
 
@@ -2071,7 +2070,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.drawText(brect, Qt.AlignCenter, text)
         painter.setOpacity(1.0)
 
-        painter.setFont(old_font)
+        painter.restore()
 
     def paintEvent(self, event):
 
@@ -2243,15 +2242,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_library(self, painter):
         def set_font(pr):
-            old_font = pr.font()
-            font = QFont(pr.font())
+            font = pr.font()
             font.setPixelSize(20)
             font.setWeight(1900)
             font.setFamily("Consolas")
             pr.setFont(font)
-            return old_font
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
-        old_font = set_font(painter)
+        painter.save()
+        set_font(painter)
 
         CENTER_OFFSET = 80
         CENTER_X_POSITION = self.get_center_x_position()
@@ -2386,7 +2384,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.draw_library_scrollbars(painter)
 
-        painter.setFont(old_font)
+        painter.restore()
 
     def draw_library_scrollbars(self, painter):
         CXP = self.get_center_x_position()
@@ -2616,10 +2614,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     draw_mirror=False,
                     additional_y_offset=offset
                 )
-            old_pen = painter.pen()
+            painter.save()
             painter.setPen(QPen(Qt.white))
             painter.drawText(rect, Qt.AlignCenter | Qt.AlignBottom, "история просмотра")
-            painter.setPen(old_pen)
+            painter.restore()
 
     def draw_center_point(self, painter, pos):
         painter.setPen(QPen(Qt.green, 5, Qt.SolidLine))
