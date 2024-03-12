@@ -1691,6 +1691,8 @@ class BoardMixin():
         pivot_point_index = (index+2) % points_count
         self.rotation_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
 
+        self.rotation_pivot_center_point = self.__selection_bounding_box.boundingRect().center()
+
         for bi in self.selected_items:
             bi.__item_rotation = bi.item_rotation
             bi.__item_position = QPointF(bi.item_position)
@@ -1717,7 +1719,7 @@ class BoardMixin():
         if use_corner_pivot:
             pivot = self.rotation_pivot_corner_point
         else:
-            pivot = self.selection_bounding_box.boundingRect().center()
+            pivot = self.rotation_pivot_center_point
         radius_vector = QPointF(event_pos) - pivot
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
