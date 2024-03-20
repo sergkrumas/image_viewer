@@ -646,7 +646,10 @@ class UtilsMixin:
             flags = flags | Qt.WindowStaysOnTopHint
             flags_not_frameless = flags_not_frameless | Qt.WindowStaysOnTopHint
         if self.frameless_mode:
-            self.setWindowFlags(flags)
+            # если qtw1 тут не будет,
+            # то невозможно будет скрыть окно
+            # кликнув по иконке приложения через панель задач
+            self.setWindowFlags(flags | qtw1)
         else:
             self.setWindowFlags(flags_not_frameless)
         self.setAttribute(Qt.WA_TranslucentBackground)
