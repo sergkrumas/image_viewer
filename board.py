@@ -1095,11 +1095,14 @@ class BoardMixin():
             normalized_minimap_cursor_pos = QPointF(minimap_local_cursor_pos.x()/self.minimap_rect.width(),
                                                 minimap_local_cursor_pos.y()/self.minimap_rect.height())
             cf = self.LibraryData().current_folder()
+            # getting viewport-mapped bounding rect
             self.build_board_bounding_rect(cf, apply_global_scale=True)
-            x = self.board_bounding_rect.width()*normalized_minimap_cursor_pos.x()
-            y = self.board_bounding_rect.height()*normalized_minimap_cursor_pos.y()
-            bounding_rect_cursor_top_left = QPointF(x, y)
-            new_board_origin = self.board_origin - bounding_rect_cursor_top_left - self.board_bounding_rect.topLeft() + self.get_center_position()
+            viewport_mapped_board_bounding_rect = self.board_bounding_rect
+            x = viewport_mapped_board_bounding_rect.width()*normalized_minimap_cursor_pos.x()
+            y = viewport_mapped_board_bounding_rect.height()*normalized_minimap_cursor_pos.y()
+            viewport_mapped_bounding_rect_cursor_top_left = QPointF(x, y)
+            viewport_mapped_bounding_rect_top_left = self.board_bounding_rect.topLeft()
+            new_board_origin = self.board_origin - viewport_mapped_bounding_rect_cursor_top_left - viewport_mapped_bounding_rect_top_left + self.get_center_position()
             self.board_origin = new_board_origin
             # восстанавливаем прежний bounding rect
             self.build_board_bounding_rect(cf, apply_global_scale=False)
