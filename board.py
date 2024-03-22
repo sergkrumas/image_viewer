@@ -387,7 +387,7 @@ class BoardMixin():
             self.board_draw_wait_label(painter, socondary_text="загрузка данных")
 
     def board_draw_wait_label(self, painter, primary_text="ПОДОЖДИ",
-                    socondary_text="создаются превьюшки"):
+                                                        socondary_text="создаются превьюшки"):
         font = painter.font()
         font.setPixelSize(100)
         font.setWeight(1900)
@@ -2528,8 +2528,7 @@ class BoardMixin():
             else:
                 item_to_center_viewport = first_item
 
-            delta = QPointF(self.get_center_position() - self.board_origin)
-            current_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+            current_pos = self.board_map_to_board(self.get_center_position())
 
             item_point = item_to_center_viewport.item_position
 
@@ -2595,8 +2594,7 @@ class BoardMixin():
         cf = self.LibraryData().current_folder()
         pair = None
 
-        current_pos = delta = QPointF(self.get_center_position() - self.board_origin)
-        current_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+        current_pos = self.board_map_to_board(self.get_center_position())
 
         if not self.fly_pairs:
             _list = []
@@ -2653,9 +2651,7 @@ class BoardMixin():
             self.board_origin = -self.pr_viewport + viewport_center_pos
             self.update()
 
-
-        delta = QPointF(self.get_center_position() - self.board_origin)
-        current_pos_ = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+        current_pos_ = self.board_map_to_board(self.get_center_position())
 
         pair = [
             [current_pos_, self.board_scale_x, self.board_scale_y],
