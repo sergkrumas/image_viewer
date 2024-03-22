@@ -742,8 +742,7 @@ class BoardMixin():
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
         for point, board_scale_x, board_scale_y in cf.board.board_user_points:
-            p = self.board_origin + QPointF(point.x()*self.board_scale_x, point.y()*self.board_scale_y)
-            painter.drawPoint(p)
+            painter.drawPoint(self.board_map_to_viewport(point))
 
     def board_draw_main(self, painter):
 
@@ -2129,9 +2128,15 @@ class BoardMixin():
 
         self.prevent_item_deselection = False
 
+    def board_map_to_viewport(self, canvas_pos):
+        scaled_rel_pos = QPointF(canvas_pos.x()*self.board_scale_x, canvas_pos.y()*self.board_scale_y)
+        viewport_pos = self.board_origin + scaled_rel_pos
+        return viewport_pos
+
     def board_map_to_board(self, viewport_pos):
         delta = QPointF(viewport_pos - self.board_origin)
-        return QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+        board_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+        return board_pos
 
     def board_paste_selected_items(self):
         selected_items = []
