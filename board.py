@@ -926,7 +926,6 @@ class BoardMixin():
 
         pos = self.board_origin
 
-        # self.board_origin
         painter.save()
 
         painter.setPen(QPen(QColor(200, 200, 200), 1))
@@ -1092,14 +1091,16 @@ class BoardMixin():
         if not self.board_show_minimap:
             return
         if self.minimap_rect.contains(self.mapped_cursor_pos()):
-            rel_pos = self.mapped_cursor_pos() - self.minimap_rect.topLeft()
-            norm_rel_pos = QPointF(rel_pos.x()/self.minimap_rect.width(), rel_pos.y()/self.minimap_rect.height())
+            minimap_local_cursor_pos = self.mapped_cursor_pos() - self.minimap_rect.topLeft()
+            normalized_minimap_cursor_pos = QPointF(minimap_local_cursor_pos.x()/self.minimap_rect.width(),
+                                                minimap_local_cursor_pos.y()/self.minimap_rect.height())
             cf = self.LibraryData().current_folder()
             self.build_board_bounding_rect(cf, apply_global_scale=True)
-            board_origin = QPointF(self.board_bounding_rect.width()*norm_rel_pos.x(), self.board_bounding_rect.height()*norm_rel_pos.y())
-            board_origin = - board_origin + QPointF(self.rect().width()/2.0, self.rect().height()/2.0)
-            board_origin = board_origin + (self.board_origin - self.board_bounding_rect.topLeft())
-            self.board_origin = board_origin
+            x = self.board_bounding_rect.width()*normalized_minimap_cursor_pos.x()
+            y = self.board_bounding_rect.height()*normalized_minimap_cursor_pos.y()
+            bounding_rect_cursor_top_left = QPointF(x, y)
+            new_board_origin = self.board_origin - bounding_rect_cursor_top_left - self.board_bounding_rect.topLeft() + self.get_center_position()
+            self.board_origin = new_board_origin
             # восстанавливаем прежний bounding rect
             self.build_board_bounding_rect(cf, apply_global_scale=False)
             self.show_center_label("Камера перемещена!")
