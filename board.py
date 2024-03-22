@@ -1313,7 +1313,7 @@ class BoardMixin():
             bi.image_data.folder_data = current_folder
             current_folder.images_list.append(im_data)
 
-            pos = self.get_relative_position(gi.get_selection_area(board=self).boundingRect().topRight())
+            pos = self.board_map_to_board(gi.get_selection_area(board=self).boundingRect().topRight())
             size_rect = bi.get_size_rect(scaled=False)
             offset = QPointF(size_rect.width()/2, size_rect.height()/2)
             bi.item_position = (pos + offset)
@@ -1341,7 +1341,7 @@ class BoardMixin():
         item_folder_data.board.board_root_folder = current_folder_data
         item_folder_data.board.board_root_item = gi
         # располагаем в центре экрана
-        gi.item_position = self.get_relative_position(self.context_menu_exec_point)
+        gi.item_position = self.board_map_to_board(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
             self.move_items_to_group(item_group=gi, items=self.selected_items)
         gi.update_corner_info()
@@ -1364,7 +1364,7 @@ class BoardMixin():
             fi.board_index = self.retrieve_new_board_item_index()
             folder_data.board.board_items_list.append(fi)
             # располагаем в центре экрана
-            fi.item_position = self.get_relative_position(self.rect().center())
+            fi.item_position = self.board_map_to_board(self.rect().center())
             fi.update_corner_info()
             self.board_select_items([fi])
             self.long_loading = False
@@ -1435,7 +1435,7 @@ class BoardMixin():
             folder_data.board.board_items_list.append(bi)
 
             selection_bounding_rect = self.selection_bounding_box.boundingRect()
-            bi.item_position = self.get_relative_position(selection_bounding_rect.center())
+            bi.item_position = self.board_map_to_board(selection_bounding_rect.center())
             bi.item_width = selection_bounding_rect.width() / self.board_scale_x
             bi.item_height = selection_bounding_rect.height() / self.board_scale_y
             bi.item_width += BoardItem.FRAME_PADDING
@@ -1459,7 +1459,7 @@ class BoardMixin():
         return False
 
     def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
-        self.start_translation_pos = QPointF(self.get_relative_position(event_pos))
+        self.start_translation_pos = QPointF(self.board_map_to_board(event_pos))
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.board_items_list
         if viewport_zoom_changed:
@@ -1485,7 +1485,7 @@ class BoardMixin():
         if self.start_translation_pos:
             self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
-            delta = QPointF(self.get_relative_position(event_pos)) - self.start_translation_pos
+            delta = QPointF(self.board_map_to_board(event_pos)) - self.start_translation_pos
             for board_item in current_folder.board.board_items_list:
                 if board_item._selected:
                     board_item.item_position = board_item.__item_position + delta
@@ -2129,14 +2129,14 @@ class BoardMixin():
 
         self.prevent_item_deselection = False
 
-    def get_relative_position(self, viewport_pos):
+    def board_map_to_board(self, viewport_pos):
         delta = QPointF(viewport_pos - self.board_origin)
         return QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
 
     def board_paste_selected_items(self):
         selected_items = []
-        selection_center = self.get_relative_position(self.selection_bounding_box.boundingRect().center())
-        rel_cursor_pos = self.get_relative_position(self.mapped_cursor_pos())
+        selection_center = self.board_map_to_board(self.selection_bounding_box.boundingRect().center())
+        rel_cursor_pos = self.board_map_to_board(self.mapped_cursor_pos())
         for bi in self.LibraryData().current_folder().board.board_items_list:
             if bi._selected:
                 selected_items.append(bi)
@@ -2362,7 +2362,7 @@ class BoardMixin():
         image_data.board_item = board_item
         current_folder.board.board_items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
-        board_item.item_position = self.get_relative_position(self.mapped_cursor_pos())
+        board_item.item_position = self.board_map_to_board(self.mapped_cursor_pos())
         current_folder.images_list.append(image_data)
         # делаем превьюшку и миинатюрку для этой картинки
         self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
