@@ -545,6 +545,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.corner_menu = dict()
         self.corner_menu_items = []
 
+        self.fullscreen_mode = False
+        self.firstCall_showMaximized = True
 
         self.context_menu_stylesheet = """
         QMenu{
@@ -1677,6 +1679,30 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.image_center_position -= QPointF(desktop.screenGeometry(self).topLeft())
         self.update()
 
+    def showMaximized(self):
+        if False:
+            # inherited
+            super().showMaximized()
+        else:
+            desktop = QDesktopWidget()
+            screens = QGuiApplication.screens()
+            if self.firstCall_showMaximized:
+                pos = QCursor().pos()
+                self.firstCall_showMaximized = False
+            else:
+                pos = self.geometry().center()
+            for n, screen in enumerate(screens):
+                screen_geometry = screen.geometry()
+                if screen_geometry.contains(pos):
+                    geometry = screen_geometry
+                    break
+            if not self.fullscreen_mode:
+                ag = desktop.availableGeometry()
+                geometry.setHeight(ag.height())
+                geometry.setWidth(ag.width())
+            self.setGeometry(geometry)
+        self.show()
+
     def get_center_position(self):
         return QPointF(
             self.frameGeometry().width()/2,
@@ -2734,6 +2760,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not event.isAutoRepeat():
             self._key_pressed = False
             self._key_unreleased = False
+
+        if key == Qt.Key_F11 and not event.isAutoRepeat():
+            if self.frameless_mode:
+                self.fullscreen_mode = not self.fullscreen_mode
+                self.showMaximized()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
