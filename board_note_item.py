@@ -105,11 +105,11 @@ class BoardTextEditItemMixin():
         width = s.width()
         height = s.height()
         content_rect = QRectF(QPointF(0, 0), s)
-        content_rect.moveCenter(element.element_position)
+        content_rect.moveCenter(element.item_position)
         element.start_point = content_rect.topLeft()
         element.end_point = content_rect.bottomRight()
-        element.element_scale_x = 1.0
-        element.element_scale_y = 1.0
+        element.item_scale_x = 1.0
+        element.item_scale_y = 1.0
         element.calc_local_data()
 
     def board_GetPenFromElement(self, element):
