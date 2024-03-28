@@ -1432,7 +1432,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.margin_value = 5
         ni.proxy_pixmap = None
         ni.color = QColor()
-        ni.start_point = ni.item_position 
+        ni.start_point = ni.item_position
         ni.end_point = ni.item_position + QPointF(200, 50)
         ni.calc_local_data()
         self.board_ImplantTextElement(ni)
@@ -1668,7 +1668,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         bi._selected = False
 
                 board_item._selected = True
-                self.active_element = board_item                
+                self.active_element = board_item
                 # вытаскиваем айтем на передний план при отрисовке
                 current_folder.board.board_items_list.remove(board_item)
                 current_folder.board.board_items_list.append(board_item)
