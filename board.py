@@ -1431,6 +1431,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.end_point = ni.item_position + QPointF(200, 50)
         ni.calc_local_data()
         self.board_ImplantTextElement(ni)
+        self.board_TextElementRecalculateGabarit(ni)
         self.board_select_items([ni])
         self.update()
 
