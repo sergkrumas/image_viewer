@@ -74,6 +74,7 @@ class Globals():
 
     USE_GLOBAL_LIST_VIEW_HISTORY = False
     ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM = True
+    USE_PIXMAP_PROXY_FOR_TEXT_ITEMS = True
 
     SECRET_HINTS_FILEPATH = "deep_secrets.txt"
     SESSION_FILENAME = "session.txt"
@@ -3302,6 +3303,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         checkboxes = [
             ("DEBUG", Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
             ("Антиальясинг и сглаживание пиксмапов", Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
+            ("Pixmap-прокси для пометок типа «Текст»", Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')),
         ]
 
         if Globals.CRASH_SIMULATOR:
