@@ -119,7 +119,7 @@ class BoardTextEditItemMixin():
         pen = QPen(color, 1+PEN_SIZE*size)
         pen.setCapStyle(Qt.RoundCap)
         pen.setJoinStyle(Qt.RoundJoin)
-        return pen, color, size        
+        return pen, color, size
 
     def board_TextElementDraw(self, painter, element):
 
