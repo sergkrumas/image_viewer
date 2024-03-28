@@ -217,11 +217,11 @@ class BoardTextEditItemMixin():
             offset_translation = QTransform()
             offset_translation.translate(-offset_x, -offset_y)
 
-        element_transform = element.get_transform_obj(board=self)
+        item_transform = element.get_transform_obj(board=self)
         if element.text_doc is not None:
-            element_transform = offset_translation * element_transform
-        element.draw_transform = element_transform
-        painter.setTransform(element_transform)
+            item_transform = offset_translation * item_transform
+        element.draw_transform = item_transform
+        painter.setTransform(item_transform)
         painter.save()
 
         if element.text_doc:
