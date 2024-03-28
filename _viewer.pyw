@@ -627,6 +627,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         for page, next_page in itertools.cycle(zip(pages, pages_shifted)):
             if page == self.current_page:
                 break
+        self.board_DeactivateTextElement()
         self.change_page(next_page)
 
     def change_page(self, requested_page, force=False):
