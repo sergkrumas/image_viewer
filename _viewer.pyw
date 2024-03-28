@@ -37,6 +37,7 @@ from win32con import VK_CAPITAL, VK_NUMLOCK, VK_SCROLL
 from ctypes import windll
 
 import itertools
+from functools import partial
 
 try:
     noise = __import__("noise")
@@ -3271,6 +3272,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         minimize_window = contextMenu.addAction("Свернуть")
         contextMenu.addSeparator()
 
+        def toggle_boolean_var_generic(obj, attr_name):
+            setattr(obj, attr_name, not getattr(obj, attr_name))
+            self.update()
+
+        checkboxes = [
+        ]
+
+
         if Globals.CRASH_SIMULATOR:
             crash_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
         open_settings = contextMenu.addAction("Настройки...")
@@ -3388,6 +3397,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     contextMenu.addSeparator()
                     action_title = "Перейти из избранного в папку с этим изображением"
                     go_to_folder = contextMenu.addAction(action_title)
+
+        for title, value, callback in checkboxes:
+            wa = QWidgetAction(contextMenu)
+            chb = QCheckBox(title)
+            chb.setStyleSheet(self.context_menu_stylesheet)
+            chb.setChecked(value)
+            chb.stateChanged.connect(callback)
+            wa.setDefaultWidget(chb)
+            contextMenu.addAction(wa)
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
         self.contextMenuActivated = False
