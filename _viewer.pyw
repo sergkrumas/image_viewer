@@ -73,6 +73,7 @@ class Globals():
     PREVIEW_WIDTH = 200
 
     USE_GLOBAL_LIST_VIEW_HISTORY = False
+    ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM = True
 
     SECRET_HINTS_FILEPATH = "deep_secrets.txt"
     SESSION_FILENAME = "session.txt"
@@ -2123,9 +2124,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter = QPainter()
         painter.begin(self)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+        if Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM:
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
         # draw darkened translucent background
         if self.frameless_mode:
@@ -3298,8 +3301,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         checkboxes = [
             ("DEBUG", Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
+            ("Антиальясинг и сглаживание пиксмапов", Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
         ]
-
 
         if Globals.CRASH_SIMULATOR:
             crash_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
