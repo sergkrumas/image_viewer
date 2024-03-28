@@ -1344,7 +1344,7 @@ class BoardMixin():
         item_folder_data.board.board_ready = True
         item_folder_data.board.board_root_folder = current_folder_data
         item_folder_data.board.board_root_item = gi
-        # располагаем в центре экрана
+        # располагаем центр в координате вызова контекстеного меню
         gi.item_position = self.board_map_to_board(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
             self.move_items_to_group(item_group=gi, items=self.selected_items)
