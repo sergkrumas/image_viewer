@@ -1663,12 +1663,14 @@ class BoardMixin(BoardTextEditItemMixin):
                         bi._selected = False
 
                 board_item._selected = True
+                self.active_element = board_item                
                 # вытаскиваем айтем на передний план при отрисовке
                 current_folder.board.board_items_list.remove(board_item)
                 current_folder.board.board_items_list.append(board_item)
                 self.prevent_item_deselection = True
                 return True
             if is_under_mouse and board_item._selected:
+                self.active_element = board_item
                 return True
         return False
 
@@ -2098,6 +2100,8 @@ class BoardMixin(BoardTextEditItemMixin):
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
+
+        self.active_element = None
 
         if event.buttons() == Qt.LeftButton:
             if not alt:
