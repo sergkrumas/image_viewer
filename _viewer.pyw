@@ -2776,6 +2776,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def keyReleaseEvent(self, event):
         key = event.key()
 
+        if self.is_board_text_input_event:
+            if not event.isAutoRepeat():
+                self.is_board_text_input_event = False
+            return
+
         self.boards_key_release_callback(event)
 
         if self.check_thumbnails_fullscreen():
@@ -2862,6 +2867,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         key = event.key()
 
         ctrl_mod = event.modifiers() & Qt.ControlModifier
+        self.is_board_text_input_event = False
 
         self.boards_key_press_callback(event)
 
@@ -2942,7 +2948,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif key == Qt.Key_4:
             self.change_page(self.pages.LIBRARY_PAGE)
 
-        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod:
+        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.active_element:
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
                 length *= 20.0
@@ -3007,6 +3013,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             if self.board_TextElementIsInputEvent(event):
                 self.board_TextElementInputEvent(event)
+                self.is_board_text_input_event = True
                 return
 
             if key == Qt.Key_Space:

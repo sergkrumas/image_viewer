@@ -316,6 +316,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.current_board_item_index = 0
         self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
+        self.is_board_text_input_event = False
         self.active_element = None
 
     def board_dive_inside_board_item(self, back_to_referer=False):
