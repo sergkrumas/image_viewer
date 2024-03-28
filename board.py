@@ -564,6 +564,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.save()
         pen = QPen(self.selection_color, 1)
         painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
         for board_item in folder_data.board.board_items_list:
             if board_item._selected:
                 painter.drawPolygon(board_item.get_selection_area(board=self))
