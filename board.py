@@ -18,11 +18,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from _utils import *
 import math
 import time
 import urllib.request
 import functools
+
+from _utils import *
+from board_note_item import BoardTextEditItemMixin
 
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
@@ -82,6 +84,20 @@ class BoardItem():
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
+
+    def calc_local_data(self):
+        if self.type in [self.types.ITEM_NOTE]:
+            self.calc_local_data_default()
+        else:
+            raise Exception('calc_local_data', self.type)
+
+    def calc_local_data_default(self):
+        self.item_position = (self.start_point + self.end_point)/2.0
+        self.local_start_point = self.start_point - self.item_position
+        self.local_end_point = self.end_point - self.item_position
+        diff = self.local_start_point - self.local_end_point
+        self.item_width = abs(diff.x())
+        self.item_height = abs(diff.y())
 
     @property
     def calc_area(self):
@@ -217,7 +233,7 @@ class BoardItem():
                 item_type = "GROUP"
             self.status = f'{current_image_num}/{images_count} {item_type}'
 
-class BoardMixin():
+class BoardMixin(BoardTextEditItemMixin):
 
     def board_init(self):
 
@@ -266,6 +282,8 @@ class BoardMixin():
         self.board_bounding_rect = QRectF()
         self.current_board_item_index = 0
         self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
+
+        self.active_element = None
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -567,7 +585,7 @@ class BoardMixin():
 
         if board_item.type in [BoardItem.types.ITEM_NOTE]:
 
-            pass
+            self.board_TextElementDrawOnCanvas(painter, board_item, False)
 
         else:
 
@@ -1372,6 +1390,15 @@ class BoardMixin():
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.board_items_list.append(ni)
         ni.item_position = self.board_map_to_board(self.context_menu_exec_point)
+        ni.plain_text = 'test'
+        ni.size = 10.0
+        ni.margin_value = 5
+        ni.proxy_pixmap = None
+        ni.color = QColor()
+        ni.start_point = ni.item_position 
+        ni.end_point = ni.item_position + QPointF(200, 50)
+        ni.calc_local_data()
+        self.board_ImplantTextElement(ni)
         self.board_select_items([ni])
         self.update()
 

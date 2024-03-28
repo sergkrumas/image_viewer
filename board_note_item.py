@@ -18,9 +18,11 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+import sys
+
 from PyQt5.QtWidgets import (QApplication,)
 from PyQt5.QtCore import (QPoint, QPointF, QRect, Qt, QRectF)
-from PyQt5.QtGui import (QPainterPath, QColor, QBrush, QPixmap, QPainter, QTransform, QFont,
+from PyQt5.QtGui import (QPainterPath, QColor, QBrush, QPixmap, QPainter, QTransform, QFont, QPen,
                     QTextDocument, QAbstractTextDocumentLayout, QPalette, QTextCursor, QTextLine)
 
 from _utils import (check_scancode_for,)
@@ -30,11 +32,15 @@ from _utils import (check_scancode_for,)
 
 class BoardTextEditItemMixin():
 
+	# elements means item
+	# code copied from OXXXY Screenshoter
+	# https://github.com/sergkrumas/oxxxy
+
     def board_DeactivateTextElement(self):
         if self.active_element:
             if self.active_element.type == self.ToolID.text:
                 self.active_element = None
-                # не нужно вызывать здесь self.elementsSetSelected(None),
+                # не нужно вызывать здесь self.board_SetSelected(None),
                 # потому что elementsDeactivateTextElement вызывается
                 # в начале работы инструмента «выделение и перемещение»
                 self.update()
@@ -43,7 +49,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementSetParameters(self, elem):
         if elem.text_doc is not None:
-            self.elementsTextElementSetFont(elem)
+            self.board_TextElementSetFont(elem)
 
     def board_TextElementGetFontPixelSize(self, elem):
         return int(20+10*elem.size)
@@ -82,15 +88,15 @@ class BoardTextEditItemMixin():
             ae.text_doc_cursor_pos += len(text)
             _cursor.endEditBlock()
 
-        # text_line = self.elementsTextElementCurrentTextLine(_cursor)
+        # text_line = self.board_TextElementCurrentTextLine(_cursor)
         # print('text_line', text_line.lineNumber())
         ae.plain_text = ae.text_doc.toPlainText()
         if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ELEMENTS:
-            self.elementsTextElementUpdateProxyPixmap(ae)
+            self.board_TextElementUpdateProxyPixmap(ae)
 
-        self.elementsTextElementRecalculateGabarit(ae)
+        self.board_TextElementRecalculateGabarit(ae)
         self.update_selection_bouding_box()
-        self.elementsFixArrowStartPositionIfNeeded(ae)
+        self.board_FixArrowStartPositionIfNeeded(ae)
         self.update()
 
     def board_TextElementRecalculateGabarit(self, element):
@@ -106,6 +112,15 @@ class BoardTextEditItemMixin():
         element.element_scale_y = 1.0
         element.calc_local_data()
 
+    def board_GetPenFromElement(self, element):
+        color = element.color
+        size = element.size
+        PEN_SIZE = 25
+        pen = QPen(color, 1+PEN_SIZE*size)
+        pen.setCapStyle(Qt.RoundCap)
+        pen.setJoinStyle(Qt.RoundJoin)
+        return pen, color, size        
+
     def board_TextElementDraw(self, painter, element):
 
         def tweakedDrawContents(text_document, _painter_, rect):
@@ -120,7 +135,7 @@ class BoardTextEditItemMixin():
             text_document.documentLayout().draw(_painter_, ctx)
             _painter_.restore()
 
-        pen, color, size = self.elementsGetPenFromElement(element)
+        pen, color, size = self.board_GetPenFromElement(element)
         painter.setPen(pen)
         painter.setBrush(QBrush(color))
 
@@ -133,7 +148,7 @@ class BoardTextEditItemMixin():
         element.proxy_pixmap.fill(Qt.transparent)
         p = QPainter()
         p.begin(element.proxy_pixmap)
-        self.elementsTextElementDraw(p, element)
+        self.board_TextElementDraw(p, element)
         p.end()
 
     def board_TextElementCurrentTextLine(self, cursor):
@@ -162,11 +177,11 @@ class BoardTextEditItemMixin():
         text_doc = QTextDocument()
         elem.text_doc = text_doc
         text_doc.setPlainText(elem.plain_text)
-        self.elementsTextElementInit(elem)
+        self.board_TextElementInit(elem)
 
     def board_TextElementSetFont(self, element):
         font = QFont()
-        font_pixel_size = self.elementsTextElementGetFontPixelSize(element)
+        font_pixel_size = self.board_TextElementGetFontPixelSize(element)
         font.setPixelSize(font_pixel_size)
         element.text_doc.setDefaultFont(font)
 
@@ -182,7 +197,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementInit(self, elem):
         text_doc = elem.text_doc
-        self.elementsTextElementSetFont(elem)
+        self.board_TextElementSetFont(elem)
         text_doc.setTextWidth(-1)
         elem.text_doc_cursor_pos = 0
 
@@ -202,7 +217,7 @@ class BoardTextEditItemMixin():
             offset_translation = QTransform()
             offset_translation.translate(-offset_x, -offset_y)
 
-        element_transform = element.get_transform_obj(canvas=self)
+        element_transform = element.get_transform_obj(board=self)
         if element.text_doc is not None:
             element_transform = offset_translation * element_transform
         element.draw_transform = element_transform
@@ -213,7 +228,7 @@ class BoardTextEditItemMixin():
             text_doc = element.text_doc
 
             # подложка
-            if element.toolbool:
+            if True:
                 painter.save()
                 painter.setPen(Qt.NoPen)
                 content_rect = QRect(QPoint(), s)
@@ -225,12 +240,12 @@ class BoardTextEditItemMixin():
                 painter.restore()
 
             # текст и курсор
-            if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ELEMENTS:
+            if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS:
                 if element.proxy_pixmap is None:
-                    self.elementsTextElementUpdateProxyPixmap(element)
+                    self.board_TextElementUpdateProxyPixmap(element)
                 painter.drawPixmap(QPoint(0, 0), element.proxy_pixmap)
             else:
-                self.elementsTextElementDraw(painter, element)
+                self.board_TextElementDraw(painter, element)
 
             # рисуем курсор
             doc_layout = text_doc.documentLayout()
