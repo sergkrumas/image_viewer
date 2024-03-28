@@ -595,7 +595,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         QMenu::separator {
             height: 1px;
             background: gray;
-        }        
+        }
         """
 
     # def changeEvent(self, event):
