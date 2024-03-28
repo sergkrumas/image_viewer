@@ -2889,6 +2889,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.region_zoom_in_cancel()
             elif self.board_magnifier_input_rect:
                 self.board_region_zoom_do_cancel()
+            elif self.is_board_page_active() and self.board_DeactivateTextElement():
+                return
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
             elif HookConsoleOutput.check_messages():
