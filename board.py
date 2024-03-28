@@ -565,6 +565,10 @@ class BoardMixin():
 
             painter.setFont(before_font)
 
+        if board_item.type in [BoardItem.types.ITEM_NOTE]:
+
+            pass
+
         else:
 
             image_data = board_item.retrieve_image_data()
