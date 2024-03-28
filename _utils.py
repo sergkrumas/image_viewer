@@ -37,6 +37,7 @@ import itertools
 import locale
 import hashlib
 import platform
+import webbrowser
 import json
 import platform
 import datetime
@@ -84,6 +85,14 @@ SCANCODES_FROM_LATIN_CHAR = {
     "]": 27,
 }
 
+def execute_clickable_text(text):
+    url = text.strip()
+    if (url[1] == ":" and url[2] in ["\\", "/"]) or (url.startswith("file:/")):
+        win32api.ShellExecute(0, "open", url, None, ".", 1)
+    else:
+        if not (url.startswith("http://") or url.startswith("https://")):
+            url = "https://"+ url
+        webbrowser.open(url)
 
 def get_file_size(filepath):
     try:

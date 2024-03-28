@@ -2236,7 +2236,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         elif event.button() == Qt.MiddleButton:
-            if no_mod:
+            if self.board_go_to_note(event):
+                pass
+
+            elif no_mod:
                 if self.transformations_allowed:
                     self.board_camera_translation_ongoing = False
                     self.update()
@@ -2244,7 +2247,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 if self.transformations_allowed:
                     self.set_default_boardviewport_scale(keep_position=True)
 
+
         self.prevent_item_deselection = False
+
+    def board_go_to_note(self, event):
+        for sel_item in self.selected_items:
+            if sel_item.type == BoardItem.types.ITEM_NOTE:
+                if sel_item.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
+                    note_content = sel_item.plain_text
+                    execute_clickable_text(note_content)
+                    return True
 
     def board_map_to_viewport(self, canvas_pos):
         scaled_rel_pos = QPointF(canvas_pos.x()*self.board_scale_x, canvas_pos.y()*self.board_scale_y)
