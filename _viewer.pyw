@@ -3364,6 +3364,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 command_label = f'{command_label} и добавить в неё выделенные айтемы: {sel_count}'
             board_add_item_group = contextMenu.addAction(command_label)
             board_add_item_frame = contextMenu.addAction("Добавить фрейм на доску")
+            board_add_item_note = contextMenu.addAction("Добавить заметку на доску")
 
             board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
 
@@ -3446,6 +3447,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.board_load_highres()
             elif action == board_add_item_frame:
                 self.board_add_item_frame()
+            elif action == board_add_item_note:
+                self.board_add_item_note()
             elif action == board_open_in_app_copy:
                 self.board_open_in_app_copy()
             elif action == board_open_in_google_chrome:

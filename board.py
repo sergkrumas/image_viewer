@@ -1352,6 +1352,18 @@ class BoardMixin():
         self.board_select_items([gi])
         self.update()
 
+    def board_add_item_note(self):
+        current_folder_data = self.LibraryData().current_folder()
+        if current_folder_data.virtual:
+            self.show_center_label('Нельзя создавать айтемы-заметки в досках виртуальных папок', error=True)
+            return
+        ni = BoardItem(BoardItem.types.ITEM_NOTE)
+        ni.board_index = self.retrieve_new_board_item_index()
+        current_folder_data.board.board_items_list.append(ni)
+        ni.item_position = self.board_map_to_board(self.context_menu_exec_point)
+        self.board_select_items([ni])
+        self.update()
+
     def board_add_item_folder(self):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
         folder_data = self.LibraryData().current_folder()
