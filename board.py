@@ -121,6 +121,8 @@ class BoardItem():
             return f'GROUP {self.board_group_index} {self.item_name}'
         elif self.type == self.types.ITEM_FRAME:
             return f'FRAME'
+        elif self.type == self.types.ITEM_NOTE:
+            return f'TEXT NOTE'
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
         _scale_x = board.board_scale_x
@@ -147,6 +149,9 @@ class BoardItem():
             elif self.type == self.types.ITEM_FRAME:
                 scale_x = self.item_scale_x
                 scale_y = self.item_scale_y
+            elif self.type == self.types.ITEM_NOTE:
+                scale_x = self.item_scale_x
+                scale_y = self.item_scale_y                
         else:
             scale_x = 1.0
             scale_y = 1.0
@@ -158,6 +163,8 @@ class BoardItem():
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_FRAME:
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+        elif self.type == self.types.ITEM_NOTE:
+            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)            
 
     def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
