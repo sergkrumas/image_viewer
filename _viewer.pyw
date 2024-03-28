@@ -550,31 +550,51 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.firstCall_showMaximized = True
 
         self.context_menu_stylesheet = """
-        QMenu{
+        QMenu, QCheckBox{
             padding: 0px;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 16px;
+            font-weight: normal;
             font-family: 'Consolas';
         }
-        QMenu::item {
+        QMenu::item, QCheckBox{
             padding: 10px;
             background: #303940;
             color: rgb(230, 230, 230);
         }
-        QMenu::icon {
+        QMenu::icon{
             padding-left: 15px;
         }
-        QMenu::item:selected {
+        QMenu::item:selected, QCheckBox:hover{
             background-color: rgb(253, 203, 54);
             color: rgb(50, 50, 50);
+            border-left: 2px dashed #303940;
+        }
+        QMenu::item:checked, QCheckBox:checked{
+            font-weight: bold;
+            color: white;
+            background: #304550;
+        }
+        QMenu::item:unchecked, QCheckBox:unchecked{
+            background: #304550;
+        }
+        QMenu::item:checked:selected, QCheckBox:checked:hover{
+            font-weight: bold;
+            color: rgb(50, 50, 50);
+            background-color: rgb(253, 203, 54);
+        }
+        QMenu::item:unchecked:selected, QCheckBox:unchecked:hover{
+            color: rgb(50, 50, 50);
+            background-color: rgb(253, 203, 54);
+        }
+        QMenu::item:disabled {
+            background-color: #303940;
+            color: black;
             border-left: 2px dashed #303940;
         }
         QMenu::separator {
             height: 1px;
             background: gray;
-        }
-        QMenu::item:checked {
-        }
+        }        
         """
 
     # def changeEvent(self, event):
