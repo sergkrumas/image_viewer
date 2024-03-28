@@ -151,7 +151,7 @@ class BoardItem():
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_NOTE:
                 scale_x = self.item_scale_x
-                scale_y = self.item_scale_y                
+                scale_y = self.item_scale_y
         else:
             scale_x = 1.0
             scale_y = 1.0
@@ -164,7 +164,7 @@ class BoardItem():
         elif self.type == self.types.ITEM_FRAME:
             return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_NOTE:
-            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)            
+            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
 
     def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
