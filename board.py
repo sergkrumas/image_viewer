@@ -46,6 +46,7 @@ class BoardItem():
         ITEM_FOLDER = 2
         ITEM_GROUP = 3
         ITEM_FRAME = 4
+        ITEM_TEXT = 5
 
     def __init__(self, item_type):
         super().__init__()
