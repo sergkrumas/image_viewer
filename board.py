@@ -2221,6 +2221,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 canvas_pos = self.board_map_to_board(event.pos())
                 cf.board.board_user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
 
+            ae = self.active_element
+            if ae is not None and ae.type == BoardItem.types.ITEM_NOTE:
+                if ae.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
+                    self.board_TextElementSetCursorPosByClick(event)
+                    return
+
+
         elif event.button() == Qt.MiddleButton:
             if no_mod:
                 if self.transformations_allowed:
