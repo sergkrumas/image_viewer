@@ -3002,6 +3002,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
+            if self.board_TextElementIsInputEvent(event):
+                self.board_TextElementInputEvent(event)
+                return
+
             if key == Qt.Key_Space:
                 self.board_fly_over(user_call=True)
 

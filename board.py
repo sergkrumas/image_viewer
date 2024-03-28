@@ -265,6 +265,9 @@ class BoardItem():
 
 class BoardMixin(BoardTextEditItemMixin):
 
+    # для поддержки миксинов
+    BoardItem = BoardItem
+
     def board_init(self):
 
         self.board_origin = self.get_center_position()

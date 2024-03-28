@@ -38,7 +38,7 @@ class BoardTextEditItemMixin():
 
     def board_DeactivateTextElement(self):
         if self.active_element:
-            if self.active_element.type == self.ToolID.text:
+            if self.active_element.type == self.BoardItem.types.ITEM_NOTE:
                 self.active_element = None
                 # не нужно вызывать здесь self.board_SetSelected(None),
                 # потому что elementsDeactivateTextElement вызывается
@@ -56,7 +56,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementInputEvent(self, event):
         ae = self.active_element
-        if ae is None or ae.type != self.ToolID.text:
+        if ae is None or ae.type != self.BoardItem.types.ITEM_NOTE:
             return
 
         if event.modifiers() == Qt.ControlModifier and check_scancode_for(event, "V"):
@@ -91,12 +91,12 @@ class BoardTextEditItemMixin():
         # text_line = self.board_TextElementCurrentTextLine(_cursor)
         # print('text_line', text_line.lineNumber())
         ae.plain_text = ae.text_doc.toPlainText()
-        if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ELEMENTS:
+        if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS:
             self.board_TextElementUpdateProxyPixmap(ae)
 
         self.board_TextElementRecalculateGabarit(ae)
         self.update_selection_bouding_box()
-        self.board_FixArrowStartPositionIfNeeded(ae)
+
         self.update()
 
     def board_TextElementRecalculateGabarit(self, element):
@@ -164,7 +164,7 @@ class BoardTextEditItemMixin():
         return layout.lineForTextPosition(relativePos)
 
     def board_TextElementIsInputEvent(self, event):
-        is_event = self.active_element is not None and self.active_element.type == self.ToolID.text
+        is_event = self.active_element is not None and self.active_element.type == self.BoardItem.types.ITEM_NOTE
         is_event = is_event and event.key() != Qt.Key_Escape
         is_event = is_event and event.key() not in [Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Home, Qt.Key_End, Qt.Key_PageDown, Qt.Key_PageUp]
         is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right]))
