@@ -1484,19 +1484,26 @@ class BoardMixin():
                         if bi.type != BoardItem.types.ITEM_FRAME or (bi.type == BoardItem.types.ITEM_FRAME and bi.calc_area < this_frame_area):
                             board_item._children_items.append(bi)
 
+    def board_ALLOW_selected_items_TRANSLATION(self, event_pos):
+        if self.start_translation_pos:
+            delta = QPointF(self.board_map_to_board(event_pos)) - self.start_translation_pos
+            if not self.translation_ongoing:
+                if abs(delta.x()) > 0 or abs(delta.y()) > 0:
+                    self.translation_ongoing = True
+
     def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
-            self.translation_ongoing = True
             current_folder = self.LibraryData().current_folder()
             delta = QPointF(self.board_map_to_board(event_pos)) - self.start_translation_pos
-            for board_item in current_folder.board.board_items_list:
-                if board_item._selected:
-                    board_item.item_position = board_item.__item_position + delta
-                    if board_item.type == BoardItem.types.ITEM_FRAME:
-                        for ch_bi in board_item._children_items:
-                            ch_bi.item_position = ch_bi.__item_position + delta
-            self.init_selection_bounding_box_widget(current_folder)
-            self.check_item_group_under_mouse()
+            if self.translation_ongoing:
+                for board_item in current_folder.board.board_items_list:
+                    if board_item._selected:
+                        board_item.item_position = board_item.__item_position + delta
+                        if board_item.type == BoardItem.types.ITEM_FRAME:
+                            for ch_bi in board_item._children_items:
+                                ch_bi.item_position = ch_bi.__item_position + delta
+                self.init_selection_bounding_box_widget(current_folder)
+                self.check_item_group_under_mouse()
         else:
             self.translation_ongoing = False
 
@@ -2044,6 +2051,12 @@ class BoardMixin():
 
         if event.buttons() == Qt.LeftButton:
 
+            self.board_ALLOW_selected_items_TRANSLATION(event.pos())
+
+            if any((self.translation_ongoing, self.scaling_ongoing, self.rotation_ongoing)):
+                # для создания модификаций
+                pass
+
             if self.transform_cancelled:
                 pass
 
@@ -2053,14 +2066,14 @@ class BoardMixin():
             elif self.rotation_ongoing:
                 self.board_DO_selected_items_ROTATION(event.pos())
 
-            elif no_mod and not self.selection_ongoing:
+            elif self.translation_ongoing:
                 self.board_DO_selected_items_TRANSLATION(event.pos())
                 self.update_selection_bouding_box()
 
             elif self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseMoveEvent(event)
 
-            elif self.selection_ongoing is not None and not self.translation_ongoing:
+            elif self.selection_ongoing is not None:
                 self.selection_end_point = QPointF(event.pos())
                 if self.selection_start_point:
                     self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
