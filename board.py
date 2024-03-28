@@ -233,6 +233,36 @@ class BoardItem():
                 item_type = "GROUP"
             self.status = f'{current_image_num}/{images_count} {item_type}'
 
+    def enable_distortion_fixer(self):
+        if hasattr(self, 'local_end_point'):
+            self._saved_data = (
+                QPointF(self.local_end_point),
+                QPointF(self.local_start_point),
+                self.item_width,
+                self.item_height,
+                self.item_scale_x,
+                self.item_scale_y
+            )
+
+            self.local_end_point.setX(self.local_end_point.x() * self.item_scale_x)
+            self.local_end_point.setY(self.local_end_point.y() * self.item_scale_y)
+
+            self.local_start_point.setX(self.local_start_point.x() * self.item_scale_x)
+            self.local_start_point.setY(self.local_start_point.y() * self.item_scale_y)
+
+            self.item_width *= self.item_scale_x
+            self.item_height *= self.item_scale_y
+            self.item_scale_x = self.item_scale_y = 1.0
+
+    def disable_distortion_fixer(self):
+        if hasattr(self, '_saved_data'):
+            self.local_end_point, \
+            self.local_start_point, \
+            self.item_width, \
+            self.item_height, \
+            self.item_scale_x, \
+            self.item_scale_y = self._saved_data
+
 class BoardMixin(BoardTextEditItemMixin):
 
     def board_init(self):
@@ -585,7 +615,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if board_item.type in [BoardItem.types.ITEM_NOTE]:
 
+            board_item.enable_distortion_fixer()
             self.board_TextElementDrawOnCanvas(painter, board_item, False)
+            board_item.disable_distortion_fixer()
 
         else:
 
