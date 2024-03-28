@@ -3351,9 +3351,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            board_transform_widget_debug_draw = contextMenu.addAction("Отображать отладочную графику виджета трансформации")
-            board_transform_widget_debug_draw.setCheckable(True)
-            board_transform_widget_debug_draw.setChecked(self.board_debug_transform_widget)
+            checkboxes.append(
+                ("Отображать отладочную графику виджета трансформации", self.board_debug_transform_widget, partial(toggle_boolean_var_generic, self, 'board_debug_transform_widget')),
+            )
 
             contextMenu.addSeparator()
 
