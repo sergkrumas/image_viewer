@@ -2996,7 +2996,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif check_scancode_for(event, "F"):
                 Globals.control_panel.manage_favorite_list()
             elif check_scancode_for(event, "C"):
-                self.show_image_center = not self.show_image_center
+                self.STNG_show_image_center = not self.STNG_show_image_center
             elif check_scancode_for(event, "D"):
                 self.STNG_show_thirds = not self.STNG_show_thirds
             elif check_scancode_for(event, "T"):
