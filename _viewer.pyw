@@ -1683,24 +1683,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def toggle_to_frameless_mode(self):
         f_geometry = self.frameGeometry()
         geometry = self.geometry()
-        # self.hide() # вызов может спровоцировать закрытие всего приложения
-        # По какой-то неведомой причине разница между
-        # f_geometry.top() и geometry.top() равна 31, а не 11
-        # Но чтобы был нужный эффект необходимо прибавлять именно 11, а не 31.
-        # Никак не смог вывести почему именно величина в 11 пикселей даёт эффект,
-        # эта величина подобрана экспериментально.
-        # Будет не очень хорошо, если на другом компьютере тут будет несоответствие.
-        # ... и почему для X составляющей не нужны никакие коррективы, а только для Y?
-        if self.animated:
-            MAGIC_CONST = 12
-        else:
-            MAGIC_CONST = 11
-        self.image_center_position += QPointF(f_geometry.left(), f_geometry.top()+MAGIC_CONST)
+        old_pos = self.image_center_position
+        global_offset = self.geometry().topLeft()
         self.frameless_mode = True
         self.set_window_style()
         self.showMaximized()
         desktop = QDesktopWidget()
-        self.image_center_position -= QPointF(desktop.screenGeometry(self).topLeft())
+        r = self.get_image_viewport_rect()
+        w = r.width()
+        h = r.height()
+        # вычитаем, чтобы и на втором мониторе работало тоже
+        global_offset -= self.frameGeometry().topLeft()
+        self.image_center_position = old_pos + global_offset - self.get_center_position()
         self.update()
 
     def showMaximized(self):
