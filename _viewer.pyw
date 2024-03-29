@@ -2675,6 +2675,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setPen(QPen(Qt.green, 5, Qt.SolidLine))
         painter.drawPoint(pos)
 
+        painter.drawPoint(self.get_center_position())
+
     def closeEvent(self, event):
         event.accept()
 
