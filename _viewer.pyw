@@ -3296,6 +3296,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_open_in_google_chrome = None
         board_add_item_group = None
         board_add_item_frame = None
+        board_add_item_note = None
         board_load_highres = None
         board_retrieve_current_from_group_item = None
 
