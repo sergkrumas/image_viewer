@@ -21,7 +21,7 @@
 import sys
 
 from PyQt5.QtWidgets import (QApplication,)
-from PyQt5.QtCore import (QPoint, QPointF, QRect, Qt, QRectF)
+from PyQt5.QtCore import (QPoint, QPointF, QRect, Qt, QRectF, QMarginsF)
 from PyQt5.QtGui import (QPainterPath, QColor, QBrush, QPixmap, QPainter, QTransform, QFont, QPen,
                     QTextDocument, QAbstractTextDocumentLayout, QPalette, QTextCursor, QTextLine)
 
@@ -101,9 +101,11 @@ class BoardTextEditItemMixin():
 
     def board_TextElementRecalculateGabarit(self, element):
         # обновление габаритов виджета трансформации
+
+        MARGIN_OFFSET = 20
         s = element.text_doc.size()
-        width = s.width()
-        height = s.height()
+        margins = QMarginsF(*[MARGIN_OFFSET]*4)
+        s = s.grownBy(margins)
         content_rect = QRectF(QPointF(0, 0), s)
         content_rect.moveCenter(element.item_position)
         element.start_point = content_rect.topLeft()
