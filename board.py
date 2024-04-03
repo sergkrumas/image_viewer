@@ -621,9 +621,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if board_item.type in [BoardItem.types.ITEM_NOTE]:
 
-            board_item.enable_distortion_fixer()
-            self.board_TextElementDrawOnCanvas(painter, board_item, False)
-            board_item.disable_distortion_fixer()
+            if self.Globals.DISABLE_ITEM_DISTORTION_FIXER:
+                self.board_TextElementDrawOnCanvas(painter, board_item, False)
+            else:
+                board_item.enable_distortion_fixer()
+                self.board_TextElementDrawOnCanvas(painter, board_item, False)
+                board_item.disable_distortion_fixer()
 
         else:
 

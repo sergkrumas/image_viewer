@@ -108,8 +108,9 @@ class BoardTextEditItemMixin():
         content_rect.moveCenter(element.item_position)
         element.start_point = content_rect.topLeft()
         element.end_point = content_rect.bottomRight()
-        element.item_scale_x = 1.0
-        element.item_scale_y = 1.0
+        if False:
+            element.item_scale_x = 1.0
+            element.item_scale_y = 1.0
         element.calc_local_data()
 
     def board_GetPenFromElement(self, element):
