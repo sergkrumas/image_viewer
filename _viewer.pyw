@@ -2910,13 +2910,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
 
-        if check_scancode_for(event, "Y"):
+        if check_scancode_for(event, "Y") and not self.active_element:
             if self.frameless_mode:
                 self.toggle_to_frame_mode()
             else:
                 self.toggle_to_frameless_mode()
 
-        elif check_scancode_for(event, "G"):
+        elif check_scancode_for(event, "G") and not self.active_element:
 
             board_status = f'translation ongoing: {self.translation_ongoing}, rotation ongoing: {self.rotation_ongoing}, scale ongoing: {self.scaling_ongoing}, start_translation_pos: {self.start_translation_pos}'
             print(board_status)
@@ -2927,23 +2927,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # time = time.time()
             # LibraryData().create_folder_data(f"{time}", [], virtual=True)
 
-        elif check_scancode_for(event, "Q"):
+        elif check_scancode_for(event, "Q") and not self.active_element:
             LibraryData().show_finder_window()
 
-        elif check_scancode_for(event, "P"):
+        elif check_scancode_for(event, "P") and not self.active_element:
             self.toggle_stay_on_top()
             self.update()
 
-        elif key == Qt.Key_1:
+        elif key == Qt.Key_1 and not self.active_element:
             self.change_page(self.pages.START_PAGE)
 
-        elif key == Qt.Key_2:
+        elif key == Qt.Key_2 and not self.active_element:
             self.change_page(self.pages.VIEWER_PAGE)
 
-        elif key == Qt.Key_3:
+        elif key == Qt.Key_3 and not self.active_element:
             self.change_page(self.pages.BOARD_PAGE)
 
-        elif key == Qt.Key_4:
+        elif key == Qt.Key_4 and not self.active_element:
             self.change_page(self.pages.LIBRARY_PAGE)
 
         elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.active_element:
