@@ -260,7 +260,8 @@ class BoardTextEditItemMixin():
                 # painter.drawRect(block_rect)
                 if self.active_element is element and not final:
                     if block.contains(cursor_pos):
-                        block.layout().drawCursor(painter, QPointF(0,0), cursor_pos, 1)
+                        local_cursor_pos = cursor_pos - block.position()
+                        block.layout().drawCursor(painter, QPointF(0,0), local_cursor_pos, 1)
                 block = block.next()
 
         painter.restore()
