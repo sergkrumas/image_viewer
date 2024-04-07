@@ -3301,6 +3301,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         board_add_item_note = None
         board_load_highres = None
         board_retrieve_current_from_group_item = None
+        board_go_to_note = None
 
         self.contextMenuActivated = True
 
@@ -3369,6 +3370,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             )
 
             contextMenu.addSeparator()
+
+            board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
 
             board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
             command_label = "Добавить новую группу на доску"
@@ -3454,6 +3457,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 Globals.control_panel.show_in_folder()
             elif action == board_add_item_folder:
                 self.board_add_item_folder()
+            elif action == board_go_to_note:
+                self.board_go_to_note(event)
             elif action == board_add_item_group:
                 self.board_add_item_group()
             elif action == board_load_highres:
