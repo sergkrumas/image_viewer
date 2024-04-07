@@ -102,10 +102,7 @@ class BoardTextEditItemMixin():
     def board_TextElementRecalculateGabarit(self, element):
         # обновление габаритов виджета трансформации
 
-        MARGIN_OFFSET = 20
         s = element.text_doc.size()
-        margins = QMarginsF(*[MARGIN_OFFSET]*4)
-        s = s.grownBy(margins)
         content_rect = QRectF(QPointF(0, 0), s)
         content_rect.moveCenter(element.item_position)
         element.start_point = content_rect.topLeft()
@@ -179,8 +176,8 @@ class BoardTextEditItemMixin():
     def board_ImplantTextElement(self, elem):
         text_doc = QTextDocument()
         elem.text_doc = text_doc
-        text_doc.setPlainText(elem.plain_text)
         self.board_TextElementInit(elem)
+        text_doc.setPlainText(elem.plain_text)
 
     def board_TextElementSetFont(self, element):
         font = QFont()
@@ -203,6 +200,7 @@ class BoardTextEditItemMixin():
         self.board_TextElementSetFont(elem)
         text_doc.setTextWidth(-1)
         elem.text_doc_cursor_pos = 0
+        text_doc.setDocumentMargin(50)
 
     def board_TextElementDrawOnCanvas(self, painter, element, final):
         if element.text_doc is not None:
