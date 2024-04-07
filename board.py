@@ -319,6 +319,20 @@ class BoardMixin(BoardTextEditItemMixin):
         self.is_board_text_input_event = False
         self.active_element = None
 
+        self.cursorBlinkingTimer = QTimer()
+        self.cursorBlinkingTimer.setInterval(600)
+        self.cursorBlinkingTimer.timeout.connect(self.board_item_note_cursor_blinking)
+        self.cursorBlinkingTimer.start()
+
+        self.cursorHide = False
+
+    def board_item_note_cursor_blinking(self):
+        ae = self.active_element
+        if ae is not None and ae.type == BoardItem.types.ITEM_NOTE:
+            self.cursorHide = not self.cursorHide
+            self.update()
+
+
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
             self.show_center_label("Нельзя погружаться во время незавершённых операций с доской", error=True)

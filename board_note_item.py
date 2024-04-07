@@ -249,18 +249,19 @@ class BoardTextEditItemMixin():
                 self.board_TextElementDraw(painter, element)
 
             # рисуем курсор
-            doc_layout = text_doc.documentLayout()
-            cursor_pos = element.text_doc_cursor_pos
-            block = text_doc.begin()
-            end = text_doc.end()
-            while block != end:
-                # block_rect = doc_layout.blockBoundingRect(block)
-                # painter.drawRect(block_rect)
-                if self.active_element is element and not final:
-                    if block.contains(cursor_pos):
-                        local_cursor_pos = cursor_pos - block.position()
-                        block.layout().drawCursor(painter, QPointF(0,0), local_cursor_pos, 1)
-                block = block.next()
+            if not self.cursorHide:
+                doc_layout = text_doc.documentLayout()
+                cursor_pos = element.text_doc_cursor_pos
+                block = text_doc.begin()
+                end = text_doc.end()
+                while block != end:
+                    # block_rect = doc_layout.blockBoundingRect(block)
+                    # painter.drawRect(block_rect)
+                    if self.active_element is element and not final:
+                        if block.contains(cursor_pos):
+                            local_cursor_pos = cursor_pos - block.position()
+                            block.layout().drawCursor(painter, QPointF(0,0), local_cursor_pos, 6)
+                    block = block.next()
 
         painter.restore()
         painter.resetTransform()
