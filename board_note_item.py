@@ -200,7 +200,7 @@ class BoardTextEditItemMixin():
         self.board_TextElementSetFont(elem)
         text_doc.setTextWidth(-1)
         elem.text_doc_cursor_pos = 0
-        text_doc.setDocumentMargin(50)
+        text_doc.setDocumentMargin(80)
 
     def board_TextElementDrawOnCanvas(self, painter, element, final):
         if element.text_doc is not None:
