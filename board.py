@@ -1431,7 +1431,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.board_items_list.append(ni)
         ni.item_position = self.board_map_to_board(self.context_menu_exec_point)
-        ni.plain_text = 'test'
+        ni.plain_text = ''
         ni.size = 10.0
         ni.margin_value = 5
         ni.proxy_pixmap = None
