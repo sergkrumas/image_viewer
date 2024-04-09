@@ -56,7 +56,7 @@ class UI_object(object):
                 selection-color: rgb(16, 16, 16);
                 selection-background-color: rgb(221, 51, 34);
                 font-family: Segoe UI;
-                font-size: 11pt;
+                font-size: 12pt;
             }
             QLineEdit::focus{
                 border-color: #aaaaaa;
@@ -595,9 +595,11 @@ def hsv2rgb(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = None
             h, s, v, a = h_or_color
         else:
             h, s, v = h_or_color
-    else: h = h_or_color
+    else:
+        h = h_or_color
     r, g, b = colorsys.hsv_to_rgb(h / 100.0, s / 100.0, v / 100.0)
-    if a is not None: return r * 255, g * 255, b * 255, a
+    if a is not None:
+        return r * 255, g * 255, b * 255, a
     return r * 255, g * 255, b * 255
 
 
@@ -616,9 +618,11 @@ def rgb2hsv(r_or_color: Union[tuple, int], g: int = 0, b: int = 0, a: int = None
             r, g, b, a = r_or_color
         else:
             r, g, b = r_or_color
-    else: r = r_or_color
+    else:
+        r = r_or_color
     h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-    if a is not None: return h * 100, s * 100, v * 100, a
+    if a is not None:
+        return h * 100, s * 100, v * 100, a
     return h * 100, s * 100, v * 100
 
 
@@ -629,8 +633,10 @@ def hex2rgb(hex: str) -> tuple:
     :return: The converted rgb tuple color.
     """
 
-    if len(hex) < 6: hex += "0"*(6-len(hex))
-    elif len(hex) > 6: hex = hex[0:6]
+    if len(hex) < 6:
+        hex += "0"*(6-len(hex))
+    elif len(hex) > 6:
+        hex = hex[0:6]
     rgb = tuple(int(hex[i:i+2], 16) for i in (0,2,4))
     return rgb
 
@@ -645,8 +651,10 @@ def rgb2hex(r_or_color: Union[tuple, int], g: int = 0, b: int = 0, a: int = 0) -
     :return: The converted hexadecimal color.
     """
 
-    if type(r_or_color).__name__ == "tuple": r, g, b = r_or_color[:3]
-    else: r = r_or_color
+    if type(r_or_color).__name__ == "tuple":
+        r, g, b = r_or_color[:3]
+    else:
+        r = r_or_color
     hex = '%02x%02x%02x' % (int(r), int(g), int(b))
     return hex
 
