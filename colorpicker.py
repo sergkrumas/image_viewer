@@ -74,10 +74,12 @@ class Ui_Dark_Alpha(object):
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.drop_shadow_frame = QFrame(ColorPicker)
-        self.drop_shadow_frame.setStyleSheet("""QFrame{
-            background-color: #202020;
-            border-radius: 10px;
-            }""")
+        self.drop_shadow_frame.setStyleSheet("""
+            QFrame{
+                background-color: #202020;
+                border-radius: 10px;
+            }"""
+        )
         self.drop_shadow_frame.setFrameShape(QFrame.StyledPanel)
         self.drop_shadow_frame.setFrameShadow(QFrame.Raised)
         self.drop_shadow_frame.setObjectName("drop_shadow_frame")
@@ -104,11 +106,13 @@ class Ui_Dark_Alpha(object):
         sizePolicy.setHeightForWidth(self.window_title.sizePolicy().hasHeightForWidth())
         self.window_title.setSizePolicy(sizePolicy)
         self.window_title.setMaximumSize(QSize(16777215, 16777215))
-        self.window_title.setStyleSheet("QLabel{\n"
-"    color: #fff;\n"
-"    font-family: Segoe UI;\n"
-"    font-size: 9pt;\n"
-"}")
+        self.window_title.setStyleSheet("""
+            QLabel{
+                color: #fff;
+                font-family: Segoe UI;
+                font-size: 9pt;
+            }"""
+        )
         self.window_title.setAlignment(Qt.AlignCenter)
         self.window_title.setObjectName("window_title")
         self.horizontalLayout_2.addWidget(self.window_title)
@@ -116,14 +120,16 @@ class Ui_Dark_Alpha(object):
         self.exit_btn.setMinimumSize(QSize(16, 16))
         self.exit_btn.setMaximumSize(QSize(16, 16))
         self.exit_btn.setFocusPolicy(Qt.NoFocus)
-        self.exit_btn.setStyleSheet("QPushButton{\n"
-"    border: none;\n"
-"    background-color: #aaaaaa;\n"
-"    border-radius: 8px\n"
-"}\n"
-"QPushButton:hover{\n"
-"    background-color: #666666;\n"
-"}")
+        self.exit_btn.setStyleSheet("""
+            QPushButton{
+                border: none;
+                background-color: #aaaaaa;
+                border-radius: 8px
+            }
+            QPushButton:hover{
+                background-color: #666666;
+            }"""
+        )
         self.exit_btn.setText("")
         icon = QIcon()
         icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
@@ -134,17 +140,19 @@ class Ui_Dark_Alpha(object):
         self.verticalLayout_3.addWidget(self.title_bar)
         self.content_bar = QFrame(self.drop_shadow_frame)
         self.content_bar.setLayoutDirection(Qt.LeftToRight)
-        self.content_bar.setStyleSheet("QWidget{\n"
-"border-radius: 5px\n"
-"}\n"
-"#color_view{\n"
-"    border-bottom-left-radius: 7px;\n"
-"    border-bottom-right-radius: 7px;\n"
-"}\n"
-"#black_overlay{\n"
-"    border-bottom-left-radius: 6px;\n"
-"    border-bottom-right-radius: 6px;\n"
-"}")
+        self.content_bar.setStyleSheet("""
+            QWidget{
+                border-radius: 5px
+            }
+            #color_view{
+                border-bottom-left-radius: 7px;
+                border-bottom-right-radius: 7px;
+            }
+            #black_overlay{
+                border-bottom-left-radius: 6px;
+                border-bottom-right-radius: 6px;
+            }"""
+        )
         self.content_bar.setFrameShape(QFrame.StyledPanel)
         self.content_bar.setFrameShadow(QFrame.Raised)
         self.content_bar.setObjectName("content_bar")
@@ -155,10 +163,7 @@ class Ui_Dark_Alpha(object):
         self.color_view = QFrame(self.content_bar)
         self.color_view.setMinimumSize(QSize(200, 200))
         self.color_view.setMaximumSize(QSize(200, 200))
-        self.color_view.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */;\n"
-"background-color: qlineargradient(x1:1, x2:0, stop:0 hsl(0%,100%,50%), stop:1 rgba(255, 255, 255, 255));\n"
-"\n"
-"")
+        self.color_view.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */; background-color: qlineargradient(x1:1, x2:0, stop:0 hsl(0%,100%,50%), stop:1 rgba(255, 255, 255, 255));")
         self.color_view.setFrameShape(QFrame.StyledPanel)
         self.color_view.setFrameShadow(QFrame.Raised)
         self.color_view.setObjectName("color_view")
@@ -167,10 +172,7 @@ class Ui_Dark_Alpha(object):
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.black_overlay = QFrame(self.color_view)
-        self.black_overlay.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(0, 0, 0, 255));\n"
-"\n"
-"\n"
-"")
+        self.black_overlay.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(0, 0, 0, 255));")
         self.black_overlay.setFrameShape(QFrame.StyledPanel)
         self.black_overlay.setFrameShadow(QFrame.Raised)
         self.black_overlay.setObjectName("black_overlay")
@@ -178,9 +180,7 @@ class Ui_Dark_Alpha(object):
         self.selector.setGeometry(QRect(194, 20, 12, 12))
         self.selector.setMinimumSize(QSize(12, 12))
         self.selector.setMaximumSize(QSize(12, 12))
-        self.selector.setStyleSheet("background-color:none;\n"
-"border: 1px solid white;\n"
-"border-radius: 5px;")
+        self.selector.setStyleSheet("background-color:none; border: 1px solid white; border-radius: 5px;")
         self.selector.setFrameShape(QFrame.StyledPanel)
         self.selector.setFrameShadow(QFrame.Raised)
         self.selector.setObjectName("selector")
@@ -189,9 +189,7 @@ class Ui_Dark_Alpha(object):
         self.black_ring.setMinimumSize(QSize(10, 10))
         self.black_ring.setMaximumSize(QSize(10, 10))
         self.black_ring.setBaseSize(QSize(10, 10))
-        self.black_ring.setStyleSheet("background-color: none;\n"
-"border: 1px solid black;\n"
-"border-radius: 5px;")
+        self.black_ring.setStyleSheet("background-color: none; border: 1px solid black; border-radius: 5px;")
         self.black_ring.setText("")
         self.black_ring.setObjectName("black_ring")
         self.verticalLayout_2.addWidget(self.black_overlay)
@@ -205,16 +203,14 @@ class Ui_Dark_Alpha(object):
         self.hue_bg = QFrame(self.frame_2)
         self.hue_bg.setGeometry(QRect(10, 0, 20, 200))
         self.hue_bg.setMinimumSize(QSize(20, 200))
-        self.hue_bg.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));\n"
-"border-radius: 5px;")
+        self.hue_bg.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255)); border-radius: 5px;")
         self.hue_bg.setFrameShape(QFrame.StyledPanel)
         self.hue_bg.setFrameShadow(QFrame.Raised)
         self.hue_bg.setObjectName("hue_bg")
         self.hue_selector = QLabel(self.frame_2)
         self.hue_selector.setGeometry(QRect(7, 185, 26, 15))
         self.hue_selector.setMinimumSize(QSize(26, 0))
-        self.hue_selector.setStyleSheet("background-color: #aaa;\n"
-"border-radius: 5px;")
+        self.hue_selector.setStyleSheet("background-color: #aaa; border-radius: 5px;")
         self.hue_selector.setText("")
         self.hue_selector.setObjectName("hue_selector")
         self.hue = QFrame(self.frame_2)
@@ -228,14 +224,15 @@ class Ui_Dark_Alpha(object):
         self.editfields = QFrame(self.content_bar)
         self.editfields.setMinimumSize(QSize(110, 200))
         self.editfields.setMaximumSize(QSize(120, 200))
-        self.editfields.setStyleSheet("QLabel{\n"
-"    font-family: Segoe UI;\n"
-"font-weight: bold;\n"
-"    font-size: 11pt;\n"
-"    color: #aaaaaa;\n"
-"    border-radius: 5px;\n"
-"}\n"
-"")
+        self.editfields.setStyleSheet("""
+            QLabel{
+                font-family: Segoe UI;
+                font-weight: bold;
+                font-size: 11pt;
+                color: #aaaaaa;
+                border-radius: 5px;
+            }"""
+        )
         self.editfields.setFrameShape(QFrame.StyledPanel)
         self.editfields.setFrameShadow(QFrame.Raised)
         self.editfields.setObjectName("editfields")
@@ -245,16 +242,13 @@ class Ui_Dark_Alpha(object):
         self.formLayout.setObjectName("formLayout")
         self.color_vis = QLabel(self.editfields)
         self.color_vis.setMinimumSize(QSize(0, 24))
-        self.color_vis.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */;\n"
-"background-color: rgb(255, 255, 255);\n"
-"")
+        self.color_vis.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */; background-color: rgb(255, 255, 255);")
         self.color_vis.setText("")
         self.color_vis.setObjectName("color_vis")
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.color_vis)
         self.lastcolor_vis = QLabel(self.editfields)
         self.lastcolor_vis.setMinimumSize(QSize(0, 24))
-        self.lastcolor_vis.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */;\n"
-"background-color: rgb(0, 0, 0);")
+        self.lastcolor_vis.setStyleSheet("/* ALL CHANGES HERE WILL BE OVERWRITTEN */; background-color: rgb(0, 0, 0);")
         self.lastcolor_vis.setText("")
         self.lastcolor_vis.setObjectName("lastcolor_vis")
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.lastcolor_vis)
@@ -303,11 +297,12 @@ class Ui_Dark_Alpha(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.button_bar.sizePolicy().hasHeightForWidth())
         self.button_bar.setSizePolicy(sizePolicy)
-        self.button_bar.setStyleSheet("QFrame{\n"
-"background-color: #1d1d1d;\n"
-"padding: 5px\n"
-"}\n"
-"")
+        self.button_bar.setStyleSheet("""
+            QFrame{
+                background-color: #1d1d1d;
+                padding: 5px
+            }
+        """)
         self.button_bar.setFrameShape(QFrame.StyledPanel)
         self.button_bar.setFrameShadow(QFrame.Raised)
         self.button_bar.setObjectName("button_bar")
@@ -655,20 +650,11 @@ def hsv2hex(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = 0) -
 __instance = None
 
 def getColor(lc: tuple = None) -> tuple:
-    """Shows the ColorPicker and returns the picked color.
-
-    :param lc: The color to display as previous color.
-    :return: The picked color.
-    """
 
     global __instance
 
     if __instance is None:
-        __instance = ColorPicker(useAlpha=__useAlpha, lightTheme=__lightTheme)
-
-    if __useAlpha != __instance.usingAlpha or __lightTheme != __instance.usingLightTheme:
-        del __instance
-        __instance = ColorPicker(useAlpha=__useAlpha, lightTheme=__lightTheme)
+        __instance = ColorPicker(useAlpha=True)
 
     return __instance.getColor(lc)
 
