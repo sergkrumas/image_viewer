@@ -211,16 +211,16 @@ class UI_object(object):
         self.frame_2.setObjectName("frame_2")
 
         self.hue_bg = QFrame(self.frame_2)
-        self.hue_bg.setGeometry(QRect(10, 0, 20, 200))
-        self.hue_bg.setMinimumSize(QSize(20, 200))
+        self.hue_bg.setGeometry(QRect(10, 0, 10, 200))
+        self.hue_bg.setMinimumSize(QSize(10, 200))
         self.hue_bg.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));")
         self.hue_bg.setFrameShape(QFrame.StyledPanel)
         self.hue_bg.setFrameShadow(QFrame.Raised)
         self.hue_bg.setObjectName("hue_bg")
 
         self.hue_selector = QLabel(self.frame_2)
-        self.hue_selector.setGeometry(QRect(7, 185, 26, 15))
-        self.hue_selector.setMinimumSize(QSize(26, 0))
+        self.hue_selector.setGeometry(QRect(7, 185, 16, 15))
+        self.hue_selector.setMinimumSize(QSize(16, 0))
         self.hue_selector.setStyleSheet("background-color: #aaa;")
         self.hue_selector.setText("")
         self.hue_selector.setObjectName("hue_selector")
@@ -285,7 +285,6 @@ class UI_object(object):
         self.blue.setObjectName("blue")
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.blue)
         self.lbl_hex = QLabel(self.editfields)
-        self.lbl_hex.setStyleSheet("font-size: 14pt;")
         self.lbl_hex.setObjectName("lbl_hex")
         self.formLayout.setWidget(6, QFormLayout.LabelRole, self.lbl_hex)
         self.hex = QLineEdit(self.editfields)
@@ -343,7 +342,8 @@ class UI_object(object):
                     margin: -2px 0;
                 }
         """)
-
+        self.opacity_slider.setMinimum(0)
+        self.opacity_slider.setMaximum(100)
         self.opacity_bar = QFrame(self.drop_shadow_frame)
         self.opacity_bar.setFrameShadow(QFrame.Raised)
 
@@ -373,15 +373,15 @@ class UI_object(object):
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
 
-        self.lbl_red.setText("R")
+        self.lbl_red.setText("R:")
         self.red.setText("255")
-        self.lbl_green.setText("G")
+        self.lbl_green.setText("G:")
         self.green.setText("255")
-        self.lbl_blue.setText("B")
+        self.lbl_blue.setText("B:")
         self.blue.setText("255")
-        self.lbl_hex.setText("#")
+        self.lbl_hex.setText("#:")
         self.hex.setText("ffffff")
-        self.lbl_alpha.setText("A")
+        self.lbl_alpha.setText("A:")
         self.alpha.setText("100")
 
         QMetaObject.connectSlotsByName(ColorPicker)
@@ -427,6 +427,7 @@ class ColorPicker(QDialog):
         self.ui.blue.textEdited.connect(self.rgbChanged)
         self.ui.hex.textEdited.connect(self.hexChanged)
         self.ui.alpha.textEdited.connect(self.alphaChanged)
+        self.ui.opacity_slider.valueChanged.connect(self.alphaSliderChanged)
 
         # Connect window dragging functions
         # self.ui.title_bar.mouseMoveEvent = self.moveWindow
@@ -530,6 +531,12 @@ class ColorPicker(QDialog):
             self.ui.alpha.setText(str(alpha))
             self.ui.alpha.selectAll()
         self.alpha = alpha
+        self.ui.opacity_slider.setValue(self.alpha)
+
+    def alphaSliderChanged(self):
+        alpha = self.ui.opacity_slider.value()
+        self.alpha = alpha
+        self.ui.alpha.setText(str(alpha))
 
     # Internal setting functions
     def setRGB(self, c):
@@ -548,6 +555,7 @@ class ColorPicker(QDialog):
 
     def setAlpha(self, a):
         self.ui.alpha.setText(str(a))
+        self.ui.opacity_slider.setValue(a)
 
     # Dragging Functions
     def setDragPos(self, event):
@@ -735,7 +743,7 @@ def main():
     my_color_picker = ColorPicker()
 
 
-    old_color = (255, 255, 255, 50)
+    old_color = (255, 255, 255, 200)
     picked_color = my_color_picker.getColor(old_color)
     print(picked_color)
 
