@@ -31,6 +31,37 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
+class Slider(QSlider):
+    def mousePressEvent(self, event):
+        super(Slider, self).mousePressEvent(event)
+        if event.button() == Qt.LeftButton:
+            val = self.pixelPosToRangeValue(event.pos())
+            self.setValue(val)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            val = self.pixelPosToRangeValue(event.pos())
+            self.setValue(val)
+
+    def pixelPosToRangeValue(self, pos):
+        opt = QStyleOptionSlider()
+        self.initStyleOption(opt)
+        gr = self.style().subControlRect(QStyle.CC_Slider, opt, QStyle.SC_SliderGroove, self)
+        sr = self.style().subControlRect(QStyle.CC_Slider, opt, QStyle.SC_SliderHandle, self)
+
+        if self.orientation() == Qt.Horizontal:
+            sliderLength = sr.width()
+            sliderMin = gr.x()
+            sliderMax = gr.right() - sliderLength + 1
+        else:
+            sliderLength = sr.height()
+            sliderMin = gr.y()
+            sliderMax = gr.bottom() - sliderLength + 1;
+        pr = pos - sr.center() + sr.topLeft()
+        p = pr.x() if self.orientation() == Qt.Horizontal else pr.y()
+        return QStyle.sliderValueFromPosition(self.minimum(), self.maximum(), p - sliderMin,
+                                               sliderMax - sliderMin, opt.upsideDown)
+
 
 class UI_object(object):
     def setupUi(self, ColorPicker):
@@ -317,7 +348,8 @@ class UI_object(object):
 
 
 
-        self.opacity_slider = QSlider(Qt.Horizontal)
+        self.opacity_slider = Slider(Qt.Horizontal)
+        self.opacity_slider.setTickPosition(QSlider.NoTicks)
         self.opacity_slider.setStyleSheet("""
                 QSlider::groove:horizontal {
                     height: 6px;
