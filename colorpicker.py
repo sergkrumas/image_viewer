@@ -337,25 +337,22 @@ class UI_object(object):
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
 
-        self.retranslateUi(ColorPicker)
+        self.window_title.setText("<strong>COLOR</strong> PICKER")
+        self.lbl_red.setText("R")
+        self.red.setText("255")
+        self.lbl_green.setText("G")
+        self.green.setText("255")
+        self.lbl_blue.setText("B")
+        self.blue.setText("255")
+        self.lbl_hex.setText("#")
+        self.hex.setText("ffffff")
+        self.lbl_alpha.setText("A")
+        self.alpha.setText("100")
+
         QMetaObject.connectSlotsByName(ColorPicker)
         ColorPicker.setTabOrder(self.red, self.green)
         ColorPicker.setTabOrder(self.green, self.blue)
 
-    def retranslateUi(self, ColorPicker):
-        _translate = QCoreApplication.translate
-        ColorPicker.setWindowTitle(_translate("ColorPicker", "Form"))
-        self.window_title.setText(_translate("ColorPicker", "<strong>COLOR</strong> PICKER"))
-        self.lbl_red.setText(_translate("ColorPicker", "R"))
-        self.red.setText(_translate("ColorPicker", "255"))
-        self.lbl_green.setText(_translate("ColorPicker", "G"))
-        self.green.setText(_translate("ColorPicker", "255"))
-        self.lbl_blue.setText(_translate("ColorPicker", "B"))
-        self.blue.setText(_translate("ColorPicker", "255"))
-        self.lbl_hex.setText(_translate("ColorPicker", "#"))
-        self.hex.setText(_translate("ColorPicker", "ffffff"))
-        self.lbl_alpha.setText(_translate("ColorPicker", "A"))
-        self.alpha.setText(_translate("ColorPicker", "100"))
 
 
 
