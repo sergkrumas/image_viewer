@@ -28,54 +28,56 @@ class Ui_Dark_Alpha(object):
         ColorPicker.setSizePolicy(sizePolicy)
         ColorPicker.setMinimumSize(QSize(400, 300))
         ColorPicker.setMaximumSize(QSize(400, 300))
-        ColorPicker.setStyleSheet("QWidget{\n"
-"    background-color: none;\n"
-"}\n"
-"\n"
-"/*  LINE EDIT */\n"
-"QLineEdit{\n"
-"    color: rgb(221, 221, 221);\n"
-"    background-color: #303030;\n"
-"    border: 2px solid #303030;\n"
-"    border-radius: 5px;\n"
-"    selection-color: rgb(16, 16, 16);\n"
-"    selection-background-color: rgb(221, 51, 34);\n"
-"    font-family: Segoe UI;\n"
-"    font-size: 11pt;\n"
-"}\n"
-"QLineEdit::focus{\n"
-"    border-color: #aaaaaa;\n"
-"}\n"
-"\n"
-"/* PUSH BUTTON */\n"
-"QPushButton{\n"
-"    border: 2px solid #aaa;\n"
-"    border-radius: 5px;\n"
-"    font-family: Segoe UI;\n"
-"    font-size: 9pt;\n"
-"    font-weight: bold;\n"
-"    color: #ccc;\n"
-"    width: 100px;\n"
-"}\n"
-"QPushButton:hover{\n"
-"    border: 2px solid #aaa;\n"
-"    color: #222;\n"
-"    background-color: #aaa;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"    border: 2px solid #aaa;\n"
-"    color: #222;\n"
-"    background-color: #aaa;\n"
-"}")
+        ColorPicker.setStyleSheet("""
+            QWidget{
+                background-color: none;
+            }
+            
+            /*  LINE EDIT */
+            QLineEdit{
+                color: rgb(221, 221, 221);
+                background-color: #303030;
+                border: 2px solid #303030;
+                border-radius: 5px;
+                selection-color: rgb(16, 16, 16);
+                selection-background-color: rgb(221, 51, 34);
+                font-family: Segoe UI;
+                font-size: 11pt;
+            }
+            QLineEdit::focus{
+                border-color: #aaaaaa;
+            }
+            
+            /* PUSH BUTTON */
+            QPushButton{
+                border: 2px solid #aaa;
+                border-radius: 5px;
+                font-family: Segoe UI;
+                font-size: 9pt;
+                font-weight: bold;
+                color: #ccc;
+                width: 100px;
+            }
+            QPushButton:hover{
+                border: 2px solid #aaa;
+                color: #222;
+                background-color: #aaa;
+            }
+            QPushButton:pressed{
+                border: 2px solid #aaa;
+                color: #222;
+                background-color: #aaa;
+            }"""
+        )
         self.verticalLayout = QVBoxLayout(ColorPicker)
         self.verticalLayout.setContentsMargins(10, 10, 10, 10)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.drop_shadow_frame = QFrame(ColorPicker)
-        self.drop_shadow_frame.setStyleSheet("QFrame{\n"
-"background-color: #202020;\n"
-"border-radius: 10px;\n"
-"}")
+        self.drop_shadow_frame.setStyleSheet("""QFrame{
+            background-color: #202020;
+            border-radius: 10px;
+            }""")
         self.drop_shadow_frame.setFrameShape(QFrame.StyledPanel)
         self.drop_shadow_frame.setFrameShadow(QFrame.Raised)
         self.drop_shadow_frame.setObjectName("drop_shadow_frame")
