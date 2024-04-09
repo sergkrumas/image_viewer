@@ -314,9 +314,9 @@ class UI_object(object):
         self.button_bar.setStyleSheet("""
             QFrame{
                 background-color: #1d1d1d;
-                padding: 5px
-            }
-        """)
+                padding: 0px;
+            }"""
+        )
         self.button_bar.setFrameShape(QFrame.StyledPanel)
         self.button_bar.setFrameShadow(QFrame.Raised)
         self.button_bar.setObjectName("button_bar")
