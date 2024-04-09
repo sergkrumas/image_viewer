@@ -325,6 +325,29 @@ class UI_object(object):
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName("buttonBox")
+
+        self.opacity_slider = QSlider(Qt.Horizontal)
+        self.opacity_slider.setStyleSheet("""
+                QSlider::groove:horizontal {
+                    height: 6px;
+                    background: #333333;
+                    margin: 0px 0;
+                }
+
+                QSlider::handle:horizontal {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);
+                    width: 18px;
+                    margin: -2px 0;
+                }
+        """)
+
+
+        self.opacity_slider_layout = QHBoxLayout()
+
+        self.lbl_alpha_slider = QLabel(self.opacity_slider)
+        self.lbl_alpha_slider.setText('Opacity:')
+        self.verticalLayout_3.addWidget(self.opacity_slider)
+
         self.horizontalLayout_3.addWidget(self.buttonBox)
         self.verticalLayout_3.addWidget(self.button_bar)
         self.verticalLayout.addWidget(self.drop_shadow_frame)
@@ -333,6 +356,7 @@ class UI_object(object):
         self.lbl_blue.setBuddy(self.blue)
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
+        self.lbl_alpha_slider.setBuddy(self.opacity_slider)
 
         # self.window_title.setText("<strong>COLOR</strong> PICKER")
         self.lbl_red.setText("R")
