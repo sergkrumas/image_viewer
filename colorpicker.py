@@ -649,33 +649,8 @@ def hsv2hex(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = 0) -
     return rgb2hex(hsv2rgb(h, s, v))
 
 
-# toplevel functions
 
 __instance = None
-__lightTheme = False
-__useAlpha = False
-
-
-def useAlpha(value=True) -> None:
-    """Set if the ColorPicker should display an alpha field.
-
-    :param value: True for alpha field, False for no alpha field. Defaults to True
-    :return:
-    """
-    global __useAlpha
-    __useAlpha = value
-
-
-def useLightTheme(value=True) -> None:
-    """Set if the ColorPicker should use the light theme.
-
-    :param value: True for light theme, False for dark theme. Defaults to True
-    :return: None
-    """
-
-    global __lightTheme
-    __lightTheme = value
-
 
 def getColor(lc: tuple = None) -> tuple:
     """Shows the ColorPicker and returns the picked color.
@@ -695,7 +670,6 @@ def getColor(lc: tuple = None) -> tuple:
 
     return __instance.getColor(lc)
 
-
 def main():
     my_color_picker = ColorPicker(useAlpha=True)
 
@@ -704,8 +678,7 @@ def main():
     picked_color = my_color_picker.getColor(old_color)
     print(picked_color)
 
-        
 
 
 if __name__ == '__main__':
-        main()
+    main()
