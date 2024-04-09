@@ -56,7 +56,7 @@ class UI_object(object):
                 selection-color: rgb(16, 16, 16);
                 selection-background-color: rgb(221, 51, 34);
                 font-family: Segoe UI;
-                font-size: 12pt;
+                font-size: 10pt;
             }
             QLineEdit::focus{
                 border-color: #aaaaaa;
@@ -521,9 +521,10 @@ class ColorPicker(QDialog):
     def moveWindow(self, event):
         # MOVE WINDOW
         if event.buttons() == Qt.LeftButton:
-            self.move(self.pos() + event.globalPos() - self.dragPos)
-            self.dragPos = event.globalPos()
-            event.accept()
+            if hasattr(self, 'dragPos'):
+                self.move(self.pos() + event.globalPos() - self.dragPos)
+                self.dragPos = event.globalPos()
+                event.accept()
 
     def moveSVSelector(self, event):
         if event.buttons() == Qt.LeftButton:
