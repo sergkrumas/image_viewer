@@ -36,7 +36,7 @@ class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
         size_w = 400
-        size_h = 350
+        size_h = 380
         ColorPicker.resize(size_w, size_h)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -78,19 +78,22 @@ class UI_object(object):
         )
         self.verticalLayout = QVBoxLayout(ColorPicker)
         self.verticalLayout.setContentsMargins(10, 10, 10, 10)
-        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setSpacing(10)
         self.verticalLayout.setObjectName("verticalLayout")
         self.drop_shadow_frame = QFrame(ColorPicker)
+        self.drop_shadow_frame.setObjectName("main")
         self.drop_shadow_frame.setStyleSheet("""
             QFrame{
-                background-color: #202020;
-            }"""
+                background: #202020;
+                border: 1px solid black;
+            }
+        """
         )
         self.drop_shadow_frame.setFrameShape(QFrame.StyledPanel)
         self.drop_shadow_frame.setFrameShadow(QFrame.Raised)
         self.drop_shadow_frame.setObjectName("drop_shadow_frame")
         self.verticalLayout_3 = QVBoxLayout(self.drop_shadow_frame)
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_3.setContentsMargins(10, 10, 10, 10)
         self.verticalLayout_3.setSpacing(10)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         # self.title_bar = QFrame(self.drop_shadow_frame)
@@ -148,10 +151,11 @@ class UI_object(object):
         self.content_bar.setLayoutDirection(Qt.LeftToRight)
         self.content_bar.setStyleSheet("""
             QWidget{
+                border: none;
             }
             #color_view{
                 border: 1px;
-            }        self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
+            }
             #black_overlay{
                 border: 1px;
             }"""
@@ -175,7 +179,7 @@ class UI_object(object):
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.black_overlay = QFrame(self.color_view)
-        self.black_overlay.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(0, 0, 0, 255));")
+        self.black_overlay.setStyleSheet("border: none; background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(0, 0, 0, 255));")
         self.black_overlay.setFrameShape(QFrame.StyledPanel)
         self.black_overlay.setFrameShadow(QFrame.Raised)
         self.black_overlay.setObjectName("black_overlay")
@@ -204,6 +208,7 @@ class UI_object(object):
         self.frame_2.setFrameShape(QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
+        self.frame_2.setStyleSheet('border: none;')
 
         self.hue_bg = QFrame(self.frame_2)
         self.hue_bg.setGeometry(QRect(10, 0, 10, 200))
@@ -236,6 +241,7 @@ class UI_object(object):
                 font-family: Segoe UI;
                 font-size: 9pt;
                 color: #aaaaaa;
+                border: none;
             }"""
         )
         self.editfields.setFrameShape(QFrame.StyledPanel)
@@ -301,15 +307,11 @@ class UI_object(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.button_bar.sizePolicy().hasHeightForWidth())
         self.button_bar.setSizePolicy(sizePolicy)
-        self.button_bar.setStyleSheet("""
-            QFrame{
-                background-color: #1d1d1d;
-                padding: 0px;
-            }"""
-        )
+
         self.button_bar.setFrameShape(QFrame.StyledPanel)
         self.button_bar.setFrameShadow(QFrame.Raised)
         self.button_bar.setObjectName("button_bar")
+        self.button_bar.setStyleSheet('border: none;')
         self.horizontalLayout_3 = QHBoxLayout(self.button_bar)
         self.horizontalLayout_3.setContentsMargins(100, 0, 100, 0)
         self.horizontalLayout_3.setSpacing(10)
@@ -340,6 +342,7 @@ class UI_object(object):
         self.opacity_slider.setMinimum(0)
         self.opacity_slider.setMaximum(100)
         self.opacity_bar = QFrame(self.drop_shadow_frame)
+        self.opacity_bar.setStyleSheet('border: none;')
         self.opacity_bar.setFrameShadow(QFrame.Raised)
 
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
