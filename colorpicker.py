@@ -24,6 +24,7 @@
 
 import colorsys
 from typing import Union
+from functools import partial
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -52,14 +53,11 @@ class UI_object(object):
             QLineEdit{
                 color: rgb(221, 221, 221);
                 background-color: #303030;
-                border: 2px solid #303030;
+                border: 1px solid black;
                 selection-color: rgb(16, 16, 16);
                 selection-background-color: rgb(221, 51, 34);
                 font-family: Segoe UI;
                 font-size: 10pt;
-            }
-            QLineEdit::focus{
-                border-color: #aaaaaa;
             }
             /* PUSH BUTTON */
             QPushButton{
@@ -429,6 +427,12 @@ class ColorPicker(QDialog):
         self.ui.alpha.textEdited.connect(self.alphaChanged)
         self.ui.opacity_slider.valueChanged.connect(self.alphaSliderChanged)
 
+
+        self.ui.alpha.wheelEvent = partial(ColorPicker.textfield_wheelEvent, self, self.ui.alpha)
+        self.ui.red.wheelEvent = partial(ColorPicker.textfield_wheelEvent, self, self.ui.red)
+        self.ui.blue.wheelEvent = partial(ColorPicker.textfield_wheelEvent, self, self.ui.blue)
+        self.ui.green.wheelEvent = partial(ColorPicker.textfield_wheelEvent, self, self.ui.green)
+
         # Connect window dragging functions
         # self.ui.title_bar.mouseMoveEvent = self.moveWindow
         # self.ui.title_bar.mousePressEvent = self.setDragPos
@@ -447,6 +451,21 @@ class ColorPicker(QDialog):
         self.lastcolor = (0, 0, 0)
         self.color = (0, 0, 0)
         self.alpha = 100
+
+    def textfield_wheelEvent(self, textEditObj, event):
+        value = self.i(textEditObj.text())
+        if event.angleDelta().y() > 0:
+            value += 1
+        else:
+            value -= 1
+        objectName = textEditObj.objectName()
+        if objectName == 'alpha':
+            value = min(100, max(0, value))
+        elif objectName in ['red', 'green', 'blue']:
+            value = min(255, max(0, value))
+        textEditObj.setText(str(value))
+        textEditObj.setFocus()
+        textEditObj.selectAll()
 
     def getColor(self, lc: tuple = None):
         """Open the UI and get a color from the user.
