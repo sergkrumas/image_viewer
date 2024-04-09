@@ -234,7 +234,7 @@ class UI_object(object):
         self.hue.setObjectName("hue")
         self.horizontalLayout.addWidget(self.frame_2)
         self.editfields = QFrame(self.content_bar)
-        self.editfields.setMinimumSize(QSize(110, 200))
+        self.editfields.setMinimumSize(QSize(120, 200))
         self.editfields.setMaximumSize(QSize(120, 200))
         self.editfields.setStyleSheet("""
             QLabel{
