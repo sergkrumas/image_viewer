@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import *
 
 
 
-class Ui_Dark_Alpha(object):
+class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
         ColorPicker.resize(400, 300)
@@ -358,7 +358,7 @@ class ColorPicker(QDialog):
 
         self.usingAlpha = True
 
-        self.ui = Ui_Dark_Alpha()
+        self.ui = UI_object()
         self.ui.setupUi(self)
 
         # Make Frameless
