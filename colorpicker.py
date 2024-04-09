@@ -348,7 +348,7 @@ class Ui_Dark_Alpha(object):
 
 class ColorPicker(QDialog):
 
-    def __init__(self, useAlpha: bool = False):
+    def __init__(self):
 
         # auto-create QApplication if it doesn't exist yet
         self.app = QApplication.instance()
@@ -654,12 +654,12 @@ def getColor(lc: tuple = None) -> tuple:
     global __instance
 
     if __instance is None:
-        __instance = ColorPicker(useAlpha=True)
+        __instance = ColorPicker()
 
     return __instance.getColor(lc)
 
 def main():
-    my_color_picker = ColorPicker(useAlpha=True)
+    my_color_picker = ColorPicker()
 
 
     old_color = (255, 255, 255, 50)
