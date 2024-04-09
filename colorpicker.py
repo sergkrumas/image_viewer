@@ -441,11 +441,9 @@ class ColorPicker(QDialog):
             r, g, b = hsv2rgb(self.color)
             self.lastcolor = (r, g, b)
             return (r, g, b, self.alpha)
-
-
         else:
-            print('test')
-            return self.lastcolor
+            r, g, b = self.lastcolor
+            return (r, g, b, self.alpha)
 
     # Update Functions
     def hsvChanged(self):
