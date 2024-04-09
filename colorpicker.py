@@ -35,7 +35,7 @@ from PyQt5.QtWidgets import *
 class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
-        size_w = 400
+        size_w = 450
         size_h = 400
         ColorPicker.resize(size_w, size_h)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -112,6 +112,14 @@ class UI_object(object):
         spacerItem = QSpacerItem(16, 0, QSizePolicy.Fixed, QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
 
+
+
+
+
+
+
+
+
         self.window_title = QLabel(self.title_bar)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -129,26 +137,6 @@ class UI_object(object):
         self.window_title.setAlignment(Qt.AlignCenter)
         self.window_title.setObjectName("window_title")
         self.horizontalLayout_2.addWidget(self.window_title)
-        self.exit_btn = QPushButton(self.title_bar)
-        self.exit_btn.setMinimumSize(QSize(16, 16))
-        self.exit_btn.setMaximumSize(QSize(16, 16))
-        self.exit_btn.setFocusPolicy(Qt.NoFocus)
-        self.exit_btn.setStyleSheet("""
-            QPushButton{
-                border: none;
-                background-color: #aaaaaa;
-            }
-            QPushButton:hover{
-                background-color: #666666;
-            }"""
-        )
-        self.exit_btn.setText("")
-        icon = QIcon()
-        icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
-        self.exit_btn.setIcon(icon)
-        self.exit_btn.setIconSize(QSize(12, 12))
-        self.exit_btn.setObjectName("exit_btn")
-        self.horizontalLayout_2.addWidget(self.exit_btn)
         self.verticalLayout_3.addWidget(self.title_bar)
 
         self.content_bar = QFrame(self.drop_shadow_frame)
@@ -321,7 +309,7 @@ class UI_object(object):
         self.horizontalLayout_3.setSpacing(10)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.buttonBox = QDialogButtonBox(self.button_bar)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok | QDialogButtonBox.Close)
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName("buttonBox")
 
@@ -375,7 +363,7 @@ class UI_object(object):
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
 
-        self.window_title.setText('Select Color')
+        self.window_title.setText('<b>Select Color<b>')
         self.lbl_red.setText("R:")
         self.red.setText("255")
         self.lbl_green.setText("G:")
@@ -451,7 +439,6 @@ class ColorPicker(QDialog):
         # Connect Ok|Cancel Button Box and X Button
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
-        self.ui.exit_btn.clicked.connect(self.reject)
 
         self.lastcolor = (0, 0, 0)
         self.color = (0, 0, 0)
