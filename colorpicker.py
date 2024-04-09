@@ -370,7 +370,6 @@ class ColorPicker(QDialog):
 
         super(ColorPicker, self).__init__()
 
-        self.usingAlpha = True
 
         self.ui = UI_object()
         self.ui.setupUi(self)
@@ -395,7 +394,7 @@ class ColorPicker(QDialog):
         self.ui.green.textEdited.connect(self.rgbChanged)
         self.ui.blue.textEdited.connect(self.rgbChanged)
         self.ui.hex.textEdited.connect(self.hexChanged)
-        if self.usingAlpha: self.ui.alpha.textEdited.connect(self.alphaChanged)
+        self.ui.alpha.textEdited.connect(self.alphaChanged)
 
         # Connect window dragging functions
         self.ui.title_bar.mouseMoveEvent = self.moveWindow
@@ -423,7 +422,7 @@ class ColorPicker(QDialog):
         :return: The selected color.
         """
 
-        if lc != None and self.usingAlpha:
+        if lc != None:
             alpha = lc[3]
             lc = lc[:3]
             self.setAlpha(alpha)
@@ -435,17 +434,17 @@ class ColorPicker(QDialog):
 
         self.setRGB(lc)
         self.rgbChanged()
-        r,g,b = lc
+        r, g, b = lc
         self.ui.lastcolor_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
 
         if self.exec_():
             r, g, b = hsv2rgb(self.color)
-            self.lastcolor = (r,g,b)
-            if self.usingAlpha:
-                return (r,g,b,self.alpha)
-            return (r,g,b)
+            self.lastcolor = (r, g, b)
+            return (r, g, b, self.alpha)
+
 
         else:
+            print('test')
             return self.lastcolor
 
     # Update Functions
@@ -459,8 +458,8 @@ class ColorPicker(QDialog):
         self.ui.color_view.setStyleSheet(f"border-radius: 5px;background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({h}%,100%,50%), stop:1 #fff);")
 
     def rgbChanged(self):
-        r,g,b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
-        cr,cg,cb = self.clampRGB((r,g,b))
+        r, g, b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
+        cr, cg, cb = self.clampRGB((r,g,b))
 
         if r != cr or (r == 0 and self.ui.red.hasFocus()):
             self.setRGB((cr,cg,cb))
@@ -504,7 +503,7 @@ class ColorPicker(QDialog):
 
     # Internal setting functions
     def setRGB(self, c):
-        r,g,b = c
+        r, g, b = c
         self.ui.red.setText(str(self.i(r)))
         self.ui.green.setText(str(self.i(g)))
         self.ui.blue.setText(str(self.i(b)))
@@ -674,8 +673,10 @@ def hsv2hex(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = 0) -
     :return: The converted hexadecimal color.
     """
 
-    if type(h_or_color).__name__ == "tuple": h, s, v = h_or_color[:3]
-    else: h = h_or_color
+    if type(h_or_color).__name__ == "tuple":
+        h, s, v = h_or_color[:3]
+    else:
+        h = h_or_color
     return rgb2hex(hsv2rgb(h, s, v))
 
 
