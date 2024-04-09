@@ -36,7 +36,7 @@ class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
         size_w = 400
-        size_h = 320
+        size_h = 350
         ColorPicker.resize(size_w, size_h)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -61,22 +61,19 @@ class UI_object(object):
             }
             /* PUSH BUTTON */
             QPushButton{
-                border: 2px solid #aaa;
+                border: 0px;
                 font-family: Segoe UI;
                 font-size: 9pt;
-                font-weight: bold;
-                color: #ccc;
+                color: #888;
                 width: 100px;
+                height: 50px;
+                background: #111111;
             }
             QPushButton:hover{
-                border: 2px solid #aaa;
-                color: #222;
-                background-color: #aaa;
+                color: #eee;
             }
             QPushButton:pressed{
-                border: 2px solid #aaa;
-                color: #222;
-                background-color: #aaa;
+                color: #eee;
             }"""
         )
         self.verticalLayout = QVBoxLayout(ColorPicker)
@@ -466,6 +463,7 @@ class ColorPicker(QDialog):
         textEditObj.setText(str(value))
         textEditObj.setFocus()
         textEditObj.selectAll()
+        self.rgbChanged()
 
     def getColor(self, lc: tuple = None):
         """Open the UI and get a color from the user.
