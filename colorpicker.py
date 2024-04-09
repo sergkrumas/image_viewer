@@ -414,8 +414,10 @@ class ColorPicker(QDialog):
             lc = lc[:3]
             self.setAlpha(alpha)
             self.alpha = alpha
-        if lc == None: lc = self.lastcolor
-        else: self.lastcolor = lc
+        if lc == None:
+            lc = self.lastcolor
+        else:
+            self.lastcolor = lc
 
         self.setRGB(lc)
         self.rgbChanged()
@@ -425,7 +427,8 @@ class ColorPicker(QDialog):
         if self.exec_():
             r, g, b = hsv2rgb(self.color)
             self.lastcolor = (r,g,b)
-            if self.usingAlpha: return (r,g,b,self.alpha)
+            if self.usingAlpha:
+                return (r,g,b,self.alpha)
             return (r,g,b)
 
         else:
@@ -445,19 +448,19 @@ class ColorPicker(QDialog):
         r,g,b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
         cr,cg,cb = self.clampRGB((r,g,b))
 
-        if r!=cr or (r==0 and self.ui.red.hasFocus()):
+        if r != cr or (r == 0 and self.ui.red.hasFocus()):
             self.setRGB((cr,cg,cb))
             self.ui.red.selectAll()
-        if g!=cg or (g==0 and self.ui.green.hasFocus()):
+        if g != cg or (g == 0 and self.ui.green.hasFocus()):
             self.setRGB((cr,cg,cb))
             self.ui.green.selectAll()
-        if b!=cb or (b==0 and self.ui.blue.hasFocus()):
+        if b != cb or (b == 0 and self.ui.blue.hasFocus()):
             self.setRGB((cr,cg,cb))
             self.ui.blue.selectAll()
 
-        self.color = rgb2hsv(r,g,b)
+        self.color = rgb2hsv(r, g, b)
         self.setHSV(self.color)
-        self.setHex(rgb2hex((r,g,b)))
+        self.setHex(rgb2hex((r, g, b)))
         self.ui.color_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
 
     def hexChanged(self):
@@ -476,8 +479,10 @@ class ColorPicker(QDialog):
     def alphaChanged(self):
         alpha = self.i(self.ui.alpha.text())
         oldalpha = alpha
-        if alpha < 0: alpha = 0
-        if alpha > 100: alpha = 100
+        if alpha < 0:
+            alpha = 0
+        if alpha > 100:
+            alpha = 100
         if alpha != oldalpha or alpha == 0:
             self.ui.alpha.setText(str(alpha))
             self.ui.alpha.selectAll()
@@ -515,18 +520,24 @@ class ColorPicker(QDialog):
     def moveSVSelector(self, event):
         if event.buttons() == Qt.LeftButton:
             pos = event.pos()
-            if pos.x() < 0: pos.setX(0)
-            if pos.y() < 0: pos.setY(0)
-            if pos.x() > 200: pos.setX(200)
-            if pos.y() > 200: pos.setY(200)
+            if pos.x() < 0:
+                pos.setX(0)
+            if pos.y() < 0:
+                pos.setY(0)
+            if pos.x() > 200:
+                pos.setX(200)
+            if pos.y() > 200:
+                pos.setY(200)
             self.ui.selector.move(pos - QPoint(6,6))
             self.hsvChanged()
 
     def moveHueSelector(self, event):
         if event.buttons() == Qt.LeftButton:
             pos = event.pos().y() - 7
-            if pos < 0: pos = 0
-            if pos > 185: pos = 185
+            if pos < 0:
+                pos = 0
+            if pos > 185:
+                pos = 185
             self.ui.hue_selector.move(QPoint(7, pos))
             self.hsvChanged()
 
@@ -534,18 +545,26 @@ class ColorPicker(QDialog):
 
     # Custom int() function, that converts invalid strings to 0
     def i(self, text):
-        try: return int(text)
-        except ValueError: return 0
+        try:
+            return int(text)
+        except ValueError:
+            return 0
 
     # clamp function to remove near-zero values
     def clampRGB(self, rgb):
         r, g, b = rgb
-        if r<0.0001: r=0
-        if g<0.0001: g=0
-        if b<0.0001: b=0
-        if r>255: r=255
-        if g>255: g=255
-        if b>255: b=255
+        if r < 0.0001:
+            r = 0
+        if g < 0.0001:
+            g = 0
+        if b < 0.0001:
+            b = 0
+        if r > 255:
+            r = 255
+        if g > 255:
+            g = 255
+        if b > 255:
+            b = 255
         return r, g, b
 
 
