@@ -36,7 +36,7 @@ class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
         size_w = 400
-        size_h = 380
+        size_h = 400
         ColorPicker.resize(size_w, size_h)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -96,57 +96,61 @@ class UI_object(object):
         self.verticalLayout_3.setContentsMargins(10, 10, 10, 10)
         self.verticalLayout_3.setSpacing(10)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        # self.title_bar = QFrame(self.drop_shadow_frame)
-        # self.title_bar.setMinimumSize(QSize(0, 32))
-        # self.title_bar.setStyleSheet("background-color: rgb(48, 48, 48);")
-        # self.title_bar.setFrameShape(QFrame.StyledPanel)
-        # self.title_bar.setFrameShadow(QFrame.Raised)
-        # self.title_bar.setObjectName("title_bar")
-        # self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
+
+        self.title_bar = QFrame(self.drop_shadow_frame)
+        self.title_bar.setMinimumSize(QSize(0, 32))
+        self.title_bar.setStyleSheet("background-color: rgb(48, 48, 48); border: none;")
+        self.title_bar.setFrameShape(QFrame.StyledPanel)
+        self.title_bar.setFrameShadow(QFrame.Raised)
+        self.title_bar.setObjectName("title_bar")
+        self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
+
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setContentsMargins(10, 0, 10, 0)
         self.horizontalLayout_2.setSpacing(5)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         spacerItem = QSpacerItem(16, 0, QSizePolicy.Fixed, QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        # self.window_title = QLabel(self.title_bar)
-        # sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        # sizePolicy.setHorizontalStretch(0)
-        # sizePolicy.setVerticalStretch(0)
-        # sizePolicy.setHeightForWidth(self.window_title.sizePolicy().hasHeightForWidth())
-        # self.window_title.setSizePolicy(sizePolicy)
-        # self.window_title.setMaximumSize(QSize(16777215, 16777215))
-        # self.window_title.setStyleSheet("""
-        #     QLabel{
-        #         color: #fff;
-        #         font-family: Segoe UI;
-        #         font-size: 9pt;
-        #     }"""
-        # )
-        # self.window_title.setAlignment(Qt.AlignCenter)
-        # self.window_title.setObjectName("window_title")
-        # self.horizontalLayout_2.addWidget(self.window_title)
-        # self.exit_btn = QPushButton(self.title_bar)
-        # self.exit_btn.setMinimumSize(QSize(16, 16))
-        # self.exit_btn.setMaximumSize(QSize(16, 16))
-        # self.exit_btn.setFocusPolicy(Qt.NoFocus)
-        # self.exit_btn.setStyleSheet("""
-        #     QPushButton{
-        #         border: none;
-        #         background-color: #aaaaaa;
-        #     }
-        #     QPushButton:hover{
-        #         background-color: #666666;
-        #     }"""
-        # )
-        # self.exit_btn.setText("")
-        # icon = QIcon()
-        # icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
-        # self.exit_btn.setIcon(icon)
-        # self.exit_btn.setIconSize(QSize(12, 12))
-        # self.exit_btn.setObjectName("exit_btn")
-        # self.horizontalLayout_2.addWidget(self.exit_btn)
-        # self.verticalLayout_3.addWidget(self.title_bar)
+
+        self.window_title = QLabel(self.title_bar)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.window_title.sizePolicy().hasHeightForWidth())
+        self.window_title.setSizePolicy(sizePolicy)
+        self.window_title.setMaximumSize(QSize(16777215, 16777215))
+        self.window_title.setStyleSheet("""
+            QLabel{
+                color: #fff;
+                font-family: Segoe UI;
+                font-size: 9pt;
+            }"""
+        )
+        self.window_title.setAlignment(Qt.AlignCenter)
+        self.window_title.setObjectName("window_title")
+        self.horizontalLayout_2.addWidget(self.window_title)
+        self.exit_btn = QPushButton(self.title_bar)
+        self.exit_btn.setMinimumSize(QSize(16, 16))
+        self.exit_btn.setMaximumSize(QSize(16, 16))
+        self.exit_btn.setFocusPolicy(Qt.NoFocus)
+        self.exit_btn.setStyleSheet("""
+            QPushButton{
+                border: none;
+                background-color: #aaaaaa;
+            }
+            QPushButton:hover{
+                background-color: #666666;
+            }"""
+        )
+        self.exit_btn.setText("")
+        icon = QIcon()
+        icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
+        self.exit_btn.setIcon(icon)
+        self.exit_btn.setIconSize(QSize(12, 12))
+        self.exit_btn.setObjectName("exit_btn")
+        self.horizontalLayout_2.addWidget(self.exit_btn)
+        self.verticalLayout_3.addWidget(self.title_bar)
+
         self.content_bar = QFrame(self.drop_shadow_frame)
         self.content_bar.setLayoutDirection(Qt.LeftToRight)
         self.content_bar.setStyleSheet("""
@@ -371,6 +375,7 @@ class UI_object(object):
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
 
+        self.window_title.setText('Select Color')
         self.lbl_red.setText("R:")
         self.red.setText("255")
         self.lbl_green.setText("G:")
@@ -434,10 +439,10 @@ class ColorPicker(QDialog):
         self.ui.green.wheelEvent = partial(ColorPicker.textfield_wheelEvent, self, self.ui.green)
 
         # Connect window dragging functions
-        # self.ui.title_bar.mouseMoveEvent = self.moveWindow
-        # self.ui.title_bar.mousePressEvent = self.setDragPos
-        # self.ui.window_title.mouseMoveEvent = self.moveWindow
-        # self.ui.window_title.mousePressEvent = self.setDragPos
+        self.ui.title_bar.mouseMoveEvent = self.moveWindow
+        self.ui.title_bar.mousePressEvent = self.setDragPos
+        self.ui.window_title.mouseMoveEvent = self.moveWindow
+        self.ui.window_title.mousePressEvent = self.setDragPos
 
         # Connect selector moving function
         self.ui.black_overlay.mouseMoveEvent = self.moveSVSelector
@@ -446,7 +451,7 @@ class ColorPicker(QDialog):
         # Connect Ok|Cancel Button Box and X Button
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
-        # self.ui.exit_btn.clicked.connect(self.reject)
+        self.ui.exit_btn.clicked.connect(self.reject)
 
         self.lastcolor = (0, 0, 0)
         self.color = (0, 0, 0)
@@ -763,7 +768,7 @@ def main():
     my_color_picker = ColorPicker()
 
 
-    old_color = (255, 255, 255, 200)
+    old_color = (255, 255, 255, 100)
     picked_color = my_color_picker.getColor(old_color)
     print(picked_color)
 
