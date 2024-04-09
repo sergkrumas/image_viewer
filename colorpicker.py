@@ -203,12 +203,14 @@ class UI_object(object):
         self.black_ring.setObjectName("black_ring")
         self.verticalLayout_2.addWidget(self.black_overlay)
         self.horizontalLayout.addWidget(self.color_view)
+
         self.frame_2 = QFrame(self.content_bar)
         self.frame_2.setMinimumSize(QSize(40, 0))
         self.frame_2.setStyleSheet("")
         self.frame_2.setFrameShape(QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
+
         self.hue_bg = QFrame(self.frame_2)
         self.hue_bg.setGeometry(QRect(10, 0, 20, 200))
         self.hue_bg.setMinimumSize(QSize(20, 200))
@@ -216,12 +218,14 @@ class UI_object(object):
         self.hue_bg.setFrameShape(QFrame.StyledPanel)
         self.hue_bg.setFrameShadow(QFrame.Raised)
         self.hue_bg.setObjectName("hue_bg")
+
         self.hue_selector = QLabel(self.frame_2)
         self.hue_selector.setGeometry(QRect(7, 185, 26, 15))
         self.hue_selector.setMinimumSize(QSize(26, 0))
         self.hue_selector.setStyleSheet("background-color: #aaa;")
         self.hue_selector.setText("")
         self.hue_selector.setObjectName("hue_selector")
+
         self.hue = QFrame(self.frame_2)
         self.hue.setGeometry(QRect(7, 0, 26, 200))
         self.hue.setMinimumSize(QSize(20, 200))
