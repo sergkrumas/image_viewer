@@ -52,7 +52,6 @@ class UI_object(object):
                 color: rgb(221, 221, 221);
                 background-color: #303030;
                 border: 2px solid #303030;
-                border-radius: 5px;
                 selection-color: rgb(16, 16, 16);
                 selection-background-color: rgb(221, 51, 34);
                 font-family: Segoe UI;
@@ -65,7 +64,6 @@ class UI_object(object):
             /* PUSH BUTTON */
             QPushButton{
                 border: 2px solid #aaa;
-                border-radius: 5px;
                 font-family: Segoe UI;
                 font-size: 9pt;
                 font-weight: bold;
@@ -91,7 +89,6 @@ class UI_object(object):
         self.drop_shadow_frame.setStyleSheet("""
             QFrame{
                 background-color: #202020;
-                border-radius: 10px;
             }"""
         )
         self.drop_shadow_frame.setFrameShape(QFrame.StyledPanel)
@@ -138,7 +135,6 @@ class UI_object(object):
             QPushButton{
                 border: none;
                 background-color: #aaaaaa;
-                border-radius: 8px
             }
             QPushButton:hover{
                 background-color: #666666;
@@ -156,7 +152,6 @@ class UI_object(object):
         self.content_bar.setLayoutDirection(Qt.LeftToRight)
         self.content_bar.setStyleSheet("""
             QWidget{
-                border-radius: 5px
             }
             #color_view{
                 border-bottom-left-radius: 7px;
@@ -194,7 +189,7 @@ class UI_object(object):
         self.selector.setGeometry(QRect(194, 20, 12, 12))
         self.selector.setMinimumSize(QSize(12, 12))
         self.selector.setMaximumSize(QSize(12, 12))
-        self.selector.setStyleSheet("background-color:none; border: 1px solid white; border-radius: 5px;")
+        self.selector.setStyleSheet("background-color:none; border: 1px solid white;")
         self.selector.setFrameShape(QFrame.StyledPanel)
         self.selector.setFrameShadow(QFrame.Raised)
         self.selector.setObjectName("selector")
@@ -203,7 +198,7 @@ class UI_object(object):
         self.black_ring.setMinimumSize(QSize(10, 10))
         self.black_ring.setMaximumSize(QSize(10, 10))
         self.black_ring.setBaseSize(QSize(10, 10))
-        self.black_ring.setStyleSheet("background-color: none; border: 1px solid black; border-radius: 5px;")
+        self.black_ring.setStyleSheet("background-color: none; border: 1px solid black;")
         self.black_ring.setText("")
         self.black_ring.setObjectName("black_ring")
         self.verticalLayout_2.addWidget(self.black_overlay)
@@ -217,14 +212,14 @@ class UI_object(object):
         self.hue_bg = QFrame(self.frame_2)
         self.hue_bg.setGeometry(QRect(10, 0, 20, 200))
         self.hue_bg.setMinimumSize(QSize(20, 200))
-        self.hue_bg.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255)); border-radius: 5px;")
+        self.hue_bg.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));")
         self.hue_bg.setFrameShape(QFrame.StyledPanel)
         self.hue_bg.setFrameShadow(QFrame.Raised)
         self.hue_bg.setObjectName("hue_bg")
         self.hue_selector = QLabel(self.frame_2)
         self.hue_selector.setGeometry(QRect(7, 185, 26, 15))
         self.hue_selector.setMinimumSize(QSize(26, 0))
-        self.hue_selector.setStyleSheet("background-color: #aaa; border-radius: 5px;")
+        self.hue_selector.setStyleSheet("background-color: #aaa;")
         self.hue_selector.setText("")
         self.hue_selector.setObjectName("hue_selector")
         self.hue = QFrame(self.frame_2)
@@ -244,7 +239,6 @@ class UI_object(object):
                 font-weight: bold;
                 font-size: 11pt;
                 color: #aaaaaa;
-                border-radius: 5px;
             }"""
         )
         self.editfields.setFrameShape(QFrame.StyledPanel)
@@ -450,7 +444,7 @@ class ColorPicker(QDialog):
         self.setRGB((r,g,b))
         self.setHex(hsv2hex(self.color))
         self.ui.color_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
-        self.ui.color_view.setStyleSheet(f"border-radius: 5px;background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({h}%,100%,50%), stop:1 #fff);")
+        self.ui.color_view.setStyleSheet(f"background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({h}%,100%,50%), stop:1 #fff);")
 
     def rgbChanged(self):
         r, g, b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
@@ -505,7 +499,7 @@ class ColorPicker(QDialog):
 
     def setHSV(self, c):
         self.ui.hue_selector.move(7, int((100 - c[0]) * 1.85))
-        self.ui.color_view.setStyleSheet(f"border-radius: 5px;background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({c[0]}%,100%,50%), stop:1 #fff);")
+        self.ui.color_view.setStyleSheet(f"background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({c[0]}%,100%,50%), stop:1 #fff);")
         self.ui.selector.move(int(c[1] * 2 - 6), int((200 - c[2] * 2) - 6))
 
     def setHex(self, c):
