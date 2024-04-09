@@ -34,19 +34,20 @@ from PyQt5.QtWidgets import *
 class UI_object(object):
     def setupUi(self, ColorPicker):
         ColorPicker.setObjectName("ColorPicker")
-        ColorPicker.resize(400, 300)
+        size_w = 400
+        size_h = 320
+        ColorPicker.resize(size_w, size_h)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(ColorPicker.sizePolicy().hasHeightForWidth())
         ColorPicker.setSizePolicy(sizePolicy)
-        ColorPicker.setMinimumSize(QSize(400, 300))
-        ColorPicker.setMaximumSize(QSize(400, 300))
+        ColorPicker.setMinimumSize(QSize(size_w, size_h))
+        ColorPicker.setMaximumSize(QSize(size_w, size_h))
         ColorPicker.setStyleSheet("""
             QWidget{
                 background-color: none;
             }
-            
             /*  LINE EDIT */
             QLineEdit{
                 color: rgb(221, 221, 221);
@@ -60,7 +61,6 @@ class UI_object(object):
             QLineEdit::focus{
                 border-color: #aaaaaa;
             }
-            
             /* PUSH BUTTON */
             QPushButton{
                 border: 2px solid #aaa;
@@ -104,7 +104,7 @@ class UI_object(object):
         # self.title_bar.setFrameShape(QFrame.StyledPanel)
         # self.title_bar.setFrameShadow(QFrame.Raised)
         # self.title_bar.setObjectName("title_bar")
-        # self.horizontalLayout_2 = QHBoxLayout(self.title_bar)        
+        # self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setContentsMargins(10, 0, 10, 0)
         self.horizontalLayout_2.setSpacing(5)
@@ -239,8 +239,7 @@ class UI_object(object):
         self.editfields.setStyleSheet("""
             QLabel{
                 font-family: Segoe UI;
-                font-weight: bold;
-                font-size: 11pt;
+                font-size: 9pt;
                 color: #aaaaaa;
             }"""
         )
@@ -326,6 +325,10 @@ class UI_object(object):
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName("buttonBox")
 
+
+
+
+
         self.opacity_slider = QSlider(Qt.Horizontal)
         self.opacity_slider.setStyleSheet("""
                 QSlider::groove:horizontal {
@@ -341,12 +344,25 @@ class UI_object(object):
                 }
         """)
 
+        self.opacity_bar = QFrame(self.drop_shadow_frame)
+        self.opacity_bar.setFrameShadow(QFrame.Raised)
 
-        self.opacity_slider_layout = QHBoxLayout()
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.opacity_bar.sizePolicy().hasHeightForWidth())
+        self.opacity_bar.setSizePolicy(sizePolicy)
 
+        self.opacity_slider_layout = QHBoxLayout(self.opacity_bar)
         self.lbl_alpha_slider = QLabel(self.opacity_slider)
         self.lbl_alpha_slider.setText('Opacity:')
-        self.verticalLayout_3.addWidget(self.opacity_slider)
+        self.lbl_alpha_slider.setStyleSheet(self.editfields.styleSheet())
+        self.verticalLayout_3.addWidget(self.opacity_bar)
+        self.opacity_slider_layout.addWidget(self.lbl_alpha_slider)
+        self.opacity_slider_layout.addWidget(self.opacity_slider)
+        self.lbl_alpha_slider.setBuddy(self.opacity_slider)
+
+
 
         self.horizontalLayout_3.addWidget(self.buttonBox)
         self.verticalLayout_3.addWidget(self.button_bar)
@@ -356,9 +372,7 @@ class UI_object(object):
         self.lbl_blue.setBuddy(self.blue)
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
-        self.lbl_alpha_slider.setBuddy(self.opacity_slider)
 
-        # self.window_title.setText("<strong>COLOR</strong> PICKER")
         self.lbl_red.setText("R")
         self.red.setText("255")
         self.lbl_green.setText("G")
