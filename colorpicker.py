@@ -351,12 +351,7 @@ class Ui_Dark_Alpha(object):
 
 class ColorPicker(QDialog):
 
-    def __init__(self, lightTheme: bool = False, useAlpha: bool = False):
-        """Create a new ColorPicker instance.
-
-        :param lightTheme: If the UI should be light themed.
-        :param useAlpha: If the ColorPicker should work with alpha values.
-        """
+    def __init__(self, useAlpha: bool = False):
 
         # auto-create QApplication if it doesn't exist yet
         self.app = QApplication.instance()
@@ -364,19 +359,10 @@ class ColorPicker(QDialog):
 
         super(ColorPicker, self).__init__()
 
-        self.usingAlpha = useAlpha
-        self.usingLightTheme = lightTheme
+        self.usingAlpha = True
 
-        # Call UI Builder function
-        if useAlpha:
-            if lightTheme: self.ui = Ui_Light_Alpha()
-            else: self.ui = Ui_Dark_Alpha()
-            self.ui.setupUi(self)
-        else:
-            if lightTheme: self.ui = Ui_Light()
-            else: self.ui = Ui_Dark()
-            self.ui.setupUi(self)
-
+        self.ui = Ui_Dark_Alpha()
+        self.ui.setupUi(self)
 
         # Make Frameless
         self.setWindowFlags(Qt.FramelessWindowHint)
