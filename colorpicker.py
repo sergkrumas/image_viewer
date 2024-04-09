@@ -590,7 +590,7 @@ def hsv2rgb(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = None
     :return: The converted rgb tuple color.
     """
 
-    if type(h_or_color).__name__ == "tuple":
+    if isinstance(h_or_color, tuple):
         if len(h_or_color) == 4:
             h, s, v, a = h_or_color
         else:
@@ -613,7 +613,7 @@ def rgb2hsv(r_or_color: Union[tuple, int], g: int = 0, b: int = 0, a: int = None
     :return: The converted hsv tuple color.
     """
 
-    if type(r_or_color).__name__ == "tuple":
+    if isinstance(r_or_color, tuple):
         if len(r_or_color) == 4:
             r, g, b, a = r_or_color
         else:
@@ -651,7 +651,7 @@ def rgb2hex(r_or_color: Union[tuple, int], g: int = 0, b: int = 0, a: int = 0) -
     :return: The converted hexadecimal color.
     """
 
-    if type(r_or_color).__name__ == "tuple":
+    if isinstance(r_or_color, tuple):
         r, g, b = r_or_color[:3]
     else:
         r = r_or_color
@@ -679,7 +679,7 @@ def hsv2hex(h_or_color: Union[tuple, int], s: int = 0, v: int = 0, a: int = 0) -
     :return: The converted hexadecimal color.
     """
 
-    if type(h_or_color).__name__ == "tuple":
+    if isinstance(h_or_color, tuple):
         h, s, v = h_or_color[:3]
     else:
         h = h_or_color
