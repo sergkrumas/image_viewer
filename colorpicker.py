@@ -88,13 +88,13 @@ class UI_object(object):
                 selection-color: rgb(16, 16, 16);
                 selection-background-color: rgb(221, 51, 34);
                 font-family: Segoe UI;
-                font-size: 10pt;
+                font-size: 18px;
             }
             /* PUSH BUTTON */
             QPushButton{
                 border: 0px;
                 font-family: Segoe UI;
-                font-size: 9pt;
+                font-size: 15px;
                 color: #888;
                 width: 100px;
                 height: 50px;
@@ -162,7 +162,7 @@ class UI_object(object):
             QLabel{
                 color: #fff;
                 font-family: Segoe UI;
-                font-size: 9pt;
+                font-size: 15px;
             }"""
         )
         self.window_title.setAlignment(Qt.AlignCenter)
@@ -262,7 +262,7 @@ class UI_object(object):
         self.editfields.setStyleSheet("""
             QLabel{
                 font-family: Segoe UI;
-                font-size: 9pt;
+                font-size: 15px;
                 color: #aaaaaa;
                 border: none;
             }"""
@@ -340,7 +340,7 @@ class UI_object(object):
         self.horizontalLayout_3.setSpacing(10)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.buttonBox = QDialogButtonBox(self.button_bar)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok | QDialogButtonBox.Close)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName("buttonBox")
 
