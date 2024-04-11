@@ -521,7 +521,7 @@ class ColorPicker(QDialog):
             self.lastcolor = (r, g, b)
             return self.getCurrentColor()
         else:
-            r, g, b = self.lastcolors
+            r, g, b = self.lastcolor
             return self.getCurrentColor(self.lastcolor)
 
     def getCurrentColor(self, color=None):
