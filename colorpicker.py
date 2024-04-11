@@ -41,7 +41,7 @@ class ExitButton(QPushButton):
         painter.begin(self)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-        painter.setRenderHint(QPainter.Antialiasing, True)        
+        painter.setRenderHint(QPainter.Antialiasing, True)
         if self.underMouse():
             background = QColor("#aaaaaa")
         else:
@@ -542,7 +542,7 @@ class ColorPicker(QDialog):
         textEditObj.selectAll()
         self.rgbChanged()
 
-    def getColor(self, lc: tuple = None, callback=None):
+    def getColor(self, lc, callback=None):
         """Open the UI and get a color from the user.
 
         :param lc: The color to show as previous color.
@@ -550,15 +550,14 @@ class ColorPicker(QDialog):
         """
         self.callback = callback
 
-        if lc != None:
-            alpha = lc[3]
-            lc = lc[:3]
-            self.setAlpha(alpha)
-            self.alpha = alpha
-        if lc == None:
-            lc = self.lastcolor
-        else:
-            self.lastcolor = lc
+        lc = (lc.red(), lc.green(), lc.blue(), int((lc.alpha()/255)*100))
+
+        alpha = lc[3]
+        lc = lc[:3]
+        self.setAlpha(alpha)
+        self.alpha = alpha
+
+        self.lastcolor = lc
 
         self.setRGB(lc)
         self.rgbChanged()
@@ -570,18 +569,17 @@ class ColorPicker(QDialog):
             self.lastcolor = (r, g, b)
             return self.getCurrentColor()
         else:
-            r, g, b = self.lastcolor
             return self.getCurrentColor(self.lastcolor)
 
     def getCurrentColor(self, color=None):
         if color is None:
             r, g, b = hsv2rgb(self.color)
         else:
-            r, g, b = hsv2rgb(color)
-        r = int(r)
-        g = int(g)
-        b = int(b)
-        a = int(self.alpha/100*255)
+            r, g, b = color
+        r = min(255, int(r))
+        g = min(255, int(g))
+        b = min(255, int(b))
+        a = min(255, int(self.alpha/100*255))
         return QColor(r, g, b, a)
 
     def doCallback(self):
@@ -876,9 +874,9 @@ def main():
         w.setStyleSheet(css)
         w.update()
 
-    old_color = (255, 255, 255, 100)
+    old_color = QColor(255, 255, 255, 100)
     picked_color = my_color_picker.getColor(old_color, callback=callback)
-    print(picked_color.name())
+    print(picked_color.name(QColor.HexArgb))
 
     app.exec()
 

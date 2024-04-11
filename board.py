@@ -326,6 +326,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.cursorHide = False
 
+        self.board_note_item_colors_buttons = None
+
     def board_item_note_cursor_blinking(self):
         ae = self.active_element
         if ae is not None and ae.type == BoardItem.types.ITEM_NOTE:
@@ -555,6 +557,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     )
 
     def board_draw_content(self, painter, folder_data):
+        self.board_note_item_colors_buttons = None
+
         if not self.is_board_ready():
             self.prepare_board(folder_data)
         else:
@@ -1449,7 +1453,8 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.size = 10.0
         ni.margin_value = 5
         ni.proxy_pixmap = None
-        ni.color = QColor()
+        ni.font_color = QColor(Qt.white)
+        ni.backplate_color = QColor(0, 0, 0, 255)
         ni.start_point = ni.item_position
         ni.end_point = ni.item_position + QPointF(200, 50)
         ni.calc_local_data()
@@ -2125,9 +2130,14 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
+        check_code = self.board_TextElementCheckColorButtons(event)
+        if check_code != -1:
+            return
+
         self.active_element = None
 
         if event.buttons() == Qt.LeftButton:
+
             if not alt:
 
                 if self.is_over_scaling_activation_area(event.pos()):
@@ -2155,11 +2165,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.start_origin_pos = self.board_origin
                 self.update()
 
+        self.update()
+
     def board_mouseMoveEvent(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
+
+        if self.board_TextElementCheckColorButtons(event) != -1:
+            return
 
         if event.buttons() == Qt.LeftButton:
 
@@ -2210,6 +2225,11 @@ class BoardMixin(BoardTextEditItemMixin):
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
+
+        check_code = self.board_TextElementCheckColorButtons(event)
+        if check_code != -1:
+            self.board_TextElementColorButtonsHandlers(check_code)
+
 
         if self.transform_cancelled:
             self.transform_cancelled = False

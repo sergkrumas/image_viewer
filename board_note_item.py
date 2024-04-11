@@ -27,7 +27,7 @@ from PyQt5.QtGui import (QPainterPath, QColor, QBrush, QPixmap, QPainter, QTrans
 
 from _utils import (check_scancode_for,)
 
-
+from colorpicker import ColorPicker
 
 
 class BoardTextEditItemMixin():
@@ -113,7 +113,7 @@ class BoardTextEditItemMixin():
         element.calc_local_data()
 
     def board_GetPenFromElement(self, element):
-        color = element.color
+        color = element.font_color
         size = element.size
         PEN_SIZE = 25
         pen = QPen(color, 1+PEN_SIZE*size)
@@ -141,7 +141,10 @@ class BoardTextEditItemMixin():
 
         text_doc = element.text_doc
         # рисуем сам текст
+        text_opacity = color.alpha()/255
+        painter.setOpacity(text_opacity)
         tweakedDrawContents(text_doc, painter, None) # text_doc.drawContents(painter, QRectF())
+        painter.setOpacity(1.0)
 
     def board_TextElementUpdateProxyPixmap(self, element):
         element.proxy_pixmap = QPixmap(element.text_doc.size().toSize())
@@ -229,16 +232,15 @@ class BoardTextEditItemMixin():
             text_doc = element.text_doc
 
             # подложка
-            if True:
-                painter.save()
-                painter.setPen(Qt.NoPen)
-                content_rect = QRect(QPoint(), s)
+            painter.save()
+            painter.setPen(Qt.NoPen)
+            content_rect = QRect(QPoint(), s)
 
-                path = QPainterPath()
-                path.addRoundedRect(QRectF(content_rect), element.margin_value,
-                    element.margin_value)
-                painter.fillPath(path, QBrush(QColor(200, 200, 200)))
-                painter.restore()
+            path = QPainterPath()
+            path.addRoundedRect(QRectF(content_rect), element.margin_value,
+                element.margin_value)
+            painter.fillPath(path, QBrush(element.backplate_color))
+            painter.restore()
 
             # текст и курсор
             if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS:
@@ -266,6 +268,68 @@ class BoardTextEditItemMixin():
         painter.restore()
         painter.resetTransform()
 
+
+        if self.active_element is element:
+            painter.save()
+            element_bound_rect = element.get_selection_area(board=self).boundingRect()
+            tl = element_bound_rect.topLeft() + QPointF(-5, 0)
+
+            RECT_SIZE = 25
+            button_rect = QRectF(0, 0, RECT_SIZE, RECT_SIZE)
+            text_color_rect = QRectF(button_rect)
+            backplate_color_rect = QRectF(button_rect)
+            text_color_rect.moveTopRight(tl)
+            tl += QPoint(0, RECT_SIZE + 5)
+            backplate_color_rect.moveTopRight(tl)
+
+            self.board_note_item_colors_buttons = (text_color_rect, backplate_color_rect)
+            for n, rect in enumerate(self.board_note_item_colors_buttons):
+                painter.setPen(QPen(self.selection_color, 1))
+                if n == 0:
+                    painter.setBrush(Qt.NoBrush)
+                else:
+                    backplate_color = QColor(element.backplate_color)
+                    backplate_color.setAlpha(255)
+                    painter.setBrush(QBrush(backplate_color))
+                painter.drawRect(rect)
+
+                font_color = element.font_color
+                font_color.setAlpha(255)
+                painter.setPen(QPen(font_color, 3))
+                a1 = rect.topLeft() + QPoint(5, 5)
+                a2 = rect.topRight() + QPoint(-5, 5)
+                b1 = rect.center() + QPoint(0, -7)
+                b2 = rect.center() + QPoint(0, 8)
+                painter.drawLine(a1, a2)
+                painter.drawLine(b1, b2)
+            painter.restore()
+
+    def board_TextElementCheckColorButtons(self, event):
+        if self.board_note_item_colors_buttons is not None:
+            text_color_rect = self.board_note_item_colors_buttons[0]
+            backplate_color_rect = self.board_note_item_colors_buttons[1]
+            if text_color_rect.contains(event.pos()):
+                return 0
+            elif backplate_color_rect.contains(event.pos()):
+                return 1
+        return -1
+
+    def board_TextElementColorButtonsHandlers(self, check_code):
+        if check_code != -1:
+            if check_code == 0:
+                def callback(color_value):
+                    self.active_element.font_color = color_value
+                    self.board_TextElementUpdateProxyPixmap(self.active_element)
+                    self.update()
+                self.active_element.font_color = ColorPicker().getColor(QColor(self.active_element.font_color), callback=callback)
+            elif check_code == 1:
+                def callback(color_value):
+                    self.active_element.backplate_color = color_value
+                    self.board_TextElementUpdateProxyPixmap(self.active_element)
+                    self.update()
+                self.active_element.backplate_color = ColorPicker().getColor(QColor(self.active_element.backplate_color), callback=callback)
+            self.board_TextElementUpdateProxyPixmap(self.active_element)
+            self.update()
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
