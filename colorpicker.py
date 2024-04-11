@@ -31,6 +31,32 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
+class ExitButton(QPushButton):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.Antialiasing, True)        
+        if self.underMouse():
+            background = QColor("#aaaaaa")
+        else:
+            background = QColor("#666666")
+        painter.setBrush(QBrush(background))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(self.rect())
+        painter.setPen(QPen(QColor(40, 40, 40), 3))
+        r = self.rect().adjusted(5, 5, -4, -4)
+        painter.drawLine(r.topLeft(), r.bottomRight())
+        painter.drawLine(r.bottomLeft(), r.topRight())
+        painter.end()
+
+
+
 class Slider(QSlider):
     def mousePressEvent(self, event):
         super(Slider, self).mousePressEvent(event)
@@ -164,26 +190,27 @@ class UI_object(object):
         self.titlebar_layout.addWidget(self.window_title)
 
 
-        self.exit_btn = QPushButton(self.title_bar)
+
+        self.exit_btn = ExitButton(self.title_bar)
         self.exit_btn.setMinimumSize(QSize(16, 16))
         self.exit_btn.setMaximumSize(QSize(16, 16))
         self.exit_btn.setFocusPolicy(Qt.NoFocus)
-        self.exit_btn.setStyleSheet("""
-            QPushButton{
-                border: none;
-                background-color: #aaaaaa;
-                border-radius: 8px
-            }
-            QPushButton:hover{
-                background-color: #666666;
-            }"""
-        )
-        self.exit_btn.setText("")
-        icon = QIcon()
-        icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
-        self.exit_btn.setIcon(icon)
-        self.exit_btn.setIconSize(QSize(12, 12))
-        self.exit_btn.setObjectName("exit_btn")
+        # self.exit_btn.setStyleSheet("""
+        #     QPushButton{
+        #         border: none;
+        #         background-color: #aaaaaa;
+        #         border-radius: 8px
+        #     }
+        #     QPushButton:hover{
+        #         background-color: #666666;
+        #     }"""
+        # )
+        # self.exit_btn.setText("")
+        # icon = QIcon()
+        # icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
+        # self.exit_btn.setIcon(icon)
+        # self.exit_btn.setIconSize(QSize(12, 12))
+        # self.exit_btn.setObjectName("exit_btn")
 
 
 
@@ -492,6 +519,7 @@ class ColorPicker(QDialog):
         # Connect Ok|Cancel Button Box and X Button
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
+        self.ui.exit_btn.clicked.connect(self.reject)
 
         self.lastcolor = (0, 0, 0)
         self.color = (0, 0, 0)
