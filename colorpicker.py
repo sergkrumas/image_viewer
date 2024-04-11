@@ -21,7 +21,7 @@
 
 # Reworked based on https://github.com/nlfmt/pyqt-colorpicker
 
-
+import sys
 import colorsys
 from typing import Union
 from functools import partial
@@ -475,6 +475,7 @@ class ColorPicker(QDialog):
         self.lastcolor = (0, 0, 0)
         self.color = (0, 0, 0)
         self.alpha = 100
+        self.callback = None
 
     def textfield_wheelEvent(self, textEditObj, event):
         value = self.i(textEditObj.text())
@@ -492,12 +493,13 @@ class ColorPicker(QDialog):
         textEditObj.selectAll()
         self.rgbChanged()
 
-    def getColor(self, lc: tuple = None):
+    def getColor(self, lc: tuple = None, callback=None):
         """Open the UI and get a color from the user.
 
         :param lc: The color to show as previous color.
         :return: The selected color.
         """
+        self.callback = callback
 
         if lc != None:
             alpha = lc[3]
@@ -517,10 +519,25 @@ class ColorPicker(QDialog):
         if self.exec_():
             r, g, b = hsv2rgb(self.color)
             self.lastcolor = (r, g, b)
-            return (r, g, b, self.alpha)
+            return self.getCurrentColor()
         else:
-            r, g, b = self.lastcolor
-            return (r, g, b, self.alpha)
+            r, g, b = self.lastcolors
+            return self.getCurrentColor(self.lastcolor)
+
+    def getCurrentColor(self, color=None):
+        if color is None:
+            r, g, b = hsv2rgb(self.color)
+        else:
+            r, g, b = hsv2rgb(color)
+        r = int(r)
+        g = int(g)
+        b = int(b)
+        a = int(self.alpha/100*255)
+        return QColor(r, g, b, a)
+
+    def doCallback(self):
+        if self.callback:
+            self.callback(self.getCurrentColor())
 
     # Update Functions
     def hsvChanged(self):
@@ -531,6 +548,7 @@ class ColorPicker(QDialog):
         self.setHex(hsv2hex(self.color))
         self.ui.color_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
         self.ui.color_view.setStyleSheet(f"background-color: qlineargradient(x1:1, x2:0, stop:0 hsl({h}%,100%,50%), stop:1 #fff);")
+        self.doCallback()
 
     def rgbChanged(self):
         r, g, b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
@@ -550,6 +568,7 @@ class ColorPicker(QDialog):
         self.setHSV(self.color)
         self.setHex(rgb2hex((r, g, b)))
         self.ui.color_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
+        self.doCallback()
 
     def hexChanged(self):
         hex = self.ui.hex.text()
@@ -563,6 +582,7 @@ class ColorPicker(QDialog):
         self.setHSV(self.color)
         self.setRGB((r, g, b))
         self.ui.color_vis.setStyleSheet(f"background-color: rgb({r},{g},{b})")
+        self.doCallback()
 
     def alphaChanged(self):
         alpha = self.i(self.ui.alpha.text())
@@ -576,11 +596,13 @@ class ColorPicker(QDialog):
             self.ui.alpha.selectAll()
         self.alpha = alpha
         self.ui.opacity_slider.setValue(self.alpha)
+        self.doCallback()
 
     def alphaSliderChanged(self):
         alpha = self.ui.opacity_slider.value()
         self.alpha = alpha
         self.ui.alpha.setText(str(alpha))
+        self.doCallback()
 
     # Internal setting functions
     def setRGB(self, c):
@@ -783,14 +805,33 @@ def getColor(lc: tuple = None) -> tuple:
 
     return __instance.getColor(lc)
 
+class TestWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        # self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowMinimizeButtonHint)
+        # self.setWindowFlags(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
 def main():
+    app = QApplication(sys.argv)
+
+    w = TestWidget()
+    w.show()
+
     my_color_picker = ColorPicker()
 
+    def callback(value):
+        argb = value.name(QColor.HexArgb)
+        css = f'background: {argb}'
+        print(css, argb)
+        w.setStyleSheet(css)
+        w.update()
 
     old_color = (255, 255, 255, 100)
-    picked_color = my_color_picker.getColor(old_color)
-    print(picked_color)
+    picked_color = my_color_picker.getColor(old_color, callback=callback)
+    print(picked_color.name())
 
+    app.exec()
 
 
 if __name__ == '__main__':
