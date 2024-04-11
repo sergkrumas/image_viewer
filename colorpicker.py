@@ -123,10 +123,10 @@ class UI_object(object):
         self.drop_shadow_frame.setFrameShape(QFrame.StyledPanel)
         self.drop_shadow_frame.setFrameShadow(QFrame.Raised)
         self.drop_shadow_frame.setObjectName("drop_shadow_frame")
-        self.verticalLayout_3 = QVBoxLayout(self.drop_shadow_frame)
-        self.verticalLayout_3.setContentsMargins(10, 10, 10, 10)
-        self.verticalLayout_3.setSpacing(10)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.drop_shadow_frame_layout = QVBoxLayout(self.drop_shadow_frame)
+        self.drop_shadow_frame_layout.setContentsMargins(10, 10, 10, 10)
+        self.drop_shadow_frame_layout.setSpacing(10)
+        self.drop_shadow_frame_layout.setObjectName("drop_shadow_frame_layout")
 
         self.title_bar = QFrame(self.drop_shadow_frame)
         self.title_bar.setMinimumSize(QSize(0, 32))
@@ -134,24 +134,18 @@ class UI_object(object):
         self.title_bar.setFrameShape(QFrame.StyledPanel)
         self.title_bar.setFrameShadow(QFrame.Raised)
         self.title_bar.setObjectName("title_bar")
-        self.horizontalLayout_2 = QHBoxLayout(self.title_bar)
+        self.titlebar_layout = QHBoxLayout(self.title_bar)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setContentsMargins(10, 0, 10, 0)
-        self.horizontalLayout_2.setSpacing(5)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+
+        self.titlebar_layout.setContentsMargins(10, 0, 10, 0)
+        self.titlebar_layout.setSpacing(5)
+        self.titlebar_layout.setObjectName("titlebar_layout")
         spacerItem = QSpacerItem(16, 0, QSizePolicy.Fixed, QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem)
+        self.titlebar_layout.addItem(spacerItem)
 
 
 
-
-
-
-
-
-
-        self.window_title = QLabel(self.title_bar)
+        self.window_title = QLabel()
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -167,8 +161,35 @@ class UI_object(object):
         )
         self.window_title.setAlignment(Qt.AlignCenter)
         self.window_title.setObjectName("window_title")
-        self.horizontalLayout_2.addWidget(self.window_title)
-        self.verticalLayout_3.addWidget(self.title_bar)
+        self.titlebar_layout.addWidget(self.window_title)
+
+
+        self.exit_btn = QPushButton(self.title_bar)
+        self.exit_btn.setMinimumSize(QSize(16, 16))
+        self.exit_btn.setMaximumSize(QSize(16, 16))
+        self.exit_btn.setFocusPolicy(Qt.NoFocus)
+        self.exit_btn.setStyleSheet("""
+            QPushButton{
+                border: none;
+                background-color: #aaaaaa;
+                border-radius: 8px
+            }
+            QPushButton:hover{
+                background-color: #666666;
+            }"""
+        )
+        self.exit_btn.setText("")
+        icon = QIcon()
+        icon.addPixmap(QPixmap(":/img/exit.ico"), QIcon.Normal, QIcon.Off)
+        self.exit_btn.setIcon(icon)
+        self.exit_btn.setIconSize(QSize(12, 12))
+        self.exit_btn.setObjectName("exit_btn")
+
+
+
+        self.titlebar_layout.addWidget(self.exit_btn, Qt.AlignRight)
+
+        self.drop_shadow_frame_layout.addWidget(self.title_bar)
 
         self.content_bar = QFrame(self.drop_shadow_frame)
         self.content_bar.setLayoutDirection(Qt.LeftToRight)
@@ -323,7 +344,7 @@ class UI_object(object):
         self.alpha.setObjectName("alpha")
         self.formLayout.setWidget(5, QFormLayout.FieldRole, self.alpha)
         self.horizontalLayout.addWidget(self.editfields)
-        self.verticalLayout_3.addWidget(self.content_bar)
+        self.drop_shadow_frame_layout.addWidget(self.content_bar)
         self.button_bar = QFrame(self.drop_shadow_frame)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -379,7 +400,7 @@ class UI_object(object):
         self.lbl_alpha_slider = QLabel(self.opacity_slider)
         self.lbl_alpha_slider.setText('Opacity:')
         self.lbl_alpha_slider.setStyleSheet(self.editfields.styleSheet())
-        self.verticalLayout_3.addWidget(self.opacity_bar)
+        self.drop_shadow_frame_layout.addWidget(self.opacity_bar)
         self.opacity_slider_layout.addWidget(self.lbl_alpha_slider)
         self.opacity_slider_layout.addWidget(self.opacity_slider)
         self.lbl_alpha_slider.setBuddy(self.opacity_slider)
@@ -387,7 +408,7 @@ class UI_object(object):
 
 
         self.horizontalLayout_3.addWidget(self.buttonBox)
-        self.verticalLayout_3.addWidget(self.button_bar)
+        self.drop_shadow_frame_layout.addWidget(self.button_bar)
         self.verticalLayout.addWidget(self.drop_shadow_frame)
         self.lbl_red.setBuddy(self.red)
         self.lbl_green.setBuddy(self.green)
