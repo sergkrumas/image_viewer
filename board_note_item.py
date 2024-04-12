@@ -282,7 +282,7 @@ class BoardTextEditItemMixin():
         if self.active_element is element:
             painter.save()
             element_bound_rect = element.get_selection_area(board=self).boundingRect()
-            tl = element_bound_rect.topLeft() + QPointF(-5, 0)
+            tl = element_bound_rect.topLeft() + QPointF(-10, 0)
 
             RECT_SIZE = 25
             button_rect = QRectF(0, 0, RECT_SIZE, RECT_SIZE)
@@ -306,10 +306,10 @@ class BoardTextEditItemMixin():
                 font_color = element.font_color
                 font_color.setAlpha(255)
                 painter.setPen(QPen(font_color, 3))
-                a1 = rect.topLeft() + QPoint(5, 5)
-                a2 = rect.topRight() + QPoint(-5, 5)
-                b1 = rect.center() + QPoint(0, -7)
-                b2 = rect.center() + QPoint(0, 8)
+                a1 = rect.topLeft() + QPoint(6, 6)
+                a2 = rect.topRight() + QPoint(-6, 6)
+                b1 = rect.center() + QPoint(0, -6)
+                b2 = rect.center() + QPoint(0, 7)
                 painter.drawLine(a1, a2)
                 painter.drawLine(b1, b2)
             painter.restore()
