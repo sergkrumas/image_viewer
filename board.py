@@ -1453,8 +1453,8 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.size = 10.0
         ni.margin_value = 5
         ni.proxy_pixmap = None
-        ni.font_color = QColor(Qt.white)
-        ni.backplate_color = QColor(0, 0, 0, 255)
+        ni.font_color = QColor(self.selection_color)
+        ni.backplate_color = QColor(0, 0, 0, 0)
         ni.start_point = ni.item_position
         ni.end_point = ni.item_position + QPointF(200, 50)
         ni.calc_local_data()
