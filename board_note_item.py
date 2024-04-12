@@ -182,6 +182,16 @@ class BoardTextEditItemMixin():
         self.board_TextElementInit(elem)
         text_doc.setPlainText(elem.plain_text)
 
+    def board_TextElementSetDefaults(self, elem):
+        elem.plain_text = ''
+        elem.size = 10.0
+        elem.margin_value = 5
+        elem.proxy_pixmap = None
+        elem.font_color = QColor(self.selection_color)
+        elem.backplate_color = QColor(0, 0, 0, 0)
+        elem.start_point = elem.item_position
+        elem.end_point = elem.item_position + QPointF(200, 50)
+
     def board_TextElementSetFont(self, element):
         font = QFont()
         font_pixel_size = self.board_TextElementGetFontPixelSize(element)
