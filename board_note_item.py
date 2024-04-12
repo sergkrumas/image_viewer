@@ -21,7 +21,7 @@
 import sys
 
 from PyQt5.QtWidgets import (QApplication,)
-from PyQt5.QtCore import (QPoint, QPointF, QRect, Qt, QRectF, QMarginsF)
+from PyQt5.QtCore import (QPoint, QPointF, QRect, Qt, QRectF, QMarginsF, QTimer)
 from PyQt5.QtGui import (QPainterPath, QColor, QBrush, QPixmap, QPainter, QTransform, QFont, QPen,
                     QTextDocument, QAbstractTextDocumentLayout, QPalette, QTextCursor, QTextLine)
 
@@ -36,15 +36,47 @@ class BoardTextEditItemMixin():
 	# code copied from OXXXY Screenshoter
 	# https://github.com/sergkrumas/oxxxy
 
-    def board_DeactivateTextElement(self):
-        if self.active_element:
-            if self.active_element.type == self.BoardItem.types.ITEM_NOTE:
-                self.active_element = None
+
+    def board_TextElementInitModule(self):
+        self.text_cursor = None
+        self.note_item_selection_rects = []
+
+        self.cursorBlinkingTimer = QTimer()
+        self.cursorBlinkingTimer.setInterval(600)
+        self.cursorBlinkingTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
+        self.cursorBlinkingTimer.start()
+
+        self.cursorHide = False
+        self.board_note_item_colors_buttons = None
+        self.inside_note_item_operation_ongoing = False
+
+    def board_TextElementCursorBlinkingCycleHandler(self):
+        ae = self.active_element
+        if ae is not None and ae.type == self.BoardItem.types.ITEM_NOTE:
+            self.cursorHide = not self.cursorHide
+            self.update()
+
+    def board_DeactivateTextElement(self, ae=None):
+        if self.board_TextElementIsActiveElement(ae=ae):
+            if self.active_element.editing:
+                self.active_element.editing = False
+                # self.active_element = None
                 # не нужно вызывать здесь self.board_SetSelected(None),
                 # потому что elementsDeactivateTextElement вызывается
                 # в начале работы инструмента «выделение и перемещение»
                 self.update()
                 return True
+        return False
+
+    def board_TextElementSetEditMode(self, elem):
+        self.active_element = elem
+        elem.editing = True
+
+    def board_TextElementIsActiveElement(self, ae=None):
+        if ae is None:
+            ae = self.active_element
+        if ae and ae.type == self.BoardItem.types.ITEM_NOTE:
+            return True
         return False
 
     def board_TextElementSetParameters(self, elem):
@@ -56,7 +88,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementInputEvent(self, event):
         ae = self.active_element
-        if ae is None or ae.type != self.BoardItem.types.ITEM_NOTE:
+        if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
         if event.modifiers() == Qt.ControlModifier and check_scancode_for(event, "V"):
@@ -167,7 +199,8 @@ class BoardTextEditItemMixin():
         return layout.lineForTextPosition(relativePos)
 
     def board_TextElementIsInputEvent(self, event):
-        is_event = self.active_element is not None and self.active_element.type == self.BoardItem.types.ITEM_NOTE
+        ae = self.active_element
+        is_event = self.board_TextElementIsActiveElement() and ae.editing
         is_event = is_event and event.key() != Qt.Key_Escape
         is_event = is_event and event.key() not in [Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Home, Qt.Key_End, Qt.Key_PageDown, Qt.Key_PageUp]
         is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right]))
@@ -187,6 +220,7 @@ class BoardTextEditItemMixin():
         elem.size = 10.0
         elem.margin_value = 5
         elem.proxy_pixmap = None
+        elem.editing = False
         elem.font_color = QColor(self.selection_color)
         elem.backplate_color = QColor(0, 0, 0, 0)
         elem.start_point = elem.item_position
@@ -198,15 +232,22 @@ class BoardTextEditItemMixin():
         font.setPixelSize(font_pixel_size)
         element.text_doc.setDefaultFont(font)
 
-    def board_TextElementSetCursorPosByClick(self, event):
+    def board_TextElementHitTest(self, event):
         ae = self.active_element
-        if ae.draw_transform is not None:
+        if ae.draw_transform is not None and ae.editing:
             viewport_cursor_pos = event.pos()
             inv, ok = ae.draw_transform.inverted()
             if ok:
                 pos = inv.map(viewport_cursor_pos)
                 text_cursor_pos = ae.text_doc.documentLayout().hitTest(pos, Qt.FuzzyHit)
-                ae.text_doc_cursor_pos = text_cursor_pos
+                return text_cursor_pos
+        return None
+
+    def board_TextElementSetCursorPosByClick(self, event):
+        ae = self.active_element
+        cursor_pos = self.board_TextElementHitTest(event)
+        if cursor_pos is not None:
+            ae.text_doc_cursor_pos = text_cursor_pos
 
     def board_TextElementInit(self, elem):
         text_doc = elem.text_doc
@@ -214,6 +255,105 @@ class BoardTextEditItemMixin():
         text_doc.setTextWidth(-1)
         elem.text_doc_cursor_pos = 0
         text_doc.setDocumentMargin(80)
+
+    def board_TextElementIsCursorInsideTextElement(self, event):
+        ae = self.active_element
+        if self.board_TextElementIsActiveElement():
+            if ae.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
+                return True
+        return False
+
+    def board_TextElementSelectionMousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            ae = self.active_element
+            if self.board_TextElementIsActiveElement() and ae.editing:
+                text_doc = ae.text_doc
+                hit_test_result = self.board_TextElementHitTest(event)
+                self.text_cursor.setPosition(hit_test_result)
+        self.update()
+
+    def board_TextElementSelectionMouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            self.board_TextElementEndSelection(event)
+        self.update()
+
+    def board_TextElementSelectionMouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.board_TextElementEndSelection(event)
+            tc = self.text_cursor
+            out = f'{tc.selectionEnd()} {tc.selectionStart()}'
+            print(out)
+        self.update()
+
+    def board_TextElementEndSelection(self, event):
+        ae = self.active_element
+        if self.board_TextElementIsActiveElement() and ae.editing:
+            text_doc = ae.text_doc
+            hit_test_result = self.board_TextElementHitTest(event)
+            self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+        self.board_TextElementDefineSelectionRects()
+        self.update()
+
+    def board_TextElementDefineSelectionRects(self):
+        self.note_item_selection_rects = []
+
+        ae = self.active_element
+        if not (self.board_TextElementIsActiveElement() and ae.editing):
+            return
+
+        if self.text_cursor.anchor() != self.text_cursor.position():
+            block = ae.text_doc.begin()
+            end = ae.text_doc.end()
+            docLayout = ae.text_doc.documentLayout()
+            while block != end:
+                if not block.text():
+                    block = block.next()
+                    continue
+
+                blockRect = docLayout.blockBoundingRect(block)
+                blockX = blockRect.x()
+                blockY = blockRect.y()
+
+                it = block.begin()
+                while not it.atEnd():
+                    fragment = it.fragment()
+
+                    blockLayout = block.layout()
+                    fragPos = fragment.position() - block.position()
+                    fragEnd = fragPos + fragment.length()
+
+
+                    start_frg = fragment.contains(self.text_cursor.selectionStart())
+                    end_frg = fragment.contains(self.text_cursor.selectionEnd())
+                    middle_frg = fragment.position() > self.text_cursor.selectionStart() and fragment.position() + fragment.length() <= self.text_cursor.selectionEnd()
+
+                    if start_frg or end_frg or middle_frg:
+                        if start_frg:
+                            fragPos = self.text_cursor.selectionStart() - block.position()
+                        if end_frg:
+                            fragEnd = self.text_cursor.selectionEnd() - block.position()
+
+                        while True:
+                            line = blockLayout.lineForTextPosition(fragPos)
+                            if line.isValid():
+                                x, _ = line.cursorToX(fragPos)
+                                right, lineEnd = line.cursorToX(fragEnd)
+                                rect = QRectF(blockX + x, blockY + line.y(), right - x, line.height())
+                                self.note_item_selection_rects.append(rect)
+                                if lineEnd != fragEnd:
+                                    fragPos = lineEnd
+                                else:
+                                    break
+                            else:
+                                break
+                    it += 1
+                block = block.next()
+
+    def board_TextElementDrawSelectionRects(self, painter):
+        l = len(self.note_item_selection_rects)
+        for n, r in enumerate(self.note_item_selection_rects):
+            alpha = max(35, int(255*n/l))
+            painter.fillRect(r, QColor(200, 50, 50, alpha))
 
     def board_TextElementDrawOnCanvas(self, painter, element, final):
         if element.text_doc is not None:
@@ -252,7 +392,7 @@ class BoardTextEditItemMixin():
             painter.fillPath(path, QBrush(element.backplate_color))
             painter.restore()
 
-            # текст и курсор
+            # рисуем текст
             if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS:
                 if element.proxy_pixmap is None:
                     self.board_TextElementUpdateProxyPixmap(element)
@@ -260,8 +400,12 @@ class BoardTextEditItemMixin():
             else:
                 self.board_TextElementDraw(painter, element)
 
+            # рисуем прямоугольники выделения
+            if element.editing:
+                self.board_TextElementDrawSelectionRects(painter)
+
             # рисуем курсор
-            if not self.cursorHide:
+            if element.editing and not self.cursorHide:
                 doc_layout = text_doc.documentLayout()
                 cursor_pos = element.text_doc_cursor_pos
                 block = text_doc.begin()
@@ -279,7 +423,7 @@ class BoardTextEditItemMixin():
         painter.resetTransform()
 
 
-        if self.active_element is element:
+        if self.board_TextElementIsActiveElement() and element.editing:
             painter.save()
             element_bound_rect = element.get_selection_area(board=self).boundingRect()
             tl = element_bound_rect.topLeft() + QPointF(-10, 0)

@@ -317,23 +317,21 @@ class BoardMixin(BoardTextEditItemMixin):
         self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
         self.is_board_text_input_event = False
+        self._active_element = None
         self.active_element = None
 
-        self.cursorBlinkingTimer = QTimer()
-        self.cursorBlinkingTimer.setInterval(600)
-        self.cursorBlinkingTimer.timeout.connect(self.board_item_note_cursor_blinking)
-        self.cursorBlinkingTimer.start()
+        self.board_TextElementInitModule()
 
-        self.cursorHide = False
+    @property
+    def active_element(self):
+        return self._active_element
 
-        self.board_note_item_colors_buttons = None
-
-    def board_item_note_cursor_blinking(self):
-        ae = self.active_element
-        if ae is not None and ae.type == BoardItem.types.ITEM_NOTE:
-            self.cursorHide = not self.cursorHide
-            self.update()
-
+    @active_element.setter
+    def active_element(self, value):
+        self.board_DeactivateTextElement(ae=self._active_element)
+        if self.board_TextElementIsActiveElement(ae=value):
+            self.text_cursor = QTextCursor(value.text_doc)
+        self._active_element = value
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -1450,9 +1448,10 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder_data.board.board_items_list.append(ni)
         ni.item_position = self.board_map_to_board(self.context_menu_exec_point)
         self.board_TextElementSetDefaults(ni)
+        ni.editing = True
         ni.calc_local_data()
-        self.active_element = ni
         self.board_ImplantTextElement(ni)
+        self.active_element = ni
         self.board_TextElementRecalculateGabarit(ni)
         self.board_select_items([ni])
         self.update()
@@ -2127,6 +2126,11 @@ class BoardMixin(BoardTextEditItemMixin):
         if check_code != -1:
             return
 
+        if self.board_TextElementIsCursorInsideTextElement(event):
+            self.inside_note_item_operation_ongoing = True
+            self.board_TextElementSelectionMousePressEvent(event)
+            return
+
         self.active_element = None
 
         if event.buttons() == Qt.LeftButton:
@@ -2167,6 +2171,10 @@ class BoardMixin(BoardTextEditItemMixin):
         no_mod = event.modifiers() == Qt.NoModifier
 
         if self.board_TextElementCheckColorButtons(event) != -1:
+            return
+
+        if self.inside_note_item_operation_ongoing:
+            self.board_TextElementSelectionMouseMoveEvent(event)
             return
 
         if event.buttons() == Qt.LeftButton:
@@ -2223,6 +2231,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if check_code != -1:
             self.board_TextElementColorButtonsHandlers(check_code)
 
+        if self.inside_note_item_operation_ongoing:
+            self.board_TextElementSelectionMouseReleaseEvent(event)
+            self.inside_note_item_operation_ongoing = False
+            return
 
         if self.transform_cancelled:
             self.transform_cancelled = False
@@ -2537,8 +2549,12 @@ class BoardMixin(BoardTextEditItemMixin):
             item_selection_area = board_item.get_selection_area(board=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
-                self.board_fit_content_on_screen(None, board_item=board_item)
-                break
+                if board_item.type == BoardItem.types.ITEM_NOTE:
+                    self.board_TextElementSetEditMode(board_item)
+                    break
+                else:
+                    self.board_fit_content_on_screen(None, board_item=board_item)
+                    break
 
     def board_thumbnails_click_handler(self, image_data):
         self.board_fit_content_on_screen(image_data)
