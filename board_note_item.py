@@ -291,13 +291,25 @@ class BoardTextEditItemMixin():
                 return True
         return False
 
-    def board_TextElementSelectionMousePressEvent(self, event):
+    def board_TextElementStartSelection(self, event):
         if event.button() == Qt.LeftButton:
             ae = self.active_element
             if self.board_TextElementIsActiveElement() and ae.editing:
                 text_doc = ae.text_doc
                 hit_test_result = self.board_TextElementHitTest(event)
                 self.text_cursor.setPosition(hit_test_result)
+
+    def board_TextElementEndSelection(self, event):
+        ae = self.active_element
+        if self.board_TextElementIsActiveElement() and ae.editing:
+            text_doc = ae.text_doc
+            hit_test_result = self.board_TextElementHitTest(event)
+            self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+        self.board_TextElementDefineSelectionRects()
+        self.update()
+
+    def board_TextElementSelectionMousePressEvent(self, event):
+        self.board_TextElementStartSelection(event)
         self.update()
 
     def board_TextElementSelectionMouseMoveEvent(self, event):
@@ -308,18 +320,9 @@ class BoardTextEditItemMixin():
     def board_TextElementSelectionMouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.board_TextElementEndSelection(event)
-            tc = self.text_cursor
-            out = f'{tc.selectionEnd()} {tc.selectionStart()}'
-            print(out)
-        self.update()
-
-    def board_TextElementEndSelection(self, event):
-        ae = self.active_element
-        if self.board_TextElementIsActiveElement() and ae.editing:
-            text_doc = ae.text_doc
-            hit_test_result = self.board_TextElementHitTest(event)
-            self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
-        self.board_TextElementDefineSelectionRects()
+            # tc = self.text_cursor
+            # out = f'{tc.selectionEnd()} {tc.selectionStart()}'
+            # print(out)
         self.update()
 
     def board_TextElementDefineSelectionRects(self):
