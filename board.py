@@ -333,7 +333,6 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.board_TextElementIsActiveElement(ae=value):
             self.text_cursor = QTextCursor(value.text_doc)
             self.text_cursor.select(QTextCursor.Document)
-            value.text_doc_cursor_pos = len(value.text_doc.toPlainText())
             self.board_TextElementDefineSelectionRects()
 
     def board_dive_inside_board_item(self, back_to_referer=False):

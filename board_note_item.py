@@ -109,16 +109,14 @@ class BoardTextEditItemMixin():
 
         if event.key() in [Qt.Key_Left, Qt.Key_Right]:
             if event.key() == Qt.Key_Left:
-                ae.text_doc_cursor_pos -= 1
-                ae.text_doc_cursor_pos = max(ae.text_doc_cursor_pos, 0)
-                _cursor.setPosition(ae.text_doc_cursor_pos)
+                new_pos = max(_cursor.position()-1, 0)
+                _cursor.setPosition(new_pos)
             elif event.key() == Qt.Key_Right:
-                ae.text_doc_cursor_pos += 1
-                ae.text_doc_cursor_pos = min(ae.text_doc_cursor_pos, len(ae.text_doc.toPlainText()))
-                _cursor.setPosition(ae.text_doc_cursor_pos)
+                new_pos = min(_cursor.position()+1, len(ae.text_doc.toPlainText()))
+                _cursor.setPosition(new_pos)
+            self.cursorHide = False
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
-            ae.text_doc_cursor_pos = _cursor.position()
         elif ctrl and check_scancode_for(event, "Z"):
             if ae.text_doc:
                 ae.text_doc.undo()
@@ -128,7 +126,6 @@ class BoardTextEditItemMixin():
         else:
             _cursor.beginEditBlock()
             _cursor.insertText(text)
-            ae.text_doc_cursor_pos = _cursor.position()
             _cursor.endEditBlock()
 
         # text_line = self.board_TextElementCurrentTextLine(_cursor)
@@ -256,17 +253,10 @@ class BoardTextEditItemMixin():
                 return text_cursor_pos
         return None
 
-    def board_TextElementSetCursorPosByClick(self, event):
-        ae = self.active_element
-        text_cursor_pos = self.board_TextElementHitTest(event)
-        if text_cursor_pos is not None:
-            ae.text_doc_cursor_pos = text_cursor_pos
-
     def board_TextElementInit(self, elem):
         text_doc = elem.text_doc
         self.board_TextElementSetFont(elem)
         text_doc.setTextWidth(-1)
-        elem.text_doc_cursor_pos = 0
         text_doc.setDocumentMargin(80)
 
     def board_TextElementIsCursorInsideTextElement(self, event):
@@ -304,7 +294,6 @@ class BoardTextEditItemMixin():
             text_doc = ae.text_doc
             hit_test_result = self.board_TextElementHitTest(event)
             self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
-            ae.text_doc_cursor_pos = hit_test_result
         self.board_TextElementDefineSelectionRects()
         self.update()
 
@@ -421,7 +410,7 @@ class BoardTextEditItemMixin():
             # рисуем курсор
             if element.editing and not self.cursorHide:
                 doc_layout = text_doc.documentLayout()
-                cursor_pos = element.text_doc_cursor_pos
+                cursor_pos = self.text_cursor.position()
                 block = text_doc.begin()
                 end = text_doc.end()
                 while block != end:
