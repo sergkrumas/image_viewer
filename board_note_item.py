@@ -108,24 +108,38 @@ class BoardTextEditItemMixin():
 
         _cursor = self.text_cursor
 
-        if event.key() in [Qt.Key_Left, Qt.Key_Right]:
-            if event.key() == Qt.Key_Left:
-                new_pos = max(_cursor.position()-1, 0)
-            elif event.key() == Qt.Key_Right:
-                new_pos = min(_cursor.position()+1, len(ae.text_doc.toPlainText()))
+        if event.key() in [Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down]:
             if shift:
                 move_mode = QTextCursor.KeepAnchor
             else:
                 move_mode = QTextCursor.MoveAnchor
 
-            if ctrl:
-                if event.key() == Qt.Key_Left:
+            if event.key() == Qt.Key_Left:
+                if ctrl:
                     _cursor.movePosition(QTextCursor.PreviousWord, move_mode)
-                if event.key() == Qt.Key_Right:
+                else:
+                    new_pos = max(_cursor.position()-1, 0)
+                    _cursor.setPosition(new_pos, move_mode)
+
+            elif event.key() == Qt.Key_Right:
+                if ctrl:
                     _cursor.movePosition(QTextCursor.NextWord, move_mode)
-            else:
-                _cursor.setPosition(new_pos, move_mode)
+                else:
+                    new_pos = min(_cursor.position()+1, len(ae.text_doc.toPlainText()))
+                    _cursor.setPosition(new_pos, move_mode)
+
+            elif event.key() == Qt.Key_Up:
+                if not ctrl:
+                    move_mode = QTextCursor.MoveAnchor
+                _cursor.movePosition(QTextCursor.Up, move_mode)
+
+            elif event.key() == Qt.Key_Down:
+                if not ctrl:
+                    move_mode = QTextCursor.MoveAnchor
+                _cursor.movePosition(QTextCursor.Down, move_mode)
+
             self.cursorHide = False
+
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
         elif ctrl and check_scancode_for(event, "Z"):
@@ -224,7 +238,7 @@ class BoardTextEditItemMixin():
         is_event = self.board_TextElementIsActiveElement() and ae.editing
         is_event = is_event and event.key() != Qt.Key_Escape
         is_event = is_event and event.key() not in [Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Home, Qt.Key_End, Qt.Key_PageDown, Qt.Key_PageUp]
-        is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right]))
+        is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down]))
         is_event = is_event and ((not event.modifiers()) or \
                     ((Qt.ShiftModifier | Qt.ControlModifier) & event.modifiers() ) or \
                     (event.modifiers() == Qt.ControlModifier and ( check_scancode_for(event, "V")) or redo_undo ))
