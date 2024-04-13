@@ -119,7 +119,6 @@ class BoardTextEditItemMixin():
                 move_mode = QTextCursor.MoveAnchor
 
             if ctrl:
-                print('test')
                 if event.key() == Qt.Key_Left:
                     _cursor.movePosition(QTextCursor.PreviousWord, move_mode)
                 if event.key() == Qt.Key_Right:
