@@ -60,6 +60,8 @@ class BoardTextEditItemMixin():
         if self.board_TextElementIsActiveElement(ae=ae):
             if self.active_element.editing:
                 self.active_element.editing = False
+                self.text_cursor = None
+                self.note_item_selection_rects = []
                 # self.active_element = None
                 # не нужно вызывать здесь self.board_SetSelected(None),
                 # потому что elementsDeactivateTextElement вызывается
@@ -101,23 +103,24 @@ class BoardTextEditItemMixin():
         else:
             text = event.text()
 
-        _cursor = QTextCursor(ae.text_doc)
-        _cursor.setPosition(ae.text_doc_cursor_pos)
+        _cursor = self.text_cursor
 
         if event.key() in [Qt.Key_Left, Qt.Key_Right]:
             if event.key() == Qt.Key_Left:
                 ae.text_doc_cursor_pos -= 1
                 ae.text_doc_cursor_pos = max(ae.text_doc_cursor_pos, 0)
+                _cursor.setPosition(ae.text_doc_cursor_pos)
             elif event.key() == Qt.Key_Right:
                 ae.text_doc_cursor_pos += 1
                 ae.text_doc_cursor_pos = min(ae.text_doc_cursor_pos, len(ae.text_doc.toPlainText()))
+                _cursor.setPosition(ae.text_doc_cursor_pos)
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
-            ae.text_doc_cursor_pos -= 1
+            ae.text_doc_cursor_pos = _cursor.position()
         else:
             _cursor.beginEditBlock()
             _cursor.insertText(text)
-            ae.text_doc_cursor_pos += len(text)
+            ae.text_doc_cursor_pos = _cursor.position()
             _cursor.endEditBlock()
 
         # text_line = self.board_TextElementCurrentTextLine(_cursor)
@@ -127,6 +130,7 @@ class BoardTextEditItemMixin():
             self.board_TextElementUpdateProxyPixmap(ae)
 
         self.board_TextElementRecalculateGabarit(ae)
+        self.board_TextElementDefineSelectionRects()
         self.update_selection_bouding_box()
 
         self.update()
@@ -216,7 +220,7 @@ class BoardTextEditItemMixin():
         text_doc.setPlainText(elem.plain_text)
 
     def board_TextElementSetDefaults(self, elem):
-        elem.plain_text = ''
+        elem.plain_text = 'Note'
         elem.size = 10.0
         elem.margin_value = 5
         elem.proxy_pixmap = None
@@ -245,8 +249,8 @@ class BoardTextEditItemMixin():
 
     def board_TextElementSetCursorPosByClick(self, event):
         ae = self.active_element
-        cursor_pos = self.board_TextElementHitTest(event)
-        if cursor_pos is not None:
+        text_cursor_pos = self.board_TextElementHitTest(event)
+        if text_cursor_pos is not None:
             ae.text_doc_cursor_pos = text_cursor_pos
 
     def board_TextElementInit(self, elem):
@@ -291,6 +295,7 @@ class BoardTextEditItemMixin():
             text_doc = ae.text_doc
             hit_test_result = self.board_TextElementHitTest(event)
             self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+            ae.text_doc_cursor_pos = hit_test_result
         self.board_TextElementDefineSelectionRects()
         self.update()
 

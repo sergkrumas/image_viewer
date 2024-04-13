@@ -329,9 +329,12 @@ class BoardMixin(BoardTextEditItemMixin):
     @active_element.setter
     def active_element(self, value):
         self.board_DeactivateTextElement(ae=self._active_element)
+        self._active_element = value
         if self.board_TextElementIsActiveElement(ae=value):
             self.text_cursor = QTextCursor(value.text_doc)
-        self._active_element = value
+            self.text_cursor.select(QTextCursor.Document)
+            value.text_doc_cursor_pos = len(value.text_doc.toPlainText())
+            self.board_TextElementDefineSelectionRects()
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -2271,13 +2274,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 cf = self.LibraryData().current_folder()
                 canvas_pos = self.board_map_to_board(event.pos())
                 cf.board.board_user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
-
-            ae = self.active_element
-            if ae is not None and ae.type == BoardItem.types.ITEM_NOTE:
-                if ae.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
-                    self.board_TextElementSetCursorPosByClick(event)
-                    return
-
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
