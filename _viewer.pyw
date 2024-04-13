@@ -3373,14 +3373,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
 
-            board_add_item_folder = contextMenu.addAction("Добавить папку на доску...")
-            command_label = "Добавить новую группу на доску"
+            board_add_item_folder = contextMenu.addAction("Папка...")
+            command_label = "Группа"
             sel_count = self.board_selected_items_count()
             if sel_count > 0:
                 command_label = f'{command_label} и добавить в неё выделенные айтемы: {sel_count}'
             board_add_item_group = contextMenu.addAction(command_label)
-            board_add_item_frame = contextMenu.addAction("Добавить фрейм на доску")
-            board_add_item_note = contextMenu.addAction("Добавить заметку на доску")
+            board_add_item_frame = contextMenu.addAction("Фрейм")
+            board_add_item_note = contextMenu.addAction("Заметка")
 
             board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
 
