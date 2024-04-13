@@ -93,7 +93,8 @@ class BoardTextEditItemMixin():
         if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
-        ctrl = event.modifiers() == Qt.ControlModifier
+        ctrl = bool(event.modifiers() & Qt.ControlModifier)
+        shift = bool(event.modifiers() & Qt.ShiftModifier)
 
         if ctrl and check_scancode_for(event, "V"):
             text = ""
@@ -110,10 +111,21 @@ class BoardTextEditItemMixin():
         if event.key() in [Qt.Key_Left, Qt.Key_Right]:
             if event.key() == Qt.Key_Left:
                 new_pos = max(_cursor.position()-1, 0)
-                _cursor.setPosition(new_pos)
             elif event.key() == Qt.Key_Right:
                 new_pos = min(_cursor.position()+1, len(ae.text_doc.toPlainText()))
-                _cursor.setPosition(new_pos)
+            if shift:
+                move_mode = QTextCursor.KeepAnchor
+            else:
+                move_mode = QTextCursor.MoveAnchor
+
+            if ctrl:
+                print('test')
+                if event.key() == Qt.Key_Left:
+                    _cursor.movePosition(QTextCursor.PreviousWord, move_mode)
+                if event.key() == Qt.Key_Right:
+                    _cursor.movePosition(QTextCursor.NextWord, move_mode)
+            else:
+                _cursor.setPosition(new_pos, move_mode)
             self.cursorHide = False
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
@@ -215,7 +227,7 @@ class BoardTextEditItemMixin():
         is_event = is_event and event.key() not in [Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Home, Qt.Key_End, Qt.Key_PageDown, Qt.Key_PageUp]
         is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right]))
         is_event = is_event and ((not event.modifiers()) or \
-                    (Qt.ShiftModifier == event.modifiers()) or \
+                    ((Qt.ShiftModifier | Qt.ControlModifier) & event.modifiers() ) or \
                     (event.modifiers() == Qt.ControlModifier and ( check_scancode_for(event, "V")) or redo_undo ))
         return is_event
 
