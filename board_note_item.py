@@ -48,7 +48,7 @@ class BoardTextEditItemMixin():
 
         self.cursorHide = False
         self.board_note_item_colors_buttons = None
-        self.inside_note_item_operation_ongoing = False
+        self.board_inside_note_item_operation_ongoing = False
 
     def board_TextElementCursorBlinkingCycleHandler(self):
         ae = self.active_element
