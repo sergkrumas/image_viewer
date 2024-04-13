@@ -93,7 +93,9 @@ class BoardTextEditItemMixin():
         if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
-        if event.modifiers() == Qt.ControlModifier and check_scancode_for(event, "V"):
+        ctrl = event.modifiers() == Qt.ControlModifier
+
+        if ctrl and check_scancode_for(event, "V"):
             text = ""
             app = QApplication.instance()
             cb = app.clipboard()
@@ -117,6 +119,12 @@ class BoardTextEditItemMixin():
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
             ae.text_doc_cursor_pos = _cursor.position()
+        elif ctrl and check_scancode_for(event, "Z"):
+            if ae.text_doc:
+                ae.text_doc.undo()
+        elif ctrl and check_scancode_for(event, "Y"):
+            if ae.text_doc:
+                ae.text_doc.redo()
         else:
             _cursor.beginEditBlock()
             _cursor.insertText(text)
@@ -204,13 +212,14 @@ class BoardTextEditItemMixin():
 
     def board_TextElementIsInputEvent(self, event):
         ae = self.active_element
+        redo_undo = check_scancode_for(event, "Z") or check_scancode_for(event, "Y")
         is_event = self.board_TextElementIsActiveElement() and ae.editing
         is_event = is_event and event.key() != Qt.Key_Escape
         is_event = is_event and event.key() not in [Qt.Key_Delete, Qt.Key_Insert, Qt.Key_Home, Qt.Key_End, Qt.Key_PageDown, Qt.Key_PageUp]
         is_event = is_event and (bool(event.text()) or (event.key() in [Qt.Key_Left, Qt.Key_Right]))
         is_event = is_event and ((not event.modifiers()) or \
                     (Qt.ShiftModifier == event.modifiers()) or \
-                    (event.modifiers() == Qt.ControlModifier and check_scancode_for(event, "V")))
+                    (event.modifiers() == Qt.ControlModifier and ( check_scancode_for(event, "V")) or redo_undo ))
         return is_event
 
     def board_ImplantTextElement(self, elem):
