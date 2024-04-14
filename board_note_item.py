@@ -104,6 +104,10 @@ class BoardTextEditItemMixin():
         if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
+        if self.board_note_item_text_selection_drag_n_drop_ongoing or \
+            self.board_note_item_text_selection_drag_n_drop_cancelled:
+            return
+
         ctrl = bool(event.modifiers() & Qt.ControlModifier)
         shift = bool(event.modifiers() & Qt.ShiftModifier)
 
