@@ -1191,11 +1191,14 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 self.setCursor(Qt.OpenHandCursor)
         elif self.board_note_item_text_selection_drag_n_drop_ongoing:
-            modifiers = QApplication.queryKeyboardModifiers()
-            if bool(modifiers & Qt.ControlModifier):
-                self.setCursor(self.arrow_copy_cursor)
-            elif modifiers == Qt.NoModifier:
-                self.setCursor(self.arrow_move_cursor)
+            if self.board_note_item_text_selection_drag_n_drop_cancelled:
+                self.setCursor(Qt.ArrowCursor)
+            else:
+                modifiers = QApplication.queryKeyboardModifiers()
+                if bool(modifiers & Qt.ControlModifier):
+                    self.setCursor(self.arrow_copy_cursor)
+                elif modifiers == Qt.NoModifier:
+                    self.setCursor(self.arrow_move_cursor)
         elif self.selection_bounding_box is not None:
             if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
