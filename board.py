@@ -276,7 +276,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_region_zoom_in_init()
         self.scale_rastr_source = None
         self.rotate_rastr_source = None
-        self.load_svg_cursors()
+        self.load_cursors()
         self.selection_color = QColor(18, 118, 127)
 
         self.board_camera_translation_ongoing = False
@@ -426,15 +426,17 @@ class BoardMixin(BoardTextEditItemMixin):
         self.current_board_item_index = board_lib_obj.current_board_item_index
         self.current_board_item_group_index = board_lib_obj.current_board_item_group_index
 
-    def load_svg_cursors(self):
+    def load_cursors(self):
         folder_path = os.path.dirname(__file__)
         filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
         filepath_rotate_svg = os.path.join(folder_path, "cursors", "rotate.svg")
         filepath_translate_svg = os.path.join(folder_path, "cursors", "translate.svg")
+        filepath_arrow_png = os.path.join(folder_path, "cursors", "arrow.png")
 
         scale_rastr_source = QPixmap(filepath_scale_svg)
         rotate_rastr_source = QPixmap(filepath_rotate_svg)
         translate_rastr_source = QPixmap(filepath_translate_svg)
+        arrow_rastr_source = QPixmap(filepath_arrow_png)
 
         if not scale_rastr_source.isNull():
             self.scale_rastr_source = scale_rastr_source
@@ -442,6 +444,34 @@ class BoardMixin(BoardTextEditItemMixin):
             self.rotate_rastr_source = rotate_rastr_source
         if not translate_rastr_source.isNull():
             self.translate_rastr_source = translate_rastr_source
+        if not arrow_rastr_source.isNull():
+            SIZE = 30
+            arrow_rastr_source = arrow_rastr_source.scaled(SIZE, SIZE, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            def draw_sub_icon(text, bold=False):
+                source = arrow_rastr_source
+                SIGN_HEIGHT = 11
+                out_pix = QPixmap(source.width(), source.height()+SIGN_HEIGHT)
+                out_pix.fill(Qt.transparent)
+                p = QPainter()
+                p.begin(out_pix)
+                p.drawPixmap(QPoint(0, 0), source)
+                alignment = Qt.AlignRight | Qt.AlignTop
+                font = p.font()
+                if bold:
+                    font.setWeight(1900)
+                font.setPixelSize(SIGN_HEIGHT)
+                p.setFont(font)
+                text_rect = p.boundingRect(QRect(), alignment, text)
+                text_rect.setWidth(text_rect.width()+5)
+                text_rect.moveBottomRight(QPoint(out_pix.rect().width(), out_pix.rect().height()))
+                p.setBrush(QBrush(Qt.white))
+                p.setPen(QPen(Qt.black))
+                p.drawRect(text_rect)
+                p.drawText(text_rect, Qt.AlignHCenter | Qt.AlignVCenter, text)
+                p.end()
+                return out_pix
+            self.arrow_move_cursor = QCursor(draw_sub_icon("➜"))
+            self.arrow_copy_cursor = QCursor(draw_sub_icon("+", bold=True))
 
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
@@ -1160,6 +1190,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.setCursor(cursor)
             else:
                 self.setCursor(Qt.OpenHandCursor)
+        elif self.board_note_item_text_selection_drag_n_drop_ongoing:
+            modifiers = QApplication.queryKeyboardModifiers()
+            if bool(modifiers & Qt.ControlModifier):
+                self.setCursor(self.arrow_copy_cursor)
+            elif modifiers == Qt.NoModifier:
+                self.setCursor(self.arrow_move_cursor)
         elif self.selection_bounding_box is not None:
             if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
@@ -2178,6 +2214,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.board_inside_note_item_operation_ongoing:
             self.board_TextElementSelectionMouseMoveEvent(event)
+            self.board_cursor_setter()
             return
 
         if event.buttons() == Qt.LeftButton:
