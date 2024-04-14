@@ -51,7 +51,6 @@ class BoardTextEditItemMixin():
         self.board_inside_note_item_operation_ongoing = False
         self.board_note_item_text_selection_drag_n_drop_ongoing = False
         self.board_item_note_temp_cursor_pos = 0
-        self.board_item_note_text_selection_drag_n_drop_start_pos = None
         self.board_item_note_temp_start_cursor_pos = None
 
     def board_TextElementCursorBlinkingCycleHandler(self):
