@@ -49,6 +49,10 @@ class BoardTextEditItemMixin():
         self.cursorHide = False
         self.board_note_item_colors_buttons = None
         self.board_inside_note_item_operation_ongoing = False
+        self.board_note_item_text_selection_drag_n_drop_ongoing = False
+        self.board_item_note_temp_cursor_pos = 0
+        self.board_item_note_text_selection_drag_n_drop_start_pos = None
+        self.board_item_note_temp_start_cursor_pos = None
 
     def board_TextElementCursorBlinkingCycleHandler(self):
         ae = self.active_element
@@ -155,6 +159,10 @@ class BoardTextEditItemMixin():
 
         # text_line = self.board_TextElementCurrentTextLine(_cursor)
         # print('text_line', text_line.lineNumber())
+        self.board_TextElementUpdateAfterInput()
+
+    def board_TextElementUpdateAfterInput(self):
+        ae = self.active_element
         ae.plain_text = ae.text_doc.toPlainText()
         if self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS:
             self.board_TextElementUpdateProxyPixmap(ae)
@@ -291,25 +299,98 @@ class BoardTextEditItemMixin():
                 return True
         return False
 
+    def board_TextElementGetABFromTextCursor(self):
+        poss = [self.text_cursor.selectionStart(), self.text_cursor.selectionEnd()]
+        a = min(*poss)
+        b = max(*poss)
+        return a, b
+
     def board_TextElementStartSelection(self, event):
         if event.button() == Qt.LeftButton:
             ae = self.active_element
             if self.board_TextElementIsActiveElement() and ae.editing:
-                text_doc = ae.text_doc
                 hit_test_result = self.board_TextElementHitTest(event)
-                self.text_cursor.setPosition(hit_test_result)
+                a, b = self.board_TextElementGetABFromTextCursor()
+                if hit_test_result is not None and a <= hit_test_result <= b and abs(b-a) > 0:
+                    # drag start
+                    print(f'drag start {abs(b-a)}')
+                    self.board_item_note_temp_cursor_pos = hit_test_result
+                    self.board_item_note_temp_start_cursor_pos = hit_test_result
+                else:
+                    # default start
+                    print(f'default start')
+                    hit_test_result = self.board_TextElementHitTest(event)
+                    self.text_cursor.setPosition(hit_test_result)
+                    self.board_note_item_text_selection_drag_n_drop_ongoing = False
+                    self.board_item_note_temp_start_cursor_pos = None
+        self.board_TextElementDefineSelectionRects()
 
-    def board_TextElementEndSelection(self, event):
+    def board_TextElementEndSelection(self, event, finish=False):
+        # код переусложнён, так как он обрабатывает как MouseMove, так и MouseRelease
         ae = self.active_element
+        ctrl = event.modifiers() & Qt.ControlModifier
         if self.board_TextElementIsActiveElement() and ae.editing:
-            text_doc = ae.text_doc
             hit_test_result = self.board_TextElementHitTest(event)
-            self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+            if self.board_note_item_text_selection_drag_n_drop_ongoing:
+                if finish:
+                    _cursor = self.text_cursor
+                    text_to_copy = _cursor.selectedText()
+                    temp_cursor_pos = self.board_item_note_temp_cursor_pos
+                    a, b = self.board_TextElementGetABFromTextCursor()
+                    selection_center_pos = int(a + (b - a)/2)
+                    if text_to_copy:
+                        if ctrl:
+                            # копирование
+                            _cursor.setPosition(temp_cursor_pos)
+                            _cursor.beginEditBlock()
+                            _cursor.insertText(text_to_copy)
+                            _cursor.endEditBlock()
+                        else:
+                            # перенос
+                            if a < temp_cursor_pos < b:
+                                # сбрасывается внутрь выделения, отмена
+                                pass
+                            else:
+                                # если выделение находится дальше
+                                # чем позиция для переноса,
+                                # то коректировка нужна.
+                                # в противном случае она необходима
+                                if selection_center_pos > temp_cursor_pos:
+                                    pass
+                                if selection_center_pos < temp_cursor_pos:
+                                    temp_cursor_pos -= len(text_to_copy)
+
+                                _cursor.deletePreviousChar()
+                                _cursor.setPosition(temp_cursor_pos)
+                                _cursor.beginEditBlock()
+                                _cursor.insertText(text_to_copy)
+                                _cursor.endEditBlock()
+                        self.board_TextElementUpdateAfterInput()
+                    self.board_note_item_text_selection_drag_n_drop_ongoing = False
+                    self.board_item_note_temp_start_cursor_pos = None
+                    self.board_item_note_temp_cursor_pos = None
+                else:
+                    self.board_item_note_temp_cursor_pos = hit_test_result
+                    self.cursorHide = False
+            else:
+                if self.board_item_note_temp_start_cursor_pos:
+                    cursor_moved_a_bit = abs(hit_test_result - self.board_item_note_temp_start_cursor_pos) > 0
+                    if cursor_moved_a_bit:
+                        self.board_note_item_text_selection_drag_n_drop_ongoing = True
+                    elif finish:
+                        self.text_cursor.setPosition(hit_test_result, QTextCursor.MoveAnchor)
+                else:
+                    self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+
+        if finish:
+            self.board_note_item_text_selection_drag_n_drop_ongoing = False
+            self.board_item_note_temp_start_cursor_pos = None
         self.board_TextElementDefineSelectionRects()
         self.update()
 
     def board_TextElementSelectionMousePressEvent(self, event):
-        self.board_TextElementStartSelection(event)
+        if event.button() == Qt.LeftButton:
+            self.board_TextElementStartSelection(event)
         self.update()
 
     def board_TextElementSelectionMouseMoveEvent(self, event):
@@ -319,7 +400,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementSelectionMouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.board_TextElementEndSelection(event)
+            self.board_TextElementEndSelection(event, finish=True)
             # tc = self.text_cursor
             # out = f'{tc.selectionEnd()} {tc.selectionStart()}'
             # print(out)
@@ -438,7 +519,10 @@ class BoardTextEditItemMixin():
             # рисуем курсор
             if element.editing and not self.cursorHide:
                 doc_layout = text_doc.documentLayout()
-                cursor_pos = self.text_cursor.position()
+                if self.board_note_item_text_selection_drag_n_drop_ongoing:
+                    cursor_pos = self.board_item_note_temp_cursor_pos
+                else:
+                    cursor_pos = self.text_cursor.position()
                 block = text_doc.begin()
                 end = text_doc.end()
                 while block != end:
