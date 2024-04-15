@@ -288,7 +288,7 @@ class PluginInfo():
     def menu_callback(self):
         board = self.board
         if self.pluginBoardInit:
-            self.pluginBoardInit(board)
+            self.pluginBoardInit(board, self)
         board.active_plugin = self
         board.show_center_label(f'{self.name} activated')
         board.update()
@@ -420,6 +420,11 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.active_plugin.wheelEvent(self, event)
 
+    def board_CreatePluginVirtualFolder(self, plugin_name):
+        fd = self.LibraryData().create_folder_data(f"{plugin_name} Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+        fd.board.board_ready = True
+        return fd
+
     @property
     def active_element(self):
         return self._active_element
@@ -499,15 +504,18 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label("Наведи курсор на группу!", error=True)
                 return
         if __folder_data is not None:
-            self.LibraryData().save_board_data()
-            self.LibraryData().make_folder_current(__folder_data, write_view_history=False)
-            self.LibraryData().load_board_data()
+            self.board_make_board_current(__folder_data)
             if not back_to_referer:
                 self.LibraryData().current_folder().board.referer_board_folder = cf
             self.init_selection_bounding_box_widget(__folder_data)
         else:
             self.show_center_label("Некуда возвращаться!", error=True)
         self.update()
+
+    def board_make_board_current(self, folder_data):
+        self.LibraryData().save_board_data()
+        self.LibraryData().make_folder_current(folder_data, write_view_history=False)
+        self.LibraryData().load_board_data()
 
     def board_save_board_data(self, board_lib_obj, folder_data):
         board_lib_obj.board_bounding_rect = self.board_bounding_rect
