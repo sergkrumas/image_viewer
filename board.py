@@ -348,7 +348,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_PluginInit(plugin_filepath)
         print('end init plugins')
 
-    def get_module_register_function(self, script_filename, full_path):
+    def load_module_and_get_register_function(self, script_filename, full_path):
         spec = importlib.util.spec_from_file_location(script_filename, full_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -362,7 +362,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_PluginInit(self, filepath):
         print(f'\t{filepath}')
         filename = os.path.basename(filepath)
-        module, plugin_reg_func = self.get_module_register_function(filename, filepath)
+        module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
         pi = PluginInfo(module)
         pi.setName(filename)
         self.board_plugins.append(pi)
