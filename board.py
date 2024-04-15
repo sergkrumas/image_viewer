@@ -322,6 +322,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_TextElementInitModule()
 
+        self.board_PluginsInit()
+
+    def board_PluginsInit(self):
+        plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
+        if not os.path.exists(plugins_folder):
+            return
+        print(f'init plugins in {plugins_folder}...')
+        for cur_dir, dirs, filenames in os.walk(plugins_folder):
+            for filename in filenames:
+                plugin_filepath = os.path.join(cur_dir, filename)
+                if plugin_filepath.lower().endswith('.py'):
+                    print(f'\t{plugin_filepath}')
+        print('end init plugins')
+
     @property
     def active_element(self):
         return self._active_element
