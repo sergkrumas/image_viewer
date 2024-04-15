@@ -72,7 +72,7 @@ def paintEvent(self, painter, event):
     pen = QPen(QColor(255, 0, 0), 10)
     pen0 = QPen(QColor(0, 255, 255), 10)
     pen.setCapStyle(Qt.RoundCap)
-    
+
     pen2 = QPen(QColor(255, 0, 0), 1)
     pen3 = QPen(QColor(0, 0, 0), 4)
 
@@ -159,7 +159,7 @@ def paintEvent(self, painter, event):
     except:
         radians_angle = 0
         # !!! отличается знаком плюс
-    radians_angle += - position_angle + math.pi/2 - math.pi/2*factor 
+    radians_angle += - position_angle + math.pi/2 - math.pi/2*factor
     draw_tangent_points(radians_angle)
 
 
