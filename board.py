@@ -274,6 +274,9 @@ class PluginInfo():
     def setName(self, name):
         self.name = name
 
+    def menu_callback(self):
+        print('menu callback')
+
 class BoardMixin(BoardTextEditItemMixin):
 
     # для поддержки миксинов

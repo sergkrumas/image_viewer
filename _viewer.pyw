@@ -3382,13 +3382,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             contextMenu.addSeparator()
 
+            for pi in self.board_plugins:
+                create_board_for_plugin = contextMenu.addAction(pi.name)
+                create_board_for_plugin.triggered.connect(pi.menu_callback)
+
+            contextMenu.addSeparator()
+
             board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
 
             board_add_item_folder = contextMenu.addAction("Папка...")
             command_label = "Группа"
             sel_count = self.board_selected_items_count()
             if sel_count > 0:
-                command_label = f'{command_label} и добавить в неё выделенные айтемы: {sel_count}'
+                command_label = f'{command_label} (добавить в неё выделенные айтемы: {sel_count})'
             board_add_item_group = contextMenu.addAction(command_label)
             board_add_item_frame = contextMenu.addAction("Фрейм")
             board_add_item_note = contextMenu.addAction("Заметка")
