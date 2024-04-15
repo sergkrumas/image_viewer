@@ -22,6 +22,7 @@ import math
 import time
 import urllib.request
 import functools
+import importlib
 
 from _utils import *
 from board_note_item import BoardTextEditItemMixin
@@ -263,6 +264,16 @@ class BoardItem():
             self.item_scale_x, \
             self.item_scale_y = self._saved_data
 
+class PluginInfo():
+
+    def __init__(self, module):
+        super().__init__()
+        self.name = 'undefined'
+        self.module = module
+
+    def setName(self, name):
+        self.name = name
+
 class BoardMixin(BoardTextEditItemMixin):
 
     # для поддержки миксинов
@@ -322,6 +333,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_TextElementInitModule()
 
+        self.board_plugins = []
         self.board_PluginsInit()
 
     def board_PluginsInit(self):
@@ -333,8 +345,29 @@ class BoardMixin(BoardTextEditItemMixin):
             for filename in filenames:
                 plugin_filepath = os.path.join(cur_dir, filename)
                 if plugin_filepath.lower().endswith('.py'):
-                    print(f'\t{plugin_filepath}')
+                    self.board_PluginInit(plugin_filepath)
         print('end init plugins')
+
+    def get_module_register_function(self, script_filename, full_path):
+        spec = importlib.util.spec_from_file_location(script_filename, full_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        plugin_func = None
+        try:
+            plugin_func = getattr(module, "register")
+        except AttributeError:
+            pass
+        return module, plugin_func
+
+    def board_PluginInit(self, filepath):
+        print(f'\t{filepath}')
+        filename = os.path.basename(filepath)
+        module, plugin_reg_func = self.get_module_register_function(filename, filepath)
+        pi = PluginInfo(module)
+        pi.setName(filename)
+        self.board_plugins.append(pi)
+        if plugin_reg_func:
+            plugin_reg_func(self, pi)
 
     @property
     def active_element(self):
