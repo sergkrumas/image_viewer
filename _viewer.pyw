@@ -3922,13 +3922,12 @@ def _main():
 
     ServerOrClient.globals = Globals
 
-    if not Globals.lite_mode:
-        path = ServerOrClient.server_or_client_via_sockets(
-            path,
-            open_request,
-            choose_start_option_callback,
-        )
-
+    if Globals.DEBUG:
+        Globals.lite_mode = True
+    else:
+        if not Globals.lite_mode:
+            path = ServerOrClient.server_or_client_via_sockets(path, open_request,
+                                                                    choose_start_option_callback)
     Globals.is_path_exists = os.path.exists(path)
 
     generate_pixmaps(Globals, SettingsWindow)
