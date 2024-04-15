@@ -396,6 +396,30 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.active_plugin.paintEvent(self, painter, event)
 
+    def board_mousePressEvent(self, event):
+        if self.active_plugin is None or self.active_plugin.mousePressEvent is None:
+            self.board_mousePressEventDefault(event)
+        else:
+            self.active_plugin.mousePressEvent(self, event)
+
+    def board_mouseMoveEvent(self, event):
+        if self.active_plugin is None or self.active_plugin.mouseMoveEvent is None:
+            self.board_mouseMoveEventDefault(event)
+        else:
+            self.active_plugin.mouseMoveEvent(self, event)
+
+    def board_mouseReleaseEvent(self, event):
+        if self.active_plugin is None or self.active_plugin.mouseReleaseEvent is None:
+            self.board_mouseReleaseEventDefault(event)
+        else:
+            self.active_plugin.mouseReleaseEvent(self, event)
+
+    def board_wheelEvent(self, event):
+        if self.active_plugin is None or self.active_plugin.wheelEvent is None:
+            self.board_wheelEventDefault(event)
+        else:
+            self.active_plugin.wheelEvent(self, event)
+
     @property
     def active_element(self):
         return self._active_element
@@ -2232,7 +2256,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def boards_key_press_callback(self, event):
         self.boards_do_scaling_key_callback()
 
-    def board_mousePressEvent(self, event):
+    def board_mousePressEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
@@ -2280,7 +2304,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_mouseMoveEvent(self, event):
+    def board_mouseMoveEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
@@ -2338,7 +2362,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_cursor_setter()
         self.update()
 
-    def board_mouseReleaseEvent(self, event):
+    def board_mouseReleaseEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
@@ -2528,7 +2552,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.update_corner_info()
         self.update()
 
-    def board_wheelEvent(self, event):
+    def board_wheelEventDefault(self, event):
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
