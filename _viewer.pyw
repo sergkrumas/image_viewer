@@ -3311,6 +3311,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             setattr(obj, attr_name, not getattr(obj, attr_name))
             self.update()
 
+        self.toggle_boolean_var_generic = toggle_boolean_var_generic
+
         checkboxes = [
             ("DEBUG", Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
             ("Антиальясинг и сглаживание пиксмапов", Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
@@ -3362,11 +3364,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            checkboxes.append(
-                ("Отображать отладочную графику виджета трансформации", self.board_debug_transform_widget, partial(toggle_boolean_var_generic, self, 'board_debug_transform_widget')),
-            )
-
-            self.board_ContextMenuDefault(event, contextMenu)
+            self.board_ContextMenu(event, contextMenu, checkboxes)
 
         elif self.is_viewer_page_active():
 

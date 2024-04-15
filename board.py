@@ -426,13 +426,20 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.active_plugin.wheelEvent(self, event)
 
-    def board_ContextMenu(self, event):
+    def board_ContextMenu(self, event, contextMenu, checkboxes):
         if self.active_plugin is None or selfa.active_plugin.contextMenu is None:
-            self.board_ContextMenuDefault(event)
+            self.board_ContextMenuDefault(event, contextMenu, checkboxes)
         else:
-            self.active_plugin.contextMenu(self, event)
+            self.active_plugin.contextMenu(self, event, contextMenu, checkboxes)
 
-    def board_ContextMenuDefault(self, event, contextMenu):
+    def board_ContextMenuDefault(self, event, contextMenu, checkboxes):
+
+        checkboxes.append(
+            ("Отображать отладочную графику виджета трансформации",
+            self.board_debug_transform_widget,
+                partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
+            ),
+        )
 
         contextMenu.addSeparator()
 
