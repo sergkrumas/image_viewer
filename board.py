@@ -23,6 +23,7 @@ import time
 import urllib.request
 import functools
 import importlib
+from functools import partial
 
 from _utils import *
 from board_note_item import BoardTextEditItemMixin
@@ -282,6 +283,11 @@ class PluginInfo():
 
         self.wheelEvent = None
 
+        self.contextMenu = None
+
+        self.keyPressEvent = None
+        self.keyReleaseEvent = None
+
     def setName(self, name):
         self.name = name
 
@@ -419,6 +425,56 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_wheelEventDefault(event)
         else:
             self.active_plugin.wheelEvent(self, event)
+
+    def board_ContextMenu(self, event):
+        if self.active_plugin is None or selfa.active_plugin.contextMenu is None:
+            self.board_ContextMenuDefault(event)
+        else:
+            self.active_plugin.contextMenu(self, event)
+
+    def board_ContextMenuDefault(self, event, contextMenu):
+
+        contextMenu.addSeparator()
+
+        for pi in self.board_plugins:
+            create_board_for_plugin = contextMenu.addAction(pi.name)
+            create_board_for_plugin.triggered.connect(pi.menu_callback)
+
+        contextMenu.addSeparator()
+
+        board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
+        board_go_to_note.triggered.connect(partial(self.board_go_to_note, event))
+
+        board_add_item_folder = contextMenu.addAction("Папка...")
+        board_add_item_folder.triggered.connect(self.board_add_item_folder)
+
+        command_label = "Группа"
+        sel_count = self.board_selected_items_count()
+        if sel_count > 0:
+            command_label = f'{command_label} (добавить в неё выделенные айтемы: {sel_count})'
+        board_add_item_group = contextMenu.addAction(command_label)
+        board_add_item_group.triggered.connect(self.board_add_item_group)
+
+        board_add_item_frame = contextMenu.addAction("Фрейм")
+        board_add_item_group.triggered.connect(self.board_add_item_frame)
+
+        board_add_item_note = contextMenu.addAction("Заметка")
+        board_add_item_note.triggered.connect(self.board_add_item_note)
+
+        board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
+        board_load_highres.triggered.connect(self.board_load_highres)
+
+        if bool(self.is_context_menu_executed_over_group_item()):
+            board_retrieve_current_from_group_item = contextMenu.addAction('Вынуть текущую картинку из группы')
+            board_retrieve_current_from_group_item.triggered.connect(self.board_retrieve_current_from_group_item)
+
+        contextMenu.addSeparator()
+
+        board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
+        board_open_in_app_copy.triggered.connect(self.board_open_in_app_copy)
+
+        board_open_in_google_chrome = contextMenu.addAction("Открыть в Google Chrome")
+        board_open_in_google_chrome.triggered.connect(self.board_open_in_google_chrome)
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(f"{plugin_name} Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)

@@ -3300,18 +3300,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         rerun_extended_mode = None
         open_in_sep_app = None
 
-        board_transform_widget_debug_draw = None
-        board_add_item_folder = None
-
-        board_open_in_app_copy = None
-        board_open_in_google_chrome = None
-        board_add_item_group = None
-        board_add_item_frame = None
-        board_add_item_note = None
-        board_load_highres = None
-        board_retrieve_current_from_group_item = None
-        board_go_to_note = None
-
         self.contextMenuActivated = True
 
         self.context_menu_exec_point = self.mapped_cursor_pos()
@@ -3378,34 +3366,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 ("Отображать отладочную графику виджета трансформации", self.board_debug_transform_widget, partial(toggle_boolean_var_generic, self, 'board_debug_transform_widget')),
             )
 
-            contextMenu.addSeparator()
-
-            for pi in self.board_plugins:
-                create_board_for_plugin = contextMenu.addAction(pi.name)
-                create_board_for_plugin.triggered.connect(pi.menu_callback)
-
-            contextMenu.addSeparator()
-
-            board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
-
-            board_add_item_folder = contextMenu.addAction("Папка...")
-            command_label = "Группа"
-            sel_count = self.board_selected_items_count()
-            if sel_count > 0:
-                command_label = f'{command_label} (добавить в неё выделенные айтемы: {sel_count})'
-            board_add_item_group = contextMenu.addAction(command_label)
-            board_add_item_frame = contextMenu.addAction("Фрейм")
-            board_add_item_note = contextMenu.addAction("Заметка")
-
-            board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
-
-            if bool(self.is_context_menu_executed_over_group_item()):
-                board_retrieve_current_from_group_item = contextMenu.addAction('Вынуть текущую картинку из группы')
-
-            contextMenu.addSeparator()
-
-            board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
-            board_open_in_google_chrome = contextMenu.addAction("Открыть в Google Chrome")
+            self.board_ContextMenuDefault(event, contextMenu)
 
         elif self.is_viewer_page_active():
 
@@ -3470,27 +3431,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if action is not None:
             if action == show_in_explorer:
                 Globals.control_panel.show_in_folder()
-            elif action == board_add_item_folder:
-                self.board_add_item_folder()
-            elif action == board_go_to_note:
-                self.board_go_to_note(event)
-            elif action == board_add_item_group:
-                self.board_add_item_group()
-            elif action == board_load_highres:
-                self.board_load_highres()
-            elif action == board_add_item_frame:
-                self.board_add_item_frame()
-            elif action == board_add_item_note:
-                self.board_add_item_note()
-            elif action == board_open_in_app_copy:
-                self.board_open_in_app_copy()
-            elif action == board_open_in_google_chrome:
-                self.board_open_in_google_chrome()
-            elif action == board_transform_widget_debug_draw:
-                self.board_debug_transform_widget = not self.board_debug_transform_widget
-                self.update()
-            elif action == board_retrieve_current_from_group_item:
-                self.board_retrieve_current_from_group_item()
             elif action == open_separated:
                 open_in_separated_app_copy(folder_data)
             elif action == toggle_two_monitors_wide:
