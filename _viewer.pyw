@@ -2807,16 +2807,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            if key == Qt.Key_Control:
-                # for not item selection drag&drop
-                self.board_cursor_setter()
-
-            if key in [Qt.Key_Return, Qt.Key_Enter]:
-                self.board_dive_inside_board_item()
-            elif key in [Qt.Key_Backspace]:
-                self.board_dive_inside_board_item(back_to_referer=True)
-            elif key in [Qt.Key_Delete]:
-                self.board_delete_selected_board_items()
+            self.board_keyReleaseEvent(event)
 
         elif self.is_viewer_page_active():
 
@@ -3014,50 +3005,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            if self.board_TextElementIsInputEvent(event):
-                self.board_TextElementInputEvent(event)
-                self.is_board_text_input_event = True
-                return
-
-            if key == Qt.Key_Control:
-                # for not item selection drag&drop
-                self.board_cursor_setter()
-
-            if key == Qt.Key_Space:
-                self.board_fly_over(user_call=True)
-
-            elif check_scancode_for(event, "M"):
-                self.board_toggle_minimap()
-
-            elif check_scancode_for(event, "I"):
-                self.board_toggle_item_info_overlay()
-
-            elif check_scancode_for(event, "A") and ctrl_mod:
-                self.board_select_all_items()
-
-            elif check_scancode_for(event, "C") and ctrl_mod:
-                self.board_control_c()
-
-            elif check_scancode_for(event, "V") and ctrl_mod:
-                self.board_control_v()
-
-            elif key == Qt.Key_Home:
-                self.board_viewport_show_first_item()
-
-            elif key == Qt.Key_End:
-                self.board_viewport_show_last_item()
-
-            elif key == Qt.Key_PageDown:
-                self.board_move_viewport(_previous=True)
-
-            elif key == Qt.Key_PageUp:
-                self.board_move_viewport(_next=True)
-
-            elif key in [Qt.Key_Return, Qt.Key_Enter]:
-                self.board_navigate_camera_via_minimap()
-
-            elif key in [Qt.Key_Plus]:
-                self.board_fit_selected_items_on_screen()
+            self.board_keyPressEvent(event)
 
         self.update()
 
