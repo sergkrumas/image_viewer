@@ -3217,37 +3217,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         contextMenu = QMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
 
-        show_in_gchrome = None
-        show_in_explorer = None
-        place_at_center = None
-        go_to_folder = None
-        save_as_png = None
-        save_as_jpg = None
-        go_to_folder = None
-        copy_to_cp = None
-        copy_from_cp = None
-        toggle_two_monitors_wide = None
-
-        delete_comment = None
-        change_comment_text = None
-        change_comment_borders = None
-
-        crash_simulator = None
-
-        change_svg_scale = None
-
-        copy_image_metadata = None
-
-        rerun_in_extended_mode = None
-        rerun_extended_mode = None
-
-        run_unsupported_file = None
-
-        open_separated = None
-        toggle_two_monitors_wide = None
-        rerun_extended_mode = None
-        open_in_sep_app = None
-
         self.contextMenuActivated = True
 
         self.context_menu_exec_point = self.mapped_cursor_pos()
