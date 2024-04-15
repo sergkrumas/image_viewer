@@ -270,12 +270,28 @@ class PluginInfo():
         super().__init__()
         self.name = 'undefined'
         self.module = module
+        self.board = None
+
+        self.pluginBoardInit = None
+
+        self.paintEvent = None
+
+        self.mousePressEvent = None
+        self.mouseMoveEvent = None
+        self.mouseReleaseEvent = None
+
+        self.wheelEvent = None
 
     def setName(self, name):
         self.name = name
 
     def menu_callback(self):
-        print('menu callback')
+        board = self.board
+        if self.pluginBoardInit:
+            self.pluginBoardInit(board)
+        board.active_plugin = self
+        board.show_center_label(f'{self.name} activated')
+        board.update()
 
 class BoardMixin(BoardTextEditItemMixin):
 
@@ -337,6 +353,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementInitModule()
 
         self.board_plugins = []
+
+        self.active_plugin = None
         self.board_PluginsInit()
 
     def board_PluginsInit(self):
@@ -371,6 +389,12 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_plugins.append(pi)
         if plugin_reg_func:
             plugin_reg_func(self, pi)
+
+    def board_draw_main(self, painter, event):
+        if self.active_plugin is None or self.active_plugin.paintEvent is None:
+            self.board_draw_main_default(painter)
+        else:
+            self.active_plugin.paintEvent(self, painter, event)
 
     @property
     def active_element(self):
@@ -536,8 +560,8 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setPen(pen)
         painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "WELCOME TO \n BOARDS")
 
-    def board_draw(self, painter):
-        self.board_draw_main(painter)
+    def board_draw(self, painter, event):
+        self.board_draw_main(painter, event)
         # board_draw_stub(self, painter)
 
     def board_draw_wait_long_loading_label(self, painter):
@@ -914,7 +938,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for point, board_scale_x, board_scale_y in cf.board.board_user_points:
             painter.drawPoint(self.board_map_to_viewport(point))
 
-    def board_draw_main(self, painter):
+    def board_draw_main_default(self, painter):
 
         cf = self.LibraryData().current_folder()
         if cf.previews_done:

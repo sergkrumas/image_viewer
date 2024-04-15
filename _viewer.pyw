@@ -2156,7 +2156,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.region_zoom_in_draw(painter)
 
         elif self.is_board_page_active():
-            self.board_draw(painter)
+            self.board_draw(painter, event)
 
         # draw center label
         self.draw_center_label_main(painter)
