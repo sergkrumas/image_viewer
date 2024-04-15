@@ -3222,6 +3222,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.context_menu_exec_point = self.mapped_cursor_pos()
 
         minimize_window = contextMenu.addAction("Свернуть")
+        minimize_window.triggered.connect(Globals.main_window.showMinimized)
         contextMenu.addSeparator()
 
         def toggle_boolean_var_generic(obj, attr_name):
@@ -3238,7 +3239,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if Globals.CRASH_SIMULATOR:
             crash_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
+            crash_simulator.triggered.connect(lambda: 1/0)
+
         open_settings = contextMenu.addAction("Настройки...")
+        open_settings.triggered.connect(self.open_settings_window)
         contextMenu.addSeparator()
 
         if self.frameless_mode:
@@ -3246,6 +3250,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             text = "Переключиться в полноэкранный режим"
         toggle_frame_mode = contextMenu.addAction(text)
+        toggle_frame_mode.triggered.connect(self.toggle_window_frame)
         if self.frameless_mode:
             if self.two_monitors_wide:
                 text = "Вернуть окно в монитор"
@@ -3256,11 +3261,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if Globals.lite_mode:
             contextMenu.addSeparator()
             rerun_in_extended_mode = contextMenu.addAction("Перезапустить в обычном режиме")
+            rerun_in_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, False))
         else:
             contextMenu.addSeparator()
             rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
+            rerun_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, self.is_library_page_active()))
+
 
         open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
+        open_in_sep_app.triggered.connect(partial(open_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
             folder_data = None
@@ -3271,6 +3280,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if folder_data and not folder_data.virtual:
                 action_title = f"Открыть папку \"{folder_data.folder_path}\" в копии"
                 open_separated = contextMenu.addAction(action_title)
+                open_separated.triggered.connect(partial(open_in_separated_app_copy, folder_data))
                 toggle_two_monitors_wide = None
                 if self.frameless_mode:
                     if self.two_monitors_wide:
@@ -3278,6 +3288,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     else:
                         text = "Развернуть окно на два монитора"
                     toggle_two_monitors_wide = contextMenu.addAction(text)
+                    toggle_two_monitors_wide.triggered.connect(self.do_toggle_two_monitors_wide)
 
         elif self.is_board_page_active():
 
@@ -3287,6 +3298,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             if self.image_data and not self.image_data.is_supported_filetype:
                 run_unsupported_file = contextMenu.addAction("Открыть неподдерживаемый файл...")
+                run_unsupported_file.triggered.connect(self.run_unsupported_file)
 
             contextMenu.addSeparator()
 
@@ -3295,42 +3307,60 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 if sel_comment:
                     action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
                     change_comment_text = contextMenu.addAction(action_text)
+                    change_comment_text.triggered.connect(self.change_comment_text_menuitem)
 
                     action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
                     change_comment_borders = contextMenu.addAction(action_text)
+                    change_comment_borders.triggered.connect(self.change_comment_borders_menuitem)
 
                     action_text = f'Удалить комент "{sel_comment.get_title()}"'
                     delete_comment = contextMenu.addAction(action_text)
+                    delete_comment.triggered.connect(self.delete_comment_menuitem)
 
                     contextMenu.addSeparator()
 
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
                     copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
+                    copy_image_metadata.triggered.connect(partial(QApplication.clipboard().setText, ci.image_metadata_info))
+
 
             contextMenu.addSeparator()
 
             if not self.error:
                 show_in_explorer = contextMenu.addAction("Найти на диске")
+                show_in_explorer.triggered.connect(Globals.control_panel.show_in_folder)
                 show_in_gchrome = contextMenu.addAction("Открыть в Google Chrome")
+                show_in_gchrome.triggered.connect(self.show_in_gchrome_menuitem)
                 place_at_center = contextMenu.addAction("Вернуть картинку в центр окна")
+                place_at_center.triggered.connect(self.place_at_center_menuitem)
 
             contextMenu.addSeparator()
 
             if self.svg_rendered:
                 text = "Изменить разрешение растеризации SVG-файла..."
                 change_svg_scale = contextMenu.addAction(text)
+                change_svg_scale.triggered.connect(self.contextMenuChangeSVGScale)
                 contextMenu.addSeparator()
 
             if not self.error:
                 save_as_png = contextMenu.addAction("Сохранить в .png...")
+                save_as_png.triggered.connect(partial(self.save_image_as, 'png'))
+
                 save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
+                save_as_jpg.triggered.connect(partial(self.save_image_as, 'jpg'))
+
                 copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
+                copy_to_cp.triggered.connect(self.copy_to_clipboard)
+
                 copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
+                copy_from_cp.triggered.connect(self.paste_from_clipboard)
+
                 if LibraryData().current_folder().is_fav_folder():
                     contextMenu.addSeparator()
                     action_title = "Перейти из избранного в папку с этим изображением"
                     go_to_folder = contextMenu.addAction(action_title)
+                    go_to_folder.triggered.connect(LibraryData().go_to_folder_of_current_image)
 
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
@@ -3342,73 +3372,44 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             contextMenu.addAction(wa)
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+
         self.contextMenuActivated = False
-        if action is not None:
-            if action == show_in_explorer:
-                Globals.control_panel.show_in_folder()
-            elif action == open_separated:
-                open_in_separated_app_copy(folder_data)
-            elif action == toggle_two_monitors_wide:
-                self.do_toggle_two_monitors_wide()
-            elif action == rerun_extended_mode:
-                do_rerun_in_default_mode(self.is_library_page_active())
-            elif action == crash_simulator:
-                1 / 0
-            elif action == run_unsupported_file:
-                import win32api
-                win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)
-            elif action == minimize_window:
-                Globals.main_window.showMinimized()
-            elif action == show_in_gchrome:
-                main_window = Globals.main_window
-                if main_window.image_filepath:
-                    open_in_google_chrome(main_window.image_filepath)
-            elif action == toggle_two_monitors_wide:
-                self.do_toggle_two_monitors_wide()
-            elif action == place_at_center:
-                self.restore_image_transformations()
-                self.update()
-            elif action == toggle_frame_mode:
-                if self.frameless_mode:
-                    self.toggle_to_frame_mode()
-                else:
-                    self.toggle_to_frameless_mode()
-            elif action == open_settings:
-                self.open_settings_window()
-            elif action == save_as_png:
-                self.save_image_as("png")
-            elif action == save_as_jpg:
-                self.save_image_as("jpg")
-            elif action == go_to_folder:
-                LibraryData().go_to_folder_of_current_image()
-            elif action == copy_to_cp:
-                self.copy_to_clipboard()
-            elif action == copy_from_cp:
-                self.paste_from_clipboard()
-            elif action == open_in_sep_app:
-                open_in_separated_app_copy(LibraryData().current_folder())
-            elif action == delete_comment:
-                sel_comment = self.get_selected_comment(event)
-                if sel_comment:
-                    LibraryData().delete_comment(sel_comment)
-                    self.update()
-            elif action == change_comment_text:
-                sel_comment = self.get_selected_comment(event)
-                if sel_comment:
-                    self.show_comment_form(sel_comment)
-            elif action == change_comment_borders:
-                sel_comment = self.get_selected_comment(event)
-                if sel_comment:
-                    self.comment_data_candidate = sel_comment
-                self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
-            elif action == copy_image_metadata:
-                QApplication.clipboard().setText(ci.image_metadata_info)
-            elif action == change_svg_scale:
-                self.contextMenuChangeSVGScale()
-            elif action == rerun_in_extended_mode:
-                do_rerun_in_default_mode(False)
-            elif action == rerun_extended_mode:
-                do_rerun_in_default_mode(self.is_library_page_active())
+
+    def show_in_gchrome_menuitem(self):
+        main_window = Globals.main_window
+        if main_window.image_filepath:
+            open_in_google_chrome(main_window.image_filepath)
+
+    def place_at_center_menuitem(self):
+        self.restore_image_transformations()
+        self.update()
+
+    def toggle_window_frame(self):
+        if self.frameless_mode:
+            self.toggle_to_frame_mode()
+        else:
+            self.toggle_to_frameless_mode()
+
+    def delete_comment_menuitem(self):
+        sel_comment = self.get_selected_comment(event)
+        if sel_comment:
+            LibraryData().delete_comment(sel_comment)
+            self.update()
+
+    def change_comment_text_menuitem(self):
+        sel_comment = self.get_selected_comment(event)
+        if sel_comment:
+            self.show_comment_form(sel_comment)
+
+    def change_comment_borders_menuitem(self):
+        sel_comment = self.get_selected_comment(event)
+        if sel_comment:
+            self.comment_data_candidate = sel_comment
+        self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
+
+    def run_unsupported_file(self):
+        import win32api
+        win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)
 
     def closeEvent(self, event):
         if Globals.DEBUG:
