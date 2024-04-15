@@ -571,7 +571,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         QMenu::item:selected, QCheckBox:hover{
             background-color: rgb(253, 203, 54);
             color: rgb(50, 50, 50);
-            border-left: 2px dashed #303940;
         }
         QMenu::item:checked, QCheckBox:checked{
             font-weight: bold;
@@ -593,7 +592,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         QMenu::item:disabled {
             background-color: #303940;
             color: black;
-            border-left: 2px dashed #303940;
         }
         QMenu::separator {
             height: 1px;
