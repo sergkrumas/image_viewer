@@ -28,7 +28,7 @@ def paintEvent(self, painter, event):
     pen0 = QPen(QColor(0, 255, 255), 10)
     pen.setCapStyle(Qt.RoundCap)
 
-    pen2 = QPen(QColor(255, 0, 0), 1)
+    pen2 = QPen(QColor(220, 50, 50), 1)
     pen3 = QPen(QColor(220, 220, 220), 1)
 
 
@@ -39,7 +39,7 @@ def paintEvent(self, painter, event):
 
         radius_max = max(c1.radius, c2.radius)
         radius_min = min(c1.radius, c2.radius)
-        radius_diff = self.pixels_in_radius_unit*radius_max - self.pixels_in_radius_unit*radius_min
+        radius_diff = self.pixels_in_radius_unit*(radius_max - radius_min)
 
         p1 = c1.position
         p2 = c2.position
@@ -58,8 +58,9 @@ def paintEvent(self, painter, event):
             rect = build_rect_from_point(self, center_point)
             painter.drawEllipse(build_rect_from_point(self, center_point, radius))
             painter.drawEllipse(rect)
-            if rect.contains(self.mapFromGlobal(QCursor().pos())):
-                brush = QBrush(QColor(255, 0, 0))
+            hover = rect.contains(self.mapFromGlobal(QCursor().pos()))
+            if hover or self.drag_point != -1 and self.circles.index(c) == self.drag_point:
+                brush = QBrush(QColor(220, 50, 50))
                 painter.setPen(Qt.NoPen)
                 painter.setBrush(brush)
                 painter.drawEllipse(rect)
