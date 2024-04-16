@@ -23,9 +23,6 @@ def build_rect_from_point(self, point, r=1.0):
     return QRectF(point-offset, point+offset)
 
 def paintEvent(self, painter, event):
-
-    self.board_draw_grid(painter)
-
     painter.setBrush(self.checkerboard_br)
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
@@ -186,7 +183,7 @@ def paintEvent(self, painter, event):
 
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
-    breaked = False    
+    breaked = False
     for index, c in enumerate(self.circles):
         point = self.board_map_to_viewport(c.position)
         rect = build_rect_from_point(self, point)
