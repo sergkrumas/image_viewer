@@ -51,7 +51,7 @@ def paintEvent(self, painter, event):
     painter_.end()
     checkerboard_br.setTexture(pixmap)
     painter.setBrush(checkerboard_br)
-    painter.drawRect(self.rect())
+    # painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
 
 
@@ -60,7 +60,7 @@ def paintEvent(self, painter, event):
     pen.setCapStyle(Qt.RoundCap)
 
     pen2 = QPen(QColor(255, 0, 0), 1)
-    pen3 = QPen(QColor(0, 0, 0), 4)
+    pen3 = QPen(QColor(0, 255, 0), 4)
 
 
     radius_max = max(self.radius_values)
@@ -89,7 +89,7 @@ def paintEvent(self, painter, event):
             painter.drawEllipse(rect)
             point_under_cursor = point
         r_text = r*self.pixels_in_radius_unit
-        painter.setPen(QPen(Qt.black))
+        painter.setPen(QPen(Qt.green))
         painter.drawText(point, f'{r_text}')
 
 
