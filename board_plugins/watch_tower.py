@@ -17,10 +17,6 @@ from PyQt5.QtGui import *
 
 
 
-folders = [
-]
-
-
 def append_note_item(self, cf, text, warning=False):
     ni = self.BoardItem(self.BoardItem.types.ITEM_NOTE)
     ni.board_index = self.retrieve_new_board_item_index()
@@ -34,14 +30,27 @@ def append_note_item(self, cf, text, warning=False):
     return ni
 
 def pluginBoardInit(self, plugin_info):
+
+    folders = []
+
+    folders_list_filepath = self.get_user_data_filepath('watch_tower.data')
+    if os.path.exists(folders_list_filepath):
+        lines = []
+        with open(folders_list_filepath, 'r', encoding='utf8') as file:
+            lines = file.readlines()
+        for line in lines:
+            if line:
+                folders.append(line.strip())
+
     self.board_long_loading_begin()
 
     fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
     self.board_make_board_current(fd)
+
     cf = self.LibraryData().current_folder()
 
-    offset_point = QPointF(0, 0)
     if folders:
+        offset_point = QPointF(0, 0)
         for fn, folderpath in enumerate(folders):
 
             offset_point.setY(0)
