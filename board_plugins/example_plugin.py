@@ -5,8 +5,9 @@
 
 
 
-
+import sys
 import math
+import subprocess
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -175,13 +176,13 @@ def pluginBoardInit(self, plugin_info):
     H2 = self.rect().height()/2
     W3 = self.rect().width()/3
 
-    self.P1 = QPointF(W3, H2)
-    self.P2 = QPointF(W3*2, H2)
+    P1 = QPointF(W3, H2)
+    P2 = QPointF(W3*2, H2)
 
     self.drag_point = -1
     self.oldpos = QPoint(0, 0)
 
-    self.center_position_values = [self.P1, self.P2]
+    self.center_position_values = [P1, P2]
     self.radius_values = [8.0, 5.0]
 
     self.pixels_in_radius_unit = 20
@@ -235,3 +236,9 @@ def register(board_obj, plugin_info):
     plugin_info.wheelEvent = wheelEvent
 
     print(f'\tplugin {plugin_info.name} registred!')
+
+
+
+if __name__ == '__main__':
+    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw"])
+    sys.exit()
