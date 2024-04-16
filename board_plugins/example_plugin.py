@@ -12,20 +12,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+
+
 def build_rect_from_point(self, point, r=1.0):
     offset = QPointF(self.pixels_in_radius_unit*r, self.pixels_in_radius_unit*r).toPoint()
     return QRect(QPoint(point.toPoint()-offset), QPoint(point.toPoint()+offset))
 
-
-
-
 def paintEvent(self, painter, event):
-
 
     painter.setBrush(self.checkerboard_br)
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
-
 
     pen = QPen(QColor(255, 0, 0), 10)
     pen0 = QPen(QColor(0, 255, 255), 10)
@@ -131,7 +128,6 @@ def paintEvent(self, painter, event):
     "Поддерживаются отрицательные радиусы")
     painter.drawText(rect, Qt.AlignCenter | Qt.AlignVCenter | Qt.TextWordWrap, text)
 
-
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
     for index, point in enumerate(self.center_position_values):
@@ -156,7 +152,6 @@ def mouseReleaseEvent(self, event):
     self.drag_point = -1
     self.update()
 
-
 def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
@@ -169,8 +164,6 @@ def wheelEvent(self, event):
             break
 
     self.update()
-
-
 
 def pluginBoardInit(self, plugin_info):
 
@@ -222,6 +215,9 @@ def pluginBoardInit(self, plugin_info):
     painter_.drawPath(path)
     painter_.end()
     checkerboard_br.setTexture(pixmap)
+
+
+
 
 
 def register(board_obj, plugin_info):
