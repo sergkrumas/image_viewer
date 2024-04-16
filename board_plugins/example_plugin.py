@@ -33,8 +33,16 @@ def paintEvent(self, painter, event):
     pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
+    tangent_pairs = self.tangent_pairs[:]
+    if bool(QApplication.queryKeyboardModifiers() & Qt.ControlModifier) and self.tempPair is not None:
+        ghost_circle = True
+    else:
+        ghost_circle = False
 
-    for c1, c2 in self.tangent_pairs:
+    if ghost_circle:
+        tangent_pairs.extend((self.tempPair,))
+
+    for c1, c2 in tangent_pairs:
 
         radius_max = max(c1.radius, c2.radius)
         radius_min = min(c1.radius, c2.radius)
@@ -44,8 +52,10 @@ def paintEvent(self, painter, event):
         p2 = c2.position
         distance = math.hypot(p1.x()-p2.x(), p1.y() - p2.y())
         # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
-        sinus_alpha = radius_diff/abs(distance)
-
+        try:
+            sinus_alpha = radius_diff/abs(distance)
+        except ZeroDivisionError:
+            continue
 
 
         painter.setPen(pen5)
@@ -105,8 +115,13 @@ def paintEvent(self, painter, event):
 
 
 
+    circles = self.circles[:]
+
+    if ghost_circle:
+        circles.append(self.tempCircle)
+
     self.center_under_cursor = None
-    for c in self.circles:
+    for c in circles:
         center_point = c.position
         radius = c.radius
         painter.setPen(pen)
@@ -134,8 +149,11 @@ def paintEvent(self, painter, event):
     painter.setFont(font)
     painter.setPen(QPen(Qt.white))
     rect = QRect(0, 0, self.width(), 150)
-    text = ("Наведя курсор мыши на меньшие круги колесом мыши можно регулировать размер и перетаскивать с места на место;\n"
-    "Поддерживаются отрицательные радиусы")
+    text = (
+    "Наведя курсор мыши на меньшие круги колесом мыши можно регулировать размер и перетаскивать с места на место;\n"
+    "Поддерживаются отрицательные радиусы;\n"
+    "Ctrl + ЛКМ позволяет добавить новую окружность и соединяет её с ближайшей окружностью"
+    )
     painter.drawText(rect, Qt.AlignCenter | Qt.AlignVCenter | Qt.TextWordWrap, text)
 
 def mousePressEvent(self, event):
@@ -156,10 +174,22 @@ def mouseMoveEvent(self, event):
 
     modifiers = QApplication.queryKeyboardModifiers()
     if bool(modifiers & Qt.ControlModifier):
-        self.ghost_pair 
+
+        if self.circles:
+            nearest_circle = None
+            for c in self.circles:
+                l = c.position - event.pos()
+                c._l = QVector2D(l).length()
+
+            nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
+
+            self.tempCircle.position = QPointF(event.pos())
+            self.tempPair = (self.tempCircle, nearest_circle)
+        else:
+            self.tempPair = None
 
     else:
-        self.ghost_pair = None
+        self.tempPair = None
         if self.drag_point != -1:
             p = self.oldpos + (event.pos() - self.start_pos)
             self.circles[self.drag_point].position = p
@@ -172,13 +202,24 @@ def mouseMoveEvent(self, event):
     self.update()
 
 def mouseReleaseEvent(self, event):
+
+    modifiers = QApplication.queryKeyboardModifiers()
+    if bool(modifiers & Qt.ControlModifier) and event.button() == Qt.LeftButton:
+
+        if self.tempPair:
+            newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
+            self.circles.append(newCircle)
+            self.tangent_pairs.append((newCircle, self.tempPair[1]))
+            self.tempPair = None
+
+
     self.drag_point = -1
     self.update()
 
 def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
-    # print(value)
+
     for index, c in enumerate(self.circles):
         point = c.position
         rect = build_rect_from_point(self, point)
@@ -210,6 +251,9 @@ def pluginBoardInit(self, plugin_info):
 
     P3 = QPointF(W*5, H*18)
     P4 = QPointF(W*7, H*4)
+
+    self.tempPair = None
+    self.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
 
     self.circles = [
         Circle(P1, 8.0),
