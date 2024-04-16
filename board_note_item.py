@@ -269,8 +269,11 @@ class BoardTextEditItemMixin():
         self.board_TextElementInit(elem)
         text_doc.setPlainText(elem.plain_text)
 
-    def board_TextElementSetDefaults(self, elem):
-        elem.plain_text = 'Note'
+    def board_TextElementSetDefaults(self, elem, plain_text=None):
+        if plain_text is None:
+            elem.plain_text = 'Note'
+        else:
+            elem.plain_text = plain_text
         elem.size = 10.0
         elem.margin_value = 5
         elem.proxy_pixmap = None

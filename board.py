@@ -2806,11 +2806,18 @@ class BoardMixin(BoardTextEditItemMixin):
         if pixmap is not None:
             self.board_create_new_board_item_image(filepath, cf)
 
-    def board_download_file(self, url):
-        cf = self.LibraryData().current_folder()
+    def board_long_loading_begin(self):
         self.long_loading = True
         self.update()
         processAppEvents()
+
+    def board_long_loading_end(self):
+        self.long_loading = False
+        self.update()
+
+    def board_download_file(self, url):
+        self.board_long_loading_begin()
+        cf = self.LibraryData().current_folder()
         response = urllib.request.urlopen(url)
         filename = os.path.basename(response.url)
         name, ext = os.path.splitext(filename)
@@ -2827,10 +2834,9 @@ class BoardMixin(BoardTextEditItemMixin):
         filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
         urllib.request.urlretrieve(url, filepath)
         self.board_create_new_board_item_image(filepath, cf, source_url=url)
-        self.long_loading = False
-        self.update()
+        self.board_long_loading_end()
 
-    def board_create_new_board_item_image(self, filepath, current_folder, source_url=None):
+    def board_create_new_board_item_image(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
         image_data = self.LibraryData().create_image_data(filepath, current_folder)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
         board_item.image_data = image_data
@@ -2838,10 +2844,12 @@ class BoardMixin(BoardTextEditItemMixin):
         image_data.board_item = board_item
         current_folder.board.board_items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
-        board_item.item_position = self.board_map_to_board(self.mapped_cursor_pos())
+        if place_at_cursor:
+            board_item.item_position = self.board_map_to_board(self.mapped_cursor_pos())
         current_folder.images_list.append(image_data)
-        # делаем превьюшку и миинатюрку для этой картинки
-        self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
+        if make_previews: # делаем превьюшку и миинатюрку для этой картинки
+            self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
+        return board_item
 
     def board_doubleclick_handler(self, obj, event):
         cf = self.LibraryData().current_folder()
