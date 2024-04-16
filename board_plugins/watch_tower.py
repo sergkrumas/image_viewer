@@ -35,12 +35,11 @@ def pluginBoardInit(self, plugin_info):
 
     folders_list_filepath = self.get_user_data_filepath('watch_tower.data')
     if os.path.exists(folders_list_filepath):
-        lines = []
         with open(folders_list_filepath, 'r', encoding='utf8') as file:
             lines = file.readlines()
-        for line in lines:
-            if line:
-                folders.append(line.strip())
+            for line in lines:
+                if line:
+                    folders.append(line.strip())
 
     self.board_long_loading_begin()
 
