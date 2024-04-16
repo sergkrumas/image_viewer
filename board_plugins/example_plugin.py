@@ -59,7 +59,7 @@ def paintEvent(self, painter, event):
         else:
             factor = -1.0
 
-        def draw_tangent_points(radians_angle):
+        def draw_tangent_points_and_lines(radians_angle):
             points_on_circles = []
             for n, c in enumerate((c1, c2)):
 
@@ -91,7 +91,7 @@ def paintEvent(self, painter, event):
         except:
             radians_angle = 0
         radians_angle += - position_angle - math.pi/2 - math.pi/2*factor
-        draw_tangent_points(radians_angle)
+        draw_tangent_points_and_lines(radians_angle)
 
         try:
             # !!! отличается знаком минус
@@ -100,7 +100,7 @@ def paintEvent(self, painter, event):
             radians_angle = 0
             # !!! отличается знаком плюс
         radians_angle += - position_angle + math.pi/2 - math.pi/2*factor
-        draw_tangent_points(radians_angle)
+        draw_tangent_points_and_lines(radians_angle)
 
 
 
