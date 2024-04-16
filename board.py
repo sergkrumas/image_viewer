@@ -1421,6 +1421,13 @@ class BoardMixin(BoardTextEditItemMixin):
         return QCursor(pixmap)
 
     def board_cursor_setter(self):
+        # защита от глитча курсора в угловых кнопках и угловом меню
+        cb1 = self.over_corner_button()
+        cb2 = self.over_corner_button(corner_attr="topLeft")
+        cb3 = self.over_corner_menu(corner_attr="topLeft")
+        if any((cb1, cb2, cb3)):
+            return
+
         if self.scaling_ongoing:
             if self.scale_rastr_source is not None:
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
