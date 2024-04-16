@@ -29,7 +29,7 @@ def paintEvent(self, painter, event):
     pen.setCapStyle(Qt.RoundCap)
 
     pen2 = QPen(QColor(255, 0, 0), 1)
-    pen3 = QPen(QColor(0, 0, 0), 4)
+    pen3 = QPen(QColor(220, 220, 220), 1)
 
 
     for c1_index, c2_index in self.tangent_pairs:
@@ -191,21 +191,22 @@ def pluginBoardInit(self, plugin_info):
     fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
     self.board_make_board_current(fd)
 
-    H2 = self.rect().height()/2
-    W3 = self.rect().width()/3
+    W = self.rect().width()/30
+    H = self.rect().height()/20
 
-    P1 = QPointF(W3, H2)
-    P2 = QPointF(W3*2, H2)
+    P1 = QPointF(W*10, H*10)
+    P2 = QPointF(W*20, H*10)
 
-    P3 = QPointF(self.rect().bottomRight() - QPoint(100, 200))
-
+    P3 = QPointF(W*5, H*18)
+    P4 = QPointF(W*7, H*4)
 
     self.circles = [
         Circle(P1, 8.0),
         Circle(P2, 5.0),
-        Circle(P3, 10.0)
+        Circle(P3, 10.0),
+        Circle(P4, 9.0),
     ]
-    self.tangent_pairs = [(0, 1), (0, 2)]
+    self.tangent_pairs = [(0, 1), (0, 2), (0, 3)]
 
     self.pixels_in_radius_unit = 20
 
