@@ -34,10 +34,7 @@ def paintEvent(self, painter, event):
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
 
-    for c1_index, c2_index in self.tangent_pairs:
-
-        c1 = self.circles[c1_index]
-        c2 = self.circles[c2_index]
+    for c1, c2 in self.tangent_pairs:
 
         radius_max = max(c1.radius, c2.radius)
         radius_min = min(c1.radius, c2.radius)
@@ -85,7 +82,7 @@ def paintEvent(self, painter, event):
 
             painter.setPen(pen2)
             # непосредственно сама касательная линия
-            painter.drawLine(points_on_circles[0], points_on_circles[1])
+            painter.drawLine(QLineF(*points_on_circles))
 
             return points_on_circles
 
@@ -156,13 +153,20 @@ def mousePressEvent(self, event):
     self.update()
 
 def mouseMoveEvent(self, event):
-    if self.drag_point != -1:
-        p = self.oldpos + (event.pos() - self.start_pos)
-        self.circles[self.drag_point].position = p
-    if self.center_under_cursor is not None:
-        self.setCursor(Qt.PointingHandCursor)
+
+    modifiers = QApplication.queryKeyboardModifiers()
+    if bool(modifiers & Qt.ControlModifier):
+        self.ghost_pair 
+
     else:
-        self.setCursor(Qt.ArrowCursor)
+        self.ghost_pair = None
+        if self.drag_point != -1:
+            p = self.oldpos + (event.pos() - self.start_pos)
+            self.circles[self.drag_point].position = p
+        if self.center_under_cursor is not None:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
     self.update()
 
 def mouseReleaseEvent(self, event):
@@ -211,7 +215,11 @@ def pluginBoardInit(self, plugin_info):
         Circle(P3, 10.0),
         Circle(P4, 9.0),
     ]
-    self.tangent_pairs = [(0, 1), (0, 2), (0, 3)]
+    self.tangent_pairs = [
+        (self.circles[0], self.circles[1]),
+        (self.circles[0], self.circles[2]),
+        (self.circles[0], self.circles[3]),
+    ]
 
     self.pixels_in_radius_unit = 20
 
