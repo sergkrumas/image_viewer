@@ -47,33 +47,7 @@ def paintEvent(self, painter, event):
         # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
         sinus_alpha = radius_diff/abs(distance)
 
-        point_under_cursor = None
-        for c in (c1, c2):
-            center_point = c.position
-            radius = c.radius
-            painter.setPen(pen)
-            painter.setBrush(Qt.NoBrush)
-            painter.drawPoint(center_point)
-            painter.setPen(pen2)
-            rect = build_rect_from_point(self, center_point)
-            painter.drawEllipse(build_rect_from_point(self, center_point, radius))
-            painter.drawEllipse(rect)
-            hover = rect.contains(self.mapFromGlobal(QCursor().pos()))
-            if hover or self.drag_point != -1 and self.circles.index(c) == self.drag_point:
-                brush = QBrush(QColor(220, 50, 50))
-                painter.setPen(Qt.NoPen)
-                painter.setBrush(brush)
-                painter.drawEllipse(rect)
-                point_under_cursor = center_point
-            r_text = radius*self.pixels_in_radius_unit
-            painter.setPen(QPen(Qt.green))
-            painter.drawText(center_point, f'{r_text}')
 
-
-        if point_under_cursor is not None:
-            self.setCursor(Qt.PointingHandCursor)
-        else:
-            self.setCursor(Qt.ArrowCursor)
 
         painter.setPen(pen2)
         painter.drawLine(p1, p2)
@@ -130,6 +104,31 @@ def paintEvent(self, painter, event):
 
 
 
+
+    self.center_under_cursor = None
+    for c in self.circles:
+        center_point = c.position
+        radius = c.radius
+        painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPoint(center_point)
+        painter.setPen(pen2)
+        rect = build_rect_from_point(self, center_point)
+        painter.drawEllipse(build_rect_from_point(self, center_point, radius))
+        painter.drawEllipse(rect)
+        hover = rect.contains(self.mapFromGlobal(QCursor().pos()))
+        if hover or self.drag_point != -1 and self.circles.index(c) == self.drag_point:
+            brush = QBrush(QColor(220, 50, 50))
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(brush)
+            painter.drawEllipse(rect)
+            self.center_under_cursor = center_point
+        r_text = radius*self.pixels_in_radius_unit
+        painter.setPen(QPen(Qt.green))
+        painter.drawText(center_point, f'{r_text}')
+
+
+
     font = painter.font()
     font.setPixelSize(20)
     painter.setFont(font)
@@ -158,6 +157,13 @@ def mouseMoveEvent(self, event):
     if self.drag_point != -1:
         p = self.oldpos + (event.pos() - self.start_pos)
         self.circles[self.drag_point].position = p
+
+
+    if self.center_under_cursor is not None:
+        self.setCursor(Qt.PointingHandCursor)
+    else:
+        self.setCursor(Qt.ArrowCursor)
+
 
     self.update()
 
