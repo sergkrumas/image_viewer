@@ -33,6 +33,25 @@ def paintEvent(self, painter, event):
     pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
+    for key in list(self.bckg_rects.keys()):
+        if self.bckg_rects[key] > 1:
+            self.bckg_rects[key] -= 5
+        else:
+            self.bckg_rects.pop(key)
+    cursor_pos = self.mapFromGlobal(QCursor().pos())
+    SIZE = 125
+    x = (cursor_pos.x() // SIZE) * SIZE
+    y = (cursor_pos.y() // SIZE) * SIZE
+    self.bckg_rects[(x,y)] = 255
+    base = QColor(self.selection_color).darker(100)
+    for key, alpha in self.bckg_rects.items():
+        _x, _y = key
+        bckg_rect = QRect(_x, _y, SIZE, SIZE)
+        base.setAlpha(alpha)
+        painter.fillRect(bckg_rect, base)
+    print(self.bckg_rects)
+
+
     tangent_pairs = self.tangent_pairs[:]
     if bool(QApplication.queryKeyboardModifiers() & Qt.ControlModifier) and self.tempPair is not None:
         ghost_circle = True
@@ -268,7 +287,7 @@ def pluginBoardInit(self, plugin_info):
     ]
 
     self.pixels_in_radius_unit = 20
-
+    self.bckg_rects = dict()
 
     self.checkerboard_br = checkerboard_br = QBrush()
     pixmap = QPixmap(100, 100)
