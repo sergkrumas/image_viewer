@@ -20,6 +20,8 @@ def build_rect_from_point(self, point, r=1.0):
 
 def paintEvent(self, painter, event):
 
+    self.board_draw_grid(painter)
+
     painter.setBrush(self.checkerboard_br)
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
@@ -33,22 +35,25 @@ def paintEvent(self, painter, event):
     pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
-    for key in list(self.bckg_rects.keys()):
-        if self.bckg_rects[key] > 1:
-            self.bckg_rects[key] -= 5
-        else:
-            self.bckg_rects.pop(key)
-    cursor_pos = self.mapFromGlobal(QCursor().pos())
-    SIZE = 125
-    x = (cursor_pos.x() // SIZE) * SIZE
-    y = (cursor_pos.y() // SIZE) * SIZE
-    self.bckg_rects[(x,y)] = 255
-    base = QColor(self.selection_color).darker(100)
-    for key, alpha in self.bckg_rects.items():
-        _x, _y = key
-        bckg_rect = QRect(_x, _y, SIZE, SIZE)
-        base.setAlpha(alpha)
-        painter.fillRect(bckg_rect, base)
+    # окно может обновлятся в нижней части из-за обновления панели задач, которая там находится,
+    # и нам нужно отслеживать этот момент и рисовать только при полном обновлении окна
+    if self.rect() == event.rect():
+        for key in list(self.bckg_rects.keys()):
+            if self.bckg_rects[key] > 1:
+                self.bckg_rects[key] -= 5
+            else:
+                self.bckg_rects.pop(key)
+        cursor_pos = self.mapFromGlobal(QCursor().pos())
+        SIZE = 125
+        x = (cursor_pos.x() // SIZE) * SIZE
+        y = (cursor_pos.y() // SIZE) * SIZE
+        self.bckg_rects[(x,y)] = 255
+        base = QColor(self.selection_color).darker(200)
+        for key, alpha in self.bckg_rects.items():
+            _x, _y = key
+            bckg_rect = QRect(_x, _y, SIZE, SIZE)
+            base.setAlpha(alpha)
+            painter.fillRect(bckg_rect, base)
 
 
 
