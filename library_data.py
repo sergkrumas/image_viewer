@@ -1442,7 +1442,8 @@ class FolderData():
             LibraryData().globals.main_window.update()
 
 class ImageData():
-    def get_creation_date(self, path_to_file):
+    def get_creation_date(self):
+        path_to_file = self.filepath
         if platform.system() == 'Windows':
             return os.path.getctime(path_to_file)
         else:
@@ -1484,7 +1485,7 @@ class ImageData():
                 self.md5, self.md5_tuple = generate_md5(self.filepath)
             else:
                 self.md5, self.md5_tuple = "", ()
-            self.creation_date = self.get_creation_date(self.filepath)
+            self.creation_date = self.get_creation_date()
             self.image_metadata = dict()
             self.disk_size = self.get_disk_size(self.filepath)
         else:
