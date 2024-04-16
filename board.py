@@ -1347,6 +1347,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.restore()
 
     def board_draw_board_origin(self, painter):
+        painter.save()
         pos = self.board_origin
         pen = QPen(QColor(220, 220, 220, 200), 5)
         painter.setPen(pen)
@@ -1379,6 +1380,7 @@ class BoardMixin(BoardTextEditItemMixin):
         text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
+        painter.restore()
 
     def _get_board_bounding_rect(self, folder_data, apply_global_scale=False):
         points = []
