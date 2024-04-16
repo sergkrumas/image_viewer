@@ -32,90 +32,100 @@ def paintEvent(self, painter, event):
     pen3 = QPen(QColor(0, 0, 0), 4)
 
 
-    radius_max = max(self.radius_values)
-    radius_min = min(self.radius_values)
-    radius_diff = self.pixels_in_radius_unit*radius_max - self.pixels_in_radius_unit*radius_min
+    for c1_index, c2_index in self.tangent_pairs:
 
-    p1 = self.center_position_values[0]
-    p2 = self.center_position_values[1]
-    distance = math.hypot(p1.x()-p2.x(), p1.y() - p2.y())
-    # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
-    sinus_alpha = radius_diff/abs(distance)
+        c1 = self.circles[c1_index]
+        c2 = self.circles[c2_index]
 
-    point_under_cursor = None
-    for point, r in zip(self.center_position_values, self.radius_values):
-        painter.setPen(pen)
-        painter.setBrush(Qt.NoBrush)
-        painter.drawPoint(point)
-        painter.setPen(pen2)
-        rect = build_rect_from_point(self, point)
-        painter.drawEllipse(build_rect_from_point(self, point, r))
-        painter.drawEllipse(rect)
-        if rect.contains(self.mapFromGlobal(QCursor().pos())):
-            brush = QBrush(QColor(255, 0, 0))
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(brush)
-            painter.drawEllipse(rect)
-            point_under_cursor = point
-        r_text = r*self.pixels_in_radius_unit
-        painter.setPen(QPen(Qt.green))
-        painter.drawText(point, f'{r_text}')
+        radius_max = max(c1.radius, c2.radius)
+        radius_min = min(c1.radius, c2.radius)
+        radius_diff = self.pixels_in_radius_unit*radius_max - self.pixels_in_radius_unit*radius_min
 
+        p1 = c1.position
+        p2 = c2.position
+        distance = math.hypot(p1.x()-p2.x(), p1.y() - p2.y())
+        # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
+        sinus_alpha = radius_diff/abs(distance)
 
-    if point_under_cursor is not None:
-        self.setCursor(Qt.PointingHandCursor)
-    else:
-        self.setCursor(Qt.ArrowCursor)
-
-    painter.setPen(pen2)
-    painter.drawLine(self.center_position_values[0], self.center_position_values[1])
-
-
-    position_angle = math.atan2(p1.x()-p2.x(), p1.y() - p2.y())
-
-    if self.radius_values[0] > self.radius_values[1]:
-        factor = 1.0
-    else:
-        factor = -1.0
-
-    def draw_tangent_points(radians_angle):
-        points_on_circles = []
-        for n, (center_pos, radius) in enumerate(zip(self.center_position_values, self.radius_values)):
-
-            radius_length = self.pixels_in_radius_unit*radius
-            x = math.cos(radians_angle)*radius_length
-            y = math.sin(radians_angle)*radius_length
-            radius_vector = QPointF(x, y)
-            point_on_circle = center_pos + radius_vector
-            points_on_circles.append(point_on_circle)
-
-            # точки
+        point_under_cursor = None
+        for c in (c1, c2):
+            center_point = c.position
+            radius = c.radius
             painter.setPen(pen)
-            painter.drawPoint(point_on_circle)
-            painter.setPen(pen3)
-            # линия от точки касания к радиусу
-            painter.drawLine(point_on_circle, center_pos)
+            painter.setBrush(Qt.NoBrush)
+            painter.drawPoint(center_point)
+            painter.setPen(pen2)
+            rect = build_rect_from_point(self, center_point)
+            painter.drawEllipse(build_rect_from_point(self, center_point, radius))
+            painter.drawEllipse(rect)
+            if rect.contains(self.mapFromGlobal(QCursor().pos())):
+                brush = QBrush(QColor(255, 0, 0))
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(brush)
+                painter.drawEllipse(rect)
+                point_under_cursor = center_point
+            r_text = radius*self.pixels_in_radius_unit
+            painter.setPen(QPen(Qt.green))
+            painter.drawText(center_point, f'{r_text}')
 
-        # непосредственно сама касательная линия
-        painter.drawLine(points_on_circles[0], points_on_circles[1])
 
-        return points_on_circles
+        if point_under_cursor is not None:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
 
-    try:
-        radians_angle = math.asin(sinus_alpha)
-    except:
-        radians_angle = 0
-    radians_angle += - position_angle - math.pi/2 - math.pi/2*factor
-    draw_tangent_points(radians_angle)
+        painter.setPen(pen2)
+        painter.drawLine(p1, p2)
 
-    try:
-        # !!! отличается знаком минус
-        radians_angle = - math.asin(sinus_alpha)
-    except:
-        radians_angle = 0
-        # !!! отличается знаком плюс
-    radians_angle += - position_angle + math.pi/2 - math.pi/2*factor
-    draw_tangent_points(radians_angle)
+
+        position_angle = math.atan2(p1.x()-p2.x(), p1.y() - p2.y())
+
+        if c1.radius > c2.radius:
+            factor = 1.0
+        else:
+            factor = -1.0
+
+        def draw_tangent_points(radians_angle):
+            points_on_circles = []
+            for n, c in enumerate((c1, c2)):
+
+                center_pos = c.position
+                radius = c.radius
+
+                radius_length = self.pixels_in_radius_unit*radius
+                x = math.cos(radians_angle)*radius_length
+                y = math.sin(radians_angle)*radius_length
+                radius_vector = QPointF(x, y)
+                point_on_circle = center_pos + radius_vector
+                points_on_circles.append(point_on_circle)
+
+                # точки
+                painter.setPen(pen)
+                painter.drawPoint(point_on_circle)
+                painter.setPen(pen3)
+                # линия от точки касания к радиусу
+                painter.drawLine(point_on_circle, center_pos)
+
+            # непосредственно сама касательная линия
+            painter.drawLine(points_on_circles[0], points_on_circles[1])
+
+            return points_on_circles
+
+        try:
+            radians_angle = math.asin(sinus_alpha)
+        except:
+            radians_angle = 0
+        radians_angle += - position_angle - math.pi/2 - math.pi/2*factor
+        draw_tangent_points(radians_angle)
+
+        try:
+            # !!! отличается знаком минус
+            radians_angle = - math.asin(sinus_alpha)
+        except:
+            radians_angle = 0
+            # !!! отличается знаком плюс
+        radians_angle += - position_angle + math.pi/2 - math.pi/2*factor
+        draw_tangent_points(radians_angle)
 
 
 
@@ -130,7 +140,9 @@ def paintEvent(self, painter, event):
 
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
-    for index, point in enumerate(self.center_position_values):
+    for index, c in enumerate(self.circles):
+
+        point = c.position
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.drag_point = index
@@ -144,7 +156,7 @@ def mousePressEvent(self, event):
 def mouseMoveEvent(self, event):
     if self.drag_point != -1:
         p = self.oldpos + (event.pos() - self.start_pos)
-        self.center_position_values[self.drag_point] = p
+        self.circles[self.drag_point].position = p
 
     self.update()
 
@@ -156,14 +168,20 @@ def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
     # print(value)
-    for index, point in enumerate(self.center_position_values):
+    for index, c in enumerate(self.circles):
+        point = c.position
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
-            self.radius_values[index] += value
+            self.circles[index].radius += value
             self.update()
             break
 
     self.update()
+
+class Circle():
+    def __init__(self, position, radius):
+        self.position = position
+        self.radius = radius
 
 def pluginBoardInit(self, plugin_info):
 
@@ -179,8 +197,15 @@ def pluginBoardInit(self, plugin_info):
     P1 = QPointF(W3, H2)
     P2 = QPointF(W3*2, H2)
 
-    self.center_position_values = [P1, P2]
-    self.radius_values = [8.0, 5.0]
+    P3 = QPointF(self.rect().bottomRight() - QPoint(100, 200))
+
+
+    self.circles = [
+        Circle(P1, 8.0),
+        Circle(P2, 5.0),
+        Circle(P3, 10.0)
+    ]
+    self.tangent_pairs = [(0, 1), (0, 2)]
 
     self.pixels_in_radius_unit = 20
 
