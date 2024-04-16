@@ -335,7 +335,7 @@ def pluginBoardInit(self, plugin_info):
 
 
 def register(board_obj, plugin_info):
-    plugin_info.name = 'Example Plugin'
+    plugin_info.name = 'TANGENTS CHAIN'
 
     plugin_info.pluginBoardInit = pluginBoardInit
     plugin_info.paintEvent = paintEvent

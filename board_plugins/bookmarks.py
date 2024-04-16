@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 import sys
 import subprocess
 from PyQt5.QtWidgets import *
@@ -28,7 +21,7 @@ def pluginBoardInit(self, plugin_info):
 
 
 def register(board_obj, plugin_info):
-    plugin_info.name = 'WATCH TOWER'
+    plugin_info.name = 'BOOKMARKS'
     plugin_info.pluginBoardInit = pluginBoardInit
 
 

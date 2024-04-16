@@ -272,6 +272,7 @@ class PluginInfo():
         self.name = 'undefined'
         self.module = module
         self.board = board
+        self.add_to_menu = True
 
         self.pluginBoardInit = None
 
@@ -519,8 +520,9 @@ class BoardMixin(BoardTextEditItemMixin):
         contextMenu.addSeparator()
 
         for pi in self.board_plugins:
-            create_board_for_plugin = contextMenu.addAction(pi.name)
-            create_board_for_plugin.triggered.connect(pi.menu_callback)
+            if pi.add_to_menu:
+                create_board_for_plugin = contextMenu.addAction(pi.name)
+                create_board_for_plugin.triggered.connect(pi.menu_callback)
 
         contextMenu.addSeparator()
 
