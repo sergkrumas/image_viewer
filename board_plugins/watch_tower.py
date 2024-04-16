@@ -6,6 +6,11 @@
 
 
 
+import sys
+import subprocess
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 
 
 
@@ -14,7 +19,8 @@
 
 
 
-
+def pluginBoardInit(self, plugin_info):
+    pass
 
 
 
@@ -23,5 +29,10 @@
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'Watch Tower Plugin'
+    plugin_info.pluginBoardInit = pluginBoardInit
 
-    print('plugin register function')
+
+
+if __name__ == '__main__':
+    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw"])
+    sys.exit()

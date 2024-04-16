@@ -221,13 +221,13 @@ def mouseMoveEvent(self, event):
         delta.setY(delta.y()/self.board_scale_y)
         self.circles[self.drag_point].position = self.oldpos - delta
 
-        if not self.corner_buttons_cursor_glitch_fixer():
-            if self.center_under_cursor is not None:
-                self.setCursor(Qt.PointingHandCursor)
-            else:
-                self.setCursor(Qt.ArrowCursor)
     else:
         self.board_mouseMoveEventDefault(event)
+    if not self.corner_buttons_cursor_glitch_fixer():
+        if self.center_under_cursor is not None:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
     self.update()
 
 def mouseReleaseEvent(self, event):
@@ -345,8 +345,6 @@ def register(board_obj, plugin_info):
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
 
     plugin_info.wheelEvent = wheelEvent
-
-    print(f'\tplugin {plugin_info.name} registred!')
 
 
 

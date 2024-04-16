@@ -395,6 +395,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_plugins.append(pi)
         if plugin_reg_func:
             plugin_reg_func(self, pi)
+            print(f'\tplugin {pi.name} registred!')            
 
     def board_draw_main(self, painter, event):
         if self.active_plugin is None or self.active_plugin.paintEvent is None:
