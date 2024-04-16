@@ -267,11 +267,11 @@ class BoardItem():
 
 class PluginInfo():
 
-    def __init__(self, module):
+    def __init__(self, module, board):
         super().__init__()
         self.name = 'undefined'
         self.module = module
-        self.board = None
+        self.board = board
 
         self.pluginBoardInit = None
 
@@ -390,7 +390,7 @@ class BoardMixin(BoardTextEditItemMixin):
         print(f'\t{filepath}')
         filename = os.path.basename(filepath)
         module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
-        pi = PluginInfo(module)
+        pi = PluginInfo(module, self)
         pi.setName(filename)
         self.board_plugins.append(pi)
         if plugin_reg_func:
