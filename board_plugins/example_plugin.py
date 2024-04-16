@@ -52,7 +52,7 @@ def paintEvent(self, painter, event):
         for key, alpha in self.bckg_rects.items():
             _x, _y = key
             bckg_rect = QRect(_x, _y, SIZE, SIZE)
-            base.setAlpha(alpha)
+            base.setAlpha(max(0, alpha))
             painter.fillRect(bckg_rect, base)
 
 
@@ -182,6 +182,7 @@ def paintEvent(self, painter, event):
 
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
+    breaked = False    
     for index, c in enumerate(self.circles):
         point = c.position
         rect = build_rect_from_point(self, point)
@@ -189,54 +190,56 @@ def mousePressEvent(self, event):
             self.drag_point = index
             self.start_pos = event.pos()
             self.oldpos = QPointF(point)
+            breaked = True
             break
         else:
             self.drag_point = -1
+    if not breaked:
+        self.board_mousePressEventDefault(event)
     self.update()
 
 def mouseMoveEvent(self, event):
 
-    modifiers = QApplication.queryKeyboardModifiers()
-    if bool(modifiers & Qt.ControlModifier):
+    if self.drag_point != -1:
+        if bool(event.modifiers() & Qt.ControlModifier):
+            if self.circles:
+                nearest_circle = None
+                for c in self.circles:
+                    l = c.position - event.pos()
+                    c._l = QVector2D(l).length()
 
-        if self.circles:
-            nearest_circle = None
-            for c in self.circles:
-                l = c.position - event.pos()
-                c._l = QVector2D(l).length()
+                nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
 
-            nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
-
-            self.tempCircle.position = QPointF(event.pos())
-            self.tempPair = (self.tempCircle, nearest_circle)
+                self.tempCircle.position = QPointF(event.pos())
+                self.tempPair = (self.tempCircle, nearest_circle)
+            else:
+                self.tempPair = None
         else:
             self.tempPair = None
-
-    else:
-        self.tempPair = None
-        if self.drag_point != -1:
-            p = self.oldpos + (event.pos() - self.start_pos)
-            self.circles[self.drag_point].position = p
+            if self.drag_point != -1:
+                p = self.oldpos + (event.pos() - self.start_pos)
+                self.circles[self.drag_point].position = p
 
         if not self.corner_buttons_cursor_glitch_fixer():
             if self.center_under_cursor is not None:
                 self.setCursor(Qt.PointingHandCursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
+    else:
+        self.board_mouseMoveEventDefault(event)
     self.update()
 
 def mouseReleaseEvent(self, event):
 
-    modifiers = QApplication.queryKeyboardModifiers()
-    if bool(modifiers & Qt.ControlModifier) and event.button() == Qt.LeftButton:
-
-        if self.tempPair:
-            newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
-            self.circles.append(newCircle)
-            self.tangent_pairs.append((newCircle, self.tempPair[1]))
-            self.tempPair = None
-
-
+    if self.drag_point != -1:
+        if bool(event.modifiers() & Qt.ControlModifier) and event.button() == Qt.LeftButton:
+            if self.tempPair:
+                newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
+                self.circles.append(newCircle)
+                self.tangent_pairs.append((newCircle, self.tempPair[1]))
+                self.tempPair = None
+    else:
+        self.board_mouseReleaseEventDefault(event)
     self.drag_point = -1
     self.update()
 
@@ -244,14 +247,16 @@ def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
 
+    breaked = False
     for index, c in enumerate(self.circles):
         point = c.position
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.circles[index].radius += value
-            self.update()
+            breaked = True
             break
-
+    if not breaked:
+        self.board_wheelEventDefault(event)
     self.update()
 
 class Circle():
