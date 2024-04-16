@@ -125,7 +125,7 @@ def paintEvent(self, painter, event):
     font = painter.font()
     font.setPixelSize(20)
     painter.setFont(font)
-    painter.setPen(QPen(Qt.black))
+    painter.setPen(QPen(Qt.white))
     rect = QRect(0, 0, self.width(), 150)
     text = ("Наведя курсор мыши на меньшие круги колесом мыши можно регулировать размер и перетаскивать с места на место;\n"
     "Поддерживаются отрицательные радиусы")
