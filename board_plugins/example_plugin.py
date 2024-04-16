@@ -13,10 +13,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 
+def get_pixels_in_radius_unit(self):
+    CONST = 20
+    return CONST*max(self.board_scale_x, self.board_scale_y)
+    # return CONST
 
 def build_rect_from_point(self, point, r=1.0):
-    offset = QPointF(self.pixels_in_radius_unit*r, self.pixels_in_radius_unit*r).toPoint()
-    return QRect(QPoint(point.toPoint()-offset), QPoint(point.toPoint()+offset))
+    offset = QPointF(get_pixels_in_radius_unit(self)*r, get_pixels_in_radius_unit(self)*r)
+    return QRectF(point-offset, point+offset)
 
 def paintEvent(self, painter, event):
 
@@ -70,10 +74,10 @@ def paintEvent(self, painter, event):
 
         radius_max = max(c1.radius, c2.radius)
         radius_min = min(c1.radius, c2.radius)
-        radius_diff = self.pixels_in_radius_unit*(radius_max - radius_min)
+        radius_diff = get_pixels_in_radius_unit(self)*(radius_max - radius_min)
 
-        p1 = c1.position
-        p2 = c2.position
+        p1 = self.board_map_to_viewport(c1.position)
+        p2 = self.board_map_to_viewport(c2.position)
         distance = math.hypot(p1.x()-p2.x(), p1.y() - p2.y())
         # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
         try:
@@ -97,10 +101,10 @@ def paintEvent(self, painter, event):
             points_on_circles = []
             for n, c in enumerate((c1, c2)):
 
-                center_pos = c.position
+                center_pos = self.board_map_to_viewport(c.position)
                 radius = c.radius
 
-                radius_length = self.pixels_in_radius_unit*radius
+                radius_length = get_pixels_in_radius_unit(self)*radius
                 x = math.cos(radians_angle)*radius_length
                 y = math.sin(radians_angle)*radius_length
                 radius_vector = QPointF(x, y)
@@ -146,7 +150,7 @@ def paintEvent(self, painter, event):
 
     self.center_under_cursor = None
     for c in circles:
-        center_point = c.position
+        center_point = self.board_map_to_viewport(c.position)
         radius = c.radius
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
@@ -162,9 +166,9 @@ def paintEvent(self, painter, event):
             painter.setBrush(brush)
             painter.drawEllipse(rect)
             self.center_under_cursor = center_point
-        r_text = radius*self.pixels_in_radius_unit
+        r_text = radius*get_pixels_in_radius_unit(self)
         painter.setPen(QPen(Qt.green))
-        painter.drawText(center_point, f'{r_text}')
+        painter.drawText(center_point, f'{r_text:.01f}')
 
 
 
@@ -184,12 +188,12 @@ def mousePressEvent(self, event):
     cursor_pos = event.pos()
     breaked = False    
     for index, c in enumerate(self.circles):
-        point = c.position
+        point = self.board_map_to_viewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.drag_point = index
             self.start_pos = event.pos()
-            self.oldpos = QPointF(point)
+            self.oldpos = QPointF(c.position)
             breaked = True
             break
         else:
@@ -205,20 +209,22 @@ def mouseMoveEvent(self, event):
             if self.circles:
                 nearest_circle = None
                 for c in self.circles:
-                    l = c.position - event.pos()
+                    l = self.board_map_to_viewport(c.position) - event.pos()
                     c._l = QVector2D(l).length()
 
                 nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
 
-                self.tempCircle.position = QPointF(event.pos())
+                self.tempCircle.position = self.board_map_to_board(QPointF(event.pos()))
                 self.tempPair = (self.tempCircle, nearest_circle)
             else:
                 self.tempPair = None
         else:
             self.tempPair = None
             if self.drag_point != -1:
-                p = self.oldpos + (event.pos() - self.start_pos)
-                self.circles[self.drag_point].position = p
+                delta = QPointF(self.start_pos - event.pos())
+                delta.setX(delta.x()/self.board_scale_x)
+                delta.setY(delta.y()/self.board_scale_y)
+                self.circles[self.drag_point].position = self.oldpos - delta
 
         if not self.corner_buttons_cursor_glitch_fixer():
             if self.center_under_cursor is not None:
@@ -249,7 +255,7 @@ def wheelEvent(self, event):
 
     breaked = False
     for index, c in enumerate(self.circles):
-        point = c.position
+        point = self.board_map_to_viewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.circles[index].radius += value
@@ -296,7 +302,7 @@ def pluginBoardInit(self, plugin_info):
         (self.circles[0], self.circles[3]),
     ]
 
-    self.pixels_in_radius_unit = 20
+
     self.bckg_rects = dict()
 
     self.checkerboard_br = checkerboard_br = QBrush()
