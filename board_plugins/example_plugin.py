@@ -201,27 +201,25 @@ def mousePressEvent(self, event):
 
 def mouseMoveEvent(self, event):
 
-    if self.drag_point != -1:
-        if bool(event.modifiers() & Qt.ControlModifier):
-            if self.circles:
-                nearest_circle = None
-                for c in self.circles:
-                    l = self.board_map_to_viewport(c.position) - event.pos()
-                    c._l = QVector2D(l).length()
+    if bool(event.modifiers() & Qt.ControlModifier):
+        if self.circles:
+            nearest_circle = None
+            for c in self.circles:
+                l = self.board_map_to_viewport(c.position) - event.pos()
+                c._l = QVector2D(l).length()
 
-                nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
+            nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
 
-                self.tempCircle.position = self.board_map_to_board(QPointF(event.pos()))
-                self.tempPair = (self.tempCircle, nearest_circle)
-            else:
-                self.tempPair = None
+            self.tempCircle.position = self.board_map_to_board(QPointF(event.pos()))
+            self.tempPair = (self.tempCircle, nearest_circle)
         else:
             self.tempPair = None
-            if self.drag_point != -1:
-                delta = QPointF(self.start_pos - event.pos())
-                delta.setX(delta.x()/self.board_scale_x)
-                delta.setY(delta.y()/self.board_scale_y)
-                self.circles[self.drag_point].position = self.oldpos - delta
+    elif self.drag_point != -1:
+        self.tempPair = None
+        delta = QPointF(self.start_pos - event.pos())
+        delta.setX(delta.x()/self.board_scale_x)
+        delta.setY(delta.y()/self.board_scale_y)
+        self.circles[self.drag_point].position = self.oldpos - delta
 
         if not self.corner_buttons_cursor_glitch_fixer():
             if self.center_under_cursor is not None:
@@ -234,13 +232,12 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
 
-    if self.drag_point != -1:
-        if bool(event.modifiers() & Qt.ControlModifier) and event.button() == Qt.LeftButton:
-            if self.tempPair:
-                newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
-                self.circles.append(newCircle)
-                self.tangent_pairs.append((newCircle, self.tempPair[1]))
-                self.tempPair = None
+    if bool(event.modifiers() & Qt.ControlModifier) and event.button() == Qt.LeftButton:
+        if self.tempPair:
+            newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
+            self.circles.append(newCircle)
+            self.tangent_pairs.append((newCircle, self.tempPair[1]))
+            self.tempPair = None
     else:
         self.board_mouseReleaseEventDefault(event)
     self.drag_point = -1
