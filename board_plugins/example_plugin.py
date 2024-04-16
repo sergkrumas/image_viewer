@@ -163,10 +163,12 @@ def mouseMoveEvent(self, event):
         if self.drag_point != -1:
             p = self.oldpos + (event.pos() - self.start_pos)
             self.circles[self.drag_point].position = p
-        if self.center_under_cursor is not None:
-            self.setCursor(Qt.PointingHandCursor)
-        else:
-            self.setCursor(Qt.ArrowCursor)
+
+        if not self.corner_buttons_cursor_glitch_fixer():
+            if self.center_under_cursor is not None:
+                self.setCursor(Qt.PointingHandCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
     self.update()
 
 def mouseReleaseEvent(self, event):

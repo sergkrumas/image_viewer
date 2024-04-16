@@ -1420,12 +1420,15 @@ class BoardMixin(BoardTextEditItemMixin):
         pixmap = self.translate_rastr_source.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         return QCursor(pixmap)
 
-    def board_cursor_setter(self):
-        # защита от глитча курсора в угловых кнопках и угловом меню
+    def corner_buttons_cursor_glitch_fixer(self):
         cb1 = self.over_corner_button()
         cb2 = self.over_corner_button(corner_attr="topLeft")
         cb3 = self.over_corner_menu(corner_attr="topLeft")
-        if any((cb1, cb2, cb3)):
+        return any((cb1, cb2, cb3))
+
+    def board_cursor_setter(self):
+        # защита от глитча курсора в угловых кнопках и угловом меню
+        if self.corner_buttons_cursor_glitch_fixer():
             return
 
         if self.scaling_ongoing:
