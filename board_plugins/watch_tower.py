@@ -45,10 +45,18 @@ def pluginBoardInit(self, plugin_info):
         for fn, folderpath in enumerate(folders):
 
             offset_point.setY(0)
+
             ni = append_note_item(self, cf, folderpath)
             size_rect = ni.get_size_rect(scaled=True)
             size_rect.moveBottomLeft(offset_point)
             ni.item_position = size_rect.center()
+
+            if not os.path.exists(folderpath):
+                ni = append_note_item(self, cf, 'Путь не найден!', warning=True)
+                size_rect = ni.get_size_rect(scaled=True)
+                size_rect.moveTopLeft(offset_point)
+                ni.item_position = size_rect.center()
+                continue
 
             # initial max width instead zero
             max_width = size_rect.width()
