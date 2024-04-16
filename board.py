@@ -519,9 +519,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         contextMenu.addSeparator()
 
+        pis = []
         for pi in self.board_plugins:
             if pi.add_to_menu:
-                create_board_for_plugin = contextMenu.addAction(pi.name)
+                pis.append(pi)
+
+        if pis:
+            submenu = contextMenu.addMenu('Plugin Boards')
+            for pi in pis:
+                create_board_for_plugin = submenu.addAction(pi.name)
                 create_board_for_plugin.triggered.connect(pi.menu_callback)
 
         contextMenu.addSeparator()
