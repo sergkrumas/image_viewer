@@ -144,7 +144,6 @@ def paintEvent(self, painter, event):
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
     for index, c in enumerate(self.circles):
-
         point = c.position
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
@@ -160,14 +159,10 @@ def mouseMoveEvent(self, event):
     if self.drag_point != -1:
         p = self.oldpos + (event.pos() - self.start_pos)
         self.circles[self.drag_point].position = p
-
-
     if self.center_under_cursor is not None:
         self.setCursor(Qt.PointingHandCursor)
     else:
         self.setCursor(Qt.ArrowCursor)
-
-
     self.update()
 
 def mouseReleaseEvent(self, event):
