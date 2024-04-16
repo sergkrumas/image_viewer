@@ -173,29 +173,31 @@ def wheelEvent(self, event):
 
 
 def pluginBoardInit(self, plugin_info):
+
+    self.drag_point = -1
+    self.oldpos = QPoint(0, 0)
+
+    fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
+    self.board_make_board_current(fd)
+
     H2 = self.rect().height()/2
     W3 = self.rect().width()/3
 
     P1 = QPointF(W3, H2)
     P2 = QPointF(W3*2, H2)
 
-    self.drag_point = -1
-    self.oldpos = QPoint(0, 0)
-
     self.center_position_values = [P1, P2]
     self.radius_values = [8.0, 5.0]
 
     self.pixels_in_radius_unit = 20
 
-    fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
-    self.board_make_board_current(fd)
 
     self.checkerboard_br = checkerboard_br = QBrush()
     pixmap = QPixmap(100, 100)
     pixmap.fill(Qt.transparent)
     painter_ = QPainter()
     painter_.begin(pixmap)
-    painter_.setOpacity(0.1)
+    painter_.setOpacity(0.05)
     painter_.fillRect(pixmap.rect(), Qt.gray)
     painter_.setBrush(QBrush(QColor(200, 200, 200)))
     painter_.setPen(Qt.NoPen)
