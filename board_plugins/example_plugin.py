@@ -49,7 +49,7 @@ def paintEvent(self, painter, event):
         bckg_rect = QRect(_x, _y, SIZE, SIZE)
         base.setAlpha(alpha)
         painter.fillRect(bckg_rect, base)
-    print(self.bckg_rects)
+
 
 
     tangent_pairs = self.tangent_pairs[:]
