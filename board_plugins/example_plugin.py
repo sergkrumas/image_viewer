@@ -25,11 +25,13 @@ def paintEvent(self, painter, event):
     painter.setBrush(Qt.NoBrush)
 
     pen = QPen(QColor(255, 0, 0), 10)
-    pen0 = QPen(QColor(0, 255, 255), 10)
     pen.setCapStyle(Qt.RoundCap)
 
     pen2 = QPen(QColor(220, 50, 50), 1)
     pen3 = QPen(QColor(220, 220, 220), 1)
+
+    pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
+    pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
 
     for c1_index, c2_index in self.tangent_pairs:
@@ -49,7 +51,7 @@ def paintEvent(self, painter, event):
 
 
 
-        painter.setPen(pen2)
+        painter.setPen(pen5)
         painter.drawLine(p1, p2)
 
 
@@ -77,10 +79,11 @@ def paintEvent(self, painter, event):
                 # точки
                 painter.setPen(pen)
                 painter.drawPoint(point_on_circle)
-                painter.setPen(pen3)
                 # линия от точки касания к радиусу
+                painter.setPen(pen4)
                 painter.drawLine(point_on_circle, center_pos)
 
+            painter.setPen(pen2)
             # непосредственно сама касательная линия
             painter.drawLine(points_on_circles[0], points_on_circles[1])
 
@@ -112,7 +115,7 @@ def paintEvent(self, painter, event):
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
         painter.drawPoint(center_point)
-        painter.setPen(pen2)
+        painter.setPen(pen3)
         rect = build_rect_from_point(self, center_point)
         painter.drawEllipse(build_rect_from_point(self, center_point, radius))
         painter.drawEllipse(rect)
