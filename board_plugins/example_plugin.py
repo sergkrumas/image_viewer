@@ -40,7 +40,7 @@ def paintEvent(self, painter, event):
     if self.rect() == event.rect():
         for key in list(self.bckg_rects.keys()):
             if self.bckg_rects[key] > 1:
-                self.bckg_rects[key] -= 5
+                self.bckg_rects[key] -= 4
             else:
                 self.bckg_rects.pop(key)
         cursor_pos = self.mapFromGlobal(QCursor().pos())
