@@ -27,6 +27,9 @@ def paintEvent(self, painter, event):
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
 
+    if self.Globals.DEBUG or self.STNG_board_draw_board_origin:
+        self.board_draw_board_origin(painter)
+
     pen = QPen(QColor(255, 0, 0), 10)
     pen.setCapStyle(Qt.RoundCap)
 
@@ -46,15 +49,21 @@ def paintEvent(self, painter, event):
                 self.bckg_rects.pop(key)
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         SIZE = 125
+
+        cursor_pos = self.board_map_to_board(cursor_pos).toPoint()
         x = (cursor_pos.x() // SIZE) * SIZE
         y = (cursor_pos.y() // SIZE) * SIZE
         self.bckg_rects[(x,y)] = 255
         base = QColor(self.selection_color).darker(200)
         for key, alpha in self.bckg_rects.items():
             _x, _y = key
-            bckg_rect = QRect(_x, _y, SIZE, SIZE)
+            bckg_rect_board = QRect(_x, _y, SIZE, SIZE)
+            bckg_rect_viewport = QRectF(
+                self.board_map_to_viewport(bckg_rect_board.topLeft()),
+                self.board_map_to_viewport(bckg_rect_board.bottomRight()),
+            )
             base.setAlpha(max(0, alpha))
-            painter.fillRect(bckg_rect, base)
+            painter.fillRect(bckg_rect_viewport, base)
 
 
 
@@ -304,7 +313,7 @@ def pluginBoardInit(self, plugin_info):
     pixmap.fill(Qt.transparent)
     painter_ = QPainter()
     painter_.begin(pixmap)
-    painter_.setOpacity(0.05)
+    painter_.setOpacity(0.01)
     painter_.fillRect(pixmap.rect(), Qt.gray)
     painter_.setBrush(QBrush(QColor(200, 200, 200)))
     painter_.setPen(Qt.NoPen)
