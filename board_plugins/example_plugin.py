@@ -21,37 +21,8 @@ def build_rect_from_point(self, point, r=1.0):
 def paintEvent(self, painter, event):
 
 
-
-    checkerboard_br = QBrush()
-    pixmap = QPixmap(100, 100)
-    pixmap.fill(Qt.gray)
-    painter_ = QPainter()
-    painter_.begin(pixmap)
-    painter_.setBrush(QBrush(QColor(200, 200, 200)))
-    painter_.setPen(Qt.NoPen)
-    w = pixmap.width()
-    path = QPainterPath()
-    path.moveTo(w*0.0, w*0.0)
-    path.lineTo(w*0.25, w*0.0)
-    path.lineTo(w*1.0, w*0.75)
-    path.lineTo(w*1.0, w*1.0)
-    path.lineTo(w*0.75, w*1.0)
-    path.lineTo(w*0.0, w*0.25)
-    painter_.drawPath(path)
-    path = QPainterPath()
-    path.moveTo(w*0.0, w*0.75)
-    path.lineTo(w*0.0, w*1.0)
-    path.lineTo(w*0.25, w*1.0)
-    painter_.drawPath(path)
-    path = QPainterPath()
-    path.moveTo(w*0.75, w*0.0)
-    path.lineTo(w*1.0, w*0.0)
-    path.lineTo(w*1.0, w*0.25)
-    painter_.drawPath(path)
-    painter_.end()
-    checkerboard_br.setTexture(pixmap)
-    painter.setBrush(checkerboard_br)
-    # painter.drawRect(self.rect())
+    painter.setBrush(self.checkerboard_br)
+    painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
 
 
@@ -60,7 +31,7 @@ def paintEvent(self, painter, event):
     pen.setCapStyle(Qt.RoundCap)
 
     pen2 = QPen(QColor(255, 0, 0), 1)
-    pen3 = QPen(QColor(0, 255, 0), 4)
+    pen3 = QPen(QColor(0, 0, 0), 4)
 
 
     radius_max = max(self.radius_values)
@@ -217,6 +188,37 @@ def pluginBoardInit(self, plugin_info):
 
     fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
     self.board_make_board_current(fd)
+
+    self.checkerboard_br = checkerboard_br = QBrush()
+    pixmap = QPixmap(100, 100)
+    pixmap.fill(Qt.transparent)
+    painter_ = QPainter()
+    painter_.begin(pixmap)
+    painter_.setOpacity(0.1)
+    painter_.fillRect(pixmap.rect(), Qt.gray)
+    painter_.setBrush(QBrush(QColor(200, 200, 200)))
+    painter_.setPen(Qt.NoPen)
+    w = pixmap.width()
+    path = QPainterPath()
+    path.moveTo(w*0.0, w*0.0)
+    path.lineTo(w*0.25, w*0.0)
+    path.lineTo(w*1.0, w*0.75)
+    path.lineTo(w*1.0, w*1.0)
+    path.lineTo(w*0.75, w*1.0)
+    path.lineTo(w*0.0, w*0.25)
+    painter_.drawPath(path)
+    path = QPainterPath()
+    path.moveTo(w*0.0, w*0.75)
+    path.lineTo(w*0.0, w*1.0)
+    path.lineTo(w*0.25, w*1.0)
+    painter_.drawPath(path)
+    path = QPainterPath()
+    path.moveTo(w*0.75, w*0.0)
+    path.lineTo(w*1.0, w*0.0)
+    path.lineTo(w*1.0, w*0.25)
+    painter_.drawPath(path)
+    painter_.end()
+    checkerboard_br.setTexture(pixmap)
 
 
 def register(board_obj, plugin_info):
