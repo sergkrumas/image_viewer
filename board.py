@@ -851,31 +851,30 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         # инициализация словаря
-        data = dict()
+        data_base = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
 
+        data_base.update({'is_virtual':     cf.virtual                                            })
+
         # сохранение сдвига для доски
-        data.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
+        data_base.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
         # сохранение зума для доски
-        data.update({'board_scale':      tuple((self.board_scale_x, self.board_scale_y))     })
+        data_base.update({'board_scale':    tuple((self.board_scale_x, self.board_scale_y))       })
 
         if self.active_plugin:
             board_plugin_filename = self.active_plugin.filename
         else:
             board_plugin_filename = None
-        data.update({'board_plugin_filename': board_plugin_filename})
+        data_base.update({'board_plugin_filename':              board_plugin_filename             })
 
 
-        self.show_center_label(f'OK {board_filepath}')
-        return
+        items_to_store = list()
+        # сохранение айтемов
+        for item in cf.board_items_list:
 
-        slots_to_store = list()
-        # сохранение слотов
-        for slot in self.modification_slots:
-
-            slot_base = list()
-            slots_to_store.append(slot_base)
+            item_base = list()
+            items_to_store.append(slot_base)
 
             slot_attributes = slot.__dict__.items()
             for slot_attr_name, slot_attr_value in slot_attributes:
@@ -947,15 +946,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
             slot_base.append(('elements', 'list', elements_to_store))
 
-        data.update({'slots': slots_to_store})
+        data_base.update({'slots': items_to_store})
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG_use_cbor2_instead_of_json:
-            data_to_write = cbor2.dumps(data)
+            data_to_write = cbor2.dumps(data_base)
             with open(project_filepath, "wb") as file:
                 file.write(data_to_write)
         else:
-            data_to_write = json.dumps(data, indent=True)
+            data_to_write = json.dumps(data_base, indent=True)
             with open(project_filepath, "w+", encoding="utf8") as file:
                 file.write(data_to_write)
 
