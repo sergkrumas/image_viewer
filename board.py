@@ -686,11 +686,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
                         attr_value = attr_data
 
-                    elif attr_type in ['QRect']:
+                    elif attr_type in ['QRect', 'QRectF']:
                         attr_value = QRect(*attr_data)
-
-                    elif attr_type in ['QRectF']:
-                        attr_value = QRectF(*attr_data)
 
                     elif attr_type in ['QPainterPath']:
                         continue
