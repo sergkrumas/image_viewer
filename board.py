@@ -824,10 +824,97 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
 
+    def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
+        attributes = obj.__dict__.items()
+        for attr_name, attr_value in attributes:
+
+            if attr_name.startswith("__"):
+                continue
+
+            if exclude is not None and attr_name in exclude:
+                continue
+
+            attr_type = type(attr_value).__name__
+
+            if isinstance(attr_value, QPointF):
+                attr_data = (attr_value.x(), attr_value.y())
+
+            elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
+                continue
+
+            elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
+                attr_data = attr_value
+
+            elif isinstance(attr_value, QPainterPath):
+                continue
+                # filename = f"path_{attr_name}_{element.unique_index:04}.data"
+                # filepath = os.path.join(folder_path, filename)
+                # file_handler = QFile(filepath)
+                # file_handler.open(QIODevice.WriteOnly)
+                # stream = QDataStream(file_handler)
+                # stream << attr_value
+                # attr_data = filename
+
+            elif isinstance(attr_value, QPixmap):
+                continue
+                # filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
+                # filepath = os.path.join(folder_path, filename)
+                # attr_value.save(filepath)
+                # attr_data = filename
+
+            elif isinstance(attr_value, QColor):
+                attr_data = attr_value.getRgbF()
+
+            elif attr_value is None or attr_name in ["text_doc"]:
+                attr_data = None
+
+            elif isinstance(attr_value, (QTransform,)):
+                continue
+
+            elif isinstance(attr_value, self.ImageData):
+                pass
+
+            elif isinstance(attr_value, QRectF):
+                attr_data = (attr_value.left(), attr_value.top(), attr_value.width(), attr_value.height())
+
+            else:
+                status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
+                raise Exception(f"Unable to handle attribute, {status}")
+
+            new_obj_base.append((attr_name, attr_type, attr_data))
 
 
+    def board_data_to_dict(self, board_folder_data):
+        board = board_folder_data.board
 
+        # инициализация словаря
+        board_base = dict()
 
+        # СОХРАНЕНИЕ ДАННЫХ
+
+        if True:
+            board_base.update({'is_virtual':     board_folder_data.virtual                         })
+
+            if self.active_plugin:
+                board_plugin_filename = self.active_plugin.filename
+            else:
+                board_plugin_filename = None
+            board_base.update({'board_plugin_filename':              board_plugin_filename         })
+
+        # сохранение атрибутов доски
+        board_attribures = list()
+        self.board_object_attributes_to_serial(board, board_attribures, exclude=('board_items_list',))
+
+        # сохранение айтемов доски
+        items_to_store = list()
+        for item in board.board_items_list:
+            new_item_base = list()
+            items_to_store.append(new_item_base)
+            self.board_object_attributes_to_serial(item, new_item_base)
+
+        board_base.update({'board_items': items_to_store, 'board_attributes': board_attribures})
+
+        return board_base
 
     def board_saveBoardDefault(self):
         cf = self.LibraryData().current_folder()
@@ -849,86 +936,11 @@ class BoardMixin(BoardTextEditItemMixin):
             file_format = 'json'
         board_filepath = os.path.normpath(os.path.join(save_folderpath, f"{filename}.{file_format}.board"))
 
+        # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
+        self.LibraryData().save_board_data()
 
-        # инициализация словаря
-        board_base = dict()
-
-        # СОХРАНЕНИЕ ДАННЫХ
-
-        board_base.update({'is_virtual':     cf.virtual                                            })
-
-        # сохранение сдвига для доски
-        board_base.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
-        # сохранение зума для доски
-        board_base.update({'board_scale':    tuple((self.board_scale_x, self.board_scale_y))       })
-
-        if self.active_plugin:
-            board_plugin_filename = self.active_plugin.filename
-        else:
-            board_plugin_filename = None
-        board_base.update({'board_plugin_filename':              board_plugin_filename             })
-
-
-        items_to_store = list()
-        # сохранение айтемов
-        for item in cf.board.board_items_list:
-
-            item_base = list()
-            items_to_store.append(item_base)
-
-            attributes = item.__dict__.items()
-            for attr_name, attr_value in attributes:
-
-                if attr_name.startswith("__"):
-                    continue
-
-                attr_type = type(attr_value).__name__
-
-                if isinstance(attr_value, QPointF):
-                    attr_data = (attr_value.x(), attr_value.y())
-
-                elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
-                    continue
-
-                elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
-                    attr_data = attr_value
-
-                elif isinstance(attr_value, QPainterPath):
-                    continue
-                    # filename = f"path_{attr_name}_{element.unique_index:04}.data"
-                    # filepath = os.path.join(folder_path, filename)
-                    # file_handler = QFile(filepath)
-                    # file_handler.open(QIODevice.WriteOnly)
-                    # stream = QDataStream(file_handler)
-                    # stream << attr_value
-                    # attr_data = filename
-
-                elif isinstance(attr_value, QPixmap):
-                    continue
-                    # filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
-                    # filepath = os.path.join(folder_path, filename)
-                    # attr_value.save(filepath)
-                    # attr_data = filename
-
-                elif isinstance(attr_value, QColor):
-                    attr_data = attr_value.getRgbF()
-
-                elif attr_value is None or attr_name in ["text_doc"]:
-                    attr_data = None
-
-                elif isinstance(attr_value, (QTransform,)):
-                    continue
-
-                elif isinstance(attr_value, self.ImageData):
-                    pass
-
-                else:
-                    status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
-                    raise Exception(f"Unable to handle attribute, {status}")
-
-                item_base.append((attr_name, attr_type, attr_data))
-
-        board_base.update({'board_items': items_to_store})
+        data_base = dict()
+        data_base['main_board'] = self.board_data_to_dict(cf)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG_use_cbor2_instead_of_json:
