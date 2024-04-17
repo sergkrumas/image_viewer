@@ -621,6 +621,9 @@ class BoardMixin(BoardTextEditItemMixin):
         # чтение json
         cbor2_format = False
         json_format = False
+
+
+
         try:
 
             # пытаемся читать как cbor2
@@ -647,6 +650,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label("Ошибка чтения файла. Отмена!", error=True)
                 return
 
+        project_format = ''
+        if cbor2_format:
+            project_format = 'cbor2'
+        elif json_format:
+            project_format = 'json'
+
+
+
 
         # подготовка перед загрузкой данных
         self.elementsInit()
@@ -654,74 +665,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # ЗАГРУЗКА ДАННЫХ
 
-        # загрузка переменных, задаваемых через контекстное меню
-        self.dark_pictures = data.get('dark_pictures', True)
-        self.Globals.close_editor_on_done = data.get('close_editor_on_done', True)
-
-
-        # загрузка готовых изображений в память
-        self.Globals.save_to_memory_mode = data.get('save_to_memory_mode', False)
-        if self.Globals.save_to_memory_mode:
-            subfolder_path = os.path.join(folder_path, "in_memory")
-            if os.path.exists(subfolder_path):
-                filenames = os.listdir(subfolder_path)
-                filenames = list(sorted(filenames))
-                for filename in filenames:
-                    filepath = os.path.join(subfolder_path, filename)
-                    if not filepath.lower().endswith(".png"):
-                        continue
-                    self.Globals.images_in_memory.append(QPixmap(filepath))
-
-
-        # загрузка исходной немодифицированной картинки-фона
-        image_path = os.path.join(folder_path, "background.png")
-        self.source_pixels = QImage(image_path)
-
-
-
-        # загрузка метаданных
-        self.metadata = data.get('metadata', ("", ""))
-
-        # покажет панель инструментов если она скрыта
-        self.create_tools_window_if_needed()
-
-
-        # загрузка состояния обтравки маской
-        self.tools_window.chb_masked.setChecked(data.get("masked", False))
-
-
-        # загрузка состояния обтравки маской в виде шестиугольника
-        self.hex_mask = data.get('hex_mask', False)
-
-
-        # загрузка области захвата
-        rect_tuple = data.get('capture_region_rect', (0, 0, 0, 0))
-        if rect_tuple == (0, 0, 0, 0):
-            self.capture_region_rect = None
-            self.input_POINT1 = None
-            self.input_POINT2 = None
-            self.is_rect_defined = False
-        else:
-            self.capture_region_rect = QRectF(*rect_tuple)
-            self.input_POINT1 = self.capture_region_rect.topLeft()
-            self.input_POINT2 = self.capture_region_rect.bottomRight()
-            self.is_rect_defined = True
-
-
-        # загрузка текущего инструмента
-        self.tools_window.set_current_tool(data.get('current_tool', 'none'))
-
-
-        # загрузка индексов для истории действий
-        self.elements_modification_index = data.get('elements_modification_index', 0)
-
-
-        # сохранение сдвига холста
-        self.canvas_origin = QPointF(*data.get('canvas_origin', (0.0, 0.0)))
-        # сохранение зума холста
-        canvas_scale = data.get('canvas_scale')
-        self.canvas_scale_x = canvas_scale[0]
-        self.canvas_scale_y = canvas_scale[1]
 
         # загрузка слотов, элементов и их данных
         slots_from_store = data.get('slots', [])
@@ -795,11 +738,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 if element.type == ToolID.text:
                     self.elementsImplantTextElement(element)
 
-        project_format = ''
-        if cbor2_format:
-            project_format = 'cbor2'
-        elif json_format:
-            project_format = 'json'
 
         self.show_center_label(f'Доска загружена из {board_filepath}, формат {project_format}')
 
