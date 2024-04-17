@@ -827,22 +827,14 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label('Доски из виртуальных папок сохранять нельзя!', error=True)
             return
 
-        self.show_center_label('OK')
-        return
-
-
-        formated_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        folder_path = os.path.join(self.Globals.SCREENSHOT_FOLDER_PATH,
-                                                f"OxxxyProject_{formated_datetime}")
-        os.mkdir(folder_path)
-        if not os.path.exists(folder_path):
-            return
-        if self.Globals.ENABLE_CBOR2:
+        if self.STNG_use_cbor2_instead_of_json:
             file_format = 'cbor2'
         else:
             file_format = 'json'
-        project_filepath = os.path.join(folder_path, f"project.{file_format}.oxxxyshot")
+        board_filepath = os.path.join(cf.folder_path, f"board.{file_format}.board")
 
+        self.show_center_label(f'OK {board_filepath}')
+        return
 
         # инициализация словаря
         data = dict()
