@@ -28,6 +28,8 @@ from functools import partial
 from _utils import *
 from board_note_item import BoardTextEditItemMixin
 
+import cbor2
+
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
 class BoardLibraryDataMixin():
@@ -271,6 +273,7 @@ class PluginInfo():
     def __init__(self, module, board):
         super().__init__()
         self.name = 'undefined'
+        self.filename = 'undefined'        
         self.module = module
         self.board = board
         self.add_to_menu = True
@@ -289,6 +292,9 @@ class PluginInfo():
 
         self.keyPressEvent = None
         self.keyReleaseEvent = None
+
+    def setFilename(self, name):
+        self.filename = name
 
     def setName(self, name):
         self.name = name
@@ -394,6 +400,7 @@ class BoardMixin(BoardTextEditItemMixin):
         module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
         pi = PluginInfo(module, self)
         pi.setName(filename)
+        pi.setFilename(filename)
         self.board_plugins.append(pi)
         if plugin_reg_func:
             plugin_reg_func(self, pi)
@@ -833,70 +840,26 @@ class BoardMixin(BoardTextEditItemMixin):
             file_format = 'json'
         board_filepath = os.path.join(cf.folder_path, f"board.{file_format}.board")
 
-        self.show_center_label(f'OK {board_filepath}')
-        return
 
         # инициализация словаря
         data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
 
-        # сохранение переменных, задаваемых через контекстное меню
-        data.update({'dark_pictures':                    self.dark_pictures                     })
-        data.update({'close_editor_on_done':             self.Globals.close_editor_on_done      })
+        # сохранение сдвига для доски
+        data.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
+        # сохранение зума для доски
+        data.update({'board_scale':      tuple((self.board_scale_x, self.board_scale_y))     })
 
-
-        # сохранение готовых изображений из памяти
-        data.update({'save_to_memory_mode':              self.Globals.save_to_memory_mode       })
-        if self.Globals.save_to_memory_mode:
-            subfolder_path = os.path.join(folder_path, "in_memory")
-            os.mkdir(subfolder_path)
-            for n, image_in_memory in enumerate(self.Globals.images_in_memory):
-                image_path = os.path.join(subfolder_path, f'{n}.png')
-                image_in_memory.save(image_path)
-
-
-        # сохранение картинки-фона
-        image_path = os.path.join(folder_path, "background.png")
-        self.source_pixels.save(image_path)
-
-
-        # сохранение метаданных
-        data.update({'metadata':                   self.metadata                                })
-
-
-        # сохранение обтравки маской
-        data.update({'masked':                     self.tools_window.chb_masked.isChecked()     })
-
-
-        # сохранение обтравки маской в виде шестиугольника
-        data.update({'hex_mask':                   self.hex_mask                                })
-
-
-        # сохранение области захвата
-        if self.capture_region_rect is not None:
-            r = self.capture_region_rect
-            data.update({'capture_region_rect': (r.left(), r.top(), r.width(), r.height())      })
+        if self.active_plugin:
+            board_plugin_filename = self.active_plugin.filename
         else:
-            data.update({'capture_region_rect': (0, 0, 0, 0)                                    })
-
-        # !!! не сохраняются input_POINT1 и input_POINT2, так как это будет избыточным
-        #
-        data.update({'is_rect_defined':            self.is_rect_defined                         })
+            board_plugin_filename = None
+        data.update({'board_plugin': board_plugin_filename})
 
 
-        # сохранение текущего инструмента
-        data.update({'current_tool':               self.current_tool                            })
-
-
-        # сохранение индексов для истории действий
-        data.update({'elements_modification_index':     self.elements_modification_index        })
-
-
-        # сохранение сдвига холста
-        data.update({'canvas_origin':   tuple((self.canvas_origin.x(), self.canvas_origin.y())) })
-        # сохранение зума холста
-        data.update({'canvas_scale':      tuple((self.canvas_scale_x, self.canvas_scale_y))     })
+        self.show_center_label(f'OK {board_filepath}')
+        return
 
         slots_to_store = list()
         # сохранение слотов
@@ -978,7 +941,7 @@ class BoardMixin(BoardTextEditItemMixin):
         data.update({'slots': slots_to_store})
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
-        if self.Globals.ENABLE_CBOR2:
+        if self.STNG_use_cbor2_instead_of_json:
             data_to_write = cbor2.dumps(data)
             with open(project_filepath, "wb") as file:
                 file.write(data_to_write)
@@ -989,7 +952,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
         text = f"Проект сохранён в \n{project_filepath}"
-        self.show_notify_dialog(text)
+        self.show_center_label(text)
 
 
 
