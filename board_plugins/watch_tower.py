@@ -90,6 +90,7 @@ def pluginBoardInit(self, plugin_info):
 
                 items = list(sorted(items, key=lambda x: x.image_data.creation_date, reverse=True))
 
+                # вызов нужен, чтобы bi.get_size_rect вернул актуальные значения
                 self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
 
                 for bi in items:
