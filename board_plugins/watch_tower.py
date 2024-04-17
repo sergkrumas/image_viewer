@@ -10,7 +10,9 @@ import sys
 import subprocess
 import os
 import platform
+import datetime
 from functools import partial
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -82,6 +84,8 @@ def pluginBoardInit(self, plugin_info):
                         imd = bi.image_data
                         if imd.creation_date == 0:
                             imd.creation_date = imd.get_creation_date()
+                        dt = datetime.datetime.fromtimestamp(imd.creation_date)
+                        bi.status = dt.strftime("%A, %d %B %Y %X").capitalize()
                         items.append(bi)
 
                 items = list(sorted(items, key=lambda x: x.image_data.creation_date, reverse=True))

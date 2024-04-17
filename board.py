@@ -82,6 +82,7 @@ class BoardItem():
         self.item_image_source = None
 
         self.item_name = ""
+        self.status = ''
 
         self._selected = False
         self._touched = False
@@ -1005,10 +1006,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.restore()
 
                 if board_item == self.board_item_under_mouse:
-                    is_animation_file = board_item.type == BoardItem.types.ITEM_IMAGE and board_item.animated
-
-                    if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP] or is_animation_file:
-
+                    if board_item.status:
                         alignment = Qt.AlignCenter | Qt.AlignVCenter
                         text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, board_item.status)
                         text_rect.adjust(-5, -5, 5, 5)
