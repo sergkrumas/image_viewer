@@ -660,8 +660,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         # подготовка перед загрузкой данных
-        self.elementsInit()
-        folder_path = os.path.dirname(board_filepath)
+
+
 
         # ЗАГРУЗКА ДАННЫХ
 
@@ -670,21 +670,6 @@ class BoardMixin(BoardTextEditItemMixin):
         slots_from_store = data.get('slots', [])
 
         for slot_attributes in slots_from_store:
-
-            elements_from_slot = slot_attributes[-1][2]
-
-            ms = self.elementsCreateNewSlot('FROM_FILE')
-
-            for slot_attr_name, slot_attr_type, slot_attr_data in slot_attributes[:-1]:
-
-                if slot_attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
-                    slot_attr_value = slot_attr_data
-
-                else:
-                    status = f"name: '{slot_attr_name}' type: '{slot_attr_type}' value: '{slot_attr_data}'"
-                    raise Exception(f"Unable to handle attribute, {status}")
-
-                setattr(ms, slot_attr_name, slot_attr_value)
 
             for element_attributes in elements_from_slot:
                 element = self.elementsCreateNew(ToolID.TEMPORARY_TYPE_NOT_DEFINED,
