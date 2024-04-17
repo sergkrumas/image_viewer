@@ -586,11 +586,446 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_saveBoard(self):
         self.board_saveBoardDefault()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def dialog_open_boardfile(self):
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        title = ""
+        filter_data = "Board File (*.board)"
+        self.SettingsWindow.set_screenshot_folder_path()
+        data = dialog.getOpenFileName(self, title, self.Globals.SCREENSHOT_FOLDER_PATH, filter_data)
+        return data[0]
+
+
+
     def board_loadBoardDefault(self):
         self.show_center_label('load board default')
 
+        project_filepath = ""
+
+        project_filepath = self.dialog_open_boardfile()
+
+        is_file_exists = os.path.exists(project_filepath)
+        is_file_extension_ok = project_filepath.lower().endswith(".oxxxyshot")
+        is_file = os.path.isfile(project_filepath)
+        if not (is_file_exists and is_file_extension_ok and is_file):
+            self.show_notify_dialog("Ошибка: либо файла не существует, либо расширение не то. Отмена!")
+            return
+
+        # чтение json
+        cbor2_project = False
+        json_project = False
+        try:
+
+            # пытаемся читать как cbor2
+            read_data = ""
+            with open(project_filepath, "rb") as file:
+                read_data = file.read()
+
+            data = cbor2.loads(read_data)
+            cbor2_project = True
+
+        except:
+
+            try:
+
+                # пытаемся читать как json
+                read_data = ""
+                with open(project_filepath, "r", encoding="utf8") as file:
+                    read_data = file.read()
+                data = json.loads(read_data)
+
+                json_project = True
+
+            except:
+                self.show_notify_dialog("Ошибка при чтении файла. Отмена!")
+                return
+
+        # подготовка перед загрузкой данных
+        self.elementsInit()
+        folder_path = os.path.dirname(project_filepath)
+
+        # ЗАГРУЗКА ДАННЫХ
+
+        # загрузка переменных, задаваемых через контекстное меню
+        self.dark_pictures = data.get('dark_pictures', True)
+        self.Globals.close_editor_on_done = data.get('close_editor_on_done', True)
+
+
+        # загрузка готовых изображений в память
+        self.Globals.save_to_memory_mode = data.get('save_to_memory_mode', False)
+        if self.Globals.save_to_memory_mode:
+            subfolder_path = os.path.join(folder_path, "in_memory")
+            if os.path.exists(subfolder_path):
+                filenames = os.listdir(subfolder_path)
+                filenames = list(sorted(filenames))
+                for filename in filenames:
+                    filepath = os.path.join(subfolder_path, filename)
+                    if not filepath.lower().endswith(".png"):
+                        continue
+                    self.Globals.images_in_memory.append(QPixmap(filepath))
+
+
+        # загрузка исходной немодифицированной картинки-фона
+        image_path = os.path.join(folder_path, "background.png")
+        self.source_pixels = QImage(image_path)
+
+
+
+        # загрузка метаданных
+        self.metadata = data.get('metadata', ("", ""))
+
+        # покажет панель инструментов если она скрыта
+        self.create_tools_window_if_needed()
+
+
+        # загрузка состояния обтравки маской
+        self.tools_window.chb_masked.setChecked(data.get("masked", False))
+
+
+        # загрузка состояния обтравки маской в виде шестиугольника
+        self.hex_mask = data.get('hex_mask', False)
+
+
+        # загрузка области захвата
+        rect_tuple = data.get('capture_region_rect', (0, 0, 0, 0))
+        if rect_tuple == (0, 0, 0, 0):
+            self.capture_region_rect = None
+            self.input_POINT1 = None
+            self.input_POINT2 = None
+            self.is_rect_defined = False
+        else:
+            self.capture_region_rect = QRectF(*rect_tuple)
+            self.input_POINT1 = self.capture_region_rect.topLeft()
+            self.input_POINT2 = self.capture_region_rect.bottomRight()
+            self.is_rect_defined = True
+
+
+        # загрузка текущего инструмента
+        self.tools_window.set_current_tool(data.get('current_tool', 'none'))
+
+
+        # загрузка индексов для истории действий
+        self.elements_modification_index = data.get('elements_modification_index', 0)
+
+
+        # сохранение сдвига холста
+        self.canvas_origin = QPointF(*data.get('canvas_origin', (0.0, 0.0)))
+        # сохранение зума холста
+        canvas_scale = data.get('canvas_scale')
+        self.canvas_scale_x = canvas_scale[0]
+        self.canvas_scale_y = canvas_scale[1]
+
+        # загрузка слотов, элементов и их данных
+        slots_from_store = data.get('slots', [])
+
+        for slot_attributes in slots_from_store:
+
+            elements_from_slot = slot_attributes[-1][2]
+
+            ms = self.elementsCreateNewSlot('FROM_FILE')
+
+            for slot_attr_name, slot_attr_type, slot_attr_data in slot_attributes[:-1]:
+
+                if slot_attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
+                    slot_attr_value = slot_attr_data
+
+                else:
+                    status = f"name: '{slot_attr_name}' type: '{slot_attr_type}' value: '{slot_attr_data}'"
+                    raise Exception(f"Unable to handle attribute, {status}")
+
+                setattr(ms, slot_attr_name, slot_attr_value)
+
+            for element_attributes in elements_from_slot:
+                element = self.elementsCreateNew(ToolID.TEMPORARY_TYPE_NOT_DEFINED,
+                    create_new_slot=False, modification_slot=ms)
+                # print(elements_from_slot)
+                for attr_name, attr_type, attr_data in element_attributes:
+
+                    if attr_type in ['QPoint']:
+                        attr_value = QPoint(*attr_data)
+
+                    elif attr_type in ['QPointF']:
+                        attr_value = QPointF(*attr_data)
+
+                    elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
+                        attr_value = attr_data
+
+                    elif attr_type in ['QPainterPath']:
+                        filepath = os.path.join(folder_path, attr_data)
+                        file_handler = QFile(filepath)
+                        file_handler.open(QIODevice.ReadOnly)
+                        stream = QDataStream(file_handler)
+                        path = QPainterPath()
+                        stream >> path
+                        attr_value = path
+
+                    elif attr_type in ['QPixmap']:
+                        filepath = os.path.join(folder_path, attr_data)
+                        attr_value = QPixmap(filepath)
+
+                    elif attr_type in ['QColor']:
+                        attr_value = QColor()
+                        attr_value.setRgbF(*attr_data)
+
+                    elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
+                        attr_value = None
+
+                    else:
+                        status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' element: {element}"
+                        raise Exception(f"Unable to handle attribute, {status}")
+
+                    setattr(element, attr_name, attr_value)
+
+                if element.type == ToolID.text:
+                    self.elementsImplantTextElement(element)
+
+        project_format = ''
+        if cbor2_project:
+            project_format = 'cbor2'
+        elif json_project:
+            project_format = 'json'
+
+        msg = f'Файл загружен, формат {project_format}'
+        self.show_notify_dialog(msg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     def board_saveBoardDefault(self):
         self.show_center_label('save board default')
+
+
+        # задание папки для скриншота
+        self.SettingsWindow.set_screenshot_folder_path()
+        if not os.path.exists(self.Globals.SCREENSHOT_FOLDER_PATH):
+            return
+
+        formated_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        folder_path = os.path.join(self.Globals.SCREENSHOT_FOLDER_PATH,
+                                                f"OxxxyProject_{formated_datetime}")
+        os.mkdir(folder_path)
+        if not os.path.exists(folder_path):
+            return
+        if self.Globals.ENABLE_CBOR2:
+            file_format = 'cbor2'
+        else:
+            file_format = 'json'
+        project_filepath = os.path.join(folder_path, f"project.{file_format}.oxxxyshot")
+
+
+        # инициализация словаря
+        data = dict()
+
+        # СОХРАНЕНИЕ ДАННЫХ
+
+        # сохранение переменных, задаваемых через контекстное меню
+        data.update({'dark_pictures':                    self.dark_pictures                     })
+        data.update({'close_editor_on_done':             self.Globals.close_editor_on_done      })
+
+
+        # сохранение готовых изображений из памяти
+        data.update({'save_to_memory_mode':              self.Globals.save_to_memory_mode       })
+        if self.Globals.save_to_memory_mode:
+            subfolder_path = os.path.join(folder_path, "in_memory")
+            os.mkdir(subfolder_path)
+            for n, image_in_memory in enumerate(self.Globals.images_in_memory):
+                image_path = os.path.join(subfolder_path, f'{n}.png')
+                image_in_memory.save(image_path)
+
+
+        # сохранение картинки-фона
+        image_path = os.path.join(folder_path, "background.png")
+        self.source_pixels.save(image_path)
+
+
+        # сохранение метаданных
+        data.update({'metadata':                   self.metadata                                })
+
+
+        # сохранение обтравки маской
+        data.update({'masked':                     self.tools_window.chb_masked.isChecked()     })
+
+
+        # сохранение обтравки маской в виде шестиугольника
+        data.update({'hex_mask':                   self.hex_mask                                })
+
+
+        # сохранение области захвата
+        if self.capture_region_rect is not None:
+            r = self.capture_region_rect
+            data.update({'capture_region_rect': (r.left(), r.top(), r.width(), r.height())      })
+        else:
+            data.update({'capture_region_rect': (0, 0, 0, 0)                                    })
+
+        # !!! не сохраняются input_POINT1 и input_POINT2, так как это будет избыточным
+        #
+        data.update({'is_rect_defined':            self.is_rect_defined                         })
+
+
+        # сохранение текущего инструмента
+        data.update({'current_tool':               self.current_tool                            })
+
+
+        # сохранение индексов для истории действий
+        data.update({'elements_modification_index':     self.elements_modification_index        })
+
+
+        # сохранение сдвига холста
+        data.update({'canvas_origin':   tuple((self.canvas_origin.x(), self.canvas_origin.y())) })
+        # сохранение зума холста
+        data.update({'canvas_scale':      tuple((self.canvas_scale_x, self.canvas_scale_y))     })
+
+        slots_to_store = list()
+        # сохранение слотов
+        for slot in self.modification_slots:
+
+            slot_base = list()
+            slots_to_store.append(slot_base)
+
+            slot_attributes = slot.__dict__.items()
+            for slot_attr_name, slot_attr_value in slot_attributes:
+                slot_attr_type = type(slot_attr_value).__name__
+
+                if isinstance(slot_attr_value, (int, str)):
+                    slot_attr_data = slot_attr_value
+                elif isinstance(slot_attr_value, list) and slot_attr_name == 'elements':
+                    continue
+                else:
+                    status = f"name: '{slot_attr_name}' type: '{slot_attr_type}' value: '{slot_attr_value}'"
+                    raise Exception(f"Unable to handle attribute, {status}")
+
+                slot_base.append((slot_attr_name, slot_attr_type, slot_attr_data))
+
+            elements_to_store = list()
+            # сохранение пометок в слоте
+            for element in slot.elements:
+
+                element_base = list()
+                elements_to_store.append(element_base)
+
+                attributes = element.__dict__.items()
+                for attr_name, attr_value in attributes:
+
+                    if attr_name.startswith("__"):
+                        continue
+
+                    attr_type = type(attr_value).__name__
+
+                    if isinstance(attr_value, QPointF):
+                        attr_data = (attr_value.x(), attr_value.y())
+
+                    elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
+                        continue
+
+                    elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
+                        attr_data = attr_value
+
+                    elif isinstance(attr_value, QPainterPath):
+                        filename = f"path_{attr_name}_{element.unique_index:04}.data"
+                        filepath = os.path.join(folder_path, filename)
+                        file_handler = QFile(filepath)
+                        file_handler.open(QIODevice.WriteOnly)
+                        stream = QDataStream(file_handler)
+                        stream << attr_value
+                        attr_data = filename
+
+                    elif isinstance(attr_value, QPixmap):
+                        filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
+                        filepath = os.path.join(folder_path, filename)
+                        attr_value.save(filepath)
+                        attr_data = filename
+
+                    elif isinstance(attr_value, QColor):
+                        attr_data = attr_value.getRgbF()
+
+                    elif attr_value is None or attr_name in ["text_doc"]:
+                        attr_data = None
+
+                    elif isinstance(attr_value, (ElementsModificationSlot, QTransform)):
+                        continue
+
+                    else:
+                        status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
+                        raise Exception(f"Unable to handle attribute, {status}")
+
+                    element_base.append((attr_name, attr_type, attr_data))
+
+            slot_base.append(('elements', 'list', elements_to_store))
+
+        data.update({'slots': slots_to_store})
+
+        # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
+        if self.Globals.ENABLE_CBOR2:
+            data_to_write = cbor2.dumps(data)
+            with open(project_filepath, "wb") as file:
+                file.write(data_to_write)
+        else:
+            data_to_write = json.dumps(data, indent=True)
+            with open(project_filepath, "w+", encoding="utf8") as file:
+                file.write(data_to_write)
+
+        # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
+        text = f"Проект сохранён в \n{project_filepath}"
+        self.show_notify_dialog(text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @property
     def active_element(self):
