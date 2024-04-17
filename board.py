@@ -594,27 +594,6 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_saveBoard(self):
         self.board_saveBoardDefault()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     def dialog_open_boardfile(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
@@ -629,28 +608,28 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_loadBoardDefault(self):
         self.show_center_label('load board default')
 
-        project_filepath = ""
-        project_filepath = self.dialog_open_boardfile()
+        board_filepath = ""
+        board_filepath = self.dialog_open_boardfile()
 
-        is_file_exists = os.path.exists(project_filepath)
-        is_file_extension_ok = project_filepath.lower().endswith(".board")
-        is_file = os.path.isfile(project_filepath)
+        is_file_exists = os.path.exists(board_filepath)
+        is_file_extension_ok = board_filepath.lower().endswith(".board")
+        is_file = os.path.isfile(board_filepath)
         if not (is_file_exists and is_file_extension_ok and is_file):
             self.show_center_label("Ошибка: либо файла не существует, либо расширение не то. Отмена!", error=True)
             return
 
         # чтение json
-        cbor2_project = False
-        json_project = False
+        cbor2_format = False
+        json_format = False
         try:
 
             # пытаемся читать как cbor2
             read_data = ""
-            with open(project_filepath, "rb") as file:
+            with open(board_filepath, "rb") as file:
                 read_data = file.read()
 
             data = cbor2.loads(read_data)
-            cbor2_project = True
+            cbor2_format = True
 
         except:
 
@@ -658,19 +637,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 # пытаемся читать как json
                 read_data = ""
-                with open(project_filepath, "r", encoding="utf8") as file:
+                with open(board_filepath, "r", encoding="utf8") as file:
                     read_data = file.read()
                 data = json.loads(read_data)
 
-                json_project = True
+                json_format = True
 
             except:
                 self.show_center_label("Ошибка чтения файла. Отмена!", error=True)
                 return
 
+
         # подготовка перед загрузкой данных
         self.elementsInit()
-        folder_path = os.path.dirname(project_filepath)
+        folder_path = os.path.dirname(board_filepath)
 
         # ЗАГРУЗКА ДАННЫХ
 
@@ -808,21 +788,12 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.elementsImplantTextElement(element)
 
         project_format = ''
-        if cbor2_project:
+        if cbor2_format:
             project_format = 'cbor2'
-        elif json_project:
+        elif json_format:
             project_format = 'json'
 
-        msg = f'Файл загружен, формат {project_format}'
-        self.show_notify_dialog(msg)
-
-
-
-
-
-
-
-
+        self.show_center_label(f'Доска загружена из {board_filepath}, формат {project_format}')
 
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
         attributes = obj.__dict__.items()
@@ -955,34 +926,6 @@ class BoardMixin(BoardTextEditItemMixin):
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
         text = f"Проект сохранён в \n{board_filepath}"
         self.show_center_label(text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     @property
     def active_element(self):
