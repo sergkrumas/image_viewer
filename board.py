@@ -758,18 +758,26 @@ class BoardMixin(BoardTextEditItemMixin):
                     elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
                         attr_value = attr_data
 
+                    elif attr_type in ['QRect']:
+                        attr_value = QRect(*attr_data)
+
+                    elif attr_type in ['QRectF']:
+                        attr_value = QRectF(*attr_data)
+
                     elif attr_type in ['QPainterPath']:
-                        filepath = os.path.join(folder_path, attr_data)
-                        file_handler = QFile(filepath)
-                        file_handler.open(QIODevice.ReadOnly)
-                        stream = QDataStream(file_handler)
-                        path = QPainterPath()
-                        stream >> path
-                        attr_value = path
+                        continue
+                        # filepath = os.path.join(folder_path, attr_data)
+                        # file_handler = QFile(filepath)
+                        # file_handler.open(QIODevice.ReadOnly)
+                        # stream = QDataStream(file_handler)
+                        # path = QPainterPath()
+                        # stream >> path
+                        # attr_value = path
 
                     elif attr_type in ['QPixmap']:
-                        filepath = os.path.join(folder_path, attr_data)
-                        attr_value = QPixmap(filepath)
+                        continue
+                        # filepath = os.path.join(folder_path, attr_data)
+                        # attr_value = QPixmap(filepath)
 
                     elif attr_type in ['QColor']:
                         attr_value = QColor()
@@ -845,7 +853,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif isinstance(attr_value, self.ImageData):
                 pass
 
-            elif isinstance(attr_value, QRectF):
+            elif isinstance(attr_value, (QRectF, QRect)):
                 attr_data = (attr_value.left(), attr_value.top(), attr_value.width(), attr_value.height())
 
             else:
