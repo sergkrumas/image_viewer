@@ -612,21 +612,20 @@ class BoardMixin(BoardTextEditItemMixin):
         dialog.setFileMode(QFileDialog.ExistingFile)
         title = ""
         filter_data = "Board File (*.board)"
-        self.SettingsWindow.set_screenshot_folder_path()
-        data = dialog.getOpenFileName(self, title, self.Globals.SCREENSHOT_FOLDER_PATH, filter_data)
+        folder_path = self.SettingsWindow.get_setting_value("inframed_folderpath")
+        if not os.path.exists(folder_path):
+            folder_path = self.set_path_for_saved_pictures(folder_path)
+        data = dialog.getOpenFileName(self, title, folder_path, filter_data)
         return data[0]
-
-
 
     def board_loadBoardDefault(self):
         self.show_center_label('load board default')
 
         project_filepath = ""
-
         project_filepath = self.dialog_open_boardfile()
 
         is_file_exists = os.path.exists(project_filepath)
-        is_file_extension_ok = project_filepath.lower().endswith(".oxxxyshot")
+        is_file_extension_ok = project_filepath.lower().endswith(".board")
         is_file = os.path.isfile(project_filepath)
         if not (is_file_exists and is_file_extension_ok and is_file):
             self.show_notify_dialog("Ошибка: либо файла не существует, либо расширение не то. Отмена!")

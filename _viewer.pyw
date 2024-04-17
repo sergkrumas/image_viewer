@@ -510,6 +510,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.board_init()
         self.tagging_init()
 
+        self.SettingsWindow = SettingsWindow
         SettingsWindow.settings_init(self)
 
         self.previews_list_active_item = None
@@ -3065,6 +3066,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             _path = self.set_path_for_saved_pictures(rootpath)
             if _path:
                 rootpath = _path
+            else:
+                self.show_center_label('Путь не задан или его не существует', error=True)
         new_path = os.path.abspath(os.path.join(rootpath, f"{formated_datetime}{ext}"))
         if not use_screen_scale:
             factor = 1/self.image_scale
