@@ -851,22 +851,22 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         # инициализация словаря
-        data_base = dict()
+        board_base = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
 
-        data_base.update({'is_virtual':     cf.virtual                                            })
+        board_base.update({'is_virtual':     cf.virtual                                            })
 
         # сохранение сдвига для доски
-        data_base.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
+        board_base.update({'board_origin':   tuple((self.board_origin.x(), self.board_origin.y())) })
         # сохранение зума для доски
-        data_base.update({'board_scale':    tuple((self.board_scale_x, self.board_scale_y))       })
+        board_base.update({'board_scale':    tuple((self.board_scale_x, self.board_scale_y))       })
 
         if self.active_plugin:
             board_plugin_filename = self.active_plugin.filename
         else:
             board_plugin_filename = None
-        data_base.update({'board_plugin_filename':              board_plugin_filename             })
+        board_base.update({'board_plugin_filename':              board_plugin_filename             })
 
 
         items_to_store = list()
@@ -928,7 +928,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 item_base.append((attr_name, attr_type, attr_data))
 
-        data_base.update({'board_items': items_to_store})
+        board_base.update({'board_items': items_to_store})
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG_use_cbor2_instead_of_json:
