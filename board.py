@@ -822,13 +822,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
     def board_saveBoardDefault(self):
-        self.show_center_label('save board default')
-
-
-        # задание папки для скриншота
-        self.SettingsWindow.set_screenshot_folder_path()
-        if not os.path.exists(self.Globals.SCREENSHOT_FOLDER_PATH):
+        cf = self.LibraryData().current_folder()
+        if cf.virtual:
+            self.show_center_label('Доски из виртуальных папок сохранять нельзя!', error=True)
             return
+
+        self.show_center_label('OK')
+        return
+
 
         formated_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         folder_path = os.path.join(self.Globals.SCREENSHOT_FOLDER_PATH,
