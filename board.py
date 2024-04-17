@@ -396,7 +396,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_plugins.append(pi)
         if plugin_reg_func:
             plugin_reg_func(self, pi)
-            print(f'\tplugin {pi.name} registred!')            
+            print(f'\tplugin {pi.name} registred!')
 
     def board_draw_main(self, painter, event):
         if self.active_plugin is None or self.active_plugin.paintEvent is None:
@@ -1624,14 +1624,13 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(current_folder)
 
     def board_load_highres(self):
-        self.long_loading = True
-        self.update()
-        processAppEvents()
+        self.board_long_loading_begin()
+
         items = self.LibraryData().current_folder().board.board_items_list
         for bi in items:
             self.trigger_board_item_pixmap_loading(bi)
-        self.long_loading = False
-        self.update()
+
+        self.board_long_loading_end()
 
     def board_delete_selected_board_items(self):
         cf = self.LibraryData().current_folder()
@@ -1767,9 +1766,8 @@ class BoardMixin(BoardTextEditItemMixin):
         folder_data = self.LibraryData().current_folder()
 
         if folder_path:
-            self.long_loading = True
-            self.update()
-            processAppEvents()
+            self.board_long_loading_begin()
+
             files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
             item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
             self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
@@ -1781,8 +1779,9 @@ class BoardMixin(BoardTextEditItemMixin):
             fi.item_position = self.board_map_to_board(self.rect().center())
             fi.update_corner_info()
             self.board_select_items([fi])
-            self.long_loading = False
-            self.update()
+
+            self.board_long_loading_end()
+
 
     def move_items_to_group(self, item_group=None, items=None, items_folder=None):
         if items_folder is None:
