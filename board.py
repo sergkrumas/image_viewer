@@ -572,6 +572,18 @@ class BoardMixin(BoardTextEditItemMixin):
         fd.board.board_ready = True
         return fd
 
+    def board_loadBoard(self):
+        self.board_loadBoardDefault()
+
+    def board_saveBoard(self):
+        self.board_saveBoardDefault()
+
+    def board_loadBoardDefault(self):
+        self.show_center_label('load board default')
+
+    def board_saveBoardDefault(self):
+        self.show_center_label('save board default')
+
     @property
     def active_element(self):
         return self._active_element
