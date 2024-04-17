@@ -9,6 +9,8 @@
 import sys
 import subprocess
 import os
+import platform
+from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -16,6 +18,8 @@ from PyQt5.QtGui import *
 
 
 
+def get_watch_tower_data_filepath(self):
+    return self.get_user_data_filepath('watch_tower.data.txt')
 
 def append_note_item(self, cf, text, warning=False):
     ni = self.BoardItem(self.BoardItem.types.ITEM_NOTE)
@@ -33,7 +37,7 @@ def pluginBoardInit(self, plugin_info):
 
     folders = []
 
-    folders_list_filepath = self.get_user_data_filepath('watch_tower.data')
+    folders_list_filepath = get_watch_tower_data_filepath(self)
     if os.path.exists(folders_list_filepath):
         with open(folders_list_filepath, 'r', encoding='utf8') as file:
             lines = file.readlines()
@@ -102,11 +106,31 @@ def pluginBoardInit(self, plugin_info):
 
     self.board_long_loading_end()
 
+def open_data_file(self):
+    filepath = get_watch_tower_data_filepath(self)
+    if not os.path.exists(filepath):
+        with open(filepath, "a+", encoding='utf8') as file:
+            pass
+    if platform.system() == "Windows":
+        __import__('win32api').ShellExecute(0, "open", filepath, None, ".", 1)
+    else:
+        system = platform.system()
+        self.show_center_label(f'Команда не поддерживается на {system}', error=True)
+
+def contextMenu(self, event, contextMenu, checkboxes):
+    self.board_ContextMenuDefault(event, contextMenu, checkboxes)
+
+    contextMenu.addSeparator()
+    action = contextMenu.addAction('Watch Tower: Открыть файл путей для показа')
+    action.triggered.connect(partial(open_data_file, self))
+
+
+
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'WATCH TOWER'
     plugin_info.pluginBoardInit = pluginBoardInit
-
+    plugin_info.contextMenu = contextMenu
 
 
 if __name__ == '__main__':
