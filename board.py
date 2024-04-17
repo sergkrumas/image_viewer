@@ -628,7 +628,7 @@ class BoardMixin(BoardTextEditItemMixin):
         is_file_extension_ok = project_filepath.lower().endswith(".board")
         is_file = os.path.isfile(project_filepath)
         if not (is_file_exists and is_file_extension_ok and is_file):
-            self.show_notify_dialog("Ошибка: либо файла не существует, либо расширение не то. Отмена!")
+            self.show_center_label("Ошибка: либо файла не существует, либо расширение не то. Отмена!", error=True)
             return
 
         # чтение json
@@ -657,7 +657,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 json_project = True
 
             except:
-                self.show_notify_dialog("Ошибка при чтении файла. Отмена!")
+                self.show_center_label("Ошибка чтения файла. Отмена!", error=True)
                 return
 
         # подготовка перед загрузкой данных
