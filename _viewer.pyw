@@ -461,6 +461,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.Globals = Globals
         self.LibraryData = LibraryData
+        self.ImageData = ImageData
 
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True

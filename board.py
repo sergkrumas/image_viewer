@@ -871,95 +871,77 @@ class BoardMixin(BoardTextEditItemMixin):
 
         items_to_store = list()
         # сохранение айтемов
-        for item in cf.board_items_list:
+        for item in cf.board.board_items_list:
 
             item_base = list()
-            items_to_store.append(slot_base)
+            items_to_store.append(item_base)
 
-            slot_attributes = slot.__dict__.items()
-            for slot_attr_name, slot_attr_value in slot_attributes:
-                slot_attr_type = type(slot_attr_value).__name__
+            attributes = item.__dict__.items()
+            for attr_name, attr_value in attributes:
 
-                if isinstance(slot_attr_value, (int, str)):
-                    slot_attr_data = slot_attr_value
-                elif isinstance(slot_attr_value, list) and slot_attr_name == 'elements':
+                if attr_name.startswith("__"):
                     continue
+
+                attr_type = type(attr_value).__name__
+
+                if isinstance(attr_value, QPointF):
+                    attr_data = (attr_value.x(), attr_value.y())
+
+                elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
+                    continue
+
+                elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
+                    attr_data = attr_value
+
+                elif isinstance(attr_value, QPainterPath):
+                    continue
+                    # filename = f"path_{attr_name}_{element.unique_index:04}.data"
+                    # filepath = os.path.join(folder_path, filename)
+                    # file_handler = QFile(filepath)
+                    # file_handler.open(QIODevice.WriteOnly)
+                    # stream = QDataStream(file_handler)
+                    # stream << attr_value
+                    # attr_data = filename
+
+                elif isinstance(attr_value, QPixmap):
+                    continue
+                    # filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
+                    # filepath = os.path.join(folder_path, filename)
+                    # attr_value.save(filepath)
+                    # attr_data = filename
+
+                elif isinstance(attr_value, QColor):
+                    attr_data = attr_value.getRgbF()
+
+                elif attr_value is None or attr_name in ["text_doc"]:
+                    attr_data = None
+
+                elif isinstance(attr_value, (QTransform,)):
+                    continue
+
+                elif isinstance(attr_value, self.ImageData):
+                    pass
+
                 else:
-                    status = f"name: '{slot_attr_name}' type: '{slot_attr_type}' value: '{slot_attr_value}'"
+                    status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
                     raise Exception(f"Unable to handle attribute, {status}")
 
-                slot_base.append((slot_attr_name, slot_attr_type, slot_attr_data))
+                item_base.append((attr_name, attr_type, attr_data))
 
-            elements_to_store = list()
-            # сохранение пометок в слоте
-            for element in slot.elements:
-
-                element_base = list()
-                elements_to_store.append(element_base)
-
-                attributes = element.__dict__.items()
-                for attr_name, attr_value in attributes:
-
-                    if attr_name.startswith("__"):
-                        continue
-
-                    attr_type = type(attr_value).__name__
-
-                    if isinstance(attr_value, QPointF):
-                        attr_data = (attr_value.x(), attr_value.y())
-
-                    elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
-                        continue
-
-                    elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
-                        attr_data = attr_value
-
-                    elif isinstance(attr_value, QPainterPath):
-                        filename = f"path_{attr_name}_{element.unique_index:04}.data"
-                        filepath = os.path.join(folder_path, filename)
-                        file_handler = QFile(filepath)
-                        file_handler.open(QIODevice.WriteOnly)
-                        stream = QDataStream(file_handler)
-                        stream << attr_value
-                        attr_data = filename
-
-                    elif isinstance(attr_value, QPixmap):
-                        filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
-                        filepath = os.path.join(folder_path, filename)
-                        attr_value.save(filepath)
-                        attr_data = filename
-
-                    elif isinstance(attr_value, QColor):
-                        attr_data = attr_value.getRgbF()
-
-                    elif attr_value is None or attr_name in ["text_doc"]:
-                        attr_data = None
-
-                    elif isinstance(attr_value, (ElementsModificationSlot, QTransform)):
-                        continue
-
-                    else:
-                        status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
-                        raise Exception(f"Unable to handle attribute, {status}")
-
-                    element_base.append((attr_name, attr_type, attr_data))
-
-            slot_base.append(('elements', 'list', elements_to_store))
-
-        data_base.update({'slots': items_to_store})
+        data_base.update({'board_items': items_to_store})
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG_use_cbor2_instead_of_json:
             data_to_write = cbor2.dumps(data_base)
-            with open(project_filepath, "wb") as file:
+            with open(board_filepath, "wb") as file:
                 file.write(data_to_write)
         else:
             data_to_write = json.dumps(data_base, indent=True)
-            with open(project_filepath, "w+", encoding="utf8") as file:
+            with open(board_filepath, "w+", encoding="utf8") as file:
                 file.write(data_to_write)
 
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
-        text = f"Проект сохранён в \n{project_filepath}"
+        text = f"Проект сохранён в \n{board_filepath}"
         self.show_center_label(text)
 
 
