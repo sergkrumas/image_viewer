@@ -23,6 +23,7 @@ import time
 import urllib.request
 import functools
 import importlib
+import datetime
 from functools import partial
 
 from _utils import *
@@ -831,14 +832,22 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_saveBoardDefault(self):
         cf = self.LibraryData().current_folder()
         if cf.virtual:
-            self.show_center_label('Доски из виртуальных папок сохранять нельзя!', error=True)
-            return
+            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+            folder_path = self.SettingsWindow.get_setting_value("inframed_folderpath")
+            if not os.path.exists(folder_path):
+                folder_path = self.set_path_for_saved_pictures(folder_path)
+            save_folderpath = folder_path
+        else:
+            filename = 'board'
+
+            save_folderpath = cf.folder_path
 
         if self.STNG_use_cbor2_instead_of_json:
             file_format = 'cbor2'
         else:
             file_format = 'json'
-        board_filepath = os.path.join(cf.folder_path, f"board.{file_format}.board")
+        board_filepath = os.path.normpath(os.path.join(save_folderpath, f"{filename}.{file_format}.board"))
 
 
         # инициализация словаря
@@ -855,7 +864,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_plugin_filename = self.active_plugin.filename
         else:
             board_plugin_filename = None
-        data.update({'board_plugin': board_plugin_filename})
+        data.update({'board_plugin_filename': board_plugin_filename})
 
 
         self.show_center_label(f'OK {board_filepath}')
