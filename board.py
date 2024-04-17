@@ -450,6 +450,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_keyPressEventDefault(self, event):
         key = event.key()
 
+        ctrl_mod = bool(event.modifiers() & Qt.ControlModifier)
+
         if self.board_TextElementIsInputEvent(event):
             self.board_TextElementInputEvent(event)
             self.is_board_text_input_event = True
@@ -461,6 +463,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if key == Qt.Key_Space:
             self.board_fly_over(user_call=True)
+
+        elif check_scancode_for(event, "O") and ctrl_mod:
+            self.board_loadBoard()
+
+        elif check_scancode_for(event, "S") and ctrl_mod:
+            self.board_saveBoard()
 
         elif check_scancode_for(event, "M"):
             self.board_toggle_minimap()
