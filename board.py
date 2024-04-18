@@ -648,7 +648,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 json_format = True
 
             except:
-                self.show_center_label("Ошибка чтения файла. Отмена!", error=True)
+                self.show_center_label("Ошибка чтения файла доски: ни cbor2, ни json не читаются. Отмена!", error=True)
                 return
 
         project_format = ''
@@ -666,17 +666,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         for slot_attributes in slots_from_store:
-
             for element_attributes in elements_from_slot:
-                element = self.elementsCreateNew(ToolID.TEMPORARY_TYPE_NOT_DEFINED,
-                    create_new_slot=False, modification_slot=ms)
-
                 obj = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-                self.board_serial_to_object_attributes(obj, object_atttributes)
+                self.board_serial_to_object_attributes(obj, object_attributes)
 
         self.show_center_label(f'Доска загружена из {board_filepath}, формат {project_format}')
 
-    def board_recreate_from_serial(self):
+    def board_recreate_board_from_serial(self):
         pass
 
     def board_serial_to_object_attributes(self, obj, obj_base):
