@@ -6,8 +6,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 
-
-
+def get_plugin_data_filepath(self):
+    return self.get_user_data_filepath('template_plugin.data.txt')
 
 def paintEvent(self, painter, event):
     self.board_draw_main_default(painter)
