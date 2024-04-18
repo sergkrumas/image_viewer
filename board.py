@@ -49,6 +49,7 @@ class BoardItem():
     FRAME_PADDING = 40.0
 
     class types():
+        ITEM_UNDEFINED = 0
         ITEM_IMAGE = 1
         ITEM_FOLDER = 2
         ITEM_GROUP = 3
@@ -658,70 +659,68 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
 
-
         # подготовка перед загрузкой данных
-
 
 
         # ЗАГРУЗКА ДАННЫХ
 
-
-        # загрузка слотов, элементов и их данных
-        slots_from_store = data.get('slots', [])
 
         for slot_attributes in slots_from_store:
 
             for element_attributes in elements_from_slot:
                 element = self.elementsCreateNew(ToolID.TEMPORARY_TYPE_NOT_DEFINED,
                     create_new_slot=False, modification_slot=ms)
-                # print(elements_from_slot)
-                for attr_name, attr_type, attr_data in element_attributes:
 
-                    if attr_type in ['QPoint']:
-                        attr_value = QPoint(*attr_data)
-
-                    elif attr_type in ['QPointF']:
-                        attr_value = QPointF(*attr_data)
-
-                    elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
-                        attr_value = attr_data
-
-                    elif attr_type in ['QRect', 'QRectF']:
-                        attr_value = QRect(*attr_data)
-
-                    elif attr_type in ['QPainterPath']:
-                        continue
-                        # filepath = os.path.join(folder_path, attr_data)
-                        # file_handler = QFile(filepath)
-                        # file_handler.open(QIODevice.ReadOnly)
-                        # stream = QDataStream(file_handler)
-                        # path = QPainterPath()
-                        # stream >> path
-                        # attr_value = path
-
-                    elif attr_type in ['QPixmap']:
-                        continue
-                        # filepath = os.path.join(folder_path, attr_data)
-                        # attr_value = QPixmap(filepath)
-
-                    elif attr_type in ['QColor']:
-                        attr_value = QColor()
-                        attr_value.setRgbF(*attr_data)
-
-                    elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
-                        attr_value = None
-
-                    else:
-                        status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' element: {element}"
-                        raise Exception(f"Unable to handle attribute, {status}")
-
-                    setattr(element, attr_name, attr_value)
-
-                if element.type == ToolID.text:
-                    self.elementsImplantTextElement(element)
-
+                obj = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+                self.board_serial_to_object_attributes(obj, object_atttributes)
 
         self.show_center_label(f'Доска загружена из {board_filepath}, формат {project_format}')
+
+    def board_recreate_from_serial(self):
+        pass
+
+    def board_serial_to_object_attributes(self, obj, obj_base):
+        for attr_name, attr_type, attr_data in obj_base:
+
+            if attr_type in ['QPoint']:
+                attr_value = QPoint(*attr_data)
+
+            elif attr_type in ['QPointF']:
+                attr_value = QPointF(*attr_data)
+
+            elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
+                attr_value = attr_data
+
+            elif attr_type in ['QRect', 'QRectF']:
+                attr_value = QRect(*attr_data)
+
+            elif attr_type in ['QPainterPath']:
+                continue
+                # filepath = os.path.join(folder_path, attr_data)
+                # file_handler = QFile(filepath)
+                # file_handler.open(QIODevice.ReadOnly)
+                # stream = QDataStream(file_handler)
+                # path = QPainterPath()
+                # stream >> path
+                # attr_value = path
+
+            elif attr_type in ['QPixmap']:
+                continue
+                # filepath = os.path.join(folder_path, attr_data)
+                # attr_value = QPixmap(filepath)
+
+            elif attr_type in ['QColor']:
+                attr_value = QColor()
+                attr_value.setRgbF(*attr_data)
+
+            elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
+                attr_value = None
+
+            else:
+                status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
+                raise Exception(f"Unable to handle attribute, {status}")
+
+            setattr(obj, attr_name, attr_value)
 
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
         attributes = obj.__dict__.items()
