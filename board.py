@@ -777,36 +777,37 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
-
     def board_data_to_dict(self, board_folder_data):
         board = board_folder_data.board
 
-        # инициализация словаря
         board_base = dict()
+        board_attritures = list()
+        items_to_store = list()
+        board_other_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
+        board_other_data.update({'is_virtual':     board_folder_data.virtual                    })
 
-        if True:
-            board_base.update({'is_virtual':     board_folder_data.virtual                         })
-
-            if self.active_plugin:
-                board_plugin_filename = self.active_plugin.filename
-            else:
-                board_plugin_filename = None
-            board_base.update({'board_plugin_filename':              board_plugin_filename         })
+        if self.active_plugin:
+            board_plugin_filename = self.active_plugin.filename
+        else:
+            board_plugin_filename = None
+        board_other_data.update({'board_plugin_filename':              board_plugin_filename    })
 
         # сохранение атрибутов доски
-        board_attribures = list()
-        self.board_object_attributes_to_serial(board, board_attribures, exclude=('board_items_list',))
+        self.board_object_attributes_to_serial(board, board_attritures, exclude=('board_items_list',))
 
         # сохранение айтемов доски
-        items_to_store = list()
         for item in board.board_items_list:
             new_item_base = list()
             items_to_store.append(new_item_base)
             self.board_object_attributes_to_serial(item, new_item_base)
 
-        board_base.update({'board_items': items_to_store, 'board_attributes': board_attribures})
+        board_base.update({
+            'board_items': items_to_store,
+            'board_attributes': board_attritures,
+            'board_other_data': board_other_data,
+        })
 
         return board_base
 
