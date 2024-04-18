@@ -373,6 +373,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.active_plugin = None
         self.board_PluginsInit()
 
+        self.debug_file_io_filepath = "[переменная self.debug_file_io_filepath не задана!]"
+
     def board_PluginsInit(self):
         plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
         if not os.path.exists(plugins_folder):
@@ -607,15 +609,17 @@ class BoardMixin(BoardTextEditItemMixin):
         return data[0]
 
     def board_loadBoardDefault(self):
-
-        board_filepath = ""
-        board_filepath = self.dialog_open_boardfile()
+        if self.Globals.DEBUG:
+            board_filepath = self.debug_file_io_filepath
+        else:
+            board_filepath = ""
+            board_filepath = self.dialog_open_boardfile()
 
         is_file_exists = os.path.exists(board_filepath)
         is_file_extension_ok = board_filepath.lower().endswith(".board")
         is_file = os.path.isfile(board_filepath)
         if not (is_file_exists and is_file_extension_ok and is_file):
-            self.show_center_label("Ошибка: либо файла не существует, либо расширение не то. Отмена!", error=True)
+            self.show_center_label(f"Ошибка: либо файла не существует, либо расширение не то.\nОтмена!\n{board_filepath}", error=True)
             return
 
         project_format = ''
@@ -830,6 +834,9 @@ class BoardMixin(BoardTextEditItemMixin):
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
         text = f"Проект сохранён в \n{board_filepath}"
         self.show_center_label(text)
+
+        if self.Globals.DEBUG:
+            self.debug_file_io_filepath = board_filepath
 
     @property
     def active_element(self):
