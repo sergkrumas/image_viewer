@@ -665,13 +665,13 @@ class BoardMixin(BoardTextEditItemMixin):
         # айтемы доски
         for board_item_attributes in board_items:
             board_item = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(board_item, board_item_attributes)
+            self.board_serial_to_object_attributes(board_item, board_item_attributes, fd=fd)
             fd.board.board_items_list.append(board_item)
 
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
         fd.board.board_ready = True
 
-    def board_serial_to_object_attributes(self, obj, obj_attrs_list):
+    def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
 
             if attr_type in ['QPoint']:
@@ -712,6 +712,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_value = None
 
             elif attr_type == 'ImageData':
+                filepath, source_width, source_height = attr_data
+                image_data = self.LibraryData().create_image_data(filepath, fd)
+                fd.images_list.append(image_data)
+                obj.image_data = image_data
+                image_data.board_item = obj
+                image_data.source_width = source_width
+                image_data.source_height = source_height
                 continue
 
             else:
@@ -732,7 +739,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
             attr_type = type(attr_value).__name__
 
-            if isinstance(attr_value, QPointF):
+            if isinstance(attr_value, self.ImageData):
+                attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
+
+            elif isinstance(attr_value, QPointF):
                 attr_data = (attr_value.x(), attr_value.y())
 
             elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
@@ -767,8 +777,6 @@ class BoardMixin(BoardTextEditItemMixin):
             elif isinstance(attr_value, (QTransform, QMovie)):
                 continue
 
-            elif isinstance(attr_value, self.ImageData):
-                continue
 
             elif isinstance(attr_value, (QRectF, QRect)):
                 attr_data = (attr_value.left(), attr_value.top(), attr_value.width(), attr_value.height())
