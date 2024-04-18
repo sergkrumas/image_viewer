@@ -678,6 +678,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
         fd.board.board_ready = True
+        self.LibraryData().load_board_data()
 
     def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
@@ -727,7 +728,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 image_data.board_item = obj
                 image_data.source_width = source_width
                 image_data.source_height = source_height
-                continue
+                continue # не нужна дальнейшая обраотка
 
             else:
                 status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
