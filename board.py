@@ -642,22 +642,20 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label("Ошибка чтения файла доски: ни cbor2, ни json не читаются. Отмена!", error=True)
                 return
 
+        main_board_dict = data['main_board']
+        self.board_recreate_board_from_serial(main_board_dict)
 
+        self.show_center_label(f'Доска загружена из файла {board_filepath} формата {project_format}')
+
+    def board_recreate_board_from_serial(self, board_dict):
         # подготовка перед загрузкой данных
 
-
         # ЗАГРУЗКА ДАННЫХ
-
 
         for slot_attributes in slots_from_store:
             for element_attributes in elements_from_slot:
                 obj = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
                 self.board_serial_to_object_attributes(obj, object_attributes)
-
-        self.show_center_label(f'Доска загружена из {board_filepath}, формат {project_format}')
-
-    def board_recreate_board_from_serial(self):
-        pass
 
     def board_serial_to_object_attributes(self, obj, obj_base):
         for attr_name, attr_type, attr_data in obj_base:
@@ -770,13 +768,15 @@ class BoardMixin(BoardTextEditItemMixin):
         board_other_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
-        board_other_data.update({'is_virtual':     board_folder_data.virtual                    })
+        board_other_data.update({'is_virtual':  board_folder_data.virtual})
+        board_other_data.update({'folder_path': board_folder_data.folder_path})
+        board_other_data.update({'folder_name': board_folder_data.folder_name})
 
         if self.active_plugin:
             board_plugin_filename = self.active_plugin.filename
         else:
             board_plugin_filename = None
-        board_other_data.update({'board_plugin_filename':              board_plugin_filename    })
+        board_other_data.update({'board_plugin_filename': board_plugin_filename})
 
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attritures, exclude=('board_items_list',))
