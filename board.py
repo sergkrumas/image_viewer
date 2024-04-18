@@ -643,22 +643,36 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
         main_board_dict = data['main_board']
-        self.board_recreate_board_from_serial(main_board_dict)
+        self.board_recreate_board_from_serial(main_board_dict, main_board=True)
 
         self.show_center_label(f'Доска загружена из файла {board_filepath} формата {project_format}')
 
-    def board_recreate_board_from_serial(self, board_dict):
+    def board_recreate_board_from_serial(self, board_dict, main_board=False):
+        board_items = board_dict['board_items']
+        board_attributes = board_dict['board_attributes']
+        board_folder_data = board_dict['board_folder_data']
+
+        is_virtual = board_folder_data['is_virtual']
+        folder_name = board_folder_data['folder_name']
+
         # подготовка перед загрузкой данных
+        fd = self.LibraryData().create_folder_data(folder_name, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
+        fd.folder_name = folder_name
 
         # ЗАГРУЗКА ДАННЫХ
+        # атрибуты доски
+        self.board_serial_to_object_attributes(fd.board, board_attributes)
+        # айтемы доски
+        for board_item_attributes in board_items:
+            board_item = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+            self.board_serial_to_object_attributes(board_item, board_item_attributes)
+            fd.board.board_items_list.append(board_item)
 
-        for slot_attributes in slots_from_store:
-            for element_attributes in elements_from_slot:
-                obj = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-                self.board_serial_to_object_attributes(obj, object_attributes)
+        self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
+        fd.board.board_ready = True
 
-    def board_serial_to_object_attributes(self, obj, obj_base):
-        for attr_name, attr_type, attr_data in obj_base:
+    def board_serial_to_object_attributes(self, obj, obj_attrs_list):
+        for attr_name, attr_type, attr_data in obj_attrs_list:
 
             if attr_type in ['QPoint']:
                 attr_value = QPoint(*attr_data)
@@ -669,8 +683,11 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
                 attr_value = attr_data
 
-            elif attr_type in ['QRect', 'QRectF']:
+            elif attr_type in ['QRect']:
                 attr_value = QRect(*attr_data)
+
+            elif attr_type in ['QRectF']:
+                attr_value = QRectF(*attr_data)
 
             elif attr_type in ['QPainterPath']:
                 continue
@@ -693,6 +710,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
                 attr_value = None
+
+            elif attr_type == 'ImageData':
+                continue
 
             else:
                 status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
@@ -744,11 +764,11 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_value is None or attr_name in ["text_doc"]:
                 attr_data = None
 
-            elif isinstance(attr_value, (QTransform,)):
+            elif isinstance(attr_value, (QTransform, QMovie)):
                 continue
 
             elif isinstance(attr_value, self.ImageData):
-                pass
+                continue
 
             elif isinstance(attr_value, (QRectF, QRect)):
                 attr_data = (attr_value.left(), attr_value.top(), attr_value.width(), attr_value.height())
@@ -759,40 +779,31 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
-    def board_data_to_dict(self, board_folder_data):
-        board = board_folder_data.board
+    def board_data_to_dict(self, fd):
+        board = fd.board
 
         board_base = dict()
-        board_attritures = list()
-        items_to_store = list()
-        board_other_data = dict()
+        board_attributes = list()
+        board_items = list()
+        board_folder_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
-        board_other_data.update({'is_virtual':  board_folder_data.virtual})
-        board_other_data.update({'folder_path': board_folder_data.folder_path})
-        board_other_data.update({'folder_name': board_folder_data.folder_name})
-
-        if self.active_plugin:
-            board_plugin_filename = self.active_plugin.filename
-        else:
-            board_plugin_filename = None
-        board_other_data.update({'board_plugin_filename': board_plugin_filename})
-
+        board_folder_data.update({'is_virtual':  fd.virtual})
+        board_folder_data.update({'folder_name': fd.folder_name})
         # сохранение атрибутов доски
-        self.board_object_attributes_to_serial(board, board_attritures, exclude=('board_items_list',))
+        self.board_object_attributes_to_serial(board, board_attributes, exclude=('board_items_list',))
 
         # сохранение айтемов доски
         for item in board.board_items_list:
             new_item_base = list()
-            items_to_store.append(new_item_base)
+            board_items.append(new_item_base)
             self.board_object_attributes_to_serial(item, new_item_base)
 
         board_base.update({
-            'board_items': items_to_store,
-            'board_attributes': board_attritures,
-            'board_other_data': board_other_data,
+            'board_items': board_items,
+            'board_attributes': board_attributes,
+            'board_folder_data': board_folder_data,
         })
-
         return board_base
 
     def board_saveBoardDefault(self):
