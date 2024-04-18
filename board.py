@@ -607,7 +607,6 @@ class BoardMixin(BoardTextEditItemMixin):
         return data[0]
 
     def board_loadBoardDefault(self):
-        self.show_center_label('load board default')
 
         board_filepath = ""
         board_filepath = self.dialog_open_boardfile()
@@ -619,44 +618,25 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label("Ошибка: либо файла не существует, либо расширение не то. Отмена!", error=True)
             return
 
-        # чтение json
-        cbor2_format = False
-        json_format = False
-
-
-
+        project_format = ''
         try:
-
             # пытаемся читать как cbor2
             read_data = ""
             with open(board_filepath, "rb") as file:
                 read_data = file.read()
-
             data = cbor2.loads(read_data)
-            cbor2_format = True
-
+            project_format = 'cbor2'
         except:
-
             try:
-
                 # пытаемся читать как json
                 read_data = ""
                 with open(board_filepath, "r", encoding="utf8") as file:
                     read_data = file.read()
                 data = json.loads(read_data)
-
-                json_format = True
-
+                project_format = 'json'
             except:
                 self.show_center_label("Ошибка чтения файла доски: ни cbor2, ни json не читаются. Отмена!", error=True)
                 return
-
-        project_format = ''
-        if cbor2_format:
-            project_format = 'cbor2'
-        elif json_format:
-            project_format = 'json'
-
 
 
         # подготовка перед загрузкой данных
