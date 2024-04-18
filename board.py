@@ -615,6 +615,8 @@ class BoardMixin(BoardTextEditItemMixin):
             board_filepath = ""
             board_filepath = self.dialog_open_boardfile()
 
+        self.board_loadfilepath = ""
+
         is_file_exists = os.path.exists(board_filepath)
         is_file_extension_ok = board_filepath.lower().endswith(".board")
         is_file = os.path.isfile(board_filepath)
@@ -655,9 +657,15 @@ class BoardMixin(BoardTextEditItemMixin):
         is_virtual = board_folder_data['is_virtual']
         folder_name = board_folder_data['folder_name']
 
+        if is_virtual:
+            folder_data_path = folder_name
+        else:
+            folder_data_path = self.board_loadfilepath
+
         # подготовка перед загрузкой данных
-        fd = self.LibraryData().create_folder_data(folder_name, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
-        fd.folder_name = folder_name
+        fd = self.LibraryData().create_folder_data(folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
+        if is_virtual:
+            fd.folder_name = folder_name
 
         # ЗАГРУЗКА ДАННЫХ
         # атрибуты доски
