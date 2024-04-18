@@ -275,7 +275,7 @@ class PluginInfo():
     def __init__(self, module, board):
         super().__init__()
         self.name = 'undefined'
-        self.filename = 'undefined'        
+        self.filename = 'undefined'
         self.module = module
         self.board = board
         self.add_to_menu = True
