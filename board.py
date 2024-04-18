@@ -783,9 +783,12 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_value is None or attr_name in ["text_doc"]:
                 attr_data = None
 
-            elif isinstance(attr_value, (QTransform, QMovie)):
+            elif isinstance(attr_value, (QTransform, )):
                 continue
 
+            elif isinstance(attr_value, (QMovie, )):
+                attr_data = None
+                attr_type = 'NoneType'
 
             elif isinstance(attr_value, (QRectF, QRect)):
                 attr_data = (attr_value.left(), attr_value.top(), attr_value.width(), attr_value.height())
@@ -2987,6 +2990,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
 
     def board_item_scroll_animation_file(self, board_item, scroll_value):
+        if board_item.movie is None:
+            # такое случается, когда доска загружена из файла
+            self.trigger_board_item_pixmap_loading(board_item)
         frames_list = list(range(0, board_item.movie.frameCount()))
         if scroll_value > 0:
             pass
