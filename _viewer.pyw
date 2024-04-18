@@ -3757,6 +3757,7 @@ def _main():
     parser.add_argument('-forcelibrarypage', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
     parser.add_argument('-aftercrash', help="", action="store_true")
+    parser.add_argument('-board', help='', action='store_true')
     args = parser.parse_args(sys.argv[1:])
     # print(args)
     if args.path:

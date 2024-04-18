@@ -35,6 +35,27 @@ data = r"""Windows Registry Editor Version 5.00
 ".svgz"=""
 ".tga"=""
 
+
+
+
+[HKEY_CLASSES_ROOT\.board]
+@="KrumassanImageViewerBoard"
+
+[HKEY_CLASSES_ROOT\KrumassanImageViewerBoard]
+@="Board File (Krumassan Image Viewer)"
+
+[HKEY_CLASSES_ROOT\KrumassanImageViewerBoard\DefaultIcon]
+@="%s\\image_viewer_lite.ico\""
+
+[HKEY_CLASSES_ROOT\KrumassanImageViewerBoard\shell]
+
+[HKEY_CLASSES_ROOT\KrumassanImageViewerBoard\shell\open]
+@="Open board"
+
+[HKEY_CLASSES_ROOT\KrumassanImageViewerBoard\shell\open\command]
+@="%s \"%s\\viewer.pyw\" -board \"%%1\""
+
+
 """
 
 
@@ -50,7 +71,12 @@ def main():
     filepath = os.path.join(os.path.dirname(__file__), "register_image_viewer.reg")
 
     with open(filepath, "w+", encoding="utf8") as file:
-        data = data % (APP_FOLDER, PYTHON_EXECUTABLE_PATH, APP_FOLDER)
+        data = data % (
+            APP_FOLDER,
+            PYTHON_EXECUTABLE_PATH, APP_FOLDER,
+            APP_FOLDER,
+            PYTHON_EXECUTABLE_PATH, APP_FOLDER
+        )
         file.write(data)
 
     MessageBox = ctypes.windll.user32.MessageBoxW
