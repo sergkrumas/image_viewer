@@ -372,8 +372,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.group_inside_selection_items = False
 
         self.board_bounding_rect = QRectF()
-        self.current_board_item_index = 0
-        self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
         self.is_board_text_input_event = False
         self._active_element = None
@@ -1006,8 +1004,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_save_board_data(self, board_lib_obj, folder_data):
         board_lib_obj.board_bounding_rect = self.board_bounding_rect
-        board_lib_obj.current_board_item_index = self.current_board_item_index
-        board_lib_obj.current_board_item_group_index = self.current_board_item_group_index
 
         self.board_item_under_mouse = None
         self.item_group_under_mouse = None
@@ -1016,8 +1012,6 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_load_board_data(self, board_lib_obj, folder_data):
         if board_lib_obj.board_bounding_rect is not None:
             self.board_bounding_rect = board_lib_obj.board_bounding_rect
-        self.current_board_item_index = board_lib_obj.current_board_item_index
-        self.current_board_item_group_index = board_lib_obj.current_board_item_group_index
 
     def load_cursors(self):
         folder_path = os.path.dirname(__file__)
@@ -1123,12 +1117,14 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setBrush(Qt.NoBrush)
 
     def retrieve_new_board_item_index(self):
-        self.current_board_item_index += 1
-        return self.current_board_item_index
+        cf = self.LibraryData().current_folder()
+        cf.board.current_board_item_index += 1
+        return cf.board.current_board_item_index
 
     def retrieve_new_board_item_group_index(self):
-        self.current_board_item_group_index += 1
-        return self.current_board_item_group_index
+        cf = self.LibraryData().current_folder()        
+        cf.board.current_board_item_group_index += 1
+        return cf.board.current_board_item_group_index
 
     def prepare_board(self, folder_data):
         if self.Globals.DEBUG:
@@ -1496,9 +1492,9 @@ class BoardMixin(BoardTextEditItemMixin):
             lines.append(f'Доска виртуальной папки {current_folder.folder_path}')
         else:
             lines.append(f'Доска папки {current_folder.folder_path}')
-        lines.append(f'Текущий индекс айтема: {self.current_board_item_index}')
-        lines.append(f'Текущий индекс айтема-группы: {self.current_board_item_group_index}')
-        lines.append(f'Board bounding rect: {self.board_bounding_rect}')
+        lines.append(f'Текущий индекс айтема: {current_folder.board.current_board_item_index}')
+        lines.append(f'Текущий индекс айтема-группы: {current_folder.board.current_board_item_group_index}')
+        lines.append(f'Board bounding rect: {current_folder.board.board_bounding_rect}')
 
         lines.append('')
 
@@ -1736,6 +1732,7 @@ class BoardMixin(BoardTextEditItemMixin):
             result = build_valid_rectF(p1, p2)
         else:
             result = QRectF(self.rect())
+        folder_data.board.board_bounding_rect = result
         return result
 
     def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
