@@ -2074,8 +2074,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_add_item_folder(self):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
-        folder_data = self.LibraryData().current_folder()
-
+        fd = self.LibraryData().current_folder()
         if folder_path:
             with show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
@@ -2084,7 +2083,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
                 fi.board_index = self.retrieve_new_board_item_index()
-                folder_data.board.board_items_list.append(fi)
+                fd.board.board_items_list.append(fi)
                 # располагаем в центре экрана
                 fi.item_position = self.board_map_to_board(self.rect().center())
                 fi.update_corner_info()
