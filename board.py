@@ -1257,7 +1257,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             painter.setFont(before_font)
 
-        if board_item.type in [BoardItem.types.ITEM_NOTE]:
+        elif board_item.type in [BoardItem.types.ITEM_NOTE]:
 
             if self.Globals.DISABLE_ITEM_DISTORTION_FIXER:
                 self.board_TextElementDrawOnCanvas(painter, board_item, False)
