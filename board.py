@@ -628,8 +628,6 @@ class BoardMixin(BoardTextEditItemMixin):
             board_filepath = ""
             board_filepath = self.dialog_open_boardfile()
 
-        self.board_loadfilepath = ""
-
         is_file_exists = os.path.exists(board_filepath)
         is_file_extension_ok = board_filepath.lower().endswith(".board")
         is_file = os.path.isfile(board_filepath)
@@ -658,11 +656,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
         main_board_dict = data['main_board']
-        self.board_recreate_board_from_serial(main_board_dict, main_board=True)
+        self.board_recreate_board_from_serial(main_board_dict, main_board=True, board_load_filepath=board_filepath)
 
         self.show_center_label(f'Доска загружена из файла {board_filepath} формата {project_format}')
 
-    def board_recreate_board_from_serial(self, board_dict, main_board=False):
+    def board_recreate_board_from_serial(self, board_dict, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
@@ -673,7 +671,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if is_virtual:
             folder_data_path = folder_name
         else:
-            folder_data_path = self.board_loadfilepath
+            folder_data_path = board_load_filepath
 
         # подготовка перед загрузкой данных
         fd = self.LibraryData().create_folder_data(folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
