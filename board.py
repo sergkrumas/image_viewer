@@ -691,6 +691,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(fd)
         self.build_board_bounding_rect(fd)
 
+        return fd
+
     def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
 
@@ -749,7 +751,13 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
                     obj.item_folder_data = item_folder_data
                 elif obj.type == self.BoardItem.types.ITEM_GROUP:
-                    pass
+                    board_dict = attr_data
+                    _folder_data = self.board_recreate_board_from_serial(board_dict)
+                    obj.item_folder_data = _folder_data
+                    _folder_data.board.board_root_folder = fd
+                    _folder_data.board.board_root_item = obj
+                    self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
+                    _folder_data.board.board_ready = True
                 continue
 
             else:
@@ -775,22 +783,40 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for attr_name, attr_value in attributes:
 
+            attr_type = type(attr_value).__name__
+
             if attr_name.startswith("__"):
                 continue
 
-            if exclude is not None and attr_name in exclude:
+            elif exclude is not None and attr_name in exclude:
                 continue
 
-            attr_type = type(attr_value).__name__
+            elif attr_name in ['referer_board_folder']:
+                attr_data = None
+                attr_type = 'NoneType'
 
-            if isinstance(attr_value, self.ImageData):
+            elif attr_name in ['board_root_folder', 'board_root_item']:
+                attr_data = None
+                attr_type = 'NoneType'
+
+            elif isinstance(attr_value, self.ImageData):
                 attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
 
             elif isinstance(attr_value, self.FolderData):
-                if isinstance(obj, self.BoardItem) and obj.type == self.BoardItem.types.ITEM_IMAGE:
-                    attr_data = None
+                if isinstance(obj, self.BoardItem):
+                    if obj.type == self.BoardItem.types.ITEM_IMAGE:
+                        attr_data = None
+                        attr_type = 'NoneType'                        
+                    elif obj.type == self.BoardItem.types.ITEM_GROUP:
+                        attr_data = self.board_data_to_dict(obj.item_folder_data)
+                    elif obj.type == self.BoardItem.types.ITEM_FOLDER:
+                        attr_data = attr_value.folder_path
+                    else:
+                        status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
+                        raise Exception('Error! Unable to handle folder data attribute: {status}')
                 else:
-                    attr_data = attr_value.folder_path
+                    attr_data = None
+                    attr_type = 'NoneType'
 
             elif isinstance(attr_value, QPointF):
                 attr_data = (attr_value.x(), attr_value.y())
