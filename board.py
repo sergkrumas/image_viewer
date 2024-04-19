@@ -2072,22 +2072,18 @@ class BoardMixin(BoardTextEditItemMixin):
         folder_data = self.LibraryData().current_folder()
 
         if folder_path:
-            self.board_long_loading_begin()
-
-            files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
-            item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
-            fi = BoardItem(BoardItem.types.ITEM_FOLDER)
-            fi.item_folder_data = item_folder_data
-            fi.board_index = self.retrieve_new_board_item_index()
-            folder_data.board.board_items_list.append(fi)
-            # располагаем в центре экрана
-            fi.item_position = self.board_map_to_board(self.rect().center())
-            fi.update_corner_info()
-            self.board_select_items([fi])
-
-            self.board_long_loading_end()
-
+            with show_longtime_process_ongoing(self):
+                files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
+                item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
+                self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
+                fi = BoardItem(BoardItem.types.ITEM_FOLDER)
+                fi.item_folder_data = item_folder_data
+                fi.board_index = self.retrieve_new_board_item_index()
+                folder_data.board.board_items_list.append(fi)
+                # располагаем в центре экрана
+                fi.item_position = self.board_map_to_board(self.rect().center())
+                fi.update_corner_info()
+                self.board_select_items([fi])
 
     def move_items_to_group(self, item_group=None, items=None, items_folder=None):
         if items_folder is None:
@@ -3124,25 +3120,24 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_download_file(self, url):
-        self.board_long_loading_begin()
-        cf = self.LibraryData().current_folder()
-        response = urllib.request.urlopen(url)
-        filename = os.path.basename(response.url)
-        name, ext = os.path.splitext(filename)
-        if "?" in ext:
-            ext = ext[:ext.index("?")]
-        if not self.LibraryData().is_supported_file(ext):
-            mime_type = response.headers.get('content-type', '')
-            if mime_type == '':
-                ext = 'unknown'
-            else:
-                if ';' in mime_type:
-                    mime_type = mime_type.split(";")[0]
-                ext = mime_type.split("/")[1]
-        filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
-        urllib.request.urlretrieve(url, filepath)
-        self.board_create_new_board_item_image(filepath, cf, source_url=url)
-        self.board_long_loading_end()
+        with show_longtime_process_ongoing(self):
+            cf = self.LibraryData().current_folder()
+            response = urllib.request.urlopen(url)
+            filename = os.path.basename(response.url)
+            name, ext = os.path.splitext(filename)
+            if "?" in ext:
+                ext = ext[:ext.index("?")]
+            if not self.LibraryData().is_supported_file(ext):
+                mime_type = response.headers.get('content-type', '')
+                if mime_type == '':
+                    ext = 'unknown'
+                else:
+                    if ';' in mime_type:
+                        mime_type = mime_type.split(";")[0]
+                    ext = mime_type.split("/")[1]
+            filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
+            urllib.request.urlretrieve(url, filepath)
+            self.board_create_new_board_item_image(filepath, cf, source_url=url)
 
     def board_create_new_board_item_image(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
         image_data = self.LibraryData().create_image_data(filepath, current_folder)
