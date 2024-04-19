@@ -1073,10 +1073,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         painter.setPen(QPen(QColor(240, 10, 50, 100), 1))
         text = "  ".join(primary_text)
-        text_rect = painter.boundingRect(max_rect, alignment, text)
+        main_text_rect = painter.boundingRect(max_rect, alignment, text)
         pos = self.rect().center() + QPoint(0, -80)
-        text_rect.moveCenter(pos)
-        painter.drawText(text_rect, alignment, text)
+        main_text_rect.moveCenter(pos)
+        painter.fillRect(main_text_rect.adjusted(-100, -10, 100, 10), QColor(10, 10, 10, 150))
+        painter.drawText(main_text_rect, alignment, text)
 
         font = painter.font()
         font.setPixelSize(15)
@@ -1084,14 +1085,14 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setFont(font)
 
         text = " ".join(socondary_text).upper()
-        text_rect = painter.boundingRect(text_rect, alignment, text)
+        secondary_text_rect = painter.boundingRect(main_text_rect, alignment, text)
         brush = QBrush(Qt.black)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
-        painter.drawRect(text_rect.adjusted(-3, -3, 3, 3))
+        painter.drawRect(secondary_text_rect.adjusted(-3, -3, 3, 3))
         painter.setPen(QPen(Qt.white))
 
-        painter.drawText(text_rect, alignment, text)
+        painter.drawText(secondary_text_rect, alignment, text)
         painter.setBrush(Qt.NoBrush)
 
     def retrieve_new_board_item_index(self):
