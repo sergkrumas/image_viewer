@@ -3358,7 +3358,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             board_item = item_to_center_viewport
 
-            image_data = board_item.retrieve_image_data()
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
