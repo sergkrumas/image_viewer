@@ -2089,6 +2089,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fi.item_position = self.board_map_to_board(self.rect().center())
                 fi.update_corner_info()
                 self.board_select_items([fi])
+                self.update()
 
     def move_items_to_group(self, item_group=None, items=None, items_folder=None):
         if items_folder is None:
