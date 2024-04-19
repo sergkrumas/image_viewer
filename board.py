@@ -25,6 +25,7 @@ import functools
 import importlib
 import datetime
 from functools import partial
+from contextlib import contextmanager
 
 from _utils import *
 from board_note_item import BoardTextEditItemMixin
@@ -32,6 +33,19 @@ from board_note_item import BoardTextEditItemMixin
 import cbor2
 
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
+
+
+@contextmanager
+def show_longtime_process_ongoing(board_window):
+    # inside __enter__
+    # print("Enter")
+    board_window.board_long_loading_begin()
+    try:
+        yield
+    finally:
+        # insdie __exit__
+        # print("Exit")
+        board_window.board_long_loading_end()
 
 class BoardLibraryDataMixin():
 
@@ -1919,13 +1933,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(current_folder)
 
     def board_load_highres(self):
-        self.board_long_loading_begin()
-
-        items = self.LibraryData().current_folder().board.board_items_list
-        for bi in items:
-            self.trigger_board_item_pixmap_loading(bi)
-
-        self.board_long_loading_end()
+        with show_longtime_process_ongoing(self):
+            items = self.LibraryData().current_folder().board.board_items_list
+            for bi in items:
+                self.trigger_board_item_pixmap_loading(bi)
 
     def board_delete_selected_board_items(self):
         cf = self.LibraryData().current_folder()
