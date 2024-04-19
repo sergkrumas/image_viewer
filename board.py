@@ -329,7 +329,6 @@ class BoardMixin(BoardTextEditItemMixin):
     BoardItem = BoardItem
 
     def board_init(self):
-
         self.board_origin = self.get_center_position()
         self.board_scale_x = 1.0
         self.board_scale_y = 1.0
@@ -545,14 +544,12 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_delete_selected_board_items()
 
     def board_ContextMenuDefault(self, event, contextMenu, checkboxes):
-
         checkboxes.append(
             ("Отображать отладочную графику виджета трансформации",
             self.board_debug_transform_widget,
                 partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
             ),
         )
-
         contextMenu.addSeparator()
 
         pis = []
@@ -1104,7 +1101,6 @@ class BoardMixin(BoardTextEditItemMixin):
         return self.current_board_item_group_index
 
     def prepare_board(self, folder_data):
-
         if self.Globals.DEBUG:
             offset = QPointF(0, 0) - QPointF(500, 0)
         else:
@@ -1199,9 +1195,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return QPolygonF(points)
 
     def board_draw_item(self, painter, board_item):
-
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
-
             FRAME_PADDING = BoardItem.FRAME_PADDING
 
             area = board_item.get_selection_area(board=self)
@@ -1431,7 +1425,6 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.drawPoint(self.board_map_to_viewport(point))
 
     def board_draw_main_default(self, painter):
-
         cf = self.LibraryData().current_folder()
         if cf.previews_done:
             if self.Globals.DEBUG or self.STNG_board_draw_grid:
@@ -1607,7 +1600,6 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setOpacity(1.0)
 
     def board_draw_origin_compass(self, painter):
-
         curpos = self.mapFromGlobal(QCursor().pos())
 
         pos = self.board_origin
@@ -2145,7 +2137,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_select_items([group_item])
 
     def board_add_item_frame(self):
-
         if self.selection_bounding_box is None:
             self.show_center_label('Не выделено ни одного айтема!', error=True)
         else:
@@ -2822,7 +2813,6 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
                     self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
 
-
         elif event.buttons() == Qt.MiddleButton:
             if self.transformations_allowed and self.board_camera_translation_ongoing:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
@@ -3263,7 +3253,6 @@ class BoardMixin(BoardTextEditItemMixin):
             open_in_google_chrome(filepath)
 
     def animate_scale_update(self):
-
         # надо менять и значение self.board_origin для того,
         # чтобы увеличивать относительно центра картинки и центра экрана,
         # а они совпадают в данном случае
