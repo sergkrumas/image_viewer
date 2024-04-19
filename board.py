@@ -577,7 +577,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_add_item_group.triggered.connect(self.board_add_item_group)
 
         board_add_item_frame = contextMenu.addAction("Фрейм")
-        board_add_item_group.triggered.connect(self.board_add_item_frame)
+        board_add_item_frame.triggered.connect(self.board_add_item_frame)
 
         board_add_item_note = contextMenu.addAction("Заметка")
         board_add_item_note.triggered.connect(self.board_add_item_note)
