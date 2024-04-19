@@ -36,10 +36,10 @@ COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:I
 
 
 @contextmanager
-def show_longtime_process_ongoing(board_window):
+def show_longtime_process_ongoing(board_window, text):
     # inside __enter__
     # print("Enter")
-    board_window.board_long_loading_begin()
+    board_window.board_long_loading_begin(text)
     try:
         yield
     finally:
@@ -388,6 +388,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_PluginsInit()
 
         self.debug_file_io_filepath = "[переменная self.debug_file_io_filepath не задана!]"
+
+        self.long_process_label_text =  "обработка запроса"
 
     def board_PluginsInit(self):
         plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
@@ -1054,9 +1056,11 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_main(painter, event)
         # board_draw_stub(self, painter)
 
-    def board_draw_wait_long_loading_label(self, painter):
+    def board_draw_long_process_label(self, painter):
         if self.long_loading:
-            self.board_draw_wait_label(painter, socondary_text="загрузка данных")
+            self.board_draw_wait_label(painter,
+                socondary_text=self.long_process_label_text
+            )
 
     def board_draw_wait_label(self, painter, primary_text="ПОДОЖДИ",
                                                         socondary_text="создаются превьюшки"):
@@ -1456,7 +1460,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_minimap(painter)
 
-        self.board_draw_wait_long_loading_label(painter)
+        self.board_draw_long_process_label(painter)
 
     def board_draw_board_info(self, painter, current_folder):
         before_font = painter.font()
@@ -1933,7 +1937,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(current_folder)
 
     def board_load_highres(self):
-        with show_longtime_process_ongoing(self):
+        with show_longtime_process_ongoing(self, "Загрузка изображений в высоком качестве"):
             items = self.LibraryData().current_folder().board.board_items_list
             for bi in items:
                 self.trigger_board_item_pixmap_loading(bi)
@@ -2072,7 +2076,7 @@ class BoardMixin(BoardTextEditItemMixin):
         folder_data = self.LibraryData().current_folder()
 
         if folder_path:
-            with show_longtime_process_ongoing(self):
+            with show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                 item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
                 self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
@@ -3110,7 +3114,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if pixmap is not None:
             self.board_create_new_board_item_image(filepath, cf)
 
-    def board_long_loading_begin(self):
+    def board_long_loading_begin(self, text):
+        text = text.strip()
+        if text:
+            self.long_process_label_text = text
         self.long_loading = True
         self.update()
         processAppEvents()
@@ -3120,7 +3127,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_download_file(self, url):
-        with show_longtime_process_ongoing(self):
+        with show_longtime_process_ongoing(self, 'Загрузка изображения на доску'):
             cf = self.LibraryData().current_folder()
             response = urllib.request.urlopen(url)
             filename = os.path.basename(response.url)
