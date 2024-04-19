@@ -741,7 +741,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 image_data.board_item = obj
                 image_data.source_width = source_width
                 image_data.source_height = source_height
-                continue # не нужна дальнейшая обраотка
+                continue # не нужна дальнейшая обработка
 
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
@@ -759,6 +759,16 @@ class BoardMixin(BoardTextEditItemMixin):
                         _folder_data.board.board_root_item = obj
                         self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
                         _folder_data.board.board_ready = True
+                continue
+
+            elif attr_type == 'BoardUserPointsList':
+                board_user_points = []
+                for user_point in attr_data:
+                    point_tuple = user_point[0]
+                    scale_x = user_point[1]
+                    scale_y = user_point[2]
+                    board_user_points.append((QPointF(*point_tuple), scale_x, scale_y))
+                obj.board_user_points = board_user_points
                 continue
 
             else:
@@ -888,7 +898,17 @@ class BoardMixin(BoardTextEditItemMixin):
         board_folder_data.update({'is_virtual':  fd.virtual})
         board_folder_data.update({'folder_name': fd.folder_name})
         # сохранение атрибутов доски
-        self.board_object_attributes_to_serial(board, board_attributes, exclude=('board_items_list',))
+        self.board_object_attributes_to_serial(board, board_attributes, exclude=('board_items_list', 'board_user_points'))
+
+        # сохранение юзер-поинтов отдельно,
+        # т.к. QPoinF не сериализуется самостоятельно в tuple
+        user_points_serialized = []
+        for user_point in board.board_user_points:
+            pos = user_point[0]
+            scale_x = user_point[1]
+            scale_y = user_point[2]
+            user_points_serialized.append(((pos.x(), pos.y()), scale_x, scale_y))
+        board_attributes.append(('board_user_points', 'BoardUserPointsList', user_points_serialized))
 
         # сохранение айтемов доски
         for item in board.board_items_list:
