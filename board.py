@@ -692,6 +692,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
         fd.board.board_ready = True
         self.LibraryData().load_board_data()
+        self.init_selection_bounding_box_widget(fd)
+        self.build_board_bounding_rect(fd)
 
     def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
@@ -743,6 +745,17 @@ class BoardMixin(BoardTextEditItemMixin):
                 image_data.source_height = source_height
                 continue # не нужна дальнейшая обраотка
 
+            elif attr_type == 'FolderData':
+                if obj.type == self.BoardItem.types.ITEM_FOLDER:
+                    folder_path = attr_data
+                    files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
+                    item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
+                    self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
+                    obj.item_folder_data = item_folder_data
+                elif obj.type == self.BoardItem.types.ITEM_GROUP:
+                    pass
+                continue
+
             else:
                 status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
                 raise Exception(f"Unable to handle attribute, {status}")
@@ -750,7 +763,20 @@ class BoardMixin(BoardTextEditItemMixin):
             setattr(obj, attr_name, attr_value)
 
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
-        attributes = obj.__dict__.items()
+        attributes = list(obj.__dict__.items())
+
+        if isinstance(obj, self.BoardItem):
+            for attr_pair in attributes[:]:
+                attr_name, attr_value = attr_pair
+                if attr_name == 'type':
+                    # переставляем этот атрибут в начало,
+                    # чтобы при восстановлении он обрабатывался первым
+                    # это важно при восстановлении, так как нужно знать какого типа айтем
+                    # при восстановлении некоторых атрибутов айтема
+                    attributes.remove(attr_pair)
+                    attributes.insert(0, attr_pair)
+                    break
+
         for attr_name, attr_value in attributes:
 
             if attr_name.startswith("__"):
@@ -763,6 +789,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if isinstance(attr_value, self.ImageData):
                 attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
+
+            elif isinstance(attr_value, self.FolderData):
+                if isinstance(obj, self.BoardItem) and obj.type == self.BoardItem.types.ITEM_IMAGE:
+                    attr_data = None
+                else:
+                    attr_data = attr_value.folder_path
 
             elif isinstance(attr_value, QPointF):
                 attr_data = (attr_value.x(), attr_value.y())
