@@ -744,20 +744,21 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue # не нужна дальнейшая обраотка
 
             elif attr_type == 'FolderData':
-                if obj.type == self.BoardItem.types.ITEM_FOLDER:
-                    folder_path = attr_data
-                    files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
-                    item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-                    self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
-                    obj.item_folder_data = item_folder_data
-                elif obj.type == self.BoardItem.types.ITEM_GROUP:
-                    board_dict = attr_data
-                    _folder_data = self.board_recreate_board_from_serial(board_dict)
-                    obj.item_folder_data = _folder_data
-                    _folder_data.board.board_root_folder = fd
-                    _folder_data.board.board_root_item = obj
-                    self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
-                    _folder_data.board.board_ready = True
+                if isinstance(obj, self.BoardItem):
+                    if obj.type == self.BoardItem.types.ITEM_FOLDER:
+                        folder_path = attr_data
+                        files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
+                        item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
+                        self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
+                        obj.item_folder_data = item_folder_data
+                    elif obj.type == self.BoardItem.types.ITEM_GROUP:
+                        board_dict = attr_data
+                        _folder_data = self.board_recreate_board_from_serial(board_dict)
+                        obj.item_folder_data = _folder_data
+                        _folder_data.board.board_root_folder = fd
+                        _folder_data.board.board_root_item = obj
+                        self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
+                        _folder_data.board.board_ready = True
                 continue
 
             else:
@@ -765,6 +766,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 raise Exception(f"Unable to handle attribute, {status}")
 
             setattr(obj, attr_name, attr_value)
+
+        if isinstance(obj, self.BoardItem):
+            if obj.type == self.BoardItem.types.ITEM_NOTE:
+                obj.editing = False
+                self.board_ImplantTextElement(obj)
+                self.board_TextElementRecalculateGabarit(obj)
 
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
         attributes = list(obj.__dict__.items())
@@ -828,7 +835,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = attr_value
 
             elif isinstance(attr_value, QPainterPath):
-                continue
+                attr_data = None
+                attr_type = 'NoneType'
                 # filename = f"path_{attr_name}_{element.unique_index:04}.data"
                 # filepath = os.path.join(folder_path, filename)
                 # file_handler = QFile(filepath)
@@ -838,7 +846,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 # attr_data = filename
 
             elif isinstance(attr_value, QPixmap):
-                continue
+                attr_data = None
+                attr_type = 'NoneType'
                 # filename = f"pixmap_{attr_name}_{element.unique_index:04}.png"
                 # filepath = os.path.join(folder_path, filename)
                 # attr_value.save(filepath)
@@ -851,7 +860,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = None
 
             elif isinstance(attr_value, (QTransform, )):
-                continue
+                attr_data = None
+                attr_type = 'NoneType'
 
             elif isinstance(attr_value, (QMovie, )):
                 attr_data = None
