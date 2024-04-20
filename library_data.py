@@ -1078,7 +1078,7 @@ class BoardData():
         self.ready = False
 
         self.user_points = []
-        self.board_items_list = []
+        self.items_list = []
 
         self.plugin_filename = None
 

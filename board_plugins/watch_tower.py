@@ -26,7 +26,7 @@ def get_watch_tower_data_filepath(self):
 def append_note_item(self, cf, text, warning=False):
     ni = self.BoardItem(self.BoardItem.types.ITEM_NOTE)
     ni.board_index = self.retrieve_new_board_item_index()
-    cf.board.board_items_list.append(ni)
+    cf.board.items_list.append(ni)
     self.board_TextElementSetDefaults(ni, plain_text=text)
     ni.calc_local_data()
     if warning:
