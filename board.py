@@ -951,6 +951,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_saveBoardDefault(self):
         cf = self.LibraryData().current_folder()
+
+        # если находимся в зависимой доске,
+        # то сохраняем корневую доску, а зависимая запишется вместе с ней
+        while cf.board.root_folder is not None:
+            print(f'saving... {cf.folder_name}::{cf.folder_path} is not root folder...')
+            cf = cf.board.root_folder
+
         if cf.virtual:
             filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
