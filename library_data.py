@@ -316,6 +316,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             MW.board_origin = board.board_origin
         MW.board_load_board_data(board, cf)
+        MW.board_SetCallbacks()
 
     def delete_current_image(self, folder_data=None, force=False):
         MW = self.globals.main_window
