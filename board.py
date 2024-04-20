@@ -628,10 +628,12 @@ class BoardMixin(BoardTextEditItemMixin):
         return fd
 
     def board_loadBoard(self, path=None):
-        self.board_loadBoardDefault(path)
+        with self.show_longtime_process_ongoing(self, 'Загрузка доски'):
+            self.board_loadBoardDefault(path)
 
     def board_saveBoard(self):
-        self.board_saveBoardDefault()
+        with self.show_longtime_process_ongoing(self, 'Сохранение доски'):
+            self.board_saveBoardDefault()
 
     def dialog_open_boardfile(self):
         dialog = QFileDialog()
