@@ -126,11 +126,11 @@ def implantToContextMenu(self, contextMenu):
     action.triggered.connect(partial(open_data_file, self))
 
 def contextMenu(self, event, contextMenu, checkboxes):
-    self.board_contextMenuDefault(event, contextMenu, checkboxes, plugin_implant=implantToContextMenu)
+    # нет смысла в полном меню, поэтому оставлю только имплант
+    # self.board_contextMenuDefault(event, contextMenu, checkboxes, plugin_implant=implantToContextMenu)
+    implantToContextMenu(self, contextMenu)
 
-
-
-
+    self.board_ContextMenuPluginsDefault(event, contextMenu)
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'WATCH TOWER'
