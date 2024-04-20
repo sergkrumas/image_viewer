@@ -25,7 +25,7 @@ def wheelEvent(self, event):
     self.board_wheelEventDefault(event)
 
 def contextMenu(self, event, contextMenu, checkboxes):
-    self.board_ContextMenuDefault(event, contextMenu, checkboxes)
+    self.board_contextMenuDefault(event, contextMenu, checkboxes)
 
 def keyPressEvent(self, event):
     self.board_keyPressEventDefault(event)

@@ -121,7 +121,7 @@ def open_data_file(self):
         self.show_center_label(f'Команда не поддерживается на {system}', error=True)
 
 def contextMenu(self, event, contextMenu, checkboxes):
-    self.board_ContextMenuDefault(event, contextMenu, checkboxes)
+    self.board_contextMenuDefault(event, contextMenu, checkboxes)
 
     contextMenu.addSeparator()
     action = contextMenu.addAction('Watch Tower: Открыть файл путей для показа')
