@@ -2119,7 +2119,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.image_data.folder_data = current_folder
             current_folder.images_list.append(im_data)
 
-            pos = self.board_map_to_board(gi.get_selection_area(board=self).boundingRect().topRight())
+            pos = self.board_MapToBoard(gi.get_selection_area(board=self).boundingRect().topRight())
             size_rect = bi.get_size_rect(scaled=False)
             offset = QPointF(size_rect.width()/2, size_rect.height()/2)
             bi.item_position = (pos + offset)
@@ -2147,7 +2147,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.root_folder = current_folder_data
         item_folder_data.board.root_item = gi
         # располагаем центр в координате вызова контекстеного меню
-        gi.item_position = self.board_map_to_board(self.context_menu_exec_point)
+        gi.item_position = self.board_MapToBoard(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
             self.move_items_to_group(item_group=gi, items=self.selected_items)
         gi.update_corner_info()
@@ -2162,7 +2162,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.items_list.append(ni)
-        ni.item_position = self.board_map_to_board(self.context_menu_exec_point)
+        ni.item_position = self.board_MapToBoard(self.context_menu_exec_point)
         self.board_TextElementSetDefaults(ni)
         ni.editing = True
         ni.calc_local_data()
@@ -2185,7 +2185,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fi.board_index = self.retrieve_new_board_item_index()
                 fd.board.items_list.append(fi)
                 # располагаем в центре экрана
-                fi.item_position = self.board_map_to_board(self.rect().center())
+                fi.item_position = self.board_MapToBoard(self.rect().center())
                 fi.update_corner_info()
                 self.board_select_items([fi])
                 self.update()
@@ -2254,7 +2254,7 @@ class BoardMixin(BoardTextEditItemMixin):
             folder_data.board.items_list.append(bi)
 
             selection_bounding_rect = self.selection_bounding_box.boundingRect()
-            bi.item_position = self.board_map_to_board(selection_bounding_rect.center())
+            bi.item_position = self.board_MapToBoard(selection_bounding_rect.center())
             bi.item_width = selection_bounding_rect.width() / self.board_scale_x
             bi.item_height = selection_bounding_rect.height() / self.board_scale_y
             bi.item_width += BoardItem.FRAME_PADDING
@@ -2278,7 +2278,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return False
 
     def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
-        self.start_translation_pos = QPointF(self.board_map_to_board(event_pos))
+        self.start_translation_pos = QPointF(self.board_MapToBoard(event_pos))
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.items_list
         if viewport_zoom_changed:
@@ -2302,7 +2302,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_ALLOW_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
-            delta = QPointF(self.board_map_to_board(event_pos)) - self.start_translation_pos
+            delta = QPointF(self.board_MapToBoard(event_pos)) - self.start_translation_pos
             if not self.translation_ongoing:
                 if abs(delta.x()) > 0 or abs(delta.y()) > 0:
                     self.translation_ongoing = True
@@ -2310,7 +2310,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
             current_folder = self.LibraryData().current_folder()
-            delta = QPointF(self.board_map_to_board(event_pos)) - self.start_translation_pos
+            delta = QPointF(self.board_MapToBoard(event_pos)) - self.start_translation_pos
             if self.translation_ongoing:
                 for board_item in current_folder.board.items_list:
                     if board_item._selected:
@@ -2980,7 +2980,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif ctrl and not shift:
                 cf = self.LibraryData().current_folder()
-                canvas_pos = self.board_map_to_board(event.pos())
+                canvas_pos = self.board_MapToBoard(event.pos())
                 cf.board.user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
 
         elif event.button() == Qt.MiddleButton:
@@ -3008,15 +3008,15 @@ class BoardMixin(BoardTextEditItemMixin):
         viewport_pos = self.board_origin + scaled_rel_pos
         return viewport_pos
 
-    def board_map_to_board(self, viewport_pos):
+    def board_MapToBoard(self, viewport_pos):
         delta = QPointF(viewport_pos - self.board_origin)
         board_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
         return board_pos
 
     def board_paste_selected_items(self):
         selected_items = []
-        selection_center = self.board_map_to_board(self.selection_bounding_box.boundingRect().center())
-        rel_cursor_pos = self.board_map_to_board(self.mapped_cursor_pos())
+        selection_center = self.board_MapToBoard(self.selection_bounding_box.boundingRect().center())
+        rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
         for bi in self.LibraryData().current_folder().board.items_list:
             if bi._selected:
                 selected_items.append(bi)
@@ -3254,7 +3254,7 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder.board.items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
         if place_at_cursor:
-            board_item.item_position = self.board_map_to_board(self.mapped_cursor_pos())
+            board_item.item_position = self.board_MapToBoard(self.mapped_cursor_pos())
         current_folder.images_list.append(image_data)
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
             self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
@@ -3424,7 +3424,7 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 item_to_center_viewport = first_item
 
-            current_pos = self.board_map_to_board(self.get_center_position())
+            current_pos = self.board_MapToBoard(self.get_center_position())
 
             item_point = item_to_center_viewport.item_position
 
@@ -3489,7 +3489,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         pair = None
 
-        current_pos = self.board_map_to_board(self.get_center_position())
+        current_pos = self.board_MapToBoard(self.get_center_position())
 
         if not self.fly_pairs:
             _list = []
@@ -3546,7 +3546,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_origin = -self.pr_viewport + viewport_center_pos
             self.update()
 
-        current_pos_ = self.board_map_to_board(self.get_center_position())
+        current_pos_ = self.board_MapToBoard(self.get_center_position())
 
         pair = [
             [current_pos_, self.board_scale_x, self.board_scale_y],
