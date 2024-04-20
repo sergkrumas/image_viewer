@@ -387,6 +387,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_SetCallbacks()
 
+        self.show_longtime_process_ongoing = show_longtime_process_ongoing
+
     def board_SetCallbacks(self):
         cf = self.LibraryData().current_folder()
 
@@ -2036,7 +2038,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(current_folder)
 
     def board_load_highres(self):
-        with show_longtime_process_ongoing(self, "Загрузка изображений в высоком качестве"):
+        with self.show_longtime_process_ongoing(self, "Загрузка изображений в высоком качестве"):
             items = self.LibraryData().current_folder().board.board_items_list
             for bi in items:
                 self.trigger_board_item_pixmap_loading(bi)
@@ -2174,7 +2176,7 @@ class BoardMixin(BoardTextEditItemMixin):
         folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
         fd = self.LibraryData().current_folder()
         if folder_path:
-            with show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
+            with self.show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                 item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
                 self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
@@ -3224,7 +3226,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_download_file(self, url):
-        with show_longtime_process_ongoing(self, 'Загрузка изображения на доску'):
+        with self.show_longtime_process_ongoing(self, 'Загрузка изображения на доску'):
             cf = self.LibraryData().current_folder()
             response = urllib.request.urlopen(url)
             filename = os.path.basename(response.url)
