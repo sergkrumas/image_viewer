@@ -23,6 +23,7 @@ import time
 import urllib.request
 import functools
 import importlib
+import http
 import datetime
 from functools import partial
 from contextlib import contextmanager
@@ -3261,7 +3262,16 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_download_file(self, url):
         with self.show_longtime_process_ongoing(self, 'Загрузка изображения на доску'):
             cf = self.LibraryData().current_folder()
-            response = urllib.request.urlopen(url)
+            try:
+                response = urllib.request.urlopen(url)
+            except http.client.InvalidURL:
+                try:
+                    url = url.replace(" ", "%20")
+                    response = urllib.request.urlopen(url)
+                except http.client.InvalidURL:                    
+                    self.show_center_label(f'http.client.InvalidURL: {url}', error=True)
+                    return
+
             filename = os.path.basename(response.url)
             name, ext = os.path.splitext(filename)
             if "?" in ext:
