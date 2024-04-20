@@ -1079,6 +1079,8 @@ class BoardData():
         self.board_user_points = []
         self.board_items_list = []
 
+        self.plugin_filename = None
+
         self.board_bounding_rect = None
 
         self.referer_board_folder = None

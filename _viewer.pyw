@@ -3298,7 +3298,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            self.board_ContextMenu(event, contextMenu, checkboxes)
+            self.board_contextMenu(event, contextMenu, checkboxes)
 
         elif self.is_viewer_page_active():
 

@@ -317,11 +317,8 @@ class PluginInfo():
 
     def menu_callback(self):
         board = self.board
-        if self.pluginBoardInit:
-            self.pluginBoardInit(board, self)
-        board.active_plugin = self
-        board.show_center_label(f'{self.name} activated')
-        board.update()
+        board.board_SetPlugin(self)        
+
 
 class BoardMixin(BoardTextEditItemMixin):
 
@@ -388,6 +385,80 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.long_process_label_text =  "обработка запроса"
 
+        self.board_SetCallbacks()
+
+    def board_SetCallbacks(self):
+        cf = self.LibraryData().current_folder()
+
+        found_pi = None
+        if cf is not None:
+            board = cf.board
+            plugin_filename = board.plugin_filename
+            for pi in self.board_plugins:
+                if pi.filename == plugin_filename:
+                    found_pi = pi
+                    break
+
+        names = [
+            'mousePressEvent',
+            'mouseMoveEvent',
+            'mouseReleaseEvent',
+            'wheelEvent',
+            'contextMenu',
+            'keyPressEvent',
+            'keyReleaseEvent',
+        ]
+
+        for name in names:
+            if found_pi is None or getattr(found_pi, name) is None:
+                # default callback
+                callback = getattr(self.__class__, f'board_{name}Default')
+            else:
+                # plugin callback
+                callback = getattr(found_pi, name)
+            setattr(self, f'{name}BoardCallback', partial(callback, self))
+
+        # paint callbacks
+        if found_pi is None or found_pi.paintEvent is None:
+            paint_callback = self.__class__.board_draw_main_default
+        else:
+            paint_callback = found_pi.paintEvent
+        self.board_draw_mainBoardCallback = partial(paint_callback, self)
+
+    def board_draw_main(self, painter, event):
+        self.board_draw_mainBoardCallback(painter, event)
+
+    def board_mousePressEvent(self, event):
+        self.mousePressEventBoardCallback(event)
+
+    def board_mouseMoveEvent(self, event):
+        self.mouseMoveEventBoardCallback(event)
+
+    def board_mouseReleaseEvent(self, event):
+        self.mouseReleaseEventBoardCallback(event)
+
+    def board_wheelEvent(self, event):
+        self.wheelEventBoardCallback(event)
+
+    def board_contextMenu(self, event, contextMenu, checkboxes):
+        self.contextMenuBoardCallback(event, contextMenu, checkboxes)
+
+    def board_keyPressEvent(self, event):
+        self.keyPressEventBoardCallback(event)
+
+    def board_keyReleaseEvent(self, event):
+        self.keyReleaseEventBoardCallback(event)
+
+    def board_SetPlugin(self, pi):
+        if pi.pluginBoardInit:
+            pi.pluginBoardInit(self, pi)
+        cf = self.LibraryData().current_folder()
+        board = cf.board
+        board.plugin_filename = pi.filename
+        self.board_SetCallbacks()
+        self.show_center_label(f'{pi.name} activated')
+        self.update()
+
     def board_PluginsInit(self):
         plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
         if not os.path.exists(plugins_folder):
@@ -422,54 +493,6 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_reg_func:
             plugin_reg_func(self, pi)
             print(f'\tplugin {pi.name} registred!')
-
-    def board_draw_main(self, painter, event):
-        if self.active_plugin is None or self.active_plugin.paintEvent is None:
-            self.board_draw_main_default(painter)
-        else:
-            self.active_plugin.paintEvent(self, painter, event)
-
-    def board_mousePressEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.mousePressEvent is None:
-            self.board_mousePressEventDefault(event)
-        else:
-            self.active_plugin.mousePressEvent(self, event)
-
-    def board_mouseMoveEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.mouseMoveEvent is None:
-            self.board_mouseMoveEventDefault(event)
-        else:
-            self.active_plugin.mouseMoveEvent(self, event)
-
-    def board_mouseReleaseEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.mouseReleaseEvent is None:
-            self.board_mouseReleaseEventDefault(event)
-        else:
-            self.active_plugin.mouseReleaseEvent(self, event)
-
-    def board_wheelEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.wheelEvent is None:
-            self.board_wheelEventDefault(event)
-        else:
-            self.active_plugin.wheelEvent(self, event)
-
-    def board_ContextMenu(self, event, contextMenu, checkboxes):
-        if self.active_plugin is None or self.active_plugin.contextMenu is None:
-            self.board_ContextMenuDefault(event, contextMenu, checkboxes)
-        else:
-            self.active_plugin.contextMenu(self, event, contextMenu, checkboxes)
-
-    def board_keyPressEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.keyPressEvent is None:
-            self.board_keyPressEventDefault(event)
-        else:
-            self.active_plugin.keyPressEvent(self, event)
-
-    def board_keyReleaseEvent(self, event):
-        if self.active_plugin is None or self.active_plugin.keyReleaseEvent is None:
-            self.board_keyReleaseEventDefault(event)
-        else:
-            self.active_plugin.keyReleaseEvent(self, event)
 
     def board_keyPressEventDefault(self, event):
         key = event.key()
@@ -541,7 +564,7 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key in [Qt.Key_Delete]:
             self.board_delete_selected_board_items()
 
-    def board_ContextMenuDefault(self, event, contextMenu, checkboxes):
+    def board_contextMenuDefault(self, event, contextMenu, checkboxes):
         checkboxes.append(
             ("Отображать отладочную графику виджета трансформации",
             self.board_debug_transform_widget,
@@ -1506,7 +1529,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for point, board_scale_x, board_scale_y in cf.board.board_user_points:
             painter.drawPoint(self.board_map_to_viewport(point))
 
-    def board_draw_main_default(self, painter):
+    def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
         if cf.previews_done:
             if self.Globals.DEBUG or self.STNG_board_draw_grid:
