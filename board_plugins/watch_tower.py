@@ -120,12 +120,14 @@ def open_data_file(self):
         system = platform.system()
         self.show_center_label(f'Команда не поддерживается на {system}', error=True)
 
-def contextMenu(self, event, contextMenu, checkboxes):
-    self.board_contextMenuDefault(event, contextMenu, checkboxes)
-
+def implantToContextMenu(self, contextMenu):
     contextMenu.addSeparator()
     action = contextMenu.addAction('Watch Tower: Открыть файл путей для показа')
     action.triggered.connect(partial(open_data_file, self))
+
+def contextMenu(self, event, contextMenu, checkboxes):
+    self.board_contextMenuDefault(event, contextMenu, checkboxes, plugin_implant=implantToContextMenu)
+
 
 
 

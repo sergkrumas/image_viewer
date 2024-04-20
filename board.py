@@ -577,7 +577,7 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key in [Qt.Key_Delete]:
             self.board_delete_selected_board_items()
 
-    def board_contextMenuDefault(self, event, contextMenu, checkboxes):
+    def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
         checkboxes.append(
             ("Отображать отладочную графику виджета трансформации",
             self.board_debug_transform_widget,
@@ -598,6 +598,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 create_board_for_plugin.triggered.connect(pi.menu_callback)
 
         contextMenu.addSeparator()
+
+        if plugin_implant is not None:
+            plugin_implant(self, contextMenu)
+            contextMenu.addSeparator()
 
         board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
         board_go_to_note.triggered.connect(partial(self.board_go_to_note, event))
