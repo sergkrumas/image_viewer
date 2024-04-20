@@ -285,6 +285,16 @@ class BoardItem():
             self.item_scale_x, \
             self.item_scale_y = self._saved_data
 
+BoardCallbacksNames = [
+    'mousePressEvent',
+    'mouseMoveEvent',
+    'mouseReleaseEvent',
+    'wheelEvent',
+    'contextMenu',
+    'keyPressEvent',
+    'keyReleaseEvent',
+]
+
 class PluginInfo():
 
     def __init__(self, module, board):
@@ -299,16 +309,8 @@ class PluginInfo():
 
         self.paintEvent = None
 
-        self.mousePressEvent = None
-        self.mouseMoveEvent = None
-        self.mouseReleaseEvent = None
-
-        self.wheelEvent = None
-
-        self.contextMenu = None
-
-        self.keyPressEvent = None
-        self.keyReleaseEvent = None
+        for name in BoardCallbacksNames:
+            setattr(self, name, None)
 
     def setFilename(self, name):
         self.filename = name
@@ -412,17 +414,7 @@ class BoardMixin(BoardTextEditItemMixin):
             plugin_filename = cf.board.plugin_filename
             found_pi = self.board_FindPlugin(plugin_filename)
 
-        names = [
-            'mousePressEvent',
-            'mouseMoveEvent',
-            'mouseReleaseEvent',
-            'wheelEvent',
-            'contextMenu',
-            'keyPressEvent',
-            'keyReleaseEvent',
-        ]
-
-        for name in names:
+        for name in BoardCallbacksNames:
             if found_pi is None or getattr(found_pi, name) is None:
                 # default callback
                 callback = getattr(self.__class__, f'board_{name}Default')
@@ -476,13 +468,13 @@ class BoardMixin(BoardTextEditItemMixin):
         plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
         if not os.path.exists(plugins_folder):
             return
-        print(f'init plugins in {plugins_folder}...')
+        # print(f'init plugins in {plugins_folder}...')
         for cur_dir, dirs, filenames in os.walk(plugins_folder):
             for filename in filenames:
                 plugin_filepath = os.path.join(cur_dir, filename)
                 if plugin_filepath.lower().endswith('.py'):
                     self.board_PluginInit(plugin_filepath)
-        print('end init plugins')
+        # print('end init plugins')
 
     def load_module_and_get_register_function(self, script_filename, full_path):
         spec = importlib.util.spec_from_file_location(script_filename, full_path)
@@ -496,7 +488,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return module, plugin_func
 
     def board_PluginInit(self, filepath):
-        print(f'\t{filepath}')
+        # print(f'\t{filepath}')
         filename = os.path.basename(filepath)
         module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
         pi = PluginInfo(module, self)
@@ -504,8 +496,11 @@ class BoardMixin(BoardTextEditItemMixin):
         pi.setFilename(filename)
         self.board_plugins.append(pi)
         if plugin_reg_func:
-            plugin_reg_func(self, pi)
-            print(f'\tplugin {pi.name} registred!')
+            try:
+                plugin_reg_func(self, pi)
+                # print(f'\tplugin {pi.name} registred!')
+            except:
+                print(f'\t! failed to load plugin {filename}')
 
     def board_keyPressEventDefault(self, event):
         key = event.key()
