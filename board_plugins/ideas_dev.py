@@ -1,4 +1,5 @@
 import sys
+import os
 import subprocess
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -26,5 +27,5 @@ def register(board_obj, plugin_info):
 
 
 if __name__ == '__main__':
-    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw"])
+    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
     sys.exit()
