@@ -647,7 +647,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_loadBoardDefault(self):
         if self.Globals.DEBUG:
             board_filepath = self.debug_file_io_filepath
-        else:
+
+        if not os.path.exists(board_filepath):
             board_filepath = ""
             board_filepath = self.dialog_open_boardfile()
 
