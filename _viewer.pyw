@@ -3841,7 +3841,12 @@ def _main():
         LibraryData().create_empty_virtual_folder()
         MW.change_page(MW.pages.BOARD_PAGE)
         processAppEvents()
-        MW.board_loadBoard(path)
+        if path.lower().endswith('.board'):
+            MW.board_loadBoard(path)
+        elif path.lower().endswith('.py'):
+            MW.board_loadPluginBoard(path)
+        else:
+            raise Exception(f'Unable to handle board argument {path}')
         default_branch = False
 
     if default_branch:

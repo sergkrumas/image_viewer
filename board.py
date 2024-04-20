@@ -389,17 +389,27 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.show_longtime_process_ongoing = show_longtime_process_ongoing
 
+    def board_FindPlugin(self, plugin_filename):
+        found_pi = None
+        for pi in self.board_plugins:
+            if pi.filename == plugin_filename:
+                found_pi = pi
+                break
+        return found_pi
+
+    def board_loadPluginBoard(self, plugin_filename):
+        found_pi = self.board_FindPlugin(plugin_filename)
+        if found_pi:
+            self.board_SetPlugin(found_pi)
+        else:
+            self.show_center_label(f'plugin {plugin_filename} is not found in \\boards_plugins folder!', error=True)
+
     def board_SetCallbacks(self):
         cf = self.LibraryData().current_folder()
-
         found_pi = None
         if cf is not None:
-            board = cf.board
-            plugin_filename = board.plugin_filename
-            for pi in self.board_plugins:
-                if pi.filename == plugin_filename:
-                    found_pi = pi
-                    break
+            plugin_filename = cf.board.plugin_filename
+            found_pi = self.board_FindPlugin(plugin_filename)
 
         names = [
             'mousePressEvent',
