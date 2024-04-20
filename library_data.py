@@ -1086,8 +1086,8 @@ class BoardData():
 
         self.referer_board_folder = None
 
-        self.current_board_item_index = 0
-        self.current_board_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
+        self.current_item_index = 0
+        self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
         self.root_folder = None
         self.root_item = None

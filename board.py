@@ -1199,13 +1199,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def retrieve_new_board_item_index(self):
         cf = self.LibraryData().current_folder()
-        cf.board.current_board_item_index += 1
-        return cf.board.current_board_item_index
+        cf.board.current_item_index += 1
+        return cf.board.current_item_index
 
     def retrieve_new_board_item_group_index(self):
         cf = self.LibraryData().current_folder()        
-        cf.board.current_board_item_group_index += 1
-        return cf.board.current_board_item_group_index
+        cf.board.current_item_group_index += 1
+        return cf.board.current_item_group_index
 
     def prepare_board(self, folder_data):
         if self.Globals.DEBUG:
@@ -1573,8 +1573,8 @@ class BoardMixin(BoardTextEditItemMixin):
             lines.append(f'Доска виртуальной папки {current_folder.folder_path}')
         else:
             lines.append(f'Доска папки {current_folder.folder_path}')
-        lines.append(f'Текущий индекс айтема: {current_folder.board.current_board_item_index}')
-        lines.append(f'Текущий индекс айтема-группы: {current_folder.board.current_board_item_group_index}')
+        lines.append(f'Текущий индекс айтема: {current_folder.board.current_item_index}')
+        lines.append(f'Текущий индекс айтема-группы: {current_folder.board.current_item_group_index}')
         lines.append(f'Board bounding rect: {current_folder.board.bounding_rect}')
 
         lines.append('')
