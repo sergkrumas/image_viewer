@@ -1082,7 +1082,7 @@ class BoardData():
 
         self.plugin_filename = None
 
-        self.board_bounding_rect = None
+        self.bounding_rect = None
 
         self.referer_board_folder = None
 
