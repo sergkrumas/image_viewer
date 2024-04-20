@@ -297,24 +297,24 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         cf = self.current_folder()
         board = cf.board
         MW = self.globals.main_window
-        board.board_scale_x = MW.board_scale_x
-        board.board_scale_y = MW.board_scale_y
-        board.board_origin = MW.board_origin
+        board.scale_x = MW.board_scale_x
+        board.scale_y = MW.board_scale_y
+        board.origin = MW.board_origin
         MW.board_save_board_data(board, cf)
 
     def load_board_data(self):
         cf = self.current_folder()
         board = cf.board
         MW = self.globals.main_window
-        if board.board_scale_x is None:
+        if board.scale_x is None:
             MW.set_default_boardviewport_scale()
         else:
-            MW.board_scale_x = board.board_scale_x
-            MW.board_scale_y = board.board_scale_y
-        if board.board_origin is None:
+            MW.board_scale_x = board.scale_x
+            MW.board_scale_y = board.scale_y
+        if board.origin is None:
             MW.set_default_boardviewport_origin()
         else:
-            MW.board_origin = board.board_origin
+            MW.board_origin = board.origin
         MW.board_load_board_data(board, cf)
         MW.board_SetCallbacks()
 
@@ -1072,12 +1072,12 @@ class BoardData():
 
     def __init__(self):
 
-        self.board_origin = None
-        self.board_scale_x = None
-        self.board_scale_y = None
-        self.board_ready = False
+        self.origin = None
+        self.scale_x = None
+        self.scale_y = None
+        self.ready = False
 
-        self.board_user_points = []
+        self.user_points = []
         self.board_items_list = []
 
         self.plugin_filename = None

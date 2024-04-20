@@ -162,8 +162,8 @@ class BoardItem():
             return f'TEXT NOTE'
 
     def calculate_absolute_position(self, board=None, rel_pos=None):
-        _scale_x = board.board_scale_x
-        _scale_y = board.board_scale_y
+        _scale_x = board.scale_x
+        _scale_y = board.scale_y
         if rel_pos is None:
             rel_pos = self.item_position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
@@ -232,7 +232,7 @@ class BoardItem():
             else:
                 translation.translate(self.item_position.x(), self.item_position.y())
         if apply_global_scale:
-            global_scaling.scale(board.board_scale_x, board.board_scale_y)
+            global_scaling.scale(board.scale_x, board.scale_y)
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
@@ -624,7 +624,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(f"{plugin_name} Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
-        fd.board.board_ready = True
+        fd.board.ready = True
         return fd
 
     def board_loadBoard(self):
@@ -711,7 +711,7 @@ class BoardMixin(BoardTextEditItemMixin):
             fd.board.board_items_list.append(board_item)
 
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
-        fd.board.board_ready = True
+        fd.board.ready = True
         self.LibraryData().load_board_data()
         self.init_selection_bounding_box_widget(fd)
         self.build_board_bounding_rect(fd)
@@ -783,17 +783,17 @@ class BoardMixin(BoardTextEditItemMixin):
                         _folder_data.board.board_root_folder = fd
                         _folder_data.board.board_root_item = obj
                         self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
-                        _folder_data.board.board_ready = True
+                        _folder_data.board.ready = True
                 continue
 
             elif attr_type == 'BoardUserPointsList':
-                board_user_points = []
+                user_points = []
                 for user_point in attr_data:
                     point_tuple = user_point[0]
                     scale_x = user_point[1]
                     scale_y = user_point[2]
-                    board_user_points.append((QPointF(*point_tuple), scale_x, scale_y))
-                obj.board_user_points = board_user_points
+                    user_points.append((QPointF(*point_tuple), scale_x, scale_y))
+                obj.user_points = user_points
                 continue
 
             else:
@@ -923,17 +923,17 @@ class BoardMixin(BoardTextEditItemMixin):
         board_folder_data.update({'is_virtual':  fd.virtual})
         board_folder_data.update({'folder_name': fd.folder_name})
         # сохранение атрибутов доски
-        self.board_object_attributes_to_serial(board, board_attributes, exclude=('board_items_list', 'board_user_points'))
+        self.board_object_attributes_to_serial(board, board_attributes, exclude=('items_list', 'user_points'))
 
         # сохранение юзер-поинтов отдельно,
         # т.к. QPoinF не сериализуется самостоятельно в tuple
         user_points_serialized = []
-        for user_point in board.board_user_points:
+        for user_point in board.user_points:
             pos = user_point[0]
             scale_x = user_point[1]
             scale_y = user_point[2]
             user_points_serialized.append(((pos.x(), pos.y()), scale_x, scale_y))
-        board_attributes.append(('board_user_points', 'BoardUserPointsList', user_points_serialized))
+        board_attributes.append(('user_points', 'BoardUserPointsList', user_points_serialized))
 
         # сохранение айтемов доски
         for item in board.board_items_list:
@@ -1062,7 +1062,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.build_board_bounding_rect(fd)
 
                 fd.previews_done = True
-                fd.board.board_ready = True
+                fd.board.ready = True
                 fd.board.board_root_folder = cf
                 fd.board.board_root_item = bi
 
@@ -1227,7 +1227,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.build_board_bounding_rect(folder_data)
 
-        folder_data.board.board_ready = True
+        folder_data.board.ready = True
         if self.STNG_board_move_to_current_on_first_open:
             self.board_fit_content_on_screen(folder_data.current_image())
         self.update()
@@ -1528,7 +1528,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
-        for point, board_scale_x, board_scale_y in cf.board.board_user_points:
+        for point, board_scale_x, board_scale_y in cf.board.user_points:
             painter.drawPoint(self.board_map_to_viewport(point))
 
     def board_draw_main_default(self, painter, event):
@@ -2092,7 +2092,7 @@ class BoardMixin(BoardTextEditItemMixin):
         gi.board_group_index = 0 # index reserved for group of removed items
         folder_data.board.board_items_list.append(gi)
         item_folder_data.previews_done = True
-        item_folder_data.board.board_ready = True
+        item_folder_data.board.ready = True
         item_folder_data.board.board_root_folder = folder_data
         item_folder_data.board.board_root_item = gi
         gi.item_position = - QPointF(gi.item_width, gi.item_height)/2.0
@@ -2143,7 +2143,7 @@ class BoardMixin(BoardTextEditItemMixin):
         gi.board_group_index = self.retrieve_new_board_item_group_index()
         current_folder_data.board.board_items_list.append(gi)
         item_folder_data.previews_done = True
-        item_folder_data.board.board_ready = True
+        item_folder_data.board.ready = True
         item_folder_data.board.board_root_folder = current_folder_data
         item_folder_data.board.board_root_item = gi
         # располагаем центр в координате вызова контекстеного меню
@@ -2981,7 +2981,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif ctrl and not shift:
                 cf = self.LibraryData().current_folder()
                 canvas_pos = self.board_map_to_board(event.pos())
-                cf.board.board_user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
+                cf.board.user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
@@ -3494,8 +3494,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.fly_pairs:
             _list = []
 
-            if cf.board.board_user_points:
-                for point, bx, by in cf.board.board_user_points:
+            if cf.board.user_points:
+                for point, bx, by in cf.board.user_points:
                     _list.append([point, bx, by])
             else:
                 nearest_item = self.board_get_nearest_item(cf)
@@ -3568,7 +3568,7 @@ class BoardMixin(BoardTextEditItemMixin):
         )
 
     def is_board_ready(self):
-        return self.LibraryData().current_folder().board.board_ready
+        return self.LibraryData().current_folder().board.ready
 
     def board_selected_items_count(self):
         return len(self.selected_items)
