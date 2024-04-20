@@ -780,8 +780,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         board_dict = attr_data
                         _folder_data = self.board_recreate_board_from_serial(board_dict)
                         obj.item_folder_data = _folder_data
-                        _folder_data.board.board_root_folder = fd
-                        _folder_data.board.board_root_item = obj
+                        _folder_data.board.root_folder = fd
+                        _folder_data.board.root_item = obj
                         self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
                         _folder_data.board.ready = True
                 continue
@@ -837,7 +837,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = None
                 attr_type = 'NoneType'
 
-            elif attr_name in ['board_root_folder', 'board_root_item']:
+            elif attr_name in ['root_folder', 'root_item']:
                 attr_data = None
                 attr_type = 'NoneType'
 
@@ -1063,8 +1063,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 fd.previews_done = True
                 fd.board.ready = True
-                fd.board.board_root_folder = cf
-                fd.board.board_root_item = bi
+                fd.board.root_folder = cf
+                fd.board.root_item = bi
 
             else:
                 self.show_center_label("Наведи курсор на группу!", error=True)
@@ -1581,10 +1581,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if board.referer_board_folder is not None:
             lines.append(f'Вы зашли на эту доску из доски папки {board.referer_board_folder.folder_path}')
-        if board.board_root_folder is not None:
-            lines.append(f'Родительская папка этой доски: {board.board_root_folder.folder_path}')
-        if board.board_root_item is not None:
-            lines.append(f'Название родительского айтема этой доски: {board.board_root_item.item_name}')
+        if board.root_folder is not None:
+            lines.append(f'Родительская папка этой доски: {board.root_folder.folder_path}')
+        if board.root_item is not None:
+            lines.append(f'Название родительского айтема этой доски: {board.root_item.item_name}')
 
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
@@ -2047,15 +2047,15 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         items_list = cf.board.items_list
 
-        board_root_item = cf.board.board_root_item
-        if board_root_item and board_root_item.type == BoardItem.types.ITEM_IMAGE and board_root_item.animated:
+        root_item = cf.board.root_item
+        if root_item and root_item.type == BoardItem.types.ITEM_IMAGE and root_item.animated:
             self.show_center_label('Нельзя удалять айтемы из доски анимированного файла', error=True)
             return
 
-        if board_root_item is None:
+        if root_item is None:
             folder_data = cf
         else:
-            folder_data = cf.board.board_root_folder
+            folder_data = cf.board.root_folder
 
         gi = self.get_removed_items_group(folder_data)
 
@@ -2093,8 +2093,8 @@ class BoardMixin(BoardTextEditItemMixin):
         folder_data.board.items_list.append(gi)
         item_folder_data.previews_done = True
         item_folder_data.board.ready = True
-        item_folder_data.board.board_root_folder = folder_data
-        item_folder_data.board.board_root_item = gi
+        item_folder_data.board.root_folder = folder_data
+        item_folder_data.board.root_item = gi
         gi.item_position = - QPointF(gi.item_width, gi.item_height)/2.0
 
         gi.update_corner_info()
@@ -2144,8 +2144,8 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder_data.board.items_list.append(gi)
         item_folder_data.previews_done = True
         item_folder_data.board.ready = True
-        item_folder_data.board.board_root_folder = current_folder_data
-        item_folder_data.board.board_root_item = gi
+        item_folder_data.board.root_folder = current_folder_data
+        item_folder_data.board.root_item = gi
         # располагаем центр в координате вызова контекстеного меню
         gi.item_position = self.board_map_to_board(self.context_menu_exec_point)
         if self.board_selected_items_count() > 0:
