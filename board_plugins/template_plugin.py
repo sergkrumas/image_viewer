@@ -40,7 +40,7 @@ def preparePluginBoard(self, plugin_info):
     pass
 
 def register(board_obj, plugin_info):
-    
+
     plugin_info.name = 'TEMPLATE PLUGIN'
 
     # plugin_info.add_to_menu = False

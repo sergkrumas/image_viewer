@@ -3267,7 +3267,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 try:
                     url = url.replace(" ", "%20")
                     response = urllib.request.urlopen(url)
-                except http.client.InvalidURL:                    
+                except http.client.InvalidURL:
                     self.show_center_label(f'http.client.InvalidURL: {url}', error=True)
                     return
 
