@@ -59,5 +59,5 @@ def register(board_obj, plugin_info):
 
 
 if __name__ == '__main__':
-    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw"])
+    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", "template_plugin.py"])
     sys.exit()
