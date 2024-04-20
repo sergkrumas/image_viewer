@@ -3792,7 +3792,7 @@ def _main():
 
     ServerOrClient.globals = Globals
 
-    if Globals.DEBUG:
+    if Globals.DEBUG or args.board:
         Globals.lite_mode = True
     else:
         if not Globals.lite_mode:
@@ -3836,13 +3836,22 @@ def _main():
     ControlPanel.SettingsWindow = SettingsWindow
     # CP = MW.recreate_control_panel()
     # обработка входящих данных
-    if path:
-        LibraryData().handle_input_data(path)
-    else:
-        # без запроса
+    default_branch = True    
+    if args.board:
         LibraryData().create_empty_virtual_folder()
-    if args.forcelibrarypage:
-        MW.change_page(MW.pages.LIBRARY_PAGE)
+        MW.change_page(MW.pages.BOARD_PAGE)
+        processAppEvents()
+        MW.board_loadBoard(path)
+        default_branch = False
+
+    if default_branch:
+        if path:
+            LibraryData().handle_input_data(path)
+        else:
+            # без запроса
+            LibraryData().create_empty_virtual_folder()
+        if args.forcelibrarypage:
+            MW.change_page(MW.pages.LIBRARY_PAGE)
 
     # вход в петлю обработки сообщений
     exit_code = app.exec()

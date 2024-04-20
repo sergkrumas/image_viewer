@@ -627,8 +627,8 @@ class BoardMixin(BoardTextEditItemMixin):
         fd.board.ready = True
         return fd
 
-    def board_loadBoard(self):
-        self.board_loadBoardDefault()
+    def board_loadBoard(self, path=None):
+        self.board_loadBoardDefault(path)
 
     def board_saveBoard(self):
         self.board_saveBoardDefault()
@@ -644,13 +644,16 @@ class BoardMixin(BoardTextEditItemMixin):
         data = dialog.getOpenFileName(self, title, folder_path, filter_data)
         return data[0]
 
-    def board_loadBoardDefault(self):
-        if self.Globals.DEBUG:
-            board_filepath = self.debug_file_io_filepath
+    def board_loadBoardDefault(self, path=None):
+        if path is not None:
+            board_filepath = path
+        else:
+            if self.Globals.DEBUG:
+                board_filepath = self.debug_file_io_filepath
 
-        if not os.path.exists(board_filepath):
-            board_filepath = ""
-            board_filepath = self.dialog_open_boardfile()
+            if not os.path.exists(board_filepath):
+                board_filepath = ""
+                board_filepath = self.dialog_open_boardfile()
 
         is_file_exists = os.path.exists(board_filepath)
         is_file_extension_ok = board_filepath.lower().endswith(".board")
@@ -970,6 +973,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
             save_folderpath = cf.folder_path
 
+            if os.path.isfile(save_folderpath):
+                # частенько тут оказывается путь на файл доски,
+                # и тогда надо избавиться от имени файла доски в этом пути
+                save_folderpath = os.path.dirname(save_folderpath)
+
         if self.STNG_use_cbor2_instead_of_json:
             file_format = 'cbor2'
         else:
@@ -1237,7 +1245,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         folder_data.board.ready = True
         if self.STNG_board_move_to_current_on_first_open:
-            self.board_fit_content_on_screen(folder_data.current_image())
+            if folder_data.current_image().board_item is not None:
+                self.board_fit_content_on_screen(folder_data.current_image())
         self.update()
 
     def board_timer_handler(self):
