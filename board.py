@@ -312,10 +312,8 @@ class PluginInfo():
         for name in BoardCallbacksNames:
             setattr(self, name, None)
 
-    def setFilename(self, name):
+    def setDefaults(self, name):
         self.filename = name
-
-    def setName(self, name):
         self.name = name
 
     def menu_callback(self):
@@ -492,15 +490,17 @@ class BoardMixin(BoardTextEditItemMixin):
         filename = os.path.basename(filepath)
         module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
         pi = PluginInfo(module, self)
-        pi.setName(filename)
-        pi.setFilename(filename)
-        self.board_plugins.append(pi)
+        pi.setDefaults(filename)
         if plugin_reg_func:
+            ok = False
             try:
                 plugin_reg_func(self, pi)
+                ok = True
                 # print(f'\tplugin {pi.name} registred!')
             except:
                 print(f'\t! failed to load plugin {filename}')
+            if ok:
+                self.board_plugins.append(pi)
 
     def board_keyPressEventDefault(self, event):
         key = event.key()
