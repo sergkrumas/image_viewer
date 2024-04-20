@@ -232,7 +232,7 @@ class BoardItem():
             else:
                 translation.translate(self.item_position.x(), self.item_position.y())
         if apply_global_scale:
-            global_scaling.scale(board.scale_x, board.scale_y)
+            global_scaling.scale(board.board_scale_x, board.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
