@@ -1602,9 +1602,13 @@ class BoardMixin(BoardTextEditItemMixin):
             lines.append(f'Доска виртуальной папки {current_folder.folder_path}')
         else:
             lines.append(f'Доска папки {current_folder.folder_path}')
-        lines.append(f'Текущий индекс айтема: {current_folder.board.current_item_index}')
-        lines.append(f'Текущий индекс айтема-группы: {current_folder.board.current_item_group_index}')
-        lines.append(f'Board bounding rect: {current_folder.board.bounding_rect}')
+        if board.plugin_filename:
+            lines.append(f'Имя файла-плагина: {board.plugin_filename}')
+        else:
+            lines.append('Доска без плагина')
+        lines.append(f'Текущий индекс айтема: {board.current_item_index}')
+        lines.append(f'Текущий индекс айтема-группы: {board.current_item_group_index}')
+        lines.append(f'Board bounding rect: {board.bounding_rect}')
 
         lines.append('')
 
