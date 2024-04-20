@@ -6,6 +6,7 @@
 
 
 import sys
+import os
 import math
 import subprocess
 from PyQt5.QtWidgets import *
@@ -50,7 +51,7 @@ def paintEvent(self, painter, event):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         SIZE = 125
 
-        cursor_pos = self.board_map_to_board(cursor_pos).toPoint()
+        cursor_pos = self.board_MapToBoard(cursor_pos).toPoint()
         x = (cursor_pos.x() // SIZE) * SIZE
         y = (cursor_pos.y() // SIZE) * SIZE
         self.bckg_rects[(x,y)] = 255
@@ -59,8 +60,8 @@ def paintEvent(self, painter, event):
             _x, _y = key
             bckg_rect_board = QRect(_x, _y, SIZE, SIZE)
             bckg_rect_viewport = QRectF(
-                self.board_map_to_viewport(bckg_rect_board.topLeft()),
-                self.board_map_to_viewport(bckg_rect_board.bottomRight()),
+                self.board_MapToViewport(bckg_rect_board.topLeft()),
+                self.board_MapToViewport(bckg_rect_board.bottomRight()),
             )
             base.setAlpha(max(0, alpha))
             painter.fillRect(bckg_rect_viewport, base)
@@ -82,8 +83,8 @@ def paintEvent(self, painter, event):
         radius_min = min(c1.radius, c2.radius)
         radius_diff = get_pixels_in_radius_unit(self)*(radius_max - radius_min)
 
-        p1 = self.board_map_to_viewport(c1.position)
-        p2 = self.board_map_to_viewport(c2.position)
+        p1 = self.board_MapToViewport(c1.position)
+        p2 = self.board_MapToViewport(c2.position)
         distance = math.hypot(p1.x()-p2.x(), p1.y() - p2.y())
         # distance = math.sqrt(math.pow(p1.x()-p2.x(), 2) + math.pow(p1.y() - p2.y(), 2))
         try:
@@ -107,7 +108,7 @@ def paintEvent(self, painter, event):
             points_on_circles = []
             for n, c in enumerate((c1, c2)):
 
-                center_pos = self.board_map_to_viewport(c.position)
+                center_pos = self.board_MapToViewport(c.position)
                 radius = c.radius
 
                 radius_length = get_pixels_in_radius_unit(self)*radius
@@ -156,7 +157,7 @@ def paintEvent(self, painter, event):
 
     self.center_under_cursor = None
     for c in circles:
-        center_point = self.board_map_to_viewport(c.position)
+        center_point = self.board_MapToViewport(c.position)
         radius = c.radius
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
@@ -194,7 +195,7 @@ def mousePressEvent(self, event):
     cursor_pos = event.pos()
     breaked = False
     for index, c in enumerate(self.circles):
-        point = self.board_map_to_viewport(c.position)
+        point = self.board_MapToViewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.drag_point = index
@@ -214,12 +215,12 @@ def mouseMoveEvent(self, event):
         if self.circles:
             nearest_circle = None
             for c in self.circles:
-                l = self.board_map_to_viewport(c.position) - event.pos()
+                l = self.board_MapToViewport(c.position) - event.pos()
                 c._l = QVector2D(l).length()
 
             nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
 
-            self.tempCircle.position = self.board_map_to_board(QPointF(event.pos()))
+            self.tempCircle.position = self.board_MapToBoard(QPointF(event.pos()))
             self.tempPair = (self.tempCircle, nearest_circle)
         else:
             self.tempPair = None
@@ -258,7 +259,7 @@ def wheelEvent(self, event):
 
     breaked = False
     for index, c in enumerate(self.circles):
-        point = self.board_map_to_viewport(c.position)
+        point = self.board_MapToViewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
             self.circles[index].radius += value
@@ -358,5 +359,5 @@ def register(board_obj, plugin_info):
 
 
 if __name__ == '__main__':
-    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw"])
+    subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
     sys.exit()

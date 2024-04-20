@@ -1558,7 +1558,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
         for point, board_scale_x, board_scale_y in cf.board.user_points:
-            painter.drawPoint(self.board_MapToViewer(point))
+            painter.drawPoint(self.board_MapToViewport(point))
 
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
@@ -3032,7 +3032,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     execute_clickable_text(note_content)
                     break
 
-    def board_MapToViewer(self, canvas_pos):
+    def board_MapToViewport(self, canvas_pos):
         scaled_rel_pos = QPointF(canvas_pos.x()*self.board_scale_x, canvas_pos.y()*self.board_scale_y)
         viewport_pos = self.board_origin + scaled_rel_pos
         return viewport_pos
