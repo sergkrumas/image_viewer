@@ -3433,7 +3433,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             window.activateWindow()
 
     def get_user_data_filepath(self, filename):
-        return os.path.join(os.path.dirname(__file__), "user_data", filename)        
+        return os.path.join(os.path.dirname(__file__), "user_data", filename)
 
 
 def choose_start_option_callback(do_start_server, path):
@@ -3836,7 +3836,7 @@ def _main():
     ControlPanel.SettingsWindow = SettingsWindow
     # CP = MW.recreate_control_panel()
     # обработка входящих данных
-    default_branch = True    
+    default_branch = True
     if args.board:
         LibraryData().create_empty_virtual_folder()
         MW.change_page(MW.pages.BOARD_PAGE)

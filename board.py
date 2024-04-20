@@ -317,7 +317,7 @@ class PluginInfo():
 
     def menu_callback(self):
         board = self.board
-        board.board_SetPlugin(self)        
+        board.board_SetPlugin(self)
 
 
 class BoardMixin(BoardTextEditItemMixin):
@@ -864,7 +864,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if isinstance(obj, self.BoardItem):
                     if obj.type == self.BoardItem.types.ITEM_IMAGE:
                         attr_data = None
-                        attr_type = 'NoneType'                        
+                        attr_type = 'NoneType'
                     elif obj.type == self.BoardItem.types.ITEM_GROUP:
                         attr_data = self.board_data_to_dict(obj.item_folder_data)
                     elif obj.type == self.BoardItem.types.ITEM_FOLDER:
@@ -1231,7 +1231,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return cf.board.current_item_index
 
     def retrieve_new_board_item_group_index(self):
-        cf = self.LibraryData().current_folder()        
+        cf = self.LibraryData().current_folder()
         cf.board.current_item_group_index += 1
         return cf.board.current_item_group_index
 
