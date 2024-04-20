@@ -294,7 +294,7 @@ class PluginInfo():
         self.board = board
         self.add_to_menu = True
 
-        self.pluginBoardInit = None
+        self.preparePluginBoard = None
 
         self.paintEvent = None
 
@@ -462,8 +462,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.keyReleaseEventBoardCallback(event)
 
     def board_SetPlugin(self, pi):
-        if pi.pluginBoardInit:
-            pi.pluginBoardInit(self, pi)
+        if pi.preparePluginBoard:
+            pi.preparePluginBoard(self, pi)
         cf = self.LibraryData().current_folder()
         board = cf.board
         board.plugin_filename = pi.filename

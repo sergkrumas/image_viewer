@@ -36,7 +36,7 @@ def keyReleaseEvent(self, event):
 
 
 
-def pluginBoardInit(self, plugin_info):
+def preparePluginBoard(self, plugin_info):
     pass
 
 def register(board_obj, plugin_info):
@@ -45,7 +45,7 @@ def register(board_obj, plugin_info):
 
     # plugin_info.add_to_menu = False
 
-    plugin_info.pluginBoardInit = pluginBoardInit
+    plugin_info.preparePluginBoard = preparePluginBoard
 
     plugin_info.paintEvent = paintEvent
 

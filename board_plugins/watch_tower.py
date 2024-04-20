@@ -35,7 +35,7 @@ def append_note_item(self, cf, text, warning=False):
     self.board_TextElementRecalculateGabarit(ni)
     return ni
 
-def pluginBoardInit(self, plugin_info):
+def preparePluginBoard(self, plugin_info):
 
     folders = []
 
@@ -132,7 +132,7 @@ def contextMenu(self, event, contextMenu, checkboxes):
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'WATCH TOWER'
-    plugin_info.pluginBoardInit = pluginBoardInit
+    plugin_info.preparePluginBoard = preparePluginBoard
     plugin_info.contextMenu = contextMenu
 
 

@@ -274,7 +274,7 @@ class Circle():
         self.position = position
         self.radius = radius
 
-def pluginBoardInit(self, plugin_info):
+def preparePluginBoard(self, plugin_info):
 
     self.drag_point = -1
     self.oldpos = QPoint(0, 0)
@@ -347,7 +347,7 @@ def pluginBoardInit(self, plugin_info):
 def register(board_obj, plugin_info):
     plugin_info.name = 'TANGENTS CHAIN'
 
-    plugin_info.pluginBoardInit = pluginBoardInit
+    plugin_info.preparePluginBoard = preparePluginBoard
     plugin_info.paintEvent = paintEvent
 
     plugin_info.mousePressEvent = mousePressEvent

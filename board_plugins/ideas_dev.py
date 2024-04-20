@@ -12,7 +12,7 @@ from PyQt5.QtGui import *
 
 
 
-def pluginBoardInit(self, plugin_info):
+def preparePluginBoard(self, plugin_info):
     pass
 
 
@@ -22,7 +22,7 @@ def pluginBoardInit(self, plugin_info):
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'IDEAS DEV'
-    plugin_info.pluginBoardInit = pluginBoardInit
+    plugin_info.preparePluginBoard = preparePluginBoard
 
 
 
