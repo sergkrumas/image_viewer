@@ -84,10 +84,14 @@ def dropEvent(self, event):
         event.ignore()
 
 def preparePluginBoard(self, plugin_info):
-    fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
-    self.board_make_board_current(fd)
-    fd.board.ready = True
-    fd.previews_done = True
+    board_filepath = getBoardFilepath(self)
+    if os.path.exists(board_filepath):
+        self.board_loadBoard(path=board_filepath)
+    else:
+        fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
+        self.board_make_board_current(fd)
+        fd.board.ready = True
+        fd.previews_done = True
 
 def getBoardFilepath(self):
     board_filepath = self.board_BuildBoardFilename(self.get_user_data_folder(), 'bookmarks_board')
