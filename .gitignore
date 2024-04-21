@@ -15,3 +15,4 @@ default_register_image_viewer.reg
 thumbnails_row_debug/python/imgs/*
 user_data/watch_tower.data
 user_data/watch_tower.data.txt
+user_data/bookmarks_board.cbor2.board
