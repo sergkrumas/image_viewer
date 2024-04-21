@@ -611,7 +611,10 @@ class BoardMixin(BoardTextEditItemMixin):
                     path = url.path()
                     if path:
                         path = path[1:]
-                        self.board_add_item_folder(folder_path=path)
+                        if os.path.isdir(path):
+                            self.board_add_item_folder(folder_path=path)
+                        else:
+                            self.show_center_label('Файлы не поддерживаются, поддерживаются только папки')
                 else:
                     url = url.url()
                     if self.is_board_page_active():
