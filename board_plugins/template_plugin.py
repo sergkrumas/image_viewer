@@ -34,6 +34,15 @@ def keyPressEvent(self, event):
 def keyReleaseEvent(self, event):
     self.board_keyReleaseEventDefault(event)
 
+def dragEnterEvent(self, event):
+    event.accept()
+    print('template_plugin dragEnterEvent')
+
+def dragMoveEvent(self, event):
+    print('template_plugin dragMoveEvent')
+
+def dropEvent(self, event):
+    print('template_plugin dropEvent')
 
 
 def preparePluginBoard(self, plugin_info):
@@ -55,6 +64,10 @@ def register(board_obj, plugin_info):
 
     plugin_info.wheelEvent = wheelEvent
     plugin_info.contextMenu = contextMenu
+
+    plugin_info.dragEnterEvent = dragEnterEvent
+    plugin_info.dragMoveEvent = dragMoveEvent
+    plugin_info.dropEvent = dropEvent
 
 
 
