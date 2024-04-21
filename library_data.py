@@ -1458,12 +1458,6 @@ class ImageData():
                 # so we'll settle for when its content was last modified.
                 return stat.st_mtime
 
-    def get_disk_size(self, filepath):
-        try:
-            return os.path.getsize(filepath)
-        except Exception as e:
-            return 0
-
     def __init__(self, filepath, folder_data):
         super().__init__()
         self.scale = None
@@ -1490,7 +1484,7 @@ class ImageData():
                 self.md5, self.md5_tuple = "", ()
             self.creation_date = self.get_creation_date()
             self.image_metadata = dict()
-            self.disk_size = self.get_disk_size(self.filepath)
+            self.disk_size = get_file_size(self.filepath)
         else:
             self.creation_date = 0
             self.md5, self.md5_tuple = "", ()
