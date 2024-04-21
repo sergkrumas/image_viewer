@@ -783,7 +783,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
         fd.board.ready = True
-        self.LibraryData().load_board_data()
+        self.LibraryData().load_board_data() #callbacks are set here
         self.init_selection_bounding_box_widget(fd)
         self.build_board_bounding_rect(fd)
 
