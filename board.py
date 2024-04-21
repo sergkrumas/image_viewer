@@ -296,6 +296,7 @@ BoardCallbacksNames = [
     'dragEnterEvent',
     'dragMoveEvent',
     'dropEvent',
+    'getBoardFilepath',
 ]
 
 class PluginInfo():
@@ -1018,14 +1019,8 @@ class BoardMixin(BoardTextEditItemMixin):
         })
         return board_base
 
-    def board_saveBoardDefault(self):
+    def board_getBoardFilepathDefault(self):
         cf = self.LibraryData().current_folder()
-
-        # если находимся в зависимой доске,
-        # то сохраняем корневую доску, а зависимая запишется вместе с ней
-        while cf.board.root_folder is not None:
-            print(f'saving... {cf.folder_name}::{cf.folder_path} is not root folder...')
-            cf = cf.board.root_folder
 
         if cf.virtual:
             filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -1049,6 +1044,22 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             file_format = 'json'
         board_filepath = os.path.normpath(os.path.join(save_folderpath, f"{filename}.{file_format}.board"))
+
+        return board_filepath
+
+    def board_getBoardFilepath(self):
+        return self.getBoardFilepathBoardCallback()
+
+    def board_saveBoardDefault(self):
+        cf = self.LibraryData().current_folder()
+
+        # если находимся в зависимой доске,
+        # то сохраняем корневую доску, а зависимая запишется вместе с ней
+        while cf.board.root_folder is not None:
+            print(f'saving... {cf.folder_name}::{cf.folder_path} is not root folder...')
+            cf = cf.board.root_folder
+
+        board_filepath = self.board_getBoardFilepath()
 
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
         self.LibraryData().save_board_data()
