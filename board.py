@@ -664,7 +664,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if sel_count > 0:
             command_label = f'{command_label} (добавить в неё выделенные айтемы: {sel_count})'
         board_add_item_group = contextMenu.addAction(command_label)
-        board_add_item_group.triggered.connect(self.board_add_item_group)
+        board_add_item_group.triggered.connect(self.board_add_item_group_noargs)
 
         board_add_item_frame = contextMenu.addAction("Фрейм")
         board_add_item_frame.triggered.connect(self.board_add_item_frame)
@@ -2231,6 +2231,12 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.show_center_label('Айтем-группа не найдена!', error=True)
         self.update()
+
+    def board_add_item_group_noargs(self):
+        # !!! если засунуть board_add_item_group в connect,
+        # то значение move_selection_to_group будет равно позиционному аргументу, который будет передан при вызове,
+        # и важно этого избежать, поэтому действуем через прокладку board_add_item_group_noargs
+        self.board_add_item_group()
 
     def board_add_item_group(self, move_selection_to_group=True, virtual_allowed=False, item_position=None):
         current_folder_data = self.LibraryData().current_folder()
