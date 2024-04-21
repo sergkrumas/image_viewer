@@ -2218,9 +2218,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label('Айтем-группа не найдена!', error=True)
         self.update()
 
-    def board_add_item_group(self):
+    def board_add_item_group(self, move_selection_to_group=True, virtual_allowed=False, item_position=None):
         current_folder_data = self.LibraryData().current_folder()
-        if current_folder_data.virtual:
+        if not virtual_allowed and current_folder_data.virtual:
             self.show_center_label('Нельзя создавать айтемы-группы в досках виртуальных папок', error=True)
             return
         item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
@@ -2234,12 +2234,16 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.root_folder = current_folder_data
         item_folder_data.board.root_item = gi
         # располагаем центр в координате вызова контекстеного меню
-        gi.item_position = self.board_MapToBoard(self.context_menu_exec_point)
-        if self.board_selected_items_count() > 0:
+        if item_position is None:
+            gi.item_position = self.board_MapToBoard(self.context_menu_exec_point)
+        else:
+            gi.item_position = item_position
+        if move_selection_to_group and self.board_selected_items_count() > 0:
             self.move_items_to_group(item_group=gi, items=self.selected_items)
         gi.update_corner_info()
         self.board_select_items([gi])
         self.update()
+        return gi
 
     def board_add_item_note(self):
         current_folder_data = self.LibraryData().current_folder()
