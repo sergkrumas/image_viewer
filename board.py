@@ -293,6 +293,9 @@ BoardCallbacksNames = [
     'contextMenu',
     'keyPressEvent',
     'keyReleaseEvent',
+    'dragEnterEvent',
+    'dragMoveEvent',
+    'dropEvent',
 ]
 
 class PluginInfo():
@@ -452,6 +455,15 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_keyReleaseEvent(self, event):
         self.keyReleaseEventBoardCallback(event)
 
+    def board_dragEnterEvent(self, event):
+        self.dragEnterEventBoardCallback(event)
+
+    def board_dragMoveEvent(self, event):
+        self.dragMoveEventBoardCallback(event)
+
+    def board_dropEvent(self, event):
+        self.dropEventBoardCallback(event)
+
     def board_SetPlugin(self, pi):
         if pi.preparePluginBoard:
             pi.preparePluginBoard(self, pi)
@@ -571,6 +583,16 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_dive_inside_board_item(back_to_referer=True)
         elif key in [Qt.Key_Delete]:
             self.board_delete_selected_board_items()
+
+    def board_dragEnterEventDefault(self, event):
+        event.accept()
+        print('dragEnterEventDefault')
+
+    def board_dragMoveEventDefault(self, event):
+        print('dragMoveEventDefault')
+
+    def board_dropEventDefault(self, event):
+        print('dropEventDefault')
 
     def board_ContextMenuPluginsDefault(self, event, contextMenu):
         pis = []

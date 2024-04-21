@@ -159,52 +159,61 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             ]
 
     def dragEnterEvent(self, event):
-        mime_data = event.mimeData()
-        if mime_data.hasUrls() or mime_data.hasImage():
-            event.accept()
+        if self.is_board_page_active():
+            self.board_dragEnterEvent(event)
         else:
-            event.ignore()
+            mime_data = event.mimeData()
+            if mime_data.hasUrls() or mime_data.hasImage():
+                event.accept()
+            else:
+                event.ignore()
 
-    # def dragMoveEvent(self, event):
-    #     if event.mimeData().hasUrls():
-    #         event.setDropAction(Qt.CopyAction)
-    #         event.accept()
-    #     else:
-    #         event.ignore()
+    def dragMoveEvent(self, event):
+        if self.is_board_page_active():
+            self.board_dragMoveEvent(event)
+        else:
+            if event.mimeData().hasUrls():
+                event.setDropAction(Qt.CopyAction)
+                event.accept()
+            else:
+                event.ignore()
 
     def dropEvent(self, event):
-        mime_data = event.mimeData()
-        if mime_data.hasImage():
-            image = QImage(event.mimeData().imageData())
-            image.save("data.png")
-        elif event.mimeData().hasUrls():
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-            paths = []
-            for url in event.mimeData().urls():
-                if url.isLocalFile():
-                    path = str(url.toLocalFile())
-                    # if not os.path.isdir(path):
-                    #     path = os.path.dirname(path)
-                    paths.append(path)
-                else:
-                    url = url.url()
-                    if self.is_board_page_active():
-                        self.board_download_file(url)
-                    else:
-                        print(url)
-            all_but_last = paths[:-1]
-            last_path = paths[-1:]
-            if Globals.DEBUG:
-                to_print = f'Drop Event Data Local Paths: {paths}'
-                print(to_print)
-            for path in all_but_last:
-                LibraryData().handle_input_data(path, pre_load=True)
-            for path in last_path:
-                LibraryData().handle_input_data(path)
-            self.update()
+        if self.is_board_page_active():
+            self.board_dropEvent(event)
         else:
-            event.ignore()
+            mime_data = event.mimeData()
+            if mime_data.hasImage():
+                image = QImage(event.mimeData().imageData())
+                image.save("data.png")
+            elif event.mimeData().hasUrls():
+                event.setDropAction(Qt.CopyAction)
+                event.accept()
+                paths = []
+                for url in event.mimeData().urls():
+                    if url.isLocalFile():
+                        path = str(url.toLocalFile())
+                        # if not os.path.isdir(path):
+                        #     path = os.path.dirname(path)
+                        paths.append(path)
+                    else:
+                        url = url.url()
+                        if self.is_board_page_active():
+                            self.board_download_file(url)
+                        else:
+                            print(url)
+                all_but_last = paths[:-1]
+                last_path = paths[-1:]
+                if Globals.DEBUG:
+                    to_print = f'Drop Event Data Local Paths: {paths}'
+                    print(to_print)
+                for path in all_but_last:
+                    LibraryData().handle_input_data(path, pre_load=True)
+                for path in last_path:
+                    LibraryData().handle_input_data(path)
+                self.update()
+            else:
+                event.ignore()
 
     def update_threads_info(self, data):
         if data:
