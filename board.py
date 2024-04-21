@@ -607,7 +607,12 @@ class BoardMixin(BoardTextEditItemMixin):
             event.setDropAction(Qt.CopyAction)
             event.accept()
             for url in event.mimeData().urls():
-                if not url.isLocalFile():
+                if url.isLocalFile():
+                    path = url.path()
+                    if path:
+                        path = path[1:]
+                        self.board_add_item_folder(folder_path=path)
+                else:
                     url = url.url()
                     if self.is_board_page_active():
                         self.board_download_file(url)
@@ -2251,9 +2256,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_select_items([ni])
         self.update()
 
-    def board_add_item_folder(self):
-        folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
-        fd = self.LibraryData().current_folder()
+    def board_add_item_folder(self, folder_path=None):
+        if folder_path is None:
+            folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
         if folder_path:
             with self.show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
@@ -2262,7 +2267,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
                 fi.board_index = self.retrieve_new_board_item_index()
-                fd.board.items_list.append(fi)
+                _fd = self.LibraryData().current_folder()
+                _fd.board.items_list.append(fi)
                 # располагаем в центре экрана
                 fi.item_position = self.board_MapToBoard(self.rect().center())
                 fi.update_corner_info()
