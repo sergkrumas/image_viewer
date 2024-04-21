@@ -585,14 +585,36 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_delete_selected_board_items()
 
     def board_dragEnterEventDefault(self, event):
-        event.accept()
-        print('dragEnterEventDefault')
+        mime_data = event.mimeData()
+        if mime_data.hasUrls() or mime_data.hasImage():
+            event.accept()
+        else:
+            event.ignore()
 
     def board_dragMoveEventDefault(self, event):
-        print('dragMoveEventDefault')
+        if event.mimeData().hasUrls():
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
 
     def board_dropEventDefault(self, event):
-        print('dropEventDefault')
+        mime_data = event.mimeData()
+        if mime_data.hasImage():
+            image = QImage(event.mimeData().imageData())
+            image.save("data.png")
+        elif event.mimeData().hasUrls():
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+            for url in event.mimeData().urls():
+                if not url.isLocalFile():
+                    url = url.url()
+                    if self.is_board_page_active():
+                        self.board_download_file(url)
+                        print(url)
+            self.update()
+        else:
+            event.ignore()
 
     def board_ContextMenuPluginsDefault(self, event, contextMenu):
         pis = []

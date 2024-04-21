@@ -196,12 +196,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         # if not os.path.isdir(path):
                         #     path = os.path.dirname(path)
                         paths.append(path)
-                    else:
-                        url = url.url()
-                        if self.is_board_page_active():
-                            self.board_download_file(url)
-                        else:
-                            print(url)
                 all_but_last = paths[:-1]
                 last_path = paths[-1:]
                 if Globals.DEBUG:
