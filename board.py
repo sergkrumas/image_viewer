@@ -798,7 +798,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_type in ['QPointF']:
                 attr_value = QPointF(*attr_data)
 
-            elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list']:
+            elif attr_type in ['bool', 'int', 'float', 'str', 'tuple', 'list', 'dict']:
                 attr_value = attr_data
 
             elif attr_type in ['QRect']:
@@ -937,7 +937,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
                 continue
 
-            elif isinstance(attr_value, (bool, int, float, str, tuple, list)):
+            elif isinstance(attr_value, (bool, int, float, str, tuple, list, dict)):
                 attr_data = attr_value
 
             elif isinstance(attr_value, QPainterPath):
