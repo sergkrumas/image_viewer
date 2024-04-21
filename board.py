@@ -1019,6 +1019,14 @@ class BoardMixin(BoardTextEditItemMixin):
         })
         return board_base
 
+    def board_BuildBoardFilename(self, folder_path, filename):
+        if self.STNG_use_cbor2_instead_of_json:
+            file_format = 'cbor2'
+        else:
+            file_format = 'json'
+        board_filepath = os.path.normpath(os.path.join(folder_path, f"{filename}.{file_format}.board"))
+        return board_filepath
+
     def board_getBoardFilepathDefault(self):
         cf = self.LibraryData().current_folder()
 
@@ -1039,12 +1047,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 # и тогда надо избавиться от имени файла доски в этом пути
                 save_folderpath = os.path.dirname(save_folderpath)
 
-        if self.STNG_use_cbor2_instead_of_json:
-            file_format = 'cbor2'
-        else:
-            file_format = 'json'
-        board_filepath = os.path.normpath(os.path.join(save_folderpath, f"{filename}.{file_format}.board"))
-
+        board_filepath = self.board_BuildBoardFilename(save_folderpath, filename)
         return board_filepath
 
     def board_getBoardFilepath(self):

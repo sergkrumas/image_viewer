@@ -3438,6 +3438,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def get_user_data_filepath(self, filename):
         return os.path.join(os.path.dirname(__file__), "user_data", filename)
 
+    def get_user_data_folder(self):
+        return os.path.join(os.path.dirname(__file__), "user_data")
+
 
 def choose_start_option_callback(do_start_server, path):
     if Globals.force_full_mode:

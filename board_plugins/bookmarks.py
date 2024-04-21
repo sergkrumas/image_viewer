@@ -9,6 +9,8 @@ from PyQt5.QtGui import *
 sys.path.append('../')
 import _utils
 
+
+
 def paintEvent(self, painter, event):
     # default
     self.board_draw_main_default(painter, event)
@@ -87,6 +89,9 @@ def preparePluginBoard(self, plugin_info):
     fd.board.ready = True
     fd.previews_done = True
 
+def getBoardFilepath(self):
+    board_filepath = self.board_BuildBoardFilename(self.get_user_data_folder(), 'bookmarks_board')
+    return board_filepath
 
 
 
@@ -101,6 +106,7 @@ def register(board_obj, plugin_info):
     plugin_info.dragMoveEvent = dragMoveEvent
     plugin_info.dropEvent = dropEvent
 
+    plugin_info.getBoardFilepath = getBoardFilepath
 
 if __name__ == '__main__':
     subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
