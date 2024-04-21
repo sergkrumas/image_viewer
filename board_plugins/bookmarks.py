@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -38,7 +39,7 @@ def objectReceived(self, path):
     cf = self.LibraryData().current_folder()
     if cf.board.root_folder is not None:
         self.show_center_label('BOOKMARKS PLUGIN: Нельзя создавать закладки во вложенных досках!', error=True)
-        return 
+        return
     self.show_center_label(path)
     gi = self.board_add_item_group(
         move_selection_to_group=False,
@@ -97,6 +98,45 @@ def getBoardFilepath(self):
     board_filepath = self.board_BuildBoardFilename(self.get_user_data_folder(), 'bookmarks_board')
     return board_filepath
 
+def any_group_item(self):
+    pos = self.context_menu_exec_point
+    item_under_mouse = None
+    cf = self.LibraryData().current_folder()
+    for item in cf.board.items_list:
+        if item.type == self.BoardItem.types.ITEM_GROUP:
+            if item.get_selection_area(board=self).containsPoint(pos, Qt.WindingFill):
+                item_under_mouse = item
+                break
+    if cf.board.root_folder is not None:
+        # такое доступно только на корневой доске
+        item_under_mouse = None
+    return item_under_mouse
+
+def edit_group_metadata(self, invoke_cause=''):
+    item = any_group_item(self)
+    if item is not None:
+        if invoke_cause == 'edit_name':
+            out, status = QInputDialog.getMultiLineText(self, '', '', item.metainfo['filename'])
+            if status:
+                item.metainfo['filename'] = out
+        elif invoke_cause == 'edit_pagenum':
+            out, status = QInputDialog.getInt(self, '', '', item.metainfo['pagenumber'])
+            if status:
+                item.metainfo['pagenumber'] = out
+
+def implantToContextMenu(self, contextMenu):
+    if any_group_item(self):
+        contextMenu.addSeparator()
+        edit_name = contextMenu.addAction('Bookmarks: Редактировать имя файла')
+        edit_name.triggered.connect(partial(edit_group_metadata, self, 'edit_name'))
+
+        edit_pagenum = contextMenu.addAction('Bookmarks: Редактировать страницу')
+        edit_pagenum.triggered.connect(partial(edit_group_metadata, self, 'edit_pagenum'))
+
+def contextMenu(self, event, contextMenu, checkboxes):
+    # self.board_contextMenuDefault(event, contextMenu, checkboxes, plugin_implant=implantToContextMenu)
+    implantToContextMenu(self, contextMenu)
+    self.board_ContextMenuPluginsDefault(event, contextMenu)
 
 
 
@@ -111,6 +151,8 @@ def register(board_obj, plugin_info):
     plugin_info.dropEvent = dropEvent
 
     plugin_info.getBoardFilepath = getBoardFilepath
+
+    plugin_info.contextMenu = contextMenu
 
 if __name__ == '__main__':
     subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
