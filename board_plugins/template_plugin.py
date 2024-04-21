@@ -35,14 +35,13 @@ def keyReleaseEvent(self, event):
     self.board_keyReleaseEventDefault(event)
 
 def dragEnterEvent(self, event):
-    event.accept()
-    print('template_plugin dragEnterEvent')
+    self.board_dragEnterEventDefault(event)
 
 def dragMoveEvent(self, event):
-    print('template_plugin dragMoveEvent')
+    self.board_dragMoveEventDefault(event)
 
 def dropEvent(self, event):
-    print('template_plugin dropEvent')
+    self.board_dropEventDefault(event)
 
 
 def preparePluginBoard(self, plugin_info):
