@@ -6,17 +6,36 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-
+sys.path.append('../')
+import _utils
 
 def paintEvent(self, painter, event):
+    # default
     self.board_draw_main_default(painter, event)
 
+    # plugin overlay
+    painter.save()
+    painter.setPen(Qt.white)
+    font = painter.font()
+    font.setPixelSize(25)
+    painter.setFont(font)
+    cf = self.LibraryData().current_folder()
+    board = cf.board
+    for bi in board.items_list:
+        if bi.type in [self.BoardItem.types.ITEM_GROUP]:
+            area = bi.get_selection_area(board=self)
+            area_rect = area.boundingRect()
+            area_rect.moveLeft(area_rect.left()+25)
+            area_rect.moveBottomLeft(area_rect.bottomRight())
+            text = '\n\n'.join(str(x) for x in bi.metainfo.values())
+            painter.drawText(area_rect, Qt.TextWordWrap, text)
+    painter.restore()
 
 def objectReceived(self, path):
     self.activateWindow()
     cf = self.LibraryData().current_folder()
     if cf.board.root_folder is not None:
-        self.show_center_label('BOOKMARKS PLUGIN: Нельзя создавать группы во вложенных досках!', error=True)
+        self.show_center_label('BOOKMARKS PLUGIN: Нельзя создавать закладки во вложенных досках!', error=True)
         return 
     self.show_center_label(path)
     gi = self.board_add_item_group(
@@ -25,6 +44,20 @@ def objectReceived(self, path):
         item_position=self.board_MapToBoard(self.rect().center())
     )
     gi.item_folder_data.board.plugin_filename = cf.board.plugin_filename
+
+    file_md5 = _utils.generate_md5(path)[0]
+    file_size = _utils.get_file_size(path)
+    filepath = path
+    filename = os.path.basename(path)
+    pagenumber = 0
+
+    gi.metainfo = {
+        'file_md5': file_md5,
+        'file_size': file_size,
+        'filepath': filepath,
+        'filename': filename,
+        'pagenumber': pagenumber,
+    }
 
 def dragEnterEvent(self, event):
     self.board_dragEnterEventDefault(event)
