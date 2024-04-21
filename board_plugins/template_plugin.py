@@ -43,6 +43,9 @@ def dragMoveEvent(self, event):
 def dropEvent(self, event):
     self.board_dropEventDefault(event)
 
+def getBoardFilepath(self):
+    return self.board_getBoardFilepathDefault()
+
 
 def preparePluginBoard(self, plugin_info):
     pass
@@ -68,7 +71,7 @@ def register(board_obj, plugin_info):
     plugin_info.dragMoveEvent = dragMoveEvent
     plugin_info.dropEvent = dropEvent
 
-
+    plugin_info.getBoardFilepath = getBoardFilepath
 
 
 if __name__ == '__main__':
