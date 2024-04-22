@@ -7,6 +7,33 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 
+class Group(object):
+
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        self.tasks = list()
+
+        filename = os.path.basename(filepath)
+        parts = filename.split("_")
+        start_slice_index = min(1, 1*(len(parts)-1)) #returns 0 when len is 1 and returns 1 when len is more than 1
+        self.name = " ".join(parts[start_slice_index:])
+
+    def __repr__(self):
+        return f'{self.name} ({len(self.tasks)})'
+
+    def channels(self):
+        _channels = []
+        for task in self.tasks:
+            _channels.append(task.channel)
+        _channels = list(reversed(list(set(_channels))))
+        return _channels
+
+    def todo_tasks_for_channel(self, channel):
+        return [task for task in self.tasks if task.channel == channel and task.is_done()]
+
+    def future_tasks_for_channel(self, channel):
+        return [task for task in self.tasks if task.channel == channel and not task.is_done()]
 
 
 def get_plugin_data_filepath(self):
@@ -30,17 +57,13 @@ def paintEvent(self, painter, event):
     painter.drawRect(rect)
 
     painter.setPen(QPen(Qt.white, 1))
-    for n, filepath in enumerate(self.data_groups):
-        filename = os.path.basename(filepath)
+    for n, group in enumerate(self.data_groups):
         transform = QTransform()
         pos = self.board_MapToViewport(QPointF(50*n, 0))
         transform.translate(pos.x(), pos.y())
         transform.rotate(90)
         painter.setTransform(transform)
-        parts = filename.split("_")
-        start_slice_index = min(1, 1*(len(parts)-1)) #returns 0 when len is 1 and returns 1 when len is more than 1
-        text = " ".join(parts[start_slice_index:])
-        painter.drawText(QPointF(5, -5), text)
+        painter.drawText(QPointF(5, -5), group.name)
         painter.resetTransform()
 
     painter.restore()
@@ -64,7 +87,8 @@ def preparePluginBoard(self, plugin_info):
             for obj_name in os.listdir(folder_to_parse_files_in):
                 obj_path = os.path.join(folder_to_parse_files_in, obj_name)
                 if os.path.isfile(obj_path) and obj_name.lower().endswith(exts):
-                    self.data_groups.append(obj_path)
+                    self.data_groups.append(Group(obj_path))
+
         else:
             self.show_center_label(f'Путь, заданный в {plugin_data_filepath}, не найден в файловой системе!', error=True)
     else:
