@@ -13,11 +13,15 @@ def paintEvent(self, painter, event):
 
     painter.save()
 
-    offset = QPointF(300, 300)
-    a = self.board_MapToViewport(offset)
+    offset = QPointF(400, 300)
+    a = self.board_MapToViewport(QPointF(0, 0))
     b = self.board_MapToViewport(offset*10)
     rect = QRectF(a, b)
+
     painter.fillRect(rect, QColor(10, 10, 10, 220))
+    painter.setPen(QPen(QColor(50, 50, 50), 1))
+    painter.setBrush(Qt.NoBrush)
+    painter.drawRect(rect)
 
     painter.restore()
 
