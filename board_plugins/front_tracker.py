@@ -114,16 +114,6 @@ def paintEvent(self, painter, event):
 
     painter.save()
 
-    offset = QPointF(400, 300)
-    a = self.board_MapToViewport(QPointF(0, 0))
-    b = self.board_MapToViewport(offset*10)
-    rect = QRectF(a, b)
-
-    painter.fillRect(rect, QColor(10, 10, 10, 220))
-    painter.setPen(QPen(QColor(50, 50, 50), 1))
-    painter.setBrush(Qt.NoBrush)
-    painter.drawRect(rect)
-
     cursor_pos = self.mapFromGlobal(QCursor().pos())
 
     def set_font(size):
@@ -150,7 +140,6 @@ def paintEvent(self, painter, event):
         painter.drawText(rect, align, group_name)
         painter.restore()
 
-    painter.setPen(QPen(Qt.white, 1))
     offset = QPointF(0, 0)
 
     CHANNEL_WIDTH = 200
@@ -168,7 +157,6 @@ def paintEvent(self, painter, event):
             channel_names_to_draw.append((QPointF(offset), channel.name))
             task_cell_offset = QPointF(offset)
 
-
             for task in channel.tasks:
 
                 a = QPointF(task_cell_offset)
@@ -183,6 +171,21 @@ def paintEvent(self, painter, event):
             offset += QPointF(CHANNEL_WIDTH, 0)
 
 
+
+
+
+    a = self.board_MapToViewport(QPointF(0, 0))
+    height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
+    b = self.board_MapToViewport(offset+QPointF(0, height))
+    rect = QRectF(a, b)
+
+    painter.fillRect(rect, QColor(10, 10, 10, 220))
+    painter.setPen(QPen(QColor(50, 50, 50), 1))
+    painter.setBrush(Qt.NoBrush)
+    painter.drawRect(rect)
+
+    painter.setPen(QPen(Qt.white, 1))
+
     for offset, group in group_names_to_draw:
         set_font(30)
         draw_group_name(offset, group)
@@ -193,8 +196,9 @@ def paintEvent(self, painter, event):
 
     for task_cell_rect, text in task_cells_to_draw:
         set_font(20)
-        painter.drawText(task_cell_rect, Qt.AlignLeft, text)
         painter.drawRect(task_cell_rect)
+        task_cell_rect.adjust(10, 10, -10, -10)
+        painter.drawText(task_cell_rect, Qt.AlignLeft, text)
 
 
     painter.restore()
