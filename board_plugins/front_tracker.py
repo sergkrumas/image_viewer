@@ -97,7 +97,6 @@ class Group(object):
                 task_buffer.append(line)
 
             else:
-                print('..')
                 task_buffer_to_task(task_buffer, current_channel)
 
         task_buffer_to_task(task_buffer, current_channel)
@@ -125,6 +124,7 @@ def paintEvent(self, painter, event):
     painter.setBrush(Qt.NoBrush)
     painter.drawRect(rect)
 
+    cursor_pos = self.mapFromGlobal(QCursor().pos())
 
     def set_font(size):
         font = painter.font()
@@ -133,6 +133,7 @@ def paintEvent(self, painter, event):
 
     def draw_text_90(pos, text):
         transform = QTransform()
+        pos = self.board_MapToViewport(pos)
         transform.translate(pos.x(), pos.y())
         transform.rotate(90)
         painter.setTransform(transform)
@@ -154,34 +155,45 @@ def paintEvent(self, painter, event):
 
     CHANNEL_WIDTH = 200
 
+    group_names_to_draw = []
+    channel_names_to_draw = []
+
     for n, group in enumerate(self.data_groups):
 
-        set_font(30)
-        draw_group_name(offset, group)
+        group_names_to_draw.append((QPointF(offset), group))
 
         for i, channel in enumerate(group.channels):
 
-            set_font(30)
-            draw_text_90(self.board_MapToViewport(offset), channel.name)
-
-            font = painter.font()
-            font.setPixelSize(20)
-            painter.setFont(font)
+            channel_names_to_draw.append((QPointF(offset), channel.name))
 
             task_cell_offset = QPointF(offset)
+
+
             for task in channel.tasks:
+
                 a = QPointF(task_cell_offset)
                 b = a + QPointF(CHANNEL_WIDTH, CHANNEL_WIDTH)
                 a = self.board_MapToViewport(a)
                 b = self.board_MapToViewport(b)
                 task_cell_rect = QRectF(a, b)
 
+                set_font(20)
                 painter.drawText(task_cell_rect, Qt.AlignLeft, task.text)
                 task_cell_offset += QPointF(0, CHANNEL_WIDTH)
 
                 painter.drawRect(task_cell_rect)
 
             offset += QPointF(CHANNEL_WIDTH, 0)
+
+
+    for offset, group in group_names_to_draw:
+        set_font(30)
+        draw_group_name(offset, group)
+
+    for offset, name in channel_names_to_draw:
+        set_font(30)
+        draw_text_90(offset, name)
+
 
 
     painter.restore()
