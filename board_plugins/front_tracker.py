@@ -29,10 +29,19 @@ def paintEvent(self, painter, event):
     painter.setBrush(Qt.NoBrush)
     painter.drawRect(rect)
 
-    for n, text in enumerate(self.data_groups):
-        text = os.path.basename(text)
-        pos = self.board_MapToViewport(QPointF(0, 50*n))
-        painter.drawText(pos, text)
+    painter.setPen(QPen(Qt.white, 1))
+    for n, filepath in enumerate(self.data_groups):
+        filename = os.path.basename(filepath)
+        transform = QTransform()
+        pos = self.board_MapToViewport(QPointF(50*n, 0))
+        transform.translate(pos.x(), pos.y())
+        transform.rotate(90)
+        painter.setTransform(transform)
+        parts = filename.split("_")
+        start_slice_index = min(1, 1*(len(parts)-1)) #returns 0 when len is 1 and returns 1 when len is more than 1
+        text = " ".join(parts[start_slice_index:])
+        painter.drawText(QPointF(5, -5), text)
+        painter.resetTransform()
 
     painter.restore()
 
