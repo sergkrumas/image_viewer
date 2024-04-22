@@ -13,7 +13,6 @@ class TaskStatus():
     IN_PROGRESS = 3
     DONE = 4
 
-
 STATUS_INPROGRESS = TaskStatus.IN_PROGRESS
 STATUS_DONE = TaskStatus.DONE
 
@@ -111,6 +110,16 @@ def paintEvent(self, painter, event):
 
     painter.restore()
 
+def check_exclude(obj_name, files_to_exclude):
+    b1 = obj_name in files_to_exclude
+    b2 = False
+    for line in files_to_exclude:
+        if obj_name.lower().startswith(line.lower()):
+            b2 = True
+            # print(f'{line}, {obj_name}')
+            break
+    return not (b1 or b2)
+
 def preparePluginBoard(self, plugin_info):
     cf = self.LibraryData().current_folder()
     board = cf.board
@@ -126,10 +135,11 @@ def preparePluginBoard(self, plugin_info):
     if data != "":
         lines = data.split('\n')
         folder_to_parse_files_in = lines[0]
+        files_to_exclude = list(filter(bool, lines[1:]))
         if os.path.exists(folder_to_parse_files_in):
             for obj_name in os.listdir(folder_to_parse_files_in):
                 obj_path = os.path.join(folder_to_parse_files_in, obj_name)
-                if os.path.isfile(obj_path) and obj_name.lower().endswith(exts):
+                if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
                     self.data_groups.append(Group(obj_path))
 
             self.board_origin = QPointF(0, 0)
