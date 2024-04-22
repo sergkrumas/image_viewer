@@ -71,10 +71,6 @@ class Group(object):
 
 
 
-
-def get_plugin_data_filepath(self):
-    return self.get_user_data_filepath('front_tracker.data.txt')
-
 def paintEvent(self, painter, event):
 
     if self.Globals.DEBUG or self.STNG_board_draw_grid:
@@ -128,29 +124,31 @@ def preparePluginBoard(self, plugin_info):
 
     exts = ('.txt', '.md')
     exts = ('.txt')
-    plugin_data_filepath = get_plugin_data_filepath(self)
-    data = ""
-    with open(plugin_data_filepath, 'r', encoding='utf8') as file:
+    folders_to_scan_filepath = self.get_user_data_filepath('front_tracker.data.txt')
+    exclude_files_filepath = self.get_user_data_filepath('front_tracker.exclude.data.txt')
+
+    with open(exclude_files_filepath, 'r', encoding='utf8') as file:
+        data = ""
         data = file.read()
-    if data != "":
         lines = data.split('\n')
-        folder_to_parse_files_in = lines[0]
-        files_to_exclude = list(filter(bool, lines[1:]))
-        if os.path.exists(folder_to_parse_files_in):
-            for obj_name in os.listdir(folder_to_parse_files_in):
-                obj_path = os.path.join(folder_to_parse_files_in, obj_name)
-                if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
-                    self.data_groups.append(Group(obj_path))
+        files_to_exclude = list(filter(lambda x: bool(x.strip()), lines))
 
-            self.board_origin = QPointF(0, 0)
-            self.update()
-        else:
-            self.show_center_label(f'Путь, заданный в {plugin_data_filepath}, не найден в файловой системе!', error=True)
-    else:
-        self.show_center_label(f'В файле {plugin_data_filepath} не задан путь к папке с файлами!', error=True)
+    data = ""
+    with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
+        data = file.read()
+        paths = data.split("\n")
+        for path in paths:
+            if os.path.exists(path):
+                for obj_name in os.listdir(path):
+                    obj_path = os.path.join(path, obj_name)
+                    if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
+                        self.data_groups.append(Group(obj_path))
 
+            else:
+                self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
 
-
+        self.board_origin = QPointF(0, 0)
+        self.update()
 
 def register(board_obj, plugin_info):
     plugin_info.name = 'FRONT TRACKER'
