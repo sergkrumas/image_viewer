@@ -16,7 +16,7 @@ class Group(object):
 
         filename = os.path.basename(filepath)
         parts = filename.split("_")
-        start_slice_index = min(1, 1*(len(parts)-1)) #returns 0 when len is 1 and returns 1 when len is more than 1
+        start_slice_index = min(1, 1*(len(parts)-1)) # returns 0 when len = 1 and returns 1 when len > 1
         self.name = " ".join(parts[start_slice_index:]).strip()
 
     def __repr__(self):
@@ -97,6 +97,12 @@ def paintEvent(self, painter, event):
         painter.setTransform(transform)
         painter.drawText(QPointF(5, -5), group.name)
         painter.resetTransform()
+
+        # CHANNEL_WIDTH = 200
+        # GROUP_WIDTH = CHANNEL_WIDTH * len(group.channels())
+
+        # for index, channel_name in enumerate(group.channels()):
+
 
     painter.restore()
 
