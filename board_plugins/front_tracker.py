@@ -7,7 +7,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 def paintEvent(self, painter, event):
-    self.board_draw_main_default(painter, event)
+
+    if self.Globals.DEBUG or self.STNG_board_draw_grid:
+        self.board_draw_grid(painter)
 
     painter.save()
 
@@ -15,7 +17,7 @@ def paintEvent(self, painter, event):
     a = self.board_MapToViewport(offset)
     b = self.board_MapToViewport(offset*10)
     rect = QRectF(a, b)
-    painter.fillRect(rect, QColor(20, 20, 20, 220))
+    painter.fillRect(rect, QColor(10, 10, 10, 220))
 
     painter.restore()
 
