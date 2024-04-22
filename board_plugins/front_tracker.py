@@ -18,25 +18,11 @@ STATUS_DONE = TaskStatus.DONE
 
 class Task(object):
 
-    def is_done(self):
-        return self.date is None
-
     def __init__(self, text, channel):
         super().__init__()
         self.text = text
         self.channel = channel
-
-    # def __init__(self, id, text, date, status, group, linked_tasks, image_paths, channel=None):
-    #     super().__init__()
-    #     self.id = id
-    #     self.text = text
-    #     self.group = group
-    #     self.group.tasks.append(self)
-    #     self.image_paths = image_paths
-    #     self.date = date
-    #     self.channel = channel
-    #     self.linked_tasks = linked_tasks
-    #     self.status = status
+        self.channel.tasks.append(self)
 
     def __repr__(self):
         return f'{self.text} ({self.group.name}'
@@ -92,7 +78,7 @@ class Group(object):
             if tb:
                 text = "\n".join(map(str.strip, tb))
                 task = Task(text, channel)
-                tb = []
+                tb.clear()
 
 
         current_channel = Channel('Default', self)
@@ -102,15 +88,19 @@ class Group(object):
             line_indent = count_indent(line)
             if line_indent == 0:
                 channel_name = line.strip()
-
                 if channel_name:
                     current_channel = Channel(channel_name, self)
+                    continue
+
+            line = line.strip()
+            if line:
+                task_buffer.append(line)
+
             else:
-                line = line.strip()
-                if line:
-                    task_buffer.append(line)
-                else:
-                    task_buffer_to_task(task_buffer, current_channel)
+                print('..')
+                task_buffer_to_task(task_buffer, current_channel)
+
+        task_buffer_to_task(task_buffer, current_channel)
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
@@ -135,9 +125,11 @@ def paintEvent(self, painter, event):
     painter.setBrush(Qt.NoBrush)
     painter.drawRect(rect)
 
-    font = painter.font()
-    font.setPixelSize(30)
-    painter.setFont(font)
+
+    def set_font(size):
+        font = painter.font()
+        font.setPixelSize(size)
+        painter.setFont(font)
 
     def draw_text_90(pos, text):
         transform = QTransform()
@@ -159,14 +151,37 @@ def paintEvent(self, painter, event):
 
     painter.setPen(QPen(Qt.white, 1))
     offset = QPointF(0, 0)
-    for n, group in enumerate(self.data_groups):
-        # draw_text_90(self.board_MapToViewport(offset+QPointF(0, -100)), group.name)
 
+    CHANNEL_WIDTH = 200
+
+    for n, group in enumerate(self.data_groups):
+
+        set_font(30)
         draw_group_name(offset, group)
 
         for i, channel in enumerate(group.channels):
+
+            set_font(30)
             draw_text_90(self.board_MapToViewport(offset), channel.name)
-            offset += QPointF(200, 0)
+
+            font = painter.font()
+            font.setPixelSize(20)
+            painter.setFont(font)
+
+            task_cell_offset = QPointF(offset)
+            for task in channel.tasks:
+                a = QPointF(task_cell_offset)
+                b = a + QPointF(CHANNEL_WIDTH, CHANNEL_WIDTH)
+                a = self.board_MapToViewport(a)
+                b = self.board_MapToViewport(b)
+                task_cell_rect = QRectF(a, b)
+
+                painter.drawText(task_cell_rect, Qt.AlignLeft, task.text)
+                task_cell_offset += QPointF(0, CHANNEL_WIDTH)
+
+                painter.drawRect(task_cell_rect)
+
+            offset += QPointF(CHANNEL_WIDTH, 0)
 
 
     painter.restore()
