@@ -147,14 +147,25 @@ def paintEvent(self, painter, event):
         painter.drawText(QPointF(5, -5), text)
         painter.resetTransform()
 
+    def draw_group_name(offset, group):
+        painter.save()
+        painter.setPen(QPen(QColor(200, 50, 50)))
+        align = Qt.AlignLeft
+        group_name = group.name
+        rect = painter.boundingRect(QRect(), align, group_name)
+        rect.moveBottomLeft(self.board_MapToViewport(offset).toPoint())
+        painter.drawText(rect, align, group_name)
+        painter.restore()
 
     painter.setPen(QPen(Qt.white, 1))
     offset = QPointF(0, 0)
     for n, group in enumerate(self.data_groups):
-        draw_text_90(self.board_MapToViewport(offset+QPointF(0, -100)), group.name)
+        # draw_text_90(self.board_MapToViewport(offset+QPointF(0, -100)), group.name)
+
+        draw_group_name(offset, group)
 
         for i, channel in enumerate(group.channels):
-            draw_text_90(self.board_MapToViewport(offset), channel.name)            
+            draw_text_90(self.board_MapToViewport(offset), channel.name)
             offset += QPointF(200, 0)
 
 
