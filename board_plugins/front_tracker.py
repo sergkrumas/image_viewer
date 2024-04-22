@@ -132,10 +132,13 @@ def preparePluginBoard(self, plugin_info):
                 if os.path.isfile(obj_path) and obj_name.lower().endswith(exts):
                     self.data_groups.append(Group(obj_path))
 
+            self.board_origin = QPointF(0, 0)
+            self.update()
         else:
             self.show_center_label(f'Путь, заданный в {plugin_data_filepath}, не найден в файловой системе!', error=True)
     else:
         self.show_center_label(f'В файле {plugin_data_filepath} не задан путь к папке с файлами!', error=True)
+
 
 
 
