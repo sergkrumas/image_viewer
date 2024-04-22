@@ -179,11 +179,17 @@ def paintEvent(self, painter, event):
 
     sch = QRectF(rect)
     selection_rect_channel = None
-    sch.setWidth(CHANNEL_WIDTH*self.board_scale_x)    
+    sch.setWidth(CHANNEL_WIDTH*self.board_scale_x)
+
+    sgr_base = QRectF(rect)
+    sgr = QRectF(sgr_base)
+    selection_rect_group = None
 
     for n, group in enumerate(self.data_groups):
 
         group_names_to_draw.append((QPointF(offset), group))
+
+        group_start_offset = QPointF(offset)
 
         for i, channel in enumerate(group.channels):
 
@@ -212,12 +218,32 @@ def paintEvent(self, painter, event):
                 selection_rect_channel = QRectF(sch)
                 sch = None
 
-    if selection_rect_channel:
-        painter.fillRect(selection_rect_channel, QColor(200, 20, 20, 50))
+        group_end_offset = QPointF(offset)
 
+
+        group_start_offset = self.board_MapToViewport(group_start_offset)
+        group_end_offset = self.board_MapToViewport(group_end_offset)
+        if sgr:
+            sgr = QRectF(sgr_base)
+            sgr.setLeft(group_start_offset.x())
+            sgr.setWidth(group_end_offset.x() - group_start_offset.x())
+        if sgr and sgr.contains(cursor_pos):
+            selection_rect_group = QRectF(sgr)
+            sgr = None
+
+    color = self.selection_color
+    color.setAlpha(50)
+
+    if selection_rect_group:
+        painter.fillRect(selection_rect_group, color)
+
+    if selection_rect_channel:
+        color.setAlpha(100)
+        painter.fillRect(selection_rect_channel, color)
 
 
     painter.setPen(QPen(Qt.white, 1))
+
 
     for offset, group in group_names_to_draw:
         set_font(30)
