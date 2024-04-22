@@ -7,6 +7,36 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 
+class TaskStatus():
+    STORY = 1
+    TODO = 2
+    IN_PROGRESS = 3
+    DONE = 4
+
+
+STATUS_INPROGRESS = TaskStatus.IN_PROGRESS
+STATUS_DONE = TaskStatus.DONE
+
+class Task(object):
+
+    def is_done(self):
+        return self.date is None
+
+    def __init__(self, id, text, date, status, group, linked_tasks, image_paths, channel=None):
+        super().__init__()
+        self.id = id
+        self.text = text
+        self.group = group
+        self.group.tasks.append(self)
+        self.image_paths = image_paths
+        self.date = date
+        self.channel = channel
+        self.linked_tasks = linked_tasks
+        self.status = status
+
+    def __repr__(self):
+        return f'{self.text} ({self.group}'
+
 class Group(object):
 
     def __init__(self, filepath):
@@ -38,35 +68,7 @@ class Group(object):
     def future_tasks_for_channel(self, channel):
         return [task for task in self.tasks if task.channel == channel and not task.is_done()]
 
-class TaskStatus():
-    STORY = 1
-    TODO = 2
-    IN_PROGRESS = 3
-    DONE = 4
 
-
-STATUS_INPROGRESS = TaskStatus.IN_PROGRESS
-STATUS_DONE = TaskStatus.DONE
-
-class Task(object):
-
-    def is_done(self):
-        return self.date is None
-
-    def __init__(self, id, text, date, status, group, linked_tasks, image_paths, channel=None):
-        super().__init__()
-        self.id = id
-        self.text = text
-        self.group = group
-        self.group.tasks.append(self)
-        self.image_paths = image_paths
-        self.date = date
-        self.channel = channel
-        self.linked_tasks = linked_tasks
-        self.status = status
-
-    def __repr__(self):
-        return f'{self.text} ({self.group}'
 
 
 
