@@ -124,6 +124,14 @@ def paintEvent(self, painter, event):
     def draw_text_90(pos, text):
         transform = QTransform()
         pos = self.board_MapToViewport(pos)
+
+        # для того, чтобы надпись оставалась на экране,
+        # когда из-за зума или панорамирования она уехала в невидимую область
+        font_pixel_size = painter.font().pixelSize() + 10
+        if pos.y() < font_pixel_size:
+            pos.setY(font_pixel_size)
+
+
         transform.translate(pos.x(), pos.y())
         transform.rotate(90)
         painter.setTransform(transform)
@@ -138,7 +146,8 @@ def paintEvent(self, painter, event):
         rect = painter.boundingRect(QRect(), align, group_name)
         pos = self.board_MapToViewport(offset).toPoint()
 
-        # для того, чтобы надпись оставалась на экране
+        # для того, чтобы надпись оставалась на экране,
+        # когда из-за зума или панорамирования она уехала в невидимую область
         font_pixel_size = painter.font().pixelSize() + 10
         if pos.y() < font_pixel_size:
             pos.setY(font_pixel_size)
