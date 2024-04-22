@@ -136,7 +136,14 @@ def paintEvent(self, painter, event):
         align = Qt.AlignLeft
         group_name = group.name
         rect = painter.boundingRect(QRect(), align, group_name)
-        rect.moveBottomLeft(self.board_MapToViewport(offset).toPoint())
+        pos = self.board_MapToViewport(offset).toPoint()
+
+        # для того, чтобы надпись оставалась на экране
+        font_pixel_size = painter.font().pixelSize() + 10
+        if pos.y() < font_pixel_size:
+            pos.setY(font_pixel_size)
+
+        rect.moveBottomLeft(pos)
         painter.drawText(rect, align, group_name)
         painter.restore()
 
@@ -186,13 +193,12 @@ def paintEvent(self, painter, event):
                 task_cell_offset += QPointF(0, CHANNEL_WIDTH)
 
 
+            # !: step 1
             if sch:
                 sch.moveLeft(self.board_MapToViewport(offset).x())
-
-
+            # !: step 2
             offset += QPointF(CHANNEL_WIDTH, 0)
-
-
+            # !: step 3
             if sch and sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
                 sch = None
