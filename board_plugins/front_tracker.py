@@ -19,6 +19,9 @@ class Group(object):
         start_slice_index = min(1, 1*(len(parts)-1)) # returns 0 when len = 1 and returns 1 when len > 1
         self.name = " ".join(parts[start_slice_index:]).strip()
 
+        parts = self.name.split(".")
+        self.name = ".".join(parts[:-1]) 
+
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
 
