@@ -157,6 +157,7 @@ def paintEvent(self, painter, event):
 
     group_names_to_draw = []
     channel_names_to_draw = []
+    task_cells_to_draw = []
 
     for n, group in enumerate(self.data_groups):
 
@@ -165,7 +166,6 @@ def paintEvent(self, painter, event):
         for i, channel in enumerate(group.channels):
 
             channel_names_to_draw.append((QPointF(offset), channel.name))
-
             task_cell_offset = QPointF(offset)
 
 
@@ -177,11 +177,8 @@ def paintEvent(self, painter, event):
                 b = self.board_MapToViewport(b)
                 task_cell_rect = QRectF(a, b)
 
-                set_font(20)
-                painter.drawText(task_cell_rect, Qt.AlignLeft, task.text)
+                task_cells_to_draw.append((QRectF(task_cell_rect), task.text))
                 task_cell_offset += QPointF(0, CHANNEL_WIDTH)
-
-                painter.drawRect(task_cell_rect)
 
             offset += QPointF(CHANNEL_WIDTH, 0)
 
@@ -194,6 +191,10 @@ def paintEvent(self, painter, event):
         set_font(30)
         draw_text_90(offset, name)
 
+    for task_cell_rect, text in task_cells_to_draw:
+        set_font(20)
+        painter.drawText(task_cell_rect, Qt.AlignLeft, text)
+        painter.drawRect(task_cell_rect)
 
 
     painter.restore()
