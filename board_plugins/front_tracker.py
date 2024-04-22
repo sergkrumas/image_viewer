@@ -148,6 +148,23 @@ def paintEvent(self, painter, event):
     channel_names_to_draw = []
     task_cells_to_draw = []
 
+
+    a = self.board_MapToViewport(QPointF(0, 0))
+    height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
+    width = sum(len(g.channels) for g in self.data_groups)*CHANNEL_WIDTH
+    b = self.board_MapToViewport(QPointF(width, height))
+    rect = QRectF(a, b)
+
+    painter.fillRect(rect, QColor(10, 10, 10, 220))
+    painter.setPen(QPen(QColor(50, 50, 50), 1))
+    painter.setBrush(Qt.NoBrush)
+    painter.drawRect(rect)
+
+
+    sch = QRectF(rect)
+    selection_rect_channel = None
+    sch.setWidth(CHANNEL_WIDTH*self.board_scale_x)    
+
     for n, group in enumerate(self.data_groups):
 
         group_names_to_draw.append((QPointF(offset), group))
@@ -168,21 +185,22 @@ def paintEvent(self, painter, event):
                 task_cells_to_draw.append((QRectF(task_cell_rect), task.text))
                 task_cell_offset += QPointF(0, CHANNEL_WIDTH)
 
+
+            if sch:
+                sch.moveLeft(self.board_MapToViewport(offset).x())
+
+
             offset += QPointF(CHANNEL_WIDTH, 0)
 
 
+            if sch and sch.contains(cursor_pos):
+                selection_rect_channel = QRectF(sch)
+                sch = None
+
+    if selection_rect_channel:
+        painter.fillRect(selection_rect_channel, QColor(200, 20, 20, 50))
 
 
-
-    a = self.board_MapToViewport(QPointF(0, 0))
-    height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
-    b = self.board_MapToViewport(offset+QPointF(0, height))
-    rect = QRectF(a, b)
-
-    painter.fillRect(rect, QColor(10, 10, 10, 220))
-    painter.setPen(QPen(QColor(50, 50, 50), 1))
-    painter.setBrush(Qt.NoBrush)
-    painter.drawRect(rect)
 
     painter.setPen(QPen(Qt.white, 1))
 
