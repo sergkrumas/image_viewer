@@ -109,8 +109,6 @@ class Group(object):
 
 def paintEvent(self, painter, event):
 
-    if self.Globals.DEBUG or self.STNG_board_draw_grid:
-        self.board_draw_grid(painter)
 
     painter.save()
 
@@ -303,7 +301,7 @@ def preparePluginBoard(self, plugin_info):
             else:
                 self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
 
-        self.board_origin = QPointF(0, 0)
+        self.board_origin = QPointF(500, 250)
         self.update()
 
 def register(board_obj, plugin_info):
