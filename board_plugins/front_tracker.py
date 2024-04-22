@@ -21,27 +21,43 @@ class Task(object):
     def is_done(self):
         return self.date is None
 
-    def __init__(self, id, text, date, status, group, linked_tasks, image_paths, channel=None):
+    def __init__(self, text, channel):
         super().__init__()
-        self.id = id
         self.text = text
-        self.group = group
-        self.group.tasks.append(self)
-        self.image_paths = image_paths
-        self.date = date
         self.channel = channel
-        self.linked_tasks = linked_tasks
-        self.status = status
+
+    # def __init__(self, id, text, date, status, group, linked_tasks, image_paths, channel=None):
+    #     super().__init__()
+    #     self.id = id
+    #     self.text = text
+    #     self.group = group
+    #     self.group.tasks.append(self)
+    #     self.image_paths = image_paths
+    #     self.date = date
+    #     self.channel = channel
+    #     self.linked_tasks = linked_tasks
+    #     self.status = status
 
     def __repr__(self):
-        return f'{self.text} ({self.group}'
+        return f'{self.text} ({self.group.name}'
+
+class Channel(object):
+
+    def __init__(self, name, group):
+        self.name = name
+        self.group = group
+        self.group.channels.append(self)
+        self.tasks = []
+
+    def __repr__(self):
+        return f'{self.name} ({len(self.tasks)})'
 
 class Group(object):
 
     def __init__(self, filepath):
         super().__init__()
         self.filepath = filepath
-        self.tasks = list()
+        self.channels = list()
 
         filename = os.path.basename(filepath)
         parts = filename.split("_")
@@ -51,22 +67,53 @@ class Group(object):
         parts = self.name.split(".")
         self.name = ".".join(parts[:-1]) 
 
+        self.parse_file()
+
+    def parse_file(self):
+        lines = []
+        with open(self.filepath, 'r', encoding='utf8') as file:
+            data = file.read()
+            lines = data.split("\n")
+        if lines:
+            self.parse_lines(lines)
+
+    def parse_lines(self, lines):
+
+        def count_indent(text):
+            level = 0
+            for n, c in enumerate(text):
+                if c == " ":
+                    level += 1
+                else:
+                    break
+            return level
+
+        def task_buffer_to_task(tb, channel):
+            if tb:
+                text = "\n".join(map(str.strip, tb))
+                task = Task(text, channel)
+                tb = []
+
+
+        current_channel = Channel('Default', self)
+        task_buffer = []
+        for line in lines:
+            line = line.replace("\t", " "*4)
+            line_indent = count_indent(line)
+            if line_indent == 0:
+                channel_name = line.strip()
+
+                if channel_name:
+                    current_channel = Channel(channel_name, self)
+            else:
+                line = line.strip()
+                if line:
+                    task_buffer.append(line)
+                else:
+                    task_buffer_to_task(task_buffer, current_channel)
+
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
-
-    def channels(self):
-        _channels = []
-        for task in self.tasks:
-            _channels.append(task.channel)
-        _channels = list(reversed(list(set(_channels))))
-        return _channels
-
-    def todo_tasks_for_channel(self, channel):
-        return [task for task in self.tasks if task.channel == channel and task.is_done()]
-
-    def future_tasks_for_channel(self, channel):
-        return [task for task in self.tasks if task.channel == channel and not task.is_done()]
-
 
 
 
@@ -88,20 +135,27 @@ def paintEvent(self, painter, event):
     painter.setBrush(Qt.NoBrush)
     painter.drawRect(rect)
 
-    painter.setPen(QPen(Qt.white, 1))
-    for n, group in enumerate(self.data_groups):
+    font = painter.font()
+    font.setPixelSize(30)
+    painter.setFont(font)
+
+    def draw_text_90(pos, text):
         transform = QTransform()
-        pos = self.board_MapToViewport(QPointF(50*n, 0))
         transform.translate(pos.x(), pos.y())
         transform.rotate(90)
         painter.setTransform(transform)
-        painter.drawText(QPointF(5, -5), group.name)
+        painter.drawText(QPointF(5, -5), text)
         painter.resetTransform()
 
-        # CHANNEL_WIDTH = 200
-        # GROUP_WIDTH = CHANNEL_WIDTH * len(group.channels())
 
-        # for index, channel_name in enumerate(group.channels()):
+    painter.setPen(QPen(Qt.white, 1))
+    offset = QPointF(0, 0)
+    for n, group in enumerate(self.data_groups):
+        draw_text_90(self.board_MapToViewport(offset+QPointF(0, -100)), group.name)
+
+        for i, channel in enumerate(group.channels):
+            draw_text_90(self.board_MapToViewport(offset), channel.name)            
+            offset += QPointF(200, 0)
 
 
     painter.restore()
