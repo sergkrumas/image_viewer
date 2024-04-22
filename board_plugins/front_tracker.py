@@ -17,7 +17,7 @@ class Group(object):
         filename = os.path.basename(filepath)
         parts = filename.split("_")
         start_slice_index = min(1, 1*(len(parts)-1)) #returns 0 when len is 1 and returns 1 when len is more than 1
-        self.name = " ".join(parts[start_slice_index:])
+        self.name = " ".join(parts[start_slice_index:]).strip()
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
