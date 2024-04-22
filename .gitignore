@@ -16,3 +16,4 @@ thumbnails_row_debug/python/imgs/*
 user_data/watch_tower.data
 user_data/watch_tower.data.txt
 user_data/bookmarks_board.cbor2.board
+user_data/front_tracker.data.txt
