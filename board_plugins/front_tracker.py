@@ -7,6 +7,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+sys.path.append('../')
+import _utils
+
 TASK_CELL_SIZE = 200
 
 class TaskStatus():
@@ -353,6 +356,12 @@ def check_exclude(obj_name, files_to_exclude):
             break
     return not (b1 or b2)
 
+def find_sublime_text_exe_filepath(self):
+    if self.front_tracker_sublime_text_filepath is None:
+        filepath =_utils.find_exe_file_in_opened_processes(exe_filename='sublime_text.exe')
+        self.front_tracker_sublime_text_filepath = filepath
+    return self.front_tracker_sublime_text_filepath
+
 def preparePluginBoard(self, plugin_info):
     cf = self.LibraryData().current_folder()
     board = cf.board
@@ -360,6 +369,7 @@ def preparePluginBoard(self, plugin_info):
     self.front_tracker_data_groups = []
     self.front_tracker_channel_over_mouse = None
     self.front_tracker_group_over_mouse = None
+    self.front_tracker_sublime_text_filepath = None
 
     exts = ('.txt', '.md')
     exts = ('.txt')
@@ -401,6 +411,8 @@ def preparePluginBoard(self, plugin_info):
     self.board_origin = QPointF(500, 250)
     self.update()
 
+    find_sublime_text_exe_filepath(self)
+
 
 
 
@@ -415,6 +427,8 @@ def register(board_obj, plugin_info):
     plugin_info.mousePressEvent = mousePressEvent
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
+
+
 
 if __name__ == '__main__':
     subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
