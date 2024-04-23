@@ -51,7 +51,7 @@ class Group(object):
         self.name = " ".join(parts[start_slice_index:]).strip()
 
         parts = self.name.split(".")
-        self.name = ".".join(parts[:-1]) 
+        self.name = ".".join(parts[:-1])
 
         self.parse_file()
 
