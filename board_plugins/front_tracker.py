@@ -181,7 +181,7 @@ def paintEvent(self, painter, event):
         painter.drawText(QPointF(5, -5), text)
         painter.resetTransform()
 
-    def draw_group_name(offset, group):
+    def draw_group_name(offset, group, board_scale_x):
         painter.save()
         painter.setPen(QPen(QColor(200, 50, 50)))
         align = Qt.AlignLeft
@@ -194,6 +194,11 @@ def paintEvent(self, painter, event):
         font_pixel_size = painter.font().pixelSize() + 10
         if pos.y() < font_pixel_size:
             pos.setY(font_pixel_size)
+        # то же самое, только теперь название группы будет видно если видно хоть один столбец этой группы
+        current_group_width = sum(channel.ui_width for channel in group.channels)
+        current_group_width *= board_scale_x
+        if pos.x() < 0 and pos.x() > -current_group_width + rect.width():
+            pos.setX(0)
 
         rect.moveBottomLeft(pos)
         painter.drawText(rect, align, group_name)
@@ -293,7 +298,7 @@ def paintEvent(self, painter, event):
 
     for offset, group in group_names_to_draw:
         set_font(30)
-        draw_group_name(offset, group)
+        draw_group_name(offset, group, self.board_scale_x)
 
     for offset, name in channel_names_to_draw:
         set_font(30)
