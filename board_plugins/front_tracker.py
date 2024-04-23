@@ -376,7 +376,7 @@ def implantToContextMenu(self, contextMenu):
     if self.front_tracker_task_under_mouse:
         contextMenu.addSeparator()
         task = self.front_tracker_task_under_mouse
-        open_task = contextMenu.addAction('Front Tracker: открыть таску в Sublime Text')
+        open_task = contextMenu.addAction('Front Tracker: open task in Sublime Text')
         open_task.triggered.connect(partial(openTaskInSublimeText, self, task))
 
 def contextMenu(self, event, contextMenu, checkboxes):
