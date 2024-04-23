@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-PIXEL_SIZE = 200
+TASK_CELL_SIZE = 200
 
 class TaskStatus():
     STORY = 1
@@ -26,7 +26,7 @@ class Task(object):
         self.channel = channel
         self.channel.tasks.append(self)
 
-        self.ui_height = PIXEL_SIZE
+        self.ui_height = TASK_CELL_SIZE
 
     def __repr__(self):
         return f'{self.text} ({self.group.name}'
@@ -39,16 +39,16 @@ class Channel(object):
         self.group.channels.append(self)
         self.tasks = []
 
-        self.ui_width = PIXEL_SIZE
+        self.ui_width = TASK_CELL_SIZE
 
         self.extended = False
 
     def toggle_width(self):
         self.extended = not self.extended
         if self.extended:
-            self.ui_width = PIXEL_SIZE*2
+            self.ui_width = TASK_CELL_SIZE*2
         else:
-            self.ui_width = PIXEL_SIZE
+            self.ui_width = TASK_CELL_SIZE
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
