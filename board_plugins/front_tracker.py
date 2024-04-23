@@ -367,7 +367,6 @@ def check_exclude(obj_name, files_to_exclude):
 def openTaskInSublimeText(self, task):
     exe_filepath = self.front_tracker_sublime_text_filepath
     filepath = task.channel.group.filepath
-    print(">>>>>>", filepath)
     filepath_num = f"{filepath}:{task.start_line_number}"
     subprocess.Popen([exe_filepath, filepath_num])
 
