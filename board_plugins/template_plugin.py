@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+sys.path.append('../')
+import _utils
 
 def get_plugin_data_filepath(self):
     return self.get_user_data_filepath('template_plugin.data.txt')
