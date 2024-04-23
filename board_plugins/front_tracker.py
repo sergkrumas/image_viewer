@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-CHANNEL_WIDTH = 200
+PIXEL_SIZE = 200
 
 class TaskStatus():
     STORY = 1
@@ -25,7 +25,7 @@ class Task(object):
         self.channel = channel
         self.channel.tasks.append(self)
 
-        self.ui_height = CHANNEL_WIDTH
+        self.ui_height = PIXEL_SIZE
 
     def __repr__(self):
         return f'{self.text} ({self.group.name}'
@@ -38,7 +38,7 @@ class Channel(object):
         self.group.channels.append(self)
         self.tasks = []
 
-        self.ui_width = CHANNEL_WIDTH
+        self.ui_width = PIXEL_SIZE
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
@@ -169,8 +169,6 @@ def paintEvent(self, painter, event):
 
 
     a = self.board_MapToViewport(QPointF(0, 0))
-    # width = sum(len(g.channels) for g in self.data_groups)*CHANNEL_WIDTH
-    # height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
     width = sum(c.ui_width for g in self.data_groups for c in g.channels)
     height = max(sum(t.ui_height for t in c.tasks) for g in self.data_groups for c in g.channels)
     b = self.board_MapToViewport(QPointF(width, height))
@@ -184,7 +182,7 @@ def paintEvent(self, painter, event):
 
     sch = QRectF(rect)
     selection_rect_channel = None
-    sch.setWidth(CHANNEL_WIDTH*self.board_scale_x)
+
 
     sgr_base = QRectF(rect)
     sgr = QRectF(sgr_base)
@@ -204,17 +202,18 @@ def paintEvent(self, painter, event):
             for task in channel.tasks:
 
                 a = QPointF(task_cell_offset)
-                b = a + QPointF(CHANNEL_WIDTH, CHANNEL_WIDTH)
+                b = a + QPointF(channel.ui_width, task.ui_height)
                 a = self.board_MapToViewport(a)
                 b = self.board_MapToViewport(b)
                 task_cell_rect = QRectF(a, b)
 
                 task_cells_to_draw.append((QRectF(task_cell_rect), task.text))
-                task_cell_offset += QPointF(0, CHANNEL_WIDTH)
+                task_cell_offset += QPointF(0, task.ui_height)
 
 
             # !: step 1
             if sch:
+                sch.setWidth(channel.ui_width*self.board_scale_x)                
                 sch.moveLeft(self.board_MapToViewport(offset).x())
             # !: step 2
             offset += QPointF(channel.ui_width, 0)
@@ -224,8 +223,6 @@ def paintEvent(self, painter, event):
                 sch = None
 
         group_end_offset = QPointF(offset)
-
-
         group_start_offset = self.board_MapToViewport(group_start_offset)
         group_end_offset = self.board_MapToViewport(group_end_offset)
         if sgr:
