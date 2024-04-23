@@ -280,7 +280,7 @@ def read_meta_info(filepath):
     del im
     return data
 
-def find_browser_exe_file(exe_filename="chrome.exe"):
+def find_exe_file_in_opened_processes(exe_filename="chrome.exe"):
     import psutil
     exe_filepath = None
     for proc in psutil.process_iter():
@@ -295,7 +295,7 @@ def find_browser_exe_file(exe_filename="chrome.exe"):
     return exe_filepath
 
 def open_in_google_chrome(filepath):
-    CHROME_EXE = find_browser_exe_file()
+    CHROME_EXE = find_exe_file_in_opened_processes()
     if CHROME_EXE:
         args = [CHROME_EXE, filepath]
         subprocess.Popen(args)
