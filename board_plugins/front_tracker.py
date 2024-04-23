@@ -101,8 +101,25 @@ class Group(object):
 
         current_channel = Channel('Default', self)
         task_buffer = []
-        for line in lines:
-            line = line.replace("\t", " "*4)
+
+        min_line_indent = 100
+
+        for n0, li in enumerate(lines):
+            # заменяем таб на 4 пробела
+            li = lines[n0] = li.replace("\t", " "*4)
+
+            # считаем минимальный уровень индента для файла
+            if li.strip():
+                ci = count_indent(li)
+                min_line_indent = min(min_line_indent, ci)
+
+        # убираем из каждой строки первые min_line_indent символов,
+        # чтобы алгоритм парсинга работал правильно с файлами разных отступов для групп
+        for n1, li in enumerate(lines):
+            li = lines[n1] = li[min_line_indent:]
+
+
+        for n, line in enumerate(lines):
             line_indent = count_indent(line)
             if line_indent == 0:
                 channel_name = line.strip()
