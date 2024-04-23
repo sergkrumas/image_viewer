@@ -129,8 +129,11 @@ class Group(object):
 
             line = line.strip()
             if line:
-                task_buffer.append(line)
+                if line_indent == 4:
+                    # для тасок, между которыми нет зазора - минимум одна строка
+                    task_buffer_to_task(task_buffer, current_channel)
 
+                task_buffer.append(line)
             else:
                 task_buffer_to_task(task_buffer, current_channel)
 
