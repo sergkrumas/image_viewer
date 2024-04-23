@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+CHANNEL_WIDTH = 200
 
 class TaskStatus():
     STORY = 1
@@ -24,6 +25,8 @@ class Task(object):
         self.channel = channel
         self.channel.tasks.append(self)
 
+        self.ui_height = CHANNEL_WIDTH
+
     def __repr__(self):
         return f'{self.text} ({self.group.name}'
 
@@ -34,6 +37,8 @@ class Channel(object):
         self.group = group
         self.group.channels.append(self)
         self.tasks = []
+
+        self.ui_width = CHANNEL_WIDTH
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
@@ -156,7 +161,7 @@ def paintEvent(self, painter, event):
 
     offset = QPointF(0, 0)
 
-    CHANNEL_WIDTH = 200
+
 
     group_names_to_draw = []
     channel_names_to_draw = []
@@ -164,8 +169,10 @@ def paintEvent(self, painter, event):
 
 
     a = self.board_MapToViewport(QPointF(0, 0))
-    height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
-    width = sum(len(g.channels) for g in self.data_groups)*CHANNEL_WIDTH
+    # width = sum(len(g.channels) for g in self.data_groups)*CHANNEL_WIDTH
+    # height = max(len(c.tasks) for g in self.data_groups for c in g.channels)*CHANNEL_WIDTH
+    width = sum(c.ui_width for g in self.data_groups for c in g.channels)
+    height = max(sum(t.ui_height for t in c.tasks) for g in self.data_groups for c in g.channels)
     b = self.board_MapToViewport(QPointF(width, height))
     rect = QRectF(a, b)
 
@@ -210,7 +217,7 @@ def paintEvent(self, painter, event):
             if sch:
                 sch.moveLeft(self.board_MapToViewport(offset).x())
             # !: step 2
-            offset += QPointF(CHANNEL_WIDTH, 0)
+            offset += QPointF(channel.ui_width, 0)
             # !: step 3
             if sch and sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
