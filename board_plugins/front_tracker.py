@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+import random
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -40,6 +41,10 @@ class Channel(object):
 
         self.ui_width = PIXEL_SIZE
 
+        # if random.random() > 0.5:
+        #     self.ui_width *= 1.5
+        #     self.ui_width = int(self.ui_width)
+
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
 
@@ -59,6 +64,9 @@ class Group(object):
         self.name = ".".join(parts[:-1])
 
         self.parse_file()
+
+    def tasks(self):
+        return [task for channel in self.channels for task in channel.tasks]
 
     def parse_file(self):
         lines = []
@@ -107,13 +115,23 @@ class Group(object):
         task_buffer_to_task(task_buffer, current_channel)
 
     def __repr__(self):
-        return f'{self.name} ({len(self.tasks)})'
+        return f'{self.name} ({len(self.tasks())})'
 
 
 
+def mousePressEvent(self, event):
+    self.board_mousePressEventDefault(event)
+
+def mouseMoveEvent(self, event):
+    self.board_mouseMoveEventDefault(event)
+
+def mouseReleaseEvent(self, event):
+    self.board_mouseReleaseEventDefault(event)
 
 def paintEvent(self, painter, event):
 
+    self.front_tracker_channel_over_mouse = None
+    self.front_tracker_group_over_mouse = None
 
     painter.save()
 
@@ -169,8 +187,8 @@ def paintEvent(self, painter, event):
 
 
     a = self.board_MapToViewport(QPointF(0, 0))
-    width = sum(c.ui_width for g in self.data_groups for c in g.channels)
-    height = max(sum(t.ui_height for t in c.tasks) for g in self.data_groups for c in g.channels)
+    width = sum(c.ui_width for g in self.front_tracker_data_groups for c in g.channels)
+    height = max(sum(t.ui_height for t in c.tasks) for g in self.front_tracker_data_groups for c in g.channels)
     b = self.board_MapToViewport(QPointF(width, height))
     rect = QRectF(a, b)
 
@@ -188,7 +206,7 @@ def paintEvent(self, painter, event):
     sgr = QRectF(sgr_base)
     selection_rect_group = None
 
-    for n, group in enumerate(self.data_groups):
+    for n, group in enumerate(self.front_tracker_data_groups):
 
         group_names_to_draw.append((QPointF(offset), group))
 
@@ -221,6 +239,9 @@ def paintEvent(self, painter, event):
             if sch and sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
                 sch = None
+                self.front_tracker_channel_over_mouse = channel
+
+
 
         group_end_offset = QPointF(offset)
         group_start_offset = self.board_MapToViewport(group_start_offset)
@@ -232,6 +253,7 @@ def paintEvent(self, painter, event):
         if sgr and sgr.contains(cursor_pos):
             selection_rect_group = QRectF(sgr)
             sgr = None
+            self.front_tracker_group_over_mouse = group
 
     color = self.selection_color
     color.setAlpha(50)
@@ -262,6 +284,14 @@ def paintEvent(self, painter, event):
         painter.drawText(task_cell_rect, Qt.AlignLeft, text)
 
 
+    set_font(15)
+    pos = self.rect().bottomLeft() + QPointF(50, -50)
+    if self.front_tracker_channel_over_mouse is not None:
+        painter.drawText(pos, str(self.front_tracker_channel_over_mouse))
+    if self.front_tracker_group_over_mouse is not None:
+        pos += QPointF(0, -50)
+        painter.drawText(pos, str(self.front_tracker_group_over_mouse))
+
     painter.restore()
 
 def check_exclude(obj_name, files_to_exclude):
@@ -278,7 +308,9 @@ def preparePluginBoard(self, plugin_info):
     cf = self.LibraryData().current_folder()
     board = cf.board
 
-    self.data_groups = []
+    self.front_tracker_data_groups = []
+    self.front_tracker_channel_over_mouse = None
+    self.front_tracker_group_over_mouse = None
 
     exts = ('.txt', '.md')
     exts = ('.txt')
@@ -300,7 +332,7 @@ def preparePluginBoard(self, plugin_info):
                 for obj_name in os.listdir(path):
                     obj_path = os.path.join(path, obj_name)
                     if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
-                        self.data_groups.append(Group(obj_path))
+                        self.front_tracker_data_groups.append(Group(obj_path))
 
             else:
                 self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
@@ -308,11 +340,20 @@ def preparePluginBoard(self, plugin_info):
         self.board_origin = QPointF(500, 250)
         self.update()
 
+
+
+
+
+
 def register(board_obj, plugin_info):
     plugin_info.name = 'FRONT TRACKER'
     plugin_info.preparePluginBoard = preparePluginBoard
 
     plugin_info.paintEvent = paintEvent
+
+    plugin_info.mousePressEvent = mousePressEvent
+    plugin_info.mouseMoveEvent = mouseMoveEvent
+    plugin_info.mouseReleaseEvent = mouseReleaseEvent
 
 if __name__ == '__main__':
     subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
