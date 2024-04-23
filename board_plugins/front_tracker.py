@@ -364,28 +364,30 @@ def preparePluginBoard(self, plugin_info):
     folders_to_scan_filepath = self.get_user_data_filepath('front_tracker.data.txt')
     exclude_files_filepath = self.get_user_data_filepath('front_tracker.exclude.data.txt')
 
-    with open(exclude_files_filepath, 'r', encoding='utf8') as file:
+    with self.show_longtime_process_ongoing(self, 'Загрузка данных'):
+
+        with open(exclude_files_filepath, 'r', encoding='utf8') as file:
+            data = ""
+            data = file.read()
+            lines = data.split('\n')
+            files_to_exclude = list(filter(lambda x: bool(x.strip()), lines))
+
         data = ""
-        data = file.read()
-        lines = data.split('\n')
-        files_to_exclude = list(filter(lambda x: bool(x.strip()), lines))
+        with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
+            data = file.read()
+            paths = data.split("\n")
+            for path in paths:
+                if os.path.exists(path):
+                    for obj_name in os.listdir(path):
+                        obj_path = os.path.join(path, obj_name)
+                        if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
+                            self.front_tracker_data_groups.append(Group(obj_path))
 
-    data = ""
-    with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
-        data = file.read()
-        paths = data.split("\n")
-        for path in paths:
-            if os.path.exists(path):
-                for obj_name in os.listdir(path):
-                    obj_path = os.path.join(path, obj_name)
-                    if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
-                        self.front_tracker_data_groups.append(Group(obj_path))
+                else:
+                    self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
 
-            else:
-                self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
-
-        self.board_origin = QPointF(500, 250)
-        self.update()
+    self.board_origin = QPointF(500, 250)
+    self.update()
 
 
 
