@@ -373,18 +373,28 @@ def preparePluginBoard(self, plugin_info):
             files_to_exclude = list(filter(lambda x: bool(x.strip()), lines))
 
         data = ""
+        all_files_paths = []
+        all_folders_paths = []
         with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
             data = file.read()
             paths = data.split("\n")
             for path in paths:
-                if os.path.exists(path):
-                    for obj_name in os.listdir(path):
-                        obj_path = os.path.join(path, obj_name)
-                        if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
-                            self.front_tracker_data_groups.append(Group(obj_path))
+                if os.path.isfile(path):
+                    all_files_paths.append(path)
+                elif os.path.isdir(path):
+                    all_folders_paths.append(path)
 
-                else:
-                    self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
+        for path in all_folders_paths:
+            if os.path.exists(path):
+                for obj_name in os.listdir(path):
+                    obj_path = os.path.join(path, obj_name)
+                    if os.path.isfile(obj_path) and obj_name.lower().endswith(exts) and check_exclude(obj_name, files_to_exclude):
+                        all_files_paths.append(obj_path)
+            else:
+                self.show_center_label(f'Путь {path} не найден в файловой системе!', error=True)
+
+        for filepath in all_files_paths:
+            self.front_tracker_data_groups.append(Group(filepath))
 
     self.board_origin = QPointF(500, 250)
     self.update()
