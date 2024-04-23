@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
