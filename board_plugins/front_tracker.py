@@ -3,6 +3,7 @@ import sys
 import os
 import subprocess
 import random
+from functools import partial
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -23,11 +24,12 @@ STATUS_DONE = TaskStatus.DONE
 
 class Task(object):
 
-    def __init__(self, text, channel):
+    def __init__(self, text, channel, linenum):
         super().__init__()
         self.text = text
         self.channel = channel
         self.channel.tasks.append(self)
+        self.start_line_number = linenum
 
         self.ui_height = TASK_CELL_SIZE
 
@@ -97,8 +99,10 @@ class Group(object):
 
         def task_buffer_to_task(tb, channel):
             if tb:
-                text = "\n".join(map(str.strip, tb))
-                task = Task(text, channel)
+                tb_text_lines = map(lambda x: x[1], tb)
+                text = "\n".join(map(str.strip, tb_text_lines))
+                start_line_num = tb[0][0] + 1
+                task = Task(text, channel, start_line_num)
                 tb.clear()
 
 
@@ -136,7 +140,7 @@ class Group(object):
                     # для тасок, между которыми нет зазора - минимум одна строка
                     task_buffer_to_task(task_buffer, current_channel)
 
-                task_buffer.append(line)
+                task_buffer.append((n, line))
             else:
                 task_buffer_to_task(task_buffer, current_channel)
 
@@ -177,6 +181,7 @@ def paintEvent(self, painter, event):
 
     self.front_tracker_channel_over_mouse = None
     self.front_tracker_group_over_mouse = None
+    self.front_tracker_task_under_mouse = None
 
     painter.save()
 
@@ -278,6 +283,8 @@ def paintEvent(self, painter, event):
                 task_cells_to_draw.append((QRectF(task_cell_rect), task.text))
                 task_cell_offset += QPointF(0, task.ui_height)
 
+                if task_cell_rect.contains(cursor_pos):
+                    self.front_tracker_task_under_mouse = task
 
             # !: step 1
             if sch:
@@ -356,6 +363,28 @@ def check_exclude(obj_name, files_to_exclude):
             break
     return not (b1 or b2)
 
+
+def openTaskInSublimeText(self, task):
+    exe_filepath = self.front_tracker_sublime_text_filepath
+    filepath = task.channel.group.filepath
+    print(">>>>>>", filepath)
+    filepath_num = f"{filepath}:{task.start_line_number}"
+    subprocess.Popen([exe_filepath, filepath_num])
+
+
+def implantToContextMenu(self, contextMenu):
+    if self.front_tracker_task_under_mouse:
+        contextMenu.addSeparator()
+        task = self.front_tracker_task_under_mouse
+        open_task = contextMenu.addAction('Front Tracker: открыть таску в Sublime Text')
+        open_task.triggered.connect(partial(openTaskInSublimeText, self, task))
+
+def contextMenu(self, event, contextMenu, checkboxes):
+    # self.board_contextMenuDefault(event, contextMenu, checkboxes)
+    implantToContextMenu(self, contextMenu)
+    self.board_ContextMenuPluginsDefault(event, contextMenu)
+
+
 def find_sublime_text_exe_filepath(self):
     if self.front_tracker_sublime_text_filepath is None:
         filepath =_utils.find_exe_file_in_opened_processes(exe_filename='sublime_text.exe')
@@ -369,6 +398,7 @@ def preparePluginBoard(self, plugin_info):
     self.front_tracker_data_groups = []
     self.front_tracker_channel_over_mouse = None
     self.front_tracker_group_over_mouse = None
+    self.front_tracker_task_under_mouse = None
     self.front_tracker_sublime_text_filepath = None
 
     exts = ('.txt', '.md')
@@ -428,6 +458,7 @@ def register(board_obj, plugin_info):
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
 
+    plugin_info.contextMenu = contextMenu
 
 
 if __name__ == '__main__':
