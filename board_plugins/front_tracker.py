@@ -152,7 +152,7 @@ class Group(object):
 
 def mousePressEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
-    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
+    if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
         pass
@@ -161,7 +161,7 @@ def mousePressEvent(self, event):
 
 def mouseMoveEvent(self, event):
     isLeftButton = event.buttons() == Qt.LeftButton
-    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
+    if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
         pass
@@ -170,8 +170,8 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
-    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
-        self.front_tracker_channel_over_mouse.toggle_width()
+    if self.front_tracker_channel_under_mouse is not None and isLeftButton:
+        self.front_tracker_channel_under_mouse.toggle_width()
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
         pass
     else:
@@ -179,7 +179,7 @@ def mouseReleaseEvent(self, event):
 
 def paintEvent(self, painter, event):
 
-    self.front_tracker_channel_over_mouse = None
+    self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
 
@@ -296,7 +296,7 @@ def paintEvent(self, painter, event):
             if sch and sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
                 sch = None
-                self.front_tracker_channel_over_mouse = channel
+                self.front_tracker_channel_under_mouse = channel
 
 
 
@@ -343,8 +343,8 @@ def paintEvent(self, painter, event):
 
     set_font(15)
     pos = self.rect().bottomLeft() + QPointF(50, -50)
-    if self.front_tracker_channel_over_mouse is not None:
-        data = self.front_tracker_channel_over_mouse
+    if self.front_tracker_channel_under_mouse is not None:
+        data = self.front_tracker_channel_under_mouse
         painter.drawText(pos, f'Under Cursor Channel: {data}')
     if self.front_tracker_group_under_mouse is not None:
         pos += QPointF(0, -25)
@@ -395,7 +395,7 @@ def preparePluginBoard(self, plugin_info):
     board = cf.board
 
     self.front_tracker_data_groups = []
-    self.front_tracker_channel_over_mouse = None
+    self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
     self.front_tracker_sublime_text_filepath = None
