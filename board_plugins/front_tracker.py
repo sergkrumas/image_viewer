@@ -334,10 +334,12 @@ def paintEvent(self, painter, event):
     set_font(15)
     pos = self.rect().bottomLeft() + QPointF(50, -50)
     if self.front_tracker_channel_over_mouse is not None:
-        painter.drawText(pos, str(self.front_tracker_channel_over_mouse))
+        data = self.front_tracker_channel_over_mouse
+        painter.drawText(pos, f'Under Cursor Channel: {data}')
     if self.front_tracker_group_over_mouse is not None:
-        pos += QPointF(0, -50)
-        painter.drawText(pos, str(self.front_tracker_group_over_mouse))
+        pos += QPointF(0, -25)
+        data = self.front_tracker_group_over_mouse
+        painter.drawText(pos, f'Under Cursor Group: {data}')
 
     painter.restore()
 
