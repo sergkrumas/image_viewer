@@ -41,9 +41,14 @@ class Channel(object):
 
         self.ui_width = PIXEL_SIZE
 
-        # if random.random() > 0.5:
-        #     self.ui_width *= 1.5
-        #     self.ui_width = int(self.ui_width)
+        self.extended = False
+
+    def toggle_width(self):
+        self.extended = not self.extended
+        if self.extended:
+            self.ui_width = PIXEL_SIZE*2
+        else:
+            self.ui_width = PIXEL_SIZE
 
     def __repr__(self):
         return f'{self.name} ({len(self.tasks)})'
@@ -118,15 +123,32 @@ class Group(object):
         return f'{self.name} ({len(self.tasks())})'
 
 
-
 def mousePressEvent(self, event):
-    self.board_mousePressEventDefault(event)
+    isLeftButton = event.button() == Qt.LeftButton
+    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
+        pass
+    elif self.front_tracker_group_over_mouse is not None and isLeftButton:
+        pass
+    else:
+        self.board_mousePressEventDefault(event)
 
 def mouseMoveEvent(self, event):
-    self.board_mouseMoveEventDefault(event)
+    isLeftButton = event.buttons() == Qt.LeftButton
+    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
+        pass
+    elif self.front_tracker_group_over_mouse is not None and isLeftButton:
+        pass
+    else:
+        self.board_mouseMoveEventDefault(event)
 
 def mouseReleaseEvent(self, event):
-    self.board_mouseReleaseEventDefault(event)
+    isLeftButton = event.button() == Qt.LeftButton
+    if self.front_tracker_channel_over_mouse is not None and isLeftButton:
+        self.front_tracker_channel_over_mouse.toggle_width()
+    elif self.front_tracker_group_over_mouse is not None and isLeftButton:
+        pass
+    else:
+        self.board_mouseReleaseEventDefault(event)
 
 def paintEvent(self, painter, event):
 
