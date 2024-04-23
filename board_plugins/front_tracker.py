@@ -278,7 +278,7 @@ def paintEvent(self, painter, event):
 
             # !: step 1
             if sch:
-                sch.setWidth(channel.ui_width*self.board_scale_x)                
+                sch.setWidth(channel.ui_width*self.board_scale_x)
                 sch.moveLeft(self.board_MapToViewport(offset).x())
             # !: step 2
             offset += QPointF(channel.ui_width, 0)
