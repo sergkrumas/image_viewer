@@ -393,6 +393,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_SetCallbacks()
 
         self.show_longtime_process_ongoing = show_longtime_process_ongoing
+        self.board_frame_items_text_rects = []
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -639,6 +640,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
         contextMenu.addSeparator()
 
+    def board_menuActivatedOverFrameItem(self):
+        point = self.context_menu_exec_point
+        for board_item, rect in self.board_frame_items_text_rects:
+            if rect.contains(point):
+                return board_item
+        return None
+
+    def board_change_frame_item_label(self, frame_item, *args):
+        dialog = QInputDialog(self)
+        dialog.setInputMode(QInputDialog.TextInput)
+        dialog.setWindowTitle('Change frame item label')
+        dialog.setLabelText("Label Text:")
+        dialog.resize(500,100)
+        ok = dialog.exec_()
+        if ok:
+            frame_item.item_name = dialog.textValue()
+        self.update()
+
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
         checkboxes.append(
             ("Отображать отладочную графику виджета трансформации",
@@ -674,6 +693,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
         board_load_highres.triggered.connect(self.board_load_highres)
+
+        frame_item = self.board_menuActivatedOverFrameItem()
+        if frame_item:
+            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма {frame_item.item_name}')
+            board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
             board_retrieve_current_from_group_item = contextMenu.addAction('Вынуть текущую картинку из группы')
@@ -1358,6 +1382,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_content(self, painter, folder_data):
         self.board_note_item_colors_buttons = None
+        self.board_frame_items_text_rects = []
 
         if not self.is_board_ready():
             self.prepare_board(folder_data)
@@ -1432,6 +1457,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if show_text:
                 painter.drawText(rect, alignment, text)
+                self.board_frame_items_text_rects.append((board_item, rect))
 
             painter.setFont(before_font)
 
