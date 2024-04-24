@@ -2814,7 +2814,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
 
-            self.board_keyReleaseEvent(event)
+            default = True
+            if key == Qt.Key_Right:
+                if event.modifiers() & Qt.ControlModifier:
+                    if self.frameless_mode:
+                        self.toggle_monitor('right')
+                        default = False
+            elif key == Qt.Key_Left:
+                if event.modifiers() & Qt.ControlModifier:
+                    if self.frameless_mode:
+                        self.toggle_monitor('left')
+                        default = False
+            if default:
+                self.board_keyReleaseEvent(event)
 
         elif self.is_viewer_page_active():
 
