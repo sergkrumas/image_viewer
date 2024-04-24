@@ -425,7 +425,11 @@ def preparePluginBoard(self, plugin_info, rescan=False):
         self.front_tracker_sublime_text_filepath = None
         self.front_tracker_watcher = QFileSystemWatcher(self)
 
-    self.front_tracker_watcher.removePaths(self.front_tracker_watcher.files())
+    watcher_files = self.front_tracker_watcher.files()
+    if watcher_files:
+        self.front_tracker_watcher.removePaths(watcher_files)
+
+    self.front_tracker_path_buffer = []
 
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
