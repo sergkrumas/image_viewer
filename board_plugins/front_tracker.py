@@ -405,7 +405,6 @@ def preparePluginBoard(self, plugin_info):
     exts = ('.txt', '.md')
     exts = ('.txt')
     folders_to_scan_filepath = self.get_user_data_filepath('front_tracker.data.txt')
-    exclude_files_filepath = self.get_user_data_filepath('front_tracker.exclude.data.txt')
 
     with self.show_longtime_process_ongoing(self, 'Загрузка данных'):
 
