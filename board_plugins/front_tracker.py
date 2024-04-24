@@ -290,13 +290,11 @@ def paintEvent(self, painter, event):
                 if task_cell_rect.contains(cursor_pos):
                     self.front_tracker_task_under_mouse = task
 
-            if sch:
-                sch.setWidth(channel.ui_width*self.board_scale_x)
-                sch.moveLeft(self.board_MapToViewport(offset).x())
-                if sch.contains(cursor_pos):
-                    selection_rect_channel = QRectF(sch)
-                    sch = None
-                    self.front_tracker_channel_under_mouse = channel
+            sch.setWidth(channel.ui_width*self.board_scale_x)
+            sch.moveLeft(self.board_MapToViewport(offset).x())
+            if sch.contains(cursor_pos):
+                selection_rect_channel = QRectF(sch)
+                self.front_tracker_channel_under_mouse = channel
 
             offset += QPointF(channel.ui_width, 0)
 
@@ -304,14 +302,13 @@ def paintEvent(self, painter, event):
         group_end_offset = QPointF(offset)
         group_start_offset = self.board_MapToViewport(group_start_offset)
         group_end_offset = self.board_MapToViewport(group_end_offset)
-        if sgr:
-            sgr = QRectF(sgr_base)
-            sgr.setLeft(group_start_offset.x())
-            sgr.setWidth(group_end_offset.x() - group_start_offset.x())
-            if sgr.contains(cursor_pos):
-                selection_rect_group = QRectF(sgr)
-                sgr = None
-                self.front_tracker_group_under_mouse = group
+
+        sgr = QRectF(sgr_base)
+        sgr.setLeft(group_start_offset.x())
+        sgr.setWidth(group_end_offset.x() - group_start_offset.x())
+        if sgr.contains(cursor_pos):
+            selection_rect_group = QRectF(sgr)
+            self.front_tracker_group_under_mouse = group
 
     color = self.selection_color
     color.setAlpha(50)
