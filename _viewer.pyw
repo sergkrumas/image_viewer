@@ -3653,6 +3653,7 @@ def open_in_separated_app_copy(folder_data):
 def get_predefined_path_if_started_from_sublimeText():
     process = psutil.Process(os.getpid())
     cmdline = process.cmdline()
+    path = ""
     if "-u" in cmdline:
         print('started from sublime text')
         # run from sublime_text
@@ -3669,7 +3670,6 @@ def get_predefined_path_if_started_from_sublimeText():
                         path = paths[-1]
                         print(f"\tdefault path is set to {path}")
     else:
-        path = ""
         Globals.started_from_sublime_text = False
     return path
 
