@@ -67,6 +67,9 @@ def register(board_obj, plugin_info):
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
 
+    plugin_info.keyPressEvent = keyPressEvent
+    plugin_info.keyReleaseEvent = keyReleaseEvent
+
     plugin_info.wheelEvent = wheelEvent
     plugin_info.contextMenu = contextMenu
 
