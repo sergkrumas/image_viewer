@@ -356,6 +356,9 @@ def paintEvent(self, painter, event):
         data = self.front_tracker_group_under_mouse
         painter.drawText(pos, f'Under Cursor Group: {data}')
 
+    pos += QPointF(0, -25)
+    painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
+
     painter.restore()
 
 def check_exclude(obj_name, files_to_exclude):
