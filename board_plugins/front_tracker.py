@@ -334,11 +334,12 @@ def paintEvent(self, painter, event):
         set_font(30)
         draw_text_90(offset, name)
 
+    self_rect = self.rect()
     for task_cell_rect, text in task_cells_to_draw:
-        set_font(20)
-        painter.drawRect(task_cell_rect)
-        task_cell_rect.adjust(10, 10, -10, -10)
-        painter.drawText(task_cell_rect, Qt.AlignLeft, text)
+        if task_cell_rect.intersected(QRectF(self_rect)):
+            painter.drawRect(task_cell_rect)
+            task_cell_rect.adjust(10, 10, -10, -10)
+            painter.drawText(task_cell_rect, Qt.AlignLeft, text)
 
 
     set_font(15)
