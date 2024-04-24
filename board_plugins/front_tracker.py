@@ -179,6 +179,9 @@ def mouseReleaseEvent(self, event):
 
 def paintEvent(self, painter, event):
 
+    if not self.front_tracker_data_groups:
+        return
+
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
@@ -372,13 +375,18 @@ def openTaskInSublimeText(self, task):
     filepath_num = f"{filepath}:{task.start_line_number}"
     subprocess.Popen([exe_filepath, filepath_num])
 
+def rescanData(self):
+    preparePluginBoard(self, None, rescan=True)
 
 def implantToContextMenu(self, contextMenu):
     if self.front_tracker_task_under_mouse:
         contextMenu.addSeparator()
         task = self.front_tracker_task_under_mouse
-        open_task = contextMenu.addAction('Front Tracker: open task in Sublime Text')
+        open_task = contextMenu.addAction('Front Tracker: Open task in Sublime Text')
         open_task.triggered.connect(partial(openTaskInSublimeText, self, task))
+
+    rescan = contextMenu.addAction('Front Tracker: Rescan')
+    rescan.triggered.connect(partial(rescanData, self))
 
 def contextMenu(self, event, contextMenu, checkboxes):
     # self.board_contextMenuDefault(event, contextMenu, checkboxes)
@@ -392,15 +400,17 @@ def find_sublime_text_exe_filepath(self):
         self.front_tracker_sublime_text_filepath = filepath
     return self.front_tracker_sublime_text_filepath
 
-def preparePluginBoard(self, plugin_info):
+def preparePluginBoard(self, plugin_info, rescan=False):
     cf = self.LibraryData().current_folder()
     board = cf.board
 
     self.front_tracker_data_groups = []
+    if not rescan:
+        self.front_tracker_sublime_text_filepath = None
+
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
-    self.front_tracker_sublime_text_filepath = None
 
     exts = ('.txt', '.md')
     exts = ('.txt')
@@ -439,11 +449,11 @@ def preparePluginBoard(self, plugin_info):
         print(f'all_files_paths {all_files_paths}')
         print(f'files_to_exclude {files_to_exclude}')
 
-    self.board_origin = QPointF(500, 250)
+    if not rescan:
+        find_sublime_text_exe_filepath(self)
+
+        self.board_origin = QPointF(500, 250)
     self.update()
-
-    find_sublime_text_exe_filepath(self)
-
 
 
 
