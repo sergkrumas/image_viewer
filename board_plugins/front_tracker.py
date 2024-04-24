@@ -409,15 +409,10 @@ def preparePluginBoard(self, plugin_info):
 
     with self.show_longtime_process_ongoing(self, 'Загрузка данных'):
 
-        with open(exclude_files_filepath, 'r', encoding='utf8') as file:
-            data = ""
-            data = file.read()
-            lines = data.split('\n')
-            files_to_exclude = list(filter(lambda x: bool(x.strip()), lines))
-
         data = ""
         all_files_paths = []
         all_folders_paths = []
+        files_to_exclude = []
         with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
             data = file.read()
             paths = data.split("\n")
@@ -426,6 +421,9 @@ def preparePluginBoard(self, plugin_info):
                     all_files_paths.append(path)
                 elif os.path.isdir(path):
                     all_folders_paths.append(path)
+                elif path.startswith("~"):
+                    path = path[1:]
+                    files_to_exclude.append(path)
 
         for path in all_folders_paths:
             if os.path.exists(path):
@@ -438,6 +436,9 @@ def preparePluginBoard(self, plugin_info):
 
         for filepath in all_files_paths:
             self.front_tracker_data_groups.append(Group(filepath))
+
+        print(f'all_files_paths {all_files_paths}')
+        print(f'files_to_exclude {files_to_exclude}')
 
     self.board_origin = QPointF(500, 250)
     self.update()
