@@ -292,6 +292,7 @@ def paintEvent(self, painter, event):
 
             sch.setWidth(channel.ui_width*self.board_scale_x)
             sch.moveLeft(self.board_MapToViewport(offset).x())
+            channel.ui_rect = sch
             if sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
                 self.front_tracker_channel_under_mouse = channel
@@ -306,6 +307,7 @@ def paintEvent(self, painter, event):
         sgr = QRectF(sgr_base)
         sgr.setLeft(group_start_offset.x())
         sgr.setWidth(group_end_offset.x() - group_start_offset.x())
+        group.ui_rect = sgr
         if sgr.contains(cursor_pos):
             selection_rect_group = QRectF(sgr)
             self.front_tracker_group_under_mouse = group
