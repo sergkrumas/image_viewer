@@ -326,14 +326,15 @@ def paintEvent(self, painter, event):
     painter.setPen(QPen(Qt.white, 1))
 
 
+    set_font(30)
     for offset, group in group_names_to_draw:
-        set_font(30)
         draw_group_name(offset, group, self.board_scale_x)
 
+    set_font(30)
     for offset, name in channel_names_to_draw:
-        set_font(30)
         draw_text_90(offset, name)
 
+    set_font(20)
     self_rect = self.rect()
     for task_cell_rect, text in task_cells_to_draw:
         if task_cell_rect.intersected(QRectF(self_rect)):
