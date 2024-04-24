@@ -4,6 +4,7 @@ import os
 import subprocess
 import random
 from functools import partial
+import time
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -412,6 +413,8 @@ def keyReleaseEvent(self, event):
     else:
         self.board_keyReleaseEventDefault(event)
 
+def watcherFileChanged(self, path):
+    print(f'watcher: {path} {time.time()}')
 
 def preparePluginBoard(self, plugin_info, rescan=False):
     cf = self.LibraryData().current_folder()
@@ -420,6 +423,9 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     self.front_tracker_data_groups = []
     if not rescan:
         self.front_tracker_sublime_text_filepath = None
+        self.front_tracker_watcher = QFileSystemWatcher(self)
+
+    self.front_tracker_watcher.removePaths(self.front_tracker_watcher.files())
 
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
@@ -433,10 +439,11 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     with self.show_longtime_process_ongoing(self, 'Загрузка данных'):
 
-        data = ""
+
         all_files_paths = []
         all_folders_paths = []
         files_to_exclude = []
+
         with open(folders_to_scan_filepath, 'r', encoding='utf8') as file:
             data = file.read()
             paths = data.split("\n")
@@ -461,12 +468,11 @@ def preparePluginBoard(self, plugin_info, rescan=False):
         for filepath in all_files_paths:
             self.front_tracker_data_groups.append(Group(filepath))
 
-        print(f'all_files_paths {all_files_paths}')
-        print(f'files_to_exclude {files_to_exclude}')
+        self.front_tracker_watcher.addPaths(all_files_paths)
 
     if not rescan:
         find_sublime_text_exe_filepath(self)
-
+        self.front_tracker_watcher.fileChanged.connect(partial(watcherFileChanged, self))
         self.board_origin = QPointF(500, 250)
     self.update()
 
