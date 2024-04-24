@@ -290,18 +290,16 @@ def paintEvent(self, painter, event):
                 if task_cell_rect.contains(cursor_pos):
                     self.front_tracker_task_under_mouse = task
 
-            # !: step 1
             if sch:
                 sch.setWidth(channel.ui_width*self.board_scale_x)
                 sch.moveLeft(self.board_MapToViewport(offset).x())
-            # !: step 2
-            offset += QPointF(channel.ui_width, 0)
-            # !: step 3
-            if sch and sch.contains(cursor_pos):
-                selection_rect_channel = QRectF(sch)
-                sch = None
-                self.front_tracker_channel_under_mouse = channel
 
+                if sch.contains(cursor_pos):
+                    selection_rect_channel = QRectF(sch)
+                    sch = None
+                    self.front_tracker_channel_under_mouse = channel
+
+            offset += QPointF(channel.ui_width, 0)
 
 
         group_end_offset = QPointF(offset)
