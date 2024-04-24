@@ -403,6 +403,16 @@ def find_sublime_text_exe_filepath(self):
         self.front_tracker_sublime_text_filepath = filepath
     return self.front_tracker_sublime_text_filepath
 
+def keyPressEvent(self, event):
+    self.board_keyPressEventDefault(event)
+
+def keyReleaseEvent(self, event):
+    if event.key() == Qt.Key_K:
+        self.front_tracker_not_optimize = not self.front_tracker_not_optimize
+    else:
+        self.board_keyReleaseEventDefault(event)
+
+
 def preparePluginBoard(self, plugin_info, rescan=False):
     cf = self.LibraryData().current_folder()
     board = cf.board
@@ -414,6 +424,8 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
+
+    self.front_tracker_not_optimize = False
 
     exts = ('.txt', '.md')
     exts = ('.txt')
@@ -471,6 +483,9 @@ def register(board_obj, plugin_info):
     plugin_info.mousePressEvent = mousePressEvent
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
+
+    plugin_info.keyPressEvent = keyPressEvent
+    plugin_info.keyReleaseEvent = keyReleaseEvent
 
     plugin_info.contextMenu = contextMenu
 
