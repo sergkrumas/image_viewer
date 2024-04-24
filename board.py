@@ -642,14 +642,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_menuActivatedOverFrameItem(self):
         point = self.context_menu_exec_point
-        for board_item, rect in self.board_frame_items_text_rects:
-            if rect.contains(point):
+        for board_item, label_rect, bounding_rect in self.board_frame_items_text_rects:
+            if label_rect.contains(point) or bounding_rect.contains(point):
                 return board_item
         return None
 
     def board_change_frame_item_label(self, frame_item, *args):
         dialog = QInputDialog(self)
         dialog.setInputMode(QInputDialog.TextInput)
+        dialog.setTextValue(frame_item.item_name)
         dialog.setWindowTitle('Change frame item label')
         dialog.setLabelText("Label Text:")
         dialog.resize(500,100)
@@ -696,7 +697,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
-            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма {frame_item.item_name}')
+            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма \'{frame_item.item_name}\'')
             board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
@@ -1457,7 +1458,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if show_text:
                 painter.drawText(rect, alignment, text)
-                self.board_frame_items_text_rects.append((board_item, rect))
+                self.board_frame_items_text_rects.append((board_item, rect, area.boundingRect()))
 
             painter.setFont(before_font)
 
