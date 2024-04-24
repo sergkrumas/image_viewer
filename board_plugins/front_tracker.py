@@ -404,17 +404,40 @@ def find_sublime_text_exe_filepath(self):
         self.front_tracker_sublime_text_filepath = filepath
     return self.front_tracker_sublime_text_filepath
 
+def restart_buffer_timer(self, callback):
+    if self.front_tracker_buffer_timer is not None:
+        self.front_tracker_buffer_timer.stop()
+
+    self.front_tracker_buffer_timer = timer = QTimer()
+    timer.setInterval(300)
+    timer.setSingleShot(True)
+    timer.timeout.connect(callback)
+    timer.start()
+
 def keyPressEvent(self, event):
     self.board_keyPressEventDefault(event)
 
 def keyReleaseEvent(self, event):
     if event.key() == Qt.Key_K:
-        self.front_tracker_not_optimize = not self.front_tracker_not_optimize
+        callback = partial(print, 'test')
+        restart_buffer_timer(self, callback)
     else:
         self.board_keyReleaseEventDefault(event)
 
-def watcherFileChanged(self, path):
-    print(f'watcher: {path} {time.time()}')
+def watcherFileChangedFiltered(self):
+    buffer = self.front_tracker_path_buffer
+    buffer = list(set(buffer))
+    print(buffer)
+    self.front_tracker_path_buffer = []
+
+def _watcherFileChanged(self, path):
+    # Sublime Text сохраняет файл по-разному:
+    # 1) может сразу сохранить файл или 2) может сначала сохранить его с нулевым размером, а потом уже сохранить с контентом.
+    # Во втором случае уведомление присылается два раза, но желательно избежать реакции на каждое из них,
+    # прореагировав только на последнее. Для этого приходится заводить одноразовый таймер и сбрасывать его при необходимости.
+    self.front_tracker_path_buffer.append(path)
+    restart_buffer_timer(self, partial(watcherFileChangedFiltered, self))
+    # print(f'watcher: {path} {time.time()}')
 
 def preparePluginBoard(self, plugin_info, rescan=False):
     cf = self.LibraryData().current_folder()
@@ -435,7 +458,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
 
-    self.front_tracker_not_optimize = False
+    self.front_tracker_buffer_timer = None
 
     exts = ('.txt', '.md')
     exts = ('.txt')
@@ -476,7 +499,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     if not rescan:
         find_sublime_text_exe_filepath(self)
-        self.front_tracker_watcher.fileChanged.connect(partial(watcherFileChanged, self))
+        self.front_tracker_watcher.fileChanged.connect(partial(_watcherFileChanged, self))
         self.board_origin = QPointF(500, 250)
     self.update()
 
