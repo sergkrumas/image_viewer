@@ -458,7 +458,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     exts = ('.txt', '.md')
     exts = ('.txt')
-    folders_to_scan_filepath = self.get_user_data_filepath('front_tracker.data.txt')
+    folders_to_scan_filepath = self.get_boards_user_data_filepath('front_tracker.data.txt')
 
     with self.show_longtime_process_ongoing(self, 'Загрузка данных'):
 
