@@ -172,11 +172,16 @@ def mouseMoveEvent(self, event):
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
-        self.front_tracker_channel_under_mouse.toggle_width()
+        pass
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
         pass
     else:
         self.board_mouseReleaseEventDefault(event)
+
+def mouseDoubleClickEvent(self, event):
+    isLeftButton = event.button() == Qt.LeftButton
+    if self.front_tracker_channel_under_mouse is not None and isLeftButton:
+        self.front_tracker_channel_under_mouse.toggle_width()
 
 def paintEvent(self, painter, event):
 
@@ -512,6 +517,8 @@ def register(board_obj, plugin_info):
     plugin_info.mousePressEvent = mousePressEvent
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
+
+    plugin_info.mouseDoubleClickEvent = mouseDoubleClickEvent
 
     plugin_info.keyPressEvent = keyPressEvent
     plugin_info.keyReleaseEvent = keyReleaseEvent
