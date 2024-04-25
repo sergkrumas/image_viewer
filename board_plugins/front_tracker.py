@@ -150,11 +150,71 @@ class Group(object):
     def __repr__(self):
         return f'{self.name} ({len(self.tasks())})'
 
+
+
+class InsertPos(object):
+
+    __slots__ = ('index', 'topPoint', 'bottomPoint', 'ready', 'line', 'not_used', 'intersection_point', 'cursor_distance')
+
+    def __init__(self, i, topPoint, bottomPoint):
+        super().__init__()
+        self.index = i
+        self.topPoint = topPoint
+        self.bottomPoint = bottomPoint
+        self.ready = False
+        self.not_used = False
+        self.line = QLineF(self.topPoint, self.bottomPoint)
+
+def defineInsertPositions(self):
+    ips = self.front_tracker_insert_positions
+    self.front_tracker_current_insert_pos = None
+    ips.clear()
+    if self.front_tracker_captured_group:
+        group = self.front_tracker_captured_group
+        groups = self.front_tracker_data_groups
+
+        group_index = groups.index(group)
+
+        # первые n позиций
+        for i, gr in enumerate(groups):
+            ip = InsertPos(i, gr.ui_rect.topLeft(), gr.ui_rect.bottomLeft())
+            ips.append(ip)
+
+        # n+1 позиция
+        ip = InsertPos(i+1, gr.ui_rect.topRight(), gr.ui_rect.bottomRight())
+        ips.append(ip)
+
+        pos = self.mapFromGlobal(QCursor().pos())
+        hor_line = QLineF(self.rect().topLeft(), self.rect().topRight())
+        hor_line.translate(0, pos.y())
+
+        for ip in ips:
+            isp = ip.line.intersects(hor_line)
+            isp = isp[1]
+            ip.intersection_point = isp
+            ip.cursor_distance = QVector2D(pos - isp).length()
+            if ip.index in [group_index, group_index + 1]:
+                ip.not_used = True
+
+        ips = list(sorted(ips, key=lambda x: x.cursor_distance))
+        if ips:
+            _ip = ips[0]
+            _ip.ready = True
+            self.front_tracker_current_insert_pos = _ip
+        else:
+            self.front_tracker_current_insert_pos = None
+
+
+        data = (hor_line, )
+        return data
+
+
 def mousePressEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
-    elif self.front_tracker_group_under_mouse is not None and isLeftButton:
+    if self.front_tracker_group_under_mouse is not None and isLeftButton:
+        self.front_tracker_captured_group = self.front_tracker_group_under_mouse
         pass
     else:
         self.board_mousePressEventDefault(event)
@@ -167,15 +227,35 @@ def mouseMoveEvent(self, event):
         pass
     else:
         self.board_mouseMoveEventDefault(event)
+    if self.front_tracker_captured_group is not None:
+        defineInsertPositions(self)
 
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
+    if self.front_tracker_captured_group:
+        gr = self.front_tracker_captured_group
+        index_to_insert = self.front_tracker_current_insert_pos.index
+        gr_index = self.front_tracker_data_groups.index(gr)
+
+        if index_to_insert > gr_index:
+            index_to_insert -= 1
+
+        self.front_tracker_data_groups.remove(gr)
+        self.front_tracker_data_groups.insert(index_to_insert, gr)
+
+        self.front_tracker_captured_group = None
+
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
         pass
     else:
         self.board_mouseReleaseEventDefault(event)
+    self.update()
+
+def wheelEvent(self, event):
+    self.board_wheelEventDefault(event)
+
 
 def mouseDoubleClickEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
@@ -297,7 +377,7 @@ def paintEvent(self, painter, event):
             sch.setWidth(channel.ui_width*self.board_scale_x)
             sch.moveLeft(self.board_MapToViewport(offset).x())
             channel.ui_rect = sch
-            if sch.contains(cursor_pos):
+            if sch.contains(cursor_pos) and not self.front_tracker_captured_group:
                 selection_rect_channel = QRectF(sch)
                 self.front_tracker_channel_under_mouse = channel
 
@@ -312,7 +392,7 @@ def paintEvent(self, painter, event):
         sgr.setLeft(group_start_offset.x())
         sgr.setWidth(group_end_offset.x() - group_start_offset.x())
         group.ui_rect = sgr
-        if sgr.contains(cursor_pos):
+        if sgr.contains(cursor_pos) and not self.front_tracker_captured_group:
             selection_rect_group = QRectF(sgr)
             self.front_tracker_group_under_mouse = group
 
@@ -359,6 +439,32 @@ def paintEvent(self, painter, event):
 
     pos += QPointF(0, -25)
     painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
+
+    data = defineInsertPositions(self)
+
+    color2 = QColor(220, 20, 20)
+    for ip in self.front_tracker_insert_positions:
+        if ip.not_used:
+            c = color
+        else:
+            c = color2
+        painter.setPen(QPen(c, 5))
+        painter.drawLine(ip.line)
+
+    if data:
+        hor_line = data[0]
+        painter.drawLine(hor_line)
+
+        for ip in self.front_tracker_insert_positions:
+            if ip.ready:
+                c = color2
+            else:
+                c = color
+            painter.setPen(QPen(c, 40))
+            painter.drawPoint(ip.intersection_point)
+
+    if self.front_tracker_captured_group:
+        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
 
@@ -458,6 +564,9 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     self.front_tracker_buffer_timer = None
 
+    self.front_tracker_captured_group = None
+    self.front_tracker_insert_positions = []
+
     exts = ('.txt', '.md')
     exts = ('.txt')
     folders_to_scan_filepath = self.get_boards_user_data_filepath('front_tracker.data.txt')
@@ -499,6 +608,40 @@ def preparePluginBoard(self, plugin_info, rescan=False):
         find_sublime_text_exe_filepath(self)
         self.front_tracker_watcher.fileChanged.connect(partial(_watcherFileChanged, self))
         self.board_origin = QPointF(500, 250)
+
+        self.diagonal_lines_br = diagonal_lines_br = QBrush()
+        pixmap = QPixmap(100, 100)
+        pixmap.fill(Qt.transparent)
+        painter_ = QPainter()
+        painter_.begin(pixmap)
+        painter_.setOpacity(0.1)
+        painter_.fillRect(pixmap.rect(), Qt.gray)
+        painter_.setBrush(QBrush(QColor(200, 200, 200)))
+        painter_.setPen(Qt.NoPen)
+        w = pixmap.width()
+        path = QPainterPath()
+        path.moveTo(w*0.0, w*0.0)
+        path.lineTo(w*0.25, w*0.0)
+        path.lineTo(w*1.0, w*0.75)
+        path.lineTo(w*1.0, w*1.0)
+        path.lineTo(w*0.75, w*1.0)
+        path.lineTo(w*0.0, w*0.25)
+        painter_.drawPath(path)
+        path = QPainterPath()
+        path.moveTo(w*0.0, w*0.75)
+        path.lineTo(w*0.0, w*1.0)
+        path.lineTo(w*0.25, w*1.0)
+        painter_.drawPath(path)
+        path = QPainterPath()
+        path.moveTo(w*0.75, w*0.0)
+        path.lineTo(w*1.0, w*0.0)
+        path.lineTo(w*1.0, w*0.25)
+        painter_.drawPath(path)
+        painter_.end()
+        diagonal_lines_br.setTexture(pixmap)
+
+
+
     self.update()
 
 
@@ -514,6 +657,8 @@ def register(board_obj, plugin_info):
     plugin_info.mousePressEvent = mousePressEvent
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
+
+    plugin_info.wheelEvent = wheelEvent
 
     plugin_info.mouseDoubleClickEvent = mouseDoubleClickEvent
 
