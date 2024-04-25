@@ -21,7 +21,7 @@ from PyQt5.QtGui import *
 
 
 def get_watch_tower_data_filepath(self):
-    return self.get_user_data_filepath('watch_tower.data.txt')
+    return self.get_boards_user_data_filepath('watch_tower.data.txt')
 
 def append_note_item(self, cf, text, warning=False):
     ni = self.BoardItem(self.BoardItem.types.ITEM_NOTE)
