@@ -227,8 +227,6 @@ def mouseMoveEvent(self, event):
         pass
     else:
         self.board_mouseMoveEventDefault(event)
-    if self.front_tracker_captured_group is not None:
-        defineInsertPositions(self)
 
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
