@@ -24,7 +24,7 @@ def build_rect_from_point(self, point, r=1.0):
     return QRectF(point-offset, point+offset)
 
 def paintEvent(self, painter, event):
-    painter.setBrush(self.checkerboard_br)
+    painter.setBrush(self.diagonal_lines_br)
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
 
@@ -309,7 +309,7 @@ def preparePluginBoard(self, plugin_info):
 
     self.bckg_rects = dict()
 
-    self.checkerboard_br = checkerboard_br = QBrush()
+    self.diagonal_lines_br = diagonal_lines_br = QBrush()
     pixmap = QPixmap(100, 100)
     pixmap.fill(Qt.transparent)
     painter_ = QPainter()
@@ -338,7 +338,7 @@ def preparePluginBoard(self, plugin_info):
     path.lineTo(w*1.0, w*0.25)
     painter_.drawPath(path)
     painter_.end()
-    checkerboard_br.setTexture(pixmap)
+    diagonal_lines_br.setTexture(pixmap)
 
 
 
