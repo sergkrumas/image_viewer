@@ -95,7 +95,7 @@ def preparePluginBoard(self, plugin_info):
         fd.previews_done = True
 
 def getBoardFilepath(self):
-    board_filepath = self.board_BuildBoardFilename(self.get_user_data_folder(), 'bookmarks_board')
+    board_filepath = self.board_BuildBoardFilename(self.get_boards_user_data_folder(), 'bookmarks_board')
     return board_filepath
 
 def any_group_item(self):
