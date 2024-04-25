@@ -150,7 +150,6 @@ class Group(object):
     def __repr__(self):
         return f'{self.name} ({len(self.tasks())})'
 
-
 def mousePressEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
@@ -373,7 +372,6 @@ def check_exclude(obj_name, files_to_exclude):
             break
     return not (b1 or b2)
 
-
 def openTaskInSublimeText(self, task):
     exe_filepath = self.front_tracker_sublime_text_filepath
     filepath = task.channel.group.filepath
@@ -397,7 +395,6 @@ def contextMenu(self, event, contextMenu, checkboxes):
     # self.board_contextMenuDefault(event, contextMenu, checkboxes)
     implantToContextMenu(self, contextMenu)
     self.board_ContextMenuPluginsDefault(event, contextMenu)
-
 
 def find_sublime_text_exe_filepath(self):
     if self.front_tracker_sublime_text_filepath is None:
