@@ -3451,6 +3451,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def get_boards_user_data_filepath(self, filename):
         return os.path.join(self.LibraryData().get_boards_data_root(), filename)
 
+    def get_boards_user_data_folder(self):
+        return self.LibraryData().get_boards_data_root()
+
     def get_user_data_filepath(self, filename):
         return os.path.join(os.path.dirname(__file__), "user_data", filename)
 
