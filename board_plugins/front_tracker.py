@@ -165,11 +165,11 @@ class InsertPos(object):
         self.not_used = False
         self.line = QLineF(self.topPoint, self.bottomPoint)
 
-def defineInsertPositions(self):
+def defineInsertPositions(self, clear=False):
     ips = self.front_tracker_insert_positions
     self.front_tracker_current_insert_pos = None
     ips.clear()
-    if self.front_tracker_captured_group:
+    if self.front_tracker_captured_group and not clear:
         group = self.front_tracker_captured_group
         groups = self.front_tracker_data_groups
 
@@ -438,31 +438,33 @@ def paintEvent(self, painter, event):
     pos += QPointF(0, -25)
     painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
 
-    data = defineInsertPositions(self)
+    if self.front_tracker_captured_group and not self.front_tracker_captured_group.ui_rect.contains(cursor_pos):
 
-    color2 = QColor(220, 20, 20)
-    for ip in self.front_tracker_insert_positions:
-        if ip.not_used:
-            c = color
-        else:
-            c = color2
-        painter.setPen(QPen(c, 5))
-        painter.drawLine(ip.line)
+        data = defineInsertPositions(self)
 
-    if data:
-        hor_line = data[0]
-        painter.drawLine(hor_line)
-
+        color2 = QColor(220, 20, 20)
         for ip in self.front_tracker_insert_positions:
-            if ip.ready:
-                c = color2
-            else:
+            if ip.not_used:
                 c = color
-            painter.setPen(QPen(c, 40))
-            painter.drawPoint(ip.intersection_point)
+            else:
+                c = color2
+            painter.setPen(QPen(c, 5))
+            painter.drawLine(ip.line)
 
-    if self.front_tracker_captured_group:
-        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        if data:
+            hor_line = data[0]
+            painter.drawLine(hor_line)
+
+            for ip in self.front_tracker_insert_positions:
+                if ip.ready:
+                    c = color2
+                else:
+                    c = color
+                painter.setPen(QPen(c, 40))
+                painter.drawPoint(ip.intersection_point)
+
+        if self.front_tracker_captured_group:
+            painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
 
