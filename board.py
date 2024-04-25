@@ -50,13 +50,13 @@ def show_longtime_process_ongoing(board_window, text):
 
 class BoardLibraryDataMixin():
 
-    def get_boards_root(self):
+    def get_boards_data_root(self):
         rootpath = os.path.join(os.path.dirname(__file__), "user_data", self.globals.BOARDS_ROOT)
         create_pathsubfolders_if_not_exist(rootpath)
         return rootpath
 
     def load_boards(self):
-        if os.path.exists(self.get_boards_root()):
+        if os.path.exists(self.get_boards_data_root()):
             print("loading boards data")
 
 class BoardItem():
