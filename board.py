@@ -289,6 +289,7 @@ BoardCallbacksNames = [
     'mousePressEvent',
     'mouseMoveEvent',
     'mouseReleaseEvent',
+    'mouseDoubleClickEvent',
     'wheelEvent',
     'contextMenu',
     'keyPressEvent',
@@ -466,6 +467,9 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_dropEvent(self, event):
         self.dropEventBoardCallback(event)
 
+    def board_mouseDoubleClickEvent(self, event):
+        self.mouseDoubleClickEventBoardCallback(event)
+
     def board_SetPlugin(self, pi):
         if pi.preparePluginBoard:
             pi.preparePluginBoard(self, pi)
@@ -515,6 +519,19 @@ class BoardMixin(BoardTextEditItemMixin):
                 print(f'\t! failed to load plugin {filename}')
             if ok:
                 self.board_plugins.append(pi)
+
+    def board_mouseDoubleClickEventDefault(self, event):
+        cf = self.LibraryData().current_folder()
+        for board_item in cf.board.items_list:
+            item_selection_area = board_item.get_selection_area(board=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            if is_under_mouse:
+                if board_item.type == BoardItem.types.ITEM_NOTE:
+                    self.board_TextElementSetEditMode(board_item)
+                    break
+                else:
+                    self.board_fit_content_on_screen(None, board_item=board_item)
+                    break
 
     def board_keyPressEventDefault(self, event):
         key = event.key()
@@ -3407,19 +3424,6 @@ class BoardMixin(BoardTextEditItemMixin):
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
             self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
         return board_item
-
-    def board_doubleclick_handler(self, obj, event):
-        cf = self.LibraryData().current_folder()
-        for board_item in cf.board.items_list:
-            item_selection_area = board_item.get_selection_area(board=self)
-            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
-            if is_under_mouse:
-                if board_item.type == BoardItem.types.ITEM_NOTE:
-                    self.board_TextElementSetEditMode(board_item)
-                    break
-                else:
-                    self.board_fit_content_on_screen(None, board_item=board_item)
-                    break
 
     def board_thumbnails_click_handler(self, image_data):
         self.board_fit_content_on_screen(image_data)

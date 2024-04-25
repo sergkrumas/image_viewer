@@ -25,6 +25,9 @@ def mouseMoveEvent(self, event):
 def mouseReleaseEvent(self, event):
     self.board_mouseReleaseEventDefault(event)
 
+def mouseDoubleClickEvent(self, event):
+    self.board_mouseDoubleClickEventDefault(event)
+
 def wheelEvent(self, event):
     self.board_wheelEventDefault(event)
 
@@ -66,6 +69,8 @@ def register(board_obj, plugin_info):
     plugin_info.mousePressEvent = mousePressEvent
     plugin_info.mouseMoveEvent = mouseMoveEvent
     plugin_info.mouseReleaseEvent = mouseReleaseEvent
+
+    plugin_info.mouseDoubleClickEvent = mouseDoubleClickEvent
 
     plugin_info.keyPressEvent = keyPressEvent
     plugin_info.keyReleaseEvent = keyReleaseEvent

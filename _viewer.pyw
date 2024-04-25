@@ -1634,8 +1634,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 return False
         elif self.is_board_page_active():
             if event.type() == QEvent.MouseButtonDblClick:
-                self.board_doubleclick_handler(obj, event)
-                return True
+                if obj is self:
+                    self.board_mouseDoubleClickEvent(event)
+                    return True
         return False
 
     def toggle_to_frame_mode(self):
