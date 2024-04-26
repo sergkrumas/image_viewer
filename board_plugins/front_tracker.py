@@ -369,7 +369,7 @@ def paintEvent(self, painter, event):
 
     if isGroupMovedToNewPlace(self, cursor_pos):
 
-        data = defineInsertPositions(self)
+        data = defineInsertPositions(self, cursor_pos)
 
         color2 = QColor(220, 20, 20)
         for ip in self.front_tracker_insert_positions:
@@ -436,7 +436,7 @@ def finish_moving_column(self):
         self.front_tracker_captured_group = None
         self.front_tracker_captured_channel = None
 
-def defineInsertPositions(self, clear=False):
+def defineInsertPositions(self, cursor_pos, clear=False):
     ips = self.front_tracker_insert_positions
     self.front_tracker_current_group_insert_pos = None
     ips.clear()
@@ -450,35 +450,42 @@ def defineInsertPositions(self, clear=False):
         group_index = groups_list.index(group)
         channel_index = channels_list.index(channel)
 
-        # первые n позиций
-        for i, gr in enumerate(groups_list):
-            ip = InsertPos(i, gr.ui_rect.topLeft(), gr.ui_rect.bottomLeft())
-            ips.append(ip)
-
-        # n+1 позиция
-        ip = InsertPos(i+1, gr.ui_rect.topRight(), gr.ui_rect.bottomRight())
-        ips.append(ip)
-
         pos = self.mapFromGlobal(QCursor().pos())
         hor_line = QLineF(self.rect().topLeft(), self.rect().topRight())
         hor_line.translate(0, pos.y())
 
-        for ip in ips:
-            isp = ip.line.intersects(hor_line)
-            isp = isp[1]
-            ip.intersection_point = isp
-            ip.distance_to_cursor = QVector2D(pos - isp).length()
-            if ip.index in [group_index, group_index + 1]:
-                ip.not_used = True
+        def generate_insert_places(columns_list):
+            # первые n позиций
+            for i, col in enumerate(columns_list):
+                ip = InsertPos(i, col.ui_rect.topLeft(), col.ui_rect.bottomLeft())
+                ips.append(ip)
 
-        ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
-        if ips:
-            _ip = ips[0]
-            _ip.ready = True
-            self.front_tracker_current_group_insert_pos = _ip
-        else:
-            self.front_tracker_current_group_insert_pos = None
+            # n+1 позиция
+            ip = InsertPos(i+1, col.ui_rect.topRight(), col.ui_rect.bottomRight())
+            ips.append(ip)
 
+        if isGroupMovedToNewPlace(self, cursor_pos):
+
+            generate_insert_places(groups_list)
+
+            for ip in ips:
+                isp_out = ip.line.intersects(hor_line)
+                isp = isp_out[1]
+                ip.intersection_point = isp
+                ip.distance_to_cursor = QVector2D(pos - isp).length()
+                if ip.index in [group_index, group_index + 1]:
+                    ip.not_used = True
+
+            ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
+            if ips:
+                _ip = ips[0]
+                _ip.ready = True
+                self.front_tracker_current_group_insert_pos = _ip
+            else:
+                self.front_tracker_current_group_insert_pos = None
+
+        if isChannelMovedToNewPlace(self, cursor_pos):
+            pass
 
         data = (hor_line, )
         return data
