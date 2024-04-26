@@ -372,18 +372,8 @@ def paintEvent(self, painter, event):
         data = defineInsertPositions(self, cursor_pos)
 
         color2 = QColor(220, 20, 20)
-        for ip in self.front_tracker_insert_positions:
-            if ip.not_used:
-                c = color
-            else:
-                c = color2
-            painter.setPen(QPen(c, 5))
-            painter.drawLine(ip.line)
 
         if data:
-            hor_line = data[0]
-            painter.drawLine(hor_line)
-
             for ip in self.front_tracker_insert_positions:
                 if ip.ready:
                     c = color2
