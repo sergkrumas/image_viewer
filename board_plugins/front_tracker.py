@@ -548,13 +548,12 @@ def defineInsertPositions(self, cursor_pos, clear=False):
 
             ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
 
-            if ips:
-                _ip = ips[0]
-                _ip.ready = True
-                self.front_tracker_current_group_insert_pos = _ip
-                setattr(self, f'front_tracker_current_{entity}_insert_pos', _ip)
-            else:
-                self.front_tracker_current_group_insert_pos = None
+
+            _ip = ips[0]
+            _ip.ready = True
+            self.front_tracker_current_group_insert_pos = _ip
+            setattr(self, f'front_tracker_current_{entity}_insert_pos', _ip)
+
 
         if isGroupBeingRearranged(self, cursor_pos):
             generate_insert_places(groups_list, group_index, 'group')
