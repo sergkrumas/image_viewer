@@ -419,7 +419,7 @@ def isChannelMovedToNewPlace(self, cursor_pos):
 
 class InsertPos(object):
 
-    __slots__ = ('index', 'topPoint', 'bottomPoint', 'ready', 'line', 'not_used', 'intersection_point', 'cursor_distance')
+    __slots__ = ('index', 'topPoint', 'bottomPoint', 'ready', 'line', 'not_used', 'intersection_point', 'distance_to_cursor')
 
     def __init__(self, i, topPoint, bottomPoint):
         super().__init__()
@@ -457,11 +457,11 @@ def defineInsertPositions(self, clear=False):
             isp = ip.line.intersects(hor_line)
             isp = isp[1]
             ip.intersection_point = isp
-            ip.cursor_distance = QVector2D(pos - isp).length()
+            ip.distance_to_cursor = QVector2D(pos - isp).length()
             if ip.index in [group_index, group_index + 1]:
                 ip.not_used = True
 
-        ips = list(sorted(ips, key=lambda x: x.cursor_distance))
+        ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
         if ips:
             _ip = ips[0]
             _ip.ready = True
