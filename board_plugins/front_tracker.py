@@ -367,25 +367,37 @@ def paintEvent(self, painter, event):
     pos += QPointF(0, -25)
     painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
 
+
+    color = self.selection_color
+    color.setAlpha(220)
+
     if isGroupMovedToNewPlace(self, cursor_pos) or isChannelMovedToNewPlace(self, cursor_pos):
-
         data = defineInsertPositions(self, cursor_pos)
-
         color2 = QColor(220, 20, 20)
 
         if data:
             for ip in self.front_tracker_insert_positions:
+                if ip.not_used:
+                    continue
                 if ip.ready:
                     c = color2
                 else:
                     c = color
-                painter.setPen(QPen(c, 40))
-                painter.drawPoint(ip.intersection_point)
+                painter.setPen(QPen(c, 1, Qt.DashLine))
+                x = ip.topPoint.x()
+                a = QPointF(x, 0)
+                b = QPointF(x, self.rect().height())
+                insert_line = QLineF(a, b)
+                painter.drawLine(insert_line)
 
-        if isGroupMovedToNewPlace(self, cursor_pos):
-            painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
-        if isChannelMovedToNewPlace(self, cursor_pos):
-            painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
+    channel_moved = isChannelMovedToNewPlace(self, cursor_pos)
+    group_moved = isGroupMovedToNewPlace(self, cursor_pos)
+
+    if self.front_tracker_captured_group is not None and not channel_moved and group_moved:
+        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+
+    if self.front_tracker_captured_channel is not None and not group_moved and channel_moved:
+        painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
 
