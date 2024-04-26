@@ -5,6 +5,7 @@ import subprocess
 import random
 from functools import partial
 import time
+import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -22,6 +23,61 @@ class TaskStatus():
 
 STATUS_INPROGRESS = TaskStatus.IN_PROGRESS
 STATUS_DONE = TaskStatus.DONE
+
+def get_cols_order_filepath(self):
+    return self.get_boards_user_data_filepath('front_tracker.cols_order.txt')
+
+def load_cols_order(self):
+    filepath = get_cols_order_filepath(self)
+    if os.path.exists(filepath):
+        with open(filepath, 'r', encoding='utf8') as file:
+            order_data = json.loads(file.read())
+
+        loaded_group_data = self.front_tracker_data_groups[:]
+        ordered_group_data = []
+
+        def find_group(filepath):
+            for gr in loaded_group_data:
+                if gr.filepath == filepath:
+                    loaded_group_data.remove(gr)
+                    return gr
+            return None
+
+        def find_channel_in_group(_channels, name):
+            for ch in _channels:
+                if ch.name == name:
+                    _channels.remove(ch)
+                    return ch
+            return None
+
+        for ogrp, ochs in order_data.items():
+            obj = find_group(ogrp)
+            if obj:
+                ordered_group_data.append(obj)
+
+                loaded_channel_data = obj.channels
+                ordered_channel_data = []
+                for och in ochs:
+                    ch_obj = find_channel_in_group(loaded_channel_data, och)
+                    if ch_obj:
+                        ordered_channel_data.append(ch_obj)
+
+                obj.channels = ordered_channel_data + loaded_channel_data
+
+        self.front_tracker_data_groups = ordered_group_data + loaded_group_data
+
+def save_cols_order(self):
+    filepath = get_cols_order_filepath(self)
+    with open(filepath, 'w+', encoding='utf8') as file:
+        groups = self.front_tracker_data_groups
+        order_data = dict()
+        for gr in groups:
+            chs = []
+            for ch in gr.channels:
+                chs.append(ch.name)
+            order_data.update({gr.filepath: chs})
+        file.write(json.dumps(order_data))
+
 
 class Task(object):
 
@@ -495,8 +551,11 @@ def finish_moving_column(self, cursor_pos):
             if index_to_insert > col_index:
                 index_to_insert -= 1
 
-            operation_list.remove(col)
-            operation_list.insert(index_to_insert, col)
+            if col_index != index_to_insert:
+                operation_list.remove(col)
+                operation_list.insert(index_to_insert, col)
+
+                save_cols_order(self)
 
         if isGroupBeingRearranged(self, cursor_pos):
             place_column(self, 'group')
@@ -710,6 +769,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
         generate_brush(self)
 
+    load_cols_order(self)
 
     self.update()
 
