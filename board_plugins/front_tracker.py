@@ -371,6 +371,32 @@ def paintEvent(self, painter, event):
     color = self.selection_color
     color.setAlpha(220)
 
+    def draw_current_insert_position(rect):
+        pixmap = QPixmap(rect.size().toSize())
+        pixmap.fill(Qt.transparent)
+
+        p = QPainter()
+        p.begin(pixmap)
+
+        gradient = QLinearGradient(pixmap.rect().topLeft(), pixmap.rect().topRight())
+        c1 = QColor(255, 255, 255, 0)
+        c2 = QColor(0, 255, 0, 255)
+
+        gradient.setColorAt(1.0, c1)
+        gradient.setColorAt(0.45, c2)
+        gradient.setColorAt(0.55, c2)
+        gradient.setColorAt(0.0, c1)
+
+        p.fillRect(pixmap.rect(), gradient)
+
+        p.setCompositionMode(QPainter.CompositionMode_DestinationIn)
+
+        position = QPointF(0, self.front_tracker_anim_offset)
+        p.drawTiledPixmap(QRectF(pixmap.rect()), self.bkg_map, position)
+
+        return pixmap
+
+
     if isGroupBeingRearranged(self, cursor_pos) or isChannelBeingRearranged(self, cursor_pos):
         data = defineInsertPositions(self, cursor_pos)
         color2 = QColor(20, 220, 20)
@@ -380,15 +406,22 @@ def paintEvent(self, painter, event):
                 if ip.not_used:
                     continue
                 if ip.ready:
-                    c = color2
+                    # c = color2
+
+                    WIDTH = 100
+                    rect = QRectF(ip.topPoint.x()-WIDTH/2, 0, WIDTH, self.rect().height())
+                    pixmap = draw_current_insert_position(rect)
+                    painter.drawPixmap(rect.topLeft(), pixmap)
+
                 else:
                     c = color
-                painter.setPen(QPen(c, 1, Qt.DashLine))
-                x = ip.topPoint.x()
-                a = QPointF(x, 0)
-                b = QPointF(x, self.rect().height())
-                insert_line = QLineF(a, b)
-                painter.drawLine(insert_line)
+
+                    painter.setPen(QPen(c, 1, Qt.DashLine))
+                    x = ip.topPoint.x()
+                    a = QPointF(x, 0)
+                    b = QPointF(x, self.rect().height())
+                    insert_line = QLineF(a, b)
+                    painter.drawLine(insert_line)
 
     channel_moved = isChannelBeingRearranged(self, cursor_pos)
     group_moved = isGroupBeingRearranged(self, cursor_pos)
