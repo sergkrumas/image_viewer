@@ -268,7 +268,6 @@ def paintEvent(self, painter, event):
     painter.drawRect(rect)
 
 
-    sch = QRectF(rect)
     selection_rect_channel = None
 
 
@@ -301,10 +300,11 @@ def paintEvent(self, painter, event):
                 if task_cell_rect.contains(cursor_pos):
                     self.front_tracker_task_under_mouse = task
 
+            sch = QRectF(rect)
             sch.setWidth(channel.ui_width*self.board_scale_x)
             sch.moveLeft(self.board_MapToViewport(offset).x())
             channel.ui_rect = sch
-            if sch.contains(cursor_pos) and not self.front_tracker_captured_group:
+            if sch.contains(cursor_pos):
                 selection_rect_channel = QRectF(sch)
                 self.front_tracker_channel_under_mouse = channel
 
@@ -319,7 +319,7 @@ def paintEvent(self, painter, event):
         sgr.setLeft(group_start_offset.x())
         sgr.setWidth(group_end_offset.x() - group_start_offset.x())
         group.ui_rect = sgr
-        if sgr.contains(cursor_pos) and not self.front_tracker_captured_group:
+        if sgr.contains(cursor_pos):
             selection_rect_group = QRectF(sgr)
             self.front_tracker_group_under_mouse = group
 
@@ -367,7 +367,7 @@ def paintEvent(self, painter, event):
     pos += QPointF(0, -25)
     painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
 
-    if isGroupMovedToNewPlace(self, cursor_pos):
+    if isGroupMovedToNewPlace(self, cursor_pos) or isChannelMovedToNewPlace(self, cursor_pos):
 
         data = defineInsertPositions(self, cursor_pos)
 
@@ -392,7 +392,10 @@ def paintEvent(self, painter, event):
                 painter.setPen(QPen(c, 40))
                 painter.drawPoint(ip.intersection_point)
 
-        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        if isGroupMovedToNewPlace(self, cursor_pos):
+            painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        if isChannelMovedToNewPlace(self, cursor_pos):
+            painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
 
@@ -439,6 +442,7 @@ def finish_moving_column(self):
 def defineInsertPositions(self, cursor_pos, clear=False):
     ips = self.front_tracker_insert_positions
     self.front_tracker_current_group_insert_pos = None
+    self.front_tracker_channel_channel_insert_pos = None
     ips.clear()
     if not clear:
         group = self.front_tracker_captured_group
@@ -454,8 +458,9 @@ def defineInsertPositions(self, cursor_pos, clear=False):
         hor_line = QLineF(self.rect().topLeft(), self.rect().topRight())
         hor_line.translate(0, pos.y())
 
-        def generate_insert_places(columns_list):
+        def generate_insert_places(columns_list, currend_index, entity):
             # первые n позиций
+            nonlocal ips
             for i, col in enumerate(columns_list):
                 ip = InsertPos(i, col.ui_rect.topLeft(), col.ui_rect.bottomLeft())
                 ips.append(ip)
@@ -464,28 +469,29 @@ def defineInsertPositions(self, cursor_pos, clear=False):
             ip = InsertPos(i+1, col.ui_rect.topRight(), col.ui_rect.bottomRight())
             ips.append(ip)
 
-        if isGroupMovedToNewPlace(self, cursor_pos):
-
-            generate_insert_places(groups_list)
-
             for ip in ips:
                 isp_out = ip.line.intersects(hor_line)
                 isp = isp_out[1]
                 ip.intersection_point = isp
                 ip.distance_to_cursor = QVector2D(pos - isp).length()
-                if ip.index in [group_index, group_index + 1]:
+                if ip.index in [currend_index, currend_index + 1]:
                     ip.not_used = True
 
             ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
+
             if ips:
                 _ip = ips[0]
                 _ip.ready = True
                 self.front_tracker_current_group_insert_pos = _ip
+                setattr(self, f'front_tracker_current_{entity}_insert_pos', _ip)
             else:
                 self.front_tracker_current_group_insert_pos = None
 
+        if isGroupMovedToNewPlace(self, cursor_pos):
+            generate_insert_places(groups_list, group_index, 'group')
+
         if isChannelMovedToNewPlace(self, cursor_pos):
-            pass
+            generate_insert_places(channels_list, channel_index, 'channel')
 
         data = (hor_line, )
         return data
