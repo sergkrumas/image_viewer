@@ -440,14 +440,18 @@ def defineInsertPositions(self, clear=False):
     ips = self.front_tracker_insert_positions
     self.front_tracker_current_group_insert_pos = None
     ips.clear()
-    if self.front_tracker_captured_group and not clear:
+    if not clear:
         group = self.front_tracker_captured_group
-        groups = self.front_tracker_data_groups
+        channel = self.front_tracker_captured_channel
 
-        group_index = groups.index(group)
+        groups_list = self.front_tracker_data_groups
+        channels_list = group.channels
+
+        group_index = groups_list.index(group)
+        channel_index = channels_list.index(channel)
 
         # первые n позиций
-        for i, gr in enumerate(groups):
+        for i, gr in enumerate(groups_list):
             ip = InsertPos(i, gr.ui_rect.topLeft(), gr.ui_rect.bottomLeft())
             ips.append(ip)
 
