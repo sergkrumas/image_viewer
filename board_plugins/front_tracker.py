@@ -371,7 +371,7 @@ def paintEvent(self, painter, event):
     color = self.selection_color
     color.setAlpha(220)
 
-    if isGroupMovedToNewPlace(self, cursor_pos) or isChannelMovedToNewPlace(self, cursor_pos):
+    if isGroupBeingRearranged(self, cursor_pos) or isChannelBeingRearranged(self, cursor_pos):
         data = defineInsertPositions(self, cursor_pos)
         color2 = QColor(20, 220, 20)
 
@@ -390,8 +390,8 @@ def paintEvent(self, painter, event):
                 insert_line = QLineF(a, b)
                 painter.drawLine(insert_line)
 
-    channel_moved = isChannelMovedToNewPlace(self, cursor_pos)
-    group_moved = isGroupMovedToNewPlace(self, cursor_pos)
+    channel_moved = isChannelBeingRearranged(self, cursor_pos)
+    group_moved = isGroupBeingRearranged(self, cursor_pos)
 
     if self.front_tracker_captured_group is not None and not channel_moved and group_moved:
         # painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
@@ -409,11 +409,11 @@ def drawTiled(self, painter, rect):
     position = QPointF(0, self.front_tracker_anim_offset)
     painter.drawTiledPixmap(rect, self.bkg_map, position)
 
-def isGroupMovedToNewPlace(self, cursor_pos):
+def isGroupBeingRearranged(self, cursor_pos):
     cgrp = self.front_tracker_captured_group
     return cgrp and not cgrp.ui_rect.contains(cursor_pos)
 
-def isChannelMovedToNewPlace(self, cursor_pos):
+def isChannelBeingRearranged(self, cursor_pos):
     cch = self.front_tracker_captured_channel
     return cch and cch.group.ui_rect.contains(cursor_pos) and not cch.ui_rect.contains(cursor_pos)
 
@@ -465,10 +465,10 @@ def finish_moving_column(self, cursor_pos):
             operation_list.remove(col)
             operation_list.insert(index_to_insert, col)
 
-        if isGroupMovedToNewPlace(self, cursor_pos):
+        if isGroupBeingRearranged(self, cursor_pos):
             place_column(self, 'group')
 
-        if isChannelMovedToNewPlace(self, cursor_pos):
+        if isChannelBeingRearranged(self, cursor_pos):
             place_column(self, 'channel')
 
         self.front_tracker_captured_group = None
@@ -523,10 +523,10 @@ def defineInsertPositions(self, cursor_pos, clear=False):
             else:
                 self.front_tracker_current_group_insert_pos = None
 
-        if isGroupMovedToNewPlace(self, cursor_pos):
+        if isGroupBeingRearranged(self, cursor_pos):
             generate_insert_places(groups_list, group_index, 'group')
 
-        if isChannelMovedToNewPlace(self, cursor_pos):
+        if isChannelBeingRearranged(self, cursor_pos):
             generate_insert_places(channels_list, channel_index, 'channel')
 
         data = (hor_line, )
