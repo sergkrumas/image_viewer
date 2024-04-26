@@ -170,7 +170,7 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
-    finish_moving_column(self)
+    finish_moving_column(self, event.pos())
 
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
@@ -424,17 +424,33 @@ def start_moving_column(self):
     self.front_tracker_captured_group = self.front_tracker_group_under_mouse
     self.front_tracker_captured_channel = self.front_tracker_channel_under_mouse
 
-def finish_moving_column(self):
+def finish_moving_column(self, cursor_pos):
     if self.front_tracker_captured_group:
-        gr = self.front_tracker_captured_group
-        index_to_insert = self.front_tracker_current_group_insert_pos.index
-        gr_index = self.front_tracker_data_groups.index(gr)
 
-        if index_to_insert > gr_index:
-            index_to_insert -= 1
+        def place_column(self, column_type):
+            col = getattr(self, f'front_tracker_captured_{column_type}')
 
-        self.front_tracker_data_groups.remove(gr)
-        self.front_tracker_data_groups.insert(index_to_insert, gr)
+            if column_type == 'group':
+                col_index = self.front_tracker_data_groups.index(col)
+                operation_list = self.front_tracker_data_groups
+            elif column_type == 'channel':
+                channels = col.group.channels
+                col_index = channels.index(col)
+                operation_list = channels
+
+            index_to_insert = getattr(self, f'front_tracker_current_{column_type}_insert_pos').index
+
+            if index_to_insert > col_index:
+                index_to_insert -= 1
+
+            operation_list.remove(col)
+            operation_list.insert(index_to_insert, col)
+
+        if isGroupMovedToNewPlace(self, cursor_pos):
+            place_column(self, 'group')
+
+        if isChannelMovedToNewPlace(self, cursor_pos):
+            place_column(self, 'channel')
 
         self.front_tracker_captured_group = None
         self.front_tracker_captured_channel = None
