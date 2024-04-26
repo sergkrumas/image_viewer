@@ -373,7 +373,7 @@ def paintEvent(self, painter, event):
 
     if isGroupMovedToNewPlace(self, cursor_pos) or isChannelMovedToNewPlace(self, cursor_pos):
         data = defineInsertPositions(self, cursor_pos)
-        color2 = QColor(220, 20, 20)
+        color2 = QColor(20, 220, 20)
 
         if data:
             for ip in self.front_tracker_insert_positions:
@@ -396,7 +396,7 @@ def paintEvent(self, painter, event):
     if self.front_tracker_captured_group is not None and not channel_moved and group_moved:
         painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
 
-    if self.front_tracker_captured_channel is not None and not group_moved and channel_moved:
+    if self.front_tracker_captured_channel is not None and not group_moved: # and channel_moved:
         painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
