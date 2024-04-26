@@ -217,6 +217,8 @@ def mousePressEvent(self, event):
 
 def mouseMoveEvent(self, event):
     isLeftButton = event.buttons() == Qt.LeftButton
+    if not isLeftButton:
+        restart_task_timer(self)
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
     elif self.front_tracker_group_under_mouse is not None and isLeftButton:
@@ -238,7 +240,6 @@ def mouseReleaseEvent(self, event):
 
 def wheelEvent(self, event):
     self.board_wheelEventDefault(event)
-
 
 def mouseDoubleClickEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
@@ -490,9 +491,20 @@ def paintEvent(self, painter, event):
         drawTiled(self, painter, self.front_tracker_captured_channel.ui_rect)
         # painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
 
+    set_font(20)
+    task = self.front_tracker_task_under_mouse
+    if self.front_tracker_task_info and task:
+        painter.setPen(QPen(color, 1))
+        rect = QRect(self.rect().center(), self.rect().bottomRight())
+        rect.adjust(10, 10, -10, -10)
+        painter.fillRect(rect, QColor(10, 10, 10, 150))
+        painter.drawRect(rect)
+        rect = rect.adjusted(25, 25, -25, -25)
+        painter.setPen(QPen(Qt.white))
+        painter.drawText(rect, 0, task.text)
+
+
     painter.restore()
-
-
 
 def drawTiled(self, painter, rect):
     position = QPointF(0, self.front_tracker_anim_offset)
@@ -673,6 +685,22 @@ def restart_buffer_timer(self, callback):
     timer.timeout.connect(callback)
     timer.start()
 
+def show_task_info(self):
+    self.front_tracker_task_info = True
+    self.update()
+
+def restart_task_timer(self):
+    task = self.front_tracker_task_under_mouse
+    if not task:
+        self.front_tracker_task_info = False
+    if self.front_tracker_task_timer is not None:
+        self.front_tracker_task_timer.stop()
+    self.front_tracker_task_timer = timer = QTimer()
+    timer.setInterval(100)
+    timer.setSingleShot(True)
+    timer.timeout.connect(partial(show_task_info, self))
+    timer.start()
+
 def keyPressEvent(self, event):
     self.board_keyPressEventDefault(event)
 
@@ -724,6 +752,9 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     self.front_tracker_captured_group = None
     self.front_tracker_captured_channel = None
     self.front_tracker_insert_positions = []
+
+    self.front_tracker_task_info = False
+    self.front_tracker_task_timer = None
 
     exts = ('.txt', '.md')
     exts = ('.txt')
