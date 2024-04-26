@@ -167,7 +167,7 @@ class InsertPos(object):
 
 def defineInsertPositions(self, clear=False):
     ips = self.front_tracker_insert_positions
-    self.front_tracker_current_insert_pos = None
+    self.front_tracker_current_group_insert_pos = None
     ips.clear()
     if self.front_tracker_captured_group and not clear:
         group = self.front_tracker_captured_group
@@ -200,9 +200,9 @@ def defineInsertPositions(self, clear=False):
         if ips:
             _ip = ips[0]
             _ip.ready = True
-            self.front_tracker_current_insert_pos = _ip
+            self.front_tracker_current_group_insert_pos = _ip
         else:
-            self.front_tracker_current_insert_pos = None
+            self.front_tracker_current_group_insert_pos = None
 
 
         data = (hor_line, )
@@ -215,7 +215,7 @@ def mousePressEvent(self, event):
         pass
     if self.front_tracker_group_under_mouse is not None and isLeftButton:
         self.front_tracker_captured_group = self.front_tracker_group_under_mouse
-        pass
+        self.front_tracker_captured_channel = self.front_tracker_channel_under_mouse
     else:
         self.board_mousePressEventDefault(event)
 
@@ -232,7 +232,7 @@ def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
     if self.front_tracker_captured_group:
         gr = self.front_tracker_captured_group
-        index_to_insert = self.front_tracker_current_insert_pos.index
+        index_to_insert = self.front_tracker_current_group_insert_pos.index
         gr_index = self.front_tracker_data_groups.index(gr)
 
         if index_to_insert > gr_index:
@@ -242,6 +242,7 @@ def mouseReleaseEvent(self, event):
         self.front_tracker_data_groups.insert(index_to_insert, gr)
 
         self.front_tracker_captured_group = None
+        self.front_tracker_captured_channel = None
 
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
@@ -468,7 +469,11 @@ def paintEvent(self, painter, event):
     painter.restore()
 
 def isGroupMovedToNewPlace(self, cursor_pos):
-    return self.front_tracker_captured_group and not self.front_tracker_captured_group.ui_rect.contains(cursor_pos)
+    cgrp = self.front_tracker_captured_group
+    return cgrp and not cgrp.ui_rect.contains(cursor_pos)
+
+def isChannelMovedToNewPlace(self, cursor_pos):
+    pass
 
 def check_exclude(obj_name, files_to_exclude):
     b1 = obj_name in files_to_exclude
@@ -567,6 +572,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     self.front_tracker_buffer_timer = None
 
     self.front_tracker_captured_group = None
+    self.front_tracker_captured_channel = None
     self.front_tracker_insert_positions = []
 
     exts = ('.txt', '.md')
