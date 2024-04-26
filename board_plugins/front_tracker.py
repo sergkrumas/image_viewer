@@ -438,7 +438,7 @@ def paintEvent(self, painter, event):
     pos += QPointF(0, -25)
     painter.drawText(pos, f'Groups: {len(self.front_tracker_data_groups)}')
 
-    if self.front_tracker_captured_group and not self.front_tracker_captured_group.ui_rect.contains(cursor_pos):
+    if isGroupMovedToNewPlace(self, cursor_pos):
 
         data = defineInsertPositions(self)
 
@@ -463,10 +463,12 @@ def paintEvent(self, painter, event):
                 painter.setPen(QPen(c, 40))
                 painter.drawPoint(ip.intersection_point)
 
-        if self.front_tracker_captured_group:
-            painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
+
+def isGroupMovedToNewPlace(self, cursor_pos):
+    return self.front_tracker_captured_group and not self.front_tracker_captured_group.ui_rect.contains(cursor_pos)
 
 def check_exclude(obj_name, files_to_exclude):
     b1 = obj_name in files_to_exclude
