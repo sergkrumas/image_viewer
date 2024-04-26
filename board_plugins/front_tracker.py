@@ -155,8 +155,7 @@ def mousePressEvent(self, event):
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
     if self.front_tracker_group_under_mouse is not None and isLeftButton:
-        self.front_tracker_captured_group = self.front_tracker_group_under_mouse
-        self.front_tracker_captured_channel = self.front_tracker_channel_under_mouse
+        start_moving_column(self)
     else:
         self.board_mousePressEventDefault(event)
 
@@ -171,19 +170,7 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
-    if self.front_tracker_captured_group:
-        gr = self.front_tracker_captured_group
-        index_to_insert = self.front_tracker_current_group_insert_pos.index
-        gr_index = self.front_tracker_data_groups.index(gr)
-
-        if index_to_insert > gr_index:
-            index_to_insert -= 1
-
-        self.front_tracker_data_groups.remove(gr)
-        self.front_tracker_data_groups.insert(index_to_insert, gr)
-
-        self.front_tracker_captured_group = None
-        self.front_tracker_captured_channel = None
+    finish_moving_column(self)
 
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
         pass
@@ -429,6 +416,25 @@ class InsertPos(object):
         self.ready = False
         self.not_used = False
         self.line = QLineF(self.topPoint, self.bottomPoint)
+
+def start_moving_column(self):
+    self.front_tracker_captured_group = self.front_tracker_group_under_mouse
+    self.front_tracker_captured_channel = self.front_tracker_channel_under_mouse
+
+def finish_moving_column(self):
+    if self.front_tracker_captured_group:
+        gr = self.front_tracker_captured_group
+        index_to_insert = self.front_tracker_current_group_insert_pos.index
+        gr_index = self.front_tracker_data_groups.index(gr)
+
+        if index_to_insert > gr_index:
+            index_to_insert -= 1
+
+        self.front_tracker_data_groups.remove(gr)
+        self.front_tracker_data_groups.insert(index_to_insert, gr)
+
+        self.front_tracker_captured_group = None
+        self.front_tracker_captured_channel = None
 
 def defineInsertPositions(self, clear=False):
     ips = self.front_tracker_insert_positions
