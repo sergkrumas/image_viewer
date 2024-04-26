@@ -394,12 +394,20 @@ def paintEvent(self, painter, event):
     group_moved = isGroupMovedToNewPlace(self, cursor_pos)
 
     if self.front_tracker_captured_group is not None and not channel_moved and group_moved:
-        painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        # painter.fillRect(self.front_tracker_captured_group.ui_rect, self.diagonal_lines_br)
+        drawTiled(self, painter, self.front_tracker_captured_group.ui_rect)
 
     if self.front_tracker_captured_channel is not None and not group_moved: # and channel_moved:
-        painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
+        drawTiled(self, painter, self.front_tracker_captured_channel.ui_rect)
+        # painter.fillRect(self.front_tracker_captured_channel.ui_rect, self.diagonal_lines_br)
 
     painter.restore()
+
+
+
+def drawTiled(self, painter, rect):
+    position = QPointF(0, self.front_tracker_anim_offset)
+    painter.drawTiledPixmap(rect, self.bkg_map, position)
 
 def isGroupMovedToNewPlace(self, cursor_pos):
     cgrp = self.front_tracker_captured_group
@@ -422,9 +430,18 @@ class InsertPos(object):
         self.not_used = False
         self.line = QLineF(self.topPoint, self.bottomPoint)
 
+def update_animation_pos(self):
+    self.front_tracker_anim_offset += 3
+    self.front_tracker_anim_offset %= self.bkg_map.width()
+    self.update()
+
 def start_moving_column(self):
     self.front_tracker_captured_group = self.front_tracker_group_under_mouse
     self.front_tracker_captured_channel = self.front_tracker_channel_under_mouse
+    self.front_tracker_animation_timer = timer = QTimer()
+    timer.setInterval(50)
+    timer.timeout.connect(partial(update_animation_pos, self))
+    timer.start()
 
 def finish_moving_column(self, cursor_pos):
     if self.front_tracker_captured_group:
@@ -456,6 +473,7 @@ def finish_moving_column(self, cursor_pos):
 
         self.front_tracker_captured_group = None
         self.front_tracker_captured_channel = None
+        self.front_tracker_animation_timer.stop()
 
 def defineInsertPositions(self, cursor_pos, clear=False):
     ips = self.front_tracker_insert_positions
@@ -604,6 +622,8 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     self.front_tracker_path_buffer = []
 
+    self.front_tracker_anim_offset = 0
+
     self.front_tracker_channel_under_mouse = None
     self.front_tracker_group_under_mouse = None
     self.front_tracker_task_under_mouse = None
@@ -656,41 +676,45 @@ def preparePluginBoard(self, plugin_info, rescan=False):
         self.front_tracker_watcher.fileChanged.connect(partial(_watcherFileChanged, self))
         self.board_origin = QPointF(500, 250)
 
-        self.diagonal_lines_br = diagonal_lines_br = QBrush()
-        pixmap = QPixmap(100, 100)
-        pixmap.fill(Qt.transparent)
-        painter_ = QPainter()
-        painter_.begin(pixmap)
-        painter_.setOpacity(0.1)
-        painter_.fillRect(pixmap.rect(), Qt.gray)
-        painter_.setBrush(QBrush(QColor(200, 200, 200)))
-        painter_.setPen(Qt.NoPen)
-        w = pixmap.width()
-        path = QPainterPath()
-        path.moveTo(w*0.0, w*0.0)
-        path.lineTo(w*0.25, w*0.0)
-        path.lineTo(w*1.0, w*0.75)
-        path.lineTo(w*1.0, w*1.0)
-        path.lineTo(w*0.75, w*1.0)
-        path.lineTo(w*0.0, w*0.25)
-        painter_.drawPath(path)
-        path = QPainterPath()
-        path.moveTo(w*0.0, w*0.75)
-        path.lineTo(w*0.0, w*1.0)
-        path.lineTo(w*0.25, w*1.0)
-        painter_.drawPath(path)
-        path = QPainterPath()
-        path.moveTo(w*0.75, w*0.0)
-        path.lineTo(w*1.0, w*0.0)
-        path.lineTo(w*1.0, w*0.25)
-        painter_.drawPath(path)
-        painter_.end()
-        diagonal_lines_br.setTexture(pixmap)
-
+        generate_brush(self)
 
 
     self.update()
 
+def generate_brush(self):
+
+    self.diagonal_lines_br = diagonal_lines_br = QBrush()
+    pixmap = QPixmap(100, 100)
+    pixmap.fill(Qt.transparent)
+    painter_ = QPainter()
+    painter_.begin(pixmap)
+    painter_.setOpacity(0.1)
+    painter_.fillRect(pixmap.rect(), Qt.gray)
+    painter_.setBrush(QBrush(QColor(200, 200, 200)))
+    painter_.setPen(Qt.NoPen)
+    w = pixmap.width()
+    path = QPainterPath()
+    path.moveTo(w*0.0, w*0.0)
+    path.lineTo(w*0.25, w*0.0)
+    path.lineTo(w*1.0, w*0.75)
+    path.lineTo(w*1.0, w*1.0)
+    path.lineTo(w*0.75, w*1.0)
+    path.lineTo(w*0.0, w*0.25)
+    painter_.drawPath(path)
+    path = QPainterPath()
+    path.moveTo(w*0.0, w*0.75)
+    path.lineTo(w*0.0, w*1.0)
+    path.lineTo(w*0.25, w*1.0)
+    painter_.drawPath(path)
+    path = QPainterPath()
+    path.moveTo(w*0.75, w*0.0)
+    path.lineTo(w*1.0, w*0.0)
+    path.lineTo(w*1.0, w*0.25)
+    painter_.drawPath(path)
+    painter_.end()
+    diagonal_lines_br.setTexture(pixmap)
+
+    self.bkg_map = pixmap
 
 
 
