@@ -150,65 +150,6 @@ class Group(object):
     def __repr__(self):
         return f'{self.name} ({len(self.tasks())})'
 
-
-
-class InsertPos(object):
-
-    __slots__ = ('index', 'topPoint', 'bottomPoint', 'ready', 'line', 'not_used', 'intersection_point', 'cursor_distance')
-
-    def __init__(self, i, topPoint, bottomPoint):
-        super().__init__()
-        self.index = i
-        self.topPoint = topPoint
-        self.bottomPoint = bottomPoint
-        self.ready = False
-        self.not_used = False
-        self.line = QLineF(self.topPoint, self.bottomPoint)
-
-def defineInsertPositions(self, clear=False):
-    ips = self.front_tracker_insert_positions
-    self.front_tracker_current_group_insert_pos = None
-    ips.clear()
-    if self.front_tracker_captured_group and not clear:
-        group = self.front_tracker_captured_group
-        groups = self.front_tracker_data_groups
-
-        group_index = groups.index(group)
-
-        # первые n позиций
-        for i, gr in enumerate(groups):
-            ip = InsertPos(i, gr.ui_rect.topLeft(), gr.ui_rect.bottomLeft())
-            ips.append(ip)
-
-        # n+1 позиция
-        ip = InsertPos(i+1, gr.ui_rect.topRight(), gr.ui_rect.bottomRight())
-        ips.append(ip)
-
-        pos = self.mapFromGlobal(QCursor().pos())
-        hor_line = QLineF(self.rect().topLeft(), self.rect().topRight())
-        hor_line.translate(0, pos.y())
-
-        for ip in ips:
-            isp = ip.line.intersects(hor_line)
-            isp = isp[1]
-            ip.intersection_point = isp
-            ip.cursor_distance = QVector2D(pos - isp).length()
-            if ip.index in [group_index, group_index + 1]:
-                ip.not_used = True
-
-        ips = list(sorted(ips, key=lambda x: x.cursor_distance))
-        if ips:
-            _ip = ips[0]
-            _ip.ready = True
-            self.front_tracker_current_group_insert_pos = _ip
-        else:
-            self.front_tracker_current_group_insert_pos = None
-
-
-        data = (hor_line, )
-        return data
-
-
 def mousePressEvent(self, event):
     isLeftButton = event.button() == Qt.LeftButton
     if self.front_tracker_channel_under_mouse is not None and isLeftButton:
@@ -473,7 +414,64 @@ def isGroupMovedToNewPlace(self, cursor_pos):
     return cgrp and not cgrp.ui_rect.contains(cursor_pos)
 
 def isChannelMovedToNewPlace(self, cursor_pos):
-    pass
+    cch = self.front_tracker_captured_channel
+    return cch and cch.group.ui_rect.contains(cursor_pos) and not cch.ui_rect.contains(cursor_pos)
+
+class InsertPos(object):
+
+    __slots__ = ('index', 'topPoint', 'bottomPoint', 'ready', 'line', 'not_used', 'intersection_point', 'cursor_distance')
+
+    def __init__(self, i, topPoint, bottomPoint):
+        super().__init__()
+        self.index = i
+        self.topPoint = topPoint
+        self.bottomPoint = bottomPoint
+        self.ready = False
+        self.not_used = False
+        self.line = QLineF(self.topPoint, self.bottomPoint)
+
+def defineInsertPositions(self, clear=False):
+    ips = self.front_tracker_insert_positions
+    self.front_tracker_current_group_insert_pos = None
+    ips.clear()
+    if self.front_tracker_captured_group and not clear:
+        group = self.front_tracker_captured_group
+        groups = self.front_tracker_data_groups
+
+        group_index = groups.index(group)
+
+        # первые n позиций
+        for i, gr in enumerate(groups):
+            ip = InsertPos(i, gr.ui_rect.topLeft(), gr.ui_rect.bottomLeft())
+            ips.append(ip)
+
+        # n+1 позиция
+        ip = InsertPos(i+1, gr.ui_rect.topRight(), gr.ui_rect.bottomRight())
+        ips.append(ip)
+
+        pos = self.mapFromGlobal(QCursor().pos())
+        hor_line = QLineF(self.rect().topLeft(), self.rect().topRight())
+        hor_line.translate(0, pos.y())
+
+        for ip in ips:
+            isp = ip.line.intersects(hor_line)
+            isp = isp[1]
+            ip.intersection_point = isp
+            ip.cursor_distance = QVector2D(pos - isp).length()
+            if ip.index in [group_index, group_index + 1]:
+                ip.not_used = True
+
+        ips = list(sorted(ips, key=lambda x: x.cursor_distance))
+        if ips:
+            _ip = ips[0]
+            _ip.ready = True
+            self.front_tracker_current_group_insert_pos = _ip
+        else:
+            self.front_tracker_current_group_insert_pos = None
+
+
+        data = (hor_line, )
+        return data
 
 def check_exclude(obj_name, files_to_exclude):
     b1 = obj_name in files_to_exclude
