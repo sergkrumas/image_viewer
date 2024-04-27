@@ -10,7 +10,7 @@ import time
 import _utils
 
 def find_gamepad():
-    gamapad_device = None
+    gamepad_device = None
 
     for device in hid.enumerate():
         manufacturer_string = device['manufacturer_string']
@@ -19,16 +19,42 @@ def find_gamepad():
         # print(manufacturer_string, product_string)
 
         if manufacturer_string.startswith('ShanWan') and product_string == 'PC/PS3/Android Gamepad':
-            gamapad_device = device
+            gamepad_device = device
 
-    return gamapad_device
+    return gamepad_device
 
 def open_device(device):
     gamepad = hid.device()
     gamepad.open(device['vendor_id'], device['product_id'])
     gamepad.set_nonblocking(True)
-
     return gamepad
+
+def activate_gamepad(obj):
+    gamepad_device = find_gamepad()
+    if gamepad_device:
+        gamepad = open_device(gamepad_device)
+    else:
+        gamepad = None
+    obj.gamepad = gamepad
+
+def deactivate_gamepad(obj):
+    obj.gamepad = None
+
+def read_gamepad(gamepad):
+    return gamepad.read(64)
+
+def read_left_stick_to_obj(obj):
+    try:
+        data = read_gamepad(obj.gamepad)
+        if data:
+            x_axis, y_axis = read_left_stick(data)
+
+            obj.board_origin += QPointF(x_axis, y_axis)
+
+    except OSError:
+        # print('Ошибка чтения. Скорее всего, геймпад отключён.')
+        deactivate_gamepad(gamepad)
+
 
 def read_left_stick(data):
 
@@ -39,10 +65,10 @@ def read_left_stick(data):
 
 def main():
 
-    gamapad_device = find_gamepad()
+    gamepad_device = find_gamepad()
 
-    if gamapad_device:
-        gamepad = open_device(gamapad_device)
+    if gamepad_device:
+        gamepad = open_device(gamepad_device)
 
         def read_gamepad():
             return gamepad.read(64)

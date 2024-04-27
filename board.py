@@ -29,6 +29,7 @@ from functools import partial
 from contextlib import contextmanager
 
 from _utils import *
+import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
 
 import cbor2
@@ -602,6 +603,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_dive_inside_board_item(back_to_referer=True)
         elif key in [Qt.Key_Delete]:
             self.board_delete_selected_board_items()
+        elif key in [Qt.Key_F12]:
+            if not event.isAutoRepeat():
+                self.board_activate_gamepad()
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
@@ -3460,6 +3464,9 @@ class BoardMixin(BoardTextEditItemMixin):
             )
 
         self.update()
+
+    def board_activate_gamepad(self):
+        hidapi_adapter.activate_gamepad(self)
 
     def board_fit_selected_items_on_screen(self):
         self.board_fit_content_on_screen(None, use_selection=True)
