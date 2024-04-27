@@ -36,7 +36,7 @@ def activate_gamepad(obj):
         obj.gamepad = open_device(gamepad_device)
         obj.gamepad_timer = timer = QTimer()
         timer.setInterval(10)
-        timer.timeout.connect(partial(read_left_stick_to_obj, obj))
+        timer.timeout.connect(partial(read_sticks_to_obj, obj))
         timer.start()
     else:
         obj.gamepad = None
@@ -49,7 +49,7 @@ def deactivate_gamepad(obj):
 def read_gamepad(gamepad):
     return gamepad.read(64)
 
-def read_left_stick_to_obj(obj):
+def read_sticks_to_obj(obj):
     if obj.gamepad:
         try:
             data = read_gamepad(obj.gamepad)
@@ -61,16 +61,27 @@ def read_left_stick_to_obj(obj):
                     obj.board_origin -= offset
                     obj.update()
 
+                x_axis, y_axis = read_right_stick(data)
+                offset = QPointF(x_axis, y_axis)
+                if offset:
+                    scroll_value = -offset.y()
+                    pivot = obj.rect().center()
+                    obj.do_scale_board(scroll_value, False, False, True, pivot=pivot, scale_speed=100.0)
+                    obj.update()
+
         except OSError:
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
             deactivate_gamepad(obj)
 
 
-def read_left_stick(data):
+def read_right_stick(data):
+    x_axis = fit(data[5], 0, 256, -1.0, 1.0)
+    y_axis = fit(data[6], 0, 256, -1.0, 1.0)
+    return x_axis, y_axis
 
+def read_left_stick(data):
     x_axis = fit(data[3], 0, 256, -1.0, 1.0)
     y_axis = fit(data[4], 0, 256, -1.0, 1.0)
-
     return x_axis, y_axis
 
 def main():
