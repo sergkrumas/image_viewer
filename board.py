@@ -81,17 +81,17 @@ class BoardItem():
 
         self.item_scale_x = 1.0
         self.item_scale_y = 1.0
-        self.item_position = QPointF()
+        self.position = QPointF()
         self.item_rotation = 0
 
         self.__item_scale_x = None
         self.__item_scale_y = None
-        self.__item_position = None
+        self.__position = None
         self.__item_rotation = None
 
         self.__item_scale_x_init = None
         self.__item_scale_y_init = None
-        self.__item_position_init = None
+        self.__position_init = None
 
         self.board_index = 0
         self.board_group_index = None
@@ -115,9 +115,9 @@ class BoardItem():
             raise Exception('calc_local_data', self.type)
 
     def calc_local_data_default(self):
-        self.item_position = (self.start_point + self.end_point)/2.0
-        self.local_start_point = self.start_point - self.item_position
-        self.local_end_point = self.end_point - self.item_position
+        self.position = (self.start_point + self.end_point)/2.0
+        self.local_start_point = self.start_point - self.position
+        self.local_end_point = self.end_point - self.position
         diff = self.local_start_point - self.local_end_point
         self.item_width = abs(diff.x())
         self.item_height = abs(diff.y())
@@ -167,7 +167,7 @@ class BoardItem():
         _scale_x = board.board_scale_x
         _scale_y = board.board_scale_y
         if rel_pos is None:
-            rel_pos = self.item_position
+            rel_pos = self.position
         return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
     def aspect_ratio(self):
@@ -232,7 +232,7 @@ class BoardItem():
                 pos = self.calculate_absolute_position(board=board)
                 translation.translate(pos.x(), pos.y())
             else:
-                translation.translate(self.item_position.x(), self.item_position.y())
+                translation.translate(self.position.x(), self.position.y())
         if apply_global_scale:
             global_scaling.scale(board.board_scale_x, board.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
@@ -1196,7 +1196,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     fd_bi.item_scale_x = 1.0
                     fd_bi.item_scale_y = 1.0
 
-                    fd_bi.item_position = offset + QPointF(pixmap.width(), pixmap.height())/2
+                    fd_bi.position = offset + QPointF(pixmap.width(), pixmap.height())/2
                     offset += QPointF(pixmap.width(), 0)
                 self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None, from_board_items=True)
 
@@ -1364,7 +1364,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 image_data.board_item = board_item
                 folder_data.board.items_list.append(board_item)
                 board_item.board_index = self.retrieve_new_board_item_index()
-                board_item.item_position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+                board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
         self.build_board_bounding_rect(folder_data)
@@ -2098,7 +2098,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 # крашится на item_frame-ах, потому что у них изображений нет
                 # image_data = board_item.retrieve_image_data()
 
-                delta = board_item.item_position - self.board_bounding_rect.topLeft()
+                delta = board_item.position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
                     delta.x()/self.board_bounding_rect.width(),
                     delta.y()/self.board_bounding_rect.height()
@@ -2244,7 +2244,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = folder_data
         item_folder_data.board.root_item = gi
-        gi.item_position = - QPointF(gi.item_width, gi.item_height)/2.0
+        gi.position = - QPointF(gi.item_width, gi.item_height)/2.0
 
         gi.update_corner_info()
 
@@ -2271,7 +2271,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pos = self.board_MapToBoard(gi.get_selection_area(board=self).boundingRect().topRight())
             size_rect = bi.get_size_rect(scaled=False)
             offset = QPointF(size_rect.width()/2, size_rect.height()/2)
-            bi.item_position = (pos + offset)
+            bi.position = (pos + offset)
             bi._selected = False
 
             gi.update_corner_info()
@@ -2303,9 +2303,9 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.root_item = gi
         # располагаем центр в координате вызова контекстеного меню
         if item_position is None:
-            gi.item_position = self.board_MapToBoard(self.context_menu_exec_point)
+            gi.position = self.board_MapToBoard(self.context_menu_exec_point)
         else:
-            gi.item_position = item_position
+            gi.position = item_position
         if move_selection_to_group and self.board_selected_items_count() > 0:
             self.move_items_to_group(item_group=gi, items=self.selected_items)
         gi.update_corner_info()
@@ -2321,7 +2321,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.items_list.append(ni)
-        ni.item_position = self.board_MapToBoard(self.context_menu_exec_point)
+        ni.position = self.board_MapToBoard(self.context_menu_exec_point)
         self.board_TextElementSetDefaults(ni)
         ni.editing = True
         ni.calc_local_data()
@@ -2345,7 +2345,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 _fd = self.LibraryData().current_folder()
                 _fd.board.items_list.append(fi)
                 # располагаем в центре экрана
-                fi.item_position = self.board_MapToBoard(self.rect().center())
+                fi.position = self.board_MapToBoard(self.rect().center())
                 fi.update_corner_info()
                 self.board_select_items([fi])
                 self.update()
@@ -2397,7 +2397,7 @@ class BoardMixin(BoardTextEditItemMixin):
             rect = bi.get_size_rect(scaled=True)
             item_width = rect.width()
             item_height = rect.height()
-            bi.item_position = topLeftCorner + QPointF(item_width, item_height)/2
+            bi.position = topLeftCorner + QPointF(item_width, item_height)/2
             topLeftCorner += QPointF(item_width, 0)
 
         group_item.update_corner_info()
@@ -2414,7 +2414,7 @@ class BoardMixin(BoardTextEditItemMixin):
             folder_data.board.items_list.append(bi)
 
             selection_bounding_rect = self.selection_bounding_box.boundingRect()
-            bi.item_position = self.board_MapToBoard(selection_bounding_rect.center())
+            bi.position = self.board_MapToBoard(selection_bounding_rect.center())
             bi.item_width = selection_bounding_rect.width() / self.board_scale_x
             bi.item_height = selection_bounding_rect.height() / self.board_scale_y
             bi.item_width += BoardItem.FRAME_PADDING
@@ -2443,12 +2443,12 @@ class BoardMixin(BoardTextEditItemMixin):
         items_list = current_folder.board.items_list
         if viewport_zoom_changed:
             for board_item in items_list:
-                board_item.item_position = board_item.__item_position
+                board_item.position = board_item.__position
 
         for board_item in items_list:
-            board_item.__item_position = QPointF(board_item.item_position)
+            board_item.__position = QPointF(board_item.position)
             if not viewport_zoom_changed:
-                board_item.__item_position_init = QPointF(board_item.item_position)
+                board_item.__position_init = QPointF(board_item.position)
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
                 this_frame_area = board_item.calc_area
@@ -2474,10 +2474,10 @@ class BoardMixin(BoardTextEditItemMixin):
             if self.translation_ongoing:
                 for board_item in current_folder.board.items_list:
                     if board_item._selected:
-                        board_item.item_position = board_item.__item_position + delta
+                        board_item.position = board_item.__position + delta
                         if board_item.type == BoardItem.types.ITEM_FRAME:
                             for ch_bi in board_item._children_items:
-                                ch_bi.item_position = ch_bi.__item_position + delta
+                                ch_bi.position = ch_bi.__position + delta
                 self.init_selection_bounding_box_widget(current_folder)
                 self.check_item_group_under_mouse()
         else:
@@ -2488,9 +2488,9 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder = self.LibraryData().current_folder()
         for board_item in current_folder.board.items_list:
             if cancel:
-                board_item.item_position = QPointF(board_item.__item_position_init)
+                board_item.position = QPointF(board_item.__position_init)
             else:
-                board_item.__item_position = None
+                board_item.__position = None
             board_item._children_items = []
         self.translation_ongoing = False
         if cancel:
@@ -2664,8 +2664,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 # if bi.__item_rotation is not None:
                 #     bi.item_rotation = bi.__item_rotation
                 if bi.type != BoardItem.types.ITEM_FRAME:
-                    if bi.__item_position is not None:
-                        bi.item_position = bi.__item_position
+                    if bi.__position is not None:
+                        bi.position = bi.__position
 
             self.update_selection_bouding_box()
 
@@ -2683,11 +2683,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for bi in self.selected_items:
             bi.__item_rotation = bi.item_rotation
-            bi.__item_position = QPointF(bi.item_position)
+            bi.__position = QPointF(bi.position)
 
             if not viewport_zoom_changed:
                 bi.__item_rotation_init = bi.item_rotation
-                bi.__item_position_init = QPointF(bi.item_position)
+                bi.__position_init = QPointF(bi.position)
 
     def step_rotation(self, rotation_value):
         interval = 45.0
@@ -2727,13 +2727,13 @@ class BoardMixin(BoardTextEditItemMixin):
             if not multi_item_mode and ctrl_mod:
                 bi.item_rotation = self.step_rotation(bi.item_rotation)
             # position component
-            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__item_position)
+            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__position)
             pos_radius_vector = pos - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
             new_absolute_position = pivot + pos_radius_vector
             rel_pos_global_scaled = new_absolute_position - self.board_origin
-            new_item_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
-            bi.item_position = new_item_position
+            new_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+            bi.position = new_position
         # bounding box transformation
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
@@ -2753,7 +2753,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if cancel:
             for bi in self.selected_items:
                 bi.item_rotation = bi.__item_rotation_init
-                bi.item_position = QPointF(bi.__item_position_init)
+                bi.position = QPointF(bi.__position_init)
         else:
             self.init_selection_bounding_box_widget(cf)
             self.build_board_bounding_rect(cf)
@@ -2804,8 +2804,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     bi.item_scale_x = bi.__item_scale_x
                 if bi.__item_scale_y is not None:
                     bi.item_scale_y = bi.__item_scale_y
-                if bi.__item_position is not None:
-                    bi.item_position = bi.__item_position
+                if bi.__position is not None:
+                    bi.position = bi.__position
 
             self.update_selection_bouding_box()
 
@@ -2857,11 +2857,11 @@ class BoardMixin(BoardTextEditItemMixin):
         for bi in self.selected_items:
             bi.__item_scale_x = bi.item_scale_x
             bi.__item_scale_y = bi.item_scale_y
-            bi.__item_position = QPointF(bi.item_position)
+            bi.__position = QPointF(bi.position)
             if not viewport_zoom_changed:
                 bi.__item_scale_x_init = bi.item_scale_x
                 bi.__item_scale_y_init = bi.item_scale_y
-                bi.__item_position_init = QPointF(bi.item_position)
+                bi.__position_init = QPointF(bi.position)
             position_vec = bi.calculate_absolute_position(board=self) - self.scaling_pivot_corner_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
 
@@ -2940,17 +2940,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
             # position component
             if center_is_pivot:
-                bi.item_position = bi.__item_position
+                bi.position = bi.__position
             else:
-                pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__item_position)
+                pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__position)
                 scaling = QTransform()
                 # эти нормализованные координаты актуальны для пропорционального и не для пропорционального редактирования
                 scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_absolute_position = pivot + mapped_scaling_vector
                 rel_pos_global_scaled = new_absolute_position - self.board_origin
-                new_item_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
-                bi.item_position = new_item_position
+                new_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+                bi.position = new_position
 
         # bounding box update
         self.update_selection_bouding_box()
@@ -2965,7 +2965,7 @@ class BoardMixin(BoardTextEditItemMixin):
             for bi in self.selected_items:
                 bi.item_scale_x = bi.__item_scale_x_init
                 bi.item_scale_y = bi.__item_scale_y_init
-                bi.item_position = QPointF(bi.__item_position_init)
+                bi.position = QPointF(bi.__position_init)
         else:
             self.init_selection_bounding_box_widget(cf)
             self.build_board_bounding_rect(cf)
@@ -3185,9 +3185,9 @@ class BoardMixin(BoardTextEditItemMixin):
             cf = self.LibraryData().current_folder()
             for sel_item in selected_items:
                 new_item = sel_item.make_copy(self, cf)
-                # new_item.item_position += QPointF(100, 100)
-                delta = new_item.item_position - selection_center
-                new_item.item_position = rel_cursor_pos + delta
+                # new_item.position += QPointF(100, 100)
+                delta = new_item.position - selection_center
+                new_item.position = rel_cursor_pos + delta
                 new_item._selected = True
             self.init_selection_bounding_box_widget(cf)
 
@@ -3422,7 +3422,7 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder.board.items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
         if place_at_cursor:
-            board_item.item_position = self.board_MapToBoard(self.mapped_cursor_pos())
+            board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
         current_folder.images_list.append(image_data)
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
             self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
@@ -3446,7 +3446,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     pass
                 else:
                     board_item = image_data.board_item
-                content_pos = QPointF(board_item.item_position.x()*board_scale_x, board_item.item_position.y()*board_scale_y)
+                content_pos = QPointF(board_item.position.x()*board_scale_x, board_item.position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
             self.board_origin = - content_pos + viewport_center_pos
@@ -3584,7 +3584,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             current_pos = self.board_MapToBoard(self.get_center_position())
 
-            item_point = item_to_center_viewport.item_position
+            item_point = item_to_center_viewport.position
 
             pos1 = QPointF(current_pos.x()*self.board_scale_x, current_pos.y()*self.board_scale_y)
             pos2 = QPointF(item_point.x()*self.board_scale_x, item_point.y()*self.board_scale_y)
@@ -3663,7 +3663,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 else:
                     sorted_list = items_list
                 for board_item in sorted_list:
-                    point = board_item.item_position
+                    point = board_item.position
                     _list.append([point, None, board_item])
 
             self.fly_pairs = get_cycled_pairs(_list)
