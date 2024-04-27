@@ -189,7 +189,7 @@ class BoardTextEditItemMixin():
 
         s = element.text_doc.size()
         content_rect = QRectF(QPointF(0, 0), s)
-        content_rect.moveCenter(element.item_position)
+        content_rect.moveCenter(element.position)
         element.start_point = content_rect.topLeft()
         element.end_point = content_rect.bottomRight()
         if False:
@@ -280,8 +280,8 @@ class BoardTextEditItemMixin():
         elem.editing = False
         elem.font_color = QColor(self.selection_color)
         elem.backplate_color = QColor(0, 0, 0, 0)
-        elem.start_point = elem.item_position
-        elem.end_point = elem.item_position + QPointF(200, 50)
+        elem.start_point = elem.position
+        elem.end_point = elem.position + QPointF(200, 50)
 
     def board_TextElementSetFont(self, element):
         font = QFont()
