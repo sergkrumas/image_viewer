@@ -96,7 +96,7 @@ class BoardItem():
         self.board_index = 0
         self.board_group_index = None
 
-        self.item_width = 1000
+        self.width = 1000
         self.item_height = 1000
 
         self.item_image_source = None
@@ -119,7 +119,7 @@ class BoardItem():
         self.local_start_point = self.start_point - self.position
         self.local_end_point = self.end_point - self.position
         diff = self.local_start_point - self.local_end_point
-        self.item_width = abs(diff.x())
+        self.width = abs(diff.x())
         self.item_height = abs(diff.y())
 
     @property
@@ -197,13 +197,13 @@ class BoardItem():
         if self.type == self.types.ITEM_IMAGE:
             return QRectF(0, 0, self.image_data.source_width*scale_x, self.image_data.source_height*scale_y)
         elif self.type == self.types.ITEM_FOLDER:
-            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+            return QRectF(0, 0, self.width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_GROUP:
-            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+            return QRectF(0, 0, self.width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_FRAME:
-            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+            return QRectF(0, 0, self.width*scale_x, self.item_height*scale_y)
         elif self.type == self.types.ITEM_NOTE:
-            return QRectF(0, 0, self.item_width*scale_x, self.item_height*scale_y)
+            return QRectF(0, 0, self.width*scale_x, self.item_height*scale_y)
 
     def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
@@ -261,7 +261,7 @@ class BoardItem():
             self._saved_data = (
                 QPointF(self.local_end_point),
                 QPointF(self.local_start_point),
-                self.item_width,
+                self.width,
                 self.item_height,
                 self.scale_x,
                 self.scale_y
@@ -273,7 +273,7 @@ class BoardItem():
             self.local_start_point.setX(self.local_start_point.x() * self.scale_x)
             self.local_start_point.setY(self.local_start_point.y() * self.scale_y)
 
-            self.item_width *= self.scale_x
+            self.width *= self.scale_x
             self.item_height *= self.scale_y
             self.scale_x = self.scale_y = 1.0
 
@@ -281,7 +281,7 @@ class BoardItem():
         if hasattr(self, '_saved_data'):
             self.local_end_point, \
             self.local_start_point, \
-            self.item_width, \
+            self.width, \
             self.item_height, \
             self.scale_x, \
             self.scale_y = self._saved_data
@@ -2244,7 +2244,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = folder_data
         item_folder_data.board.root_item = gi
-        gi.position = - QPointF(gi.item_width, gi.item_height)/2.0
+        gi.position = - QPointF(gi.width, gi.item_height)/2.0
 
         gi.update_corner_info()
 
@@ -2395,10 +2395,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.image_data.folder_data = item_fd
 
             rect = bi.get_size_rect(scaled=True)
-            item_width = rect.width()
+            width = rect.width()
             item_height = rect.height()
-            bi.position = topLeftCorner + QPointF(item_width, item_height)/2
-            topLeftCorner += QPointF(item_width, 0)
+            bi.position = topLeftCorner + QPointF(width, item_height)/2
+            topLeftCorner += QPointF(width, 0)
 
         group_item.update_corner_info()
         if update_selection:
@@ -2415,9 +2415,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             selection_bounding_rect = self.selection_bounding_box.boundingRect()
             bi.position = self.board_MapToBoard(selection_bounding_rect.center())
-            bi.item_width = selection_bounding_rect.width() / self.board_scale_x
+            bi.width = selection_bounding_rect.width() / self.board_scale_x
             bi.item_height = selection_bounding_rect.height() / self.board_scale_y
-            bi.item_width += BoardItem.FRAME_PADDING
+            bi.width += BoardItem.FRAME_PADDING
             bi.item_height += BoardItem.FRAME_PADDING
             bi.item_name = "FRAME ITEM"
             self.board_select_items([bi])
