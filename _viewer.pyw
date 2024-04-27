@@ -513,6 +513,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.installEventFilter(self)
         self.setAcceptDrops(True)
 
+        self.gamepad = None
+        self.gamepad_timer = None
+
         self.board_init()
         self.tagging_init()
 

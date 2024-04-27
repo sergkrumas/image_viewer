@@ -31,18 +31,21 @@ def open_device(device):
     return gamepad
 
 def activate_gamepad(obj):
-    gamepad_device = find_gamepad()
-    if gamepad_device:
-        obj.gamepad = open_device(gamepad_device)
-        obj.gamepad_timer = timer = QTimer()
-        timer.setInterval(10)
-        timer.timeout.connect(partial(read_sticks_to_obj, obj))
-        timer.start()
-        obj.show_center_label('Gamepad control activated!')
+    if obj.gamepad:
+        deactivate_gamepad(obj)
     else:
-        obj.gamepad = None
-        obj.timer = None
-        obj.show_center_label('Gamepad not found!', error=True)
+        gamepad_device = find_gamepad()
+        if gamepad_device:
+            obj.gamepad = open_device(gamepad_device)
+            obj.gamepad_timer = timer = QTimer()
+            timer.setInterval(10)
+            timer.timeout.connect(partial(read_sticks_to_obj, obj))
+            timer.start()
+            obj.show_center_label('Gamepad control activated!')
+        else:
+            obj.gamepad = None
+            obj.timer = None
+            obj.show_center_label('Gamepad not found!', error=True)
 
 def deactivate_gamepad(obj):
     obj.gamepad = None
