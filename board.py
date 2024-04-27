@@ -82,12 +82,12 @@ class BoardItem():
         self.item_scale_x = 1.0
         self.item_scale_y = 1.0
         self.position = QPointF()
-        self.item_rotation = 0
+        self.rotation = 0
 
         self.__item_scale_x = None
         self.__item_scale_y = None
         self.__position = None
-        self.__item_rotation = None
+        self.__rotation = None
 
         self.__item_scale_x_init = None
         self.__item_scale_y_init = None
@@ -226,7 +226,7 @@ class BoardItem():
         translation = QTransform()
         if apply_local_scale:
             local_scaling.scale(self.item_scale_x, self.item_scale_y)
-        rotation.rotate(self.item_rotation)
+        rotation.rotate(self.rotation)
         if apply_translation:
             if apply_global_scale:
                 pos = self.calculate_absolute_position(board=board)
@@ -2661,8 +2661,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if viewport_zoom_changed:
             for bi in self.selected_items:
                 # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
-                # if bi.__item_rotation is not None:
-                #     bi.item_rotation = bi.__item_rotation
+                # if bi.__rotation is not None:
+                #     bi.rotation = bi.__rotation
                 if bi.type != BoardItem.types.ITEM_FRAME:
                     if bi.__position is not None:
                         bi.position = bi.__position
@@ -2682,11 +2682,11 @@ class BoardMixin(BoardTextEditItemMixin):
         self.rotation_pivot_center_point = self.__selection_bounding_box.boundingRect().center()
 
         for bi in self.selected_items:
-            bi.__item_rotation = bi.item_rotation
+            bi.__rotation = bi.rotation
             bi.__position = QPointF(bi.position)
 
             if not viewport_zoom_changed:
-                bi.__item_rotation_init = bi.item_rotation
+                bi.__rotation_init = bi.rotation
                 bi.__position_init = QPointF(bi.position)
 
     def step_rotation(self, rotation_value):
@@ -2723,9 +2723,9 @@ class BoardMixin(BoardTextEditItemMixin):
             # rotation component
             if bi.type == BoardItem.types.ITEM_FRAME:
                 continue
-            bi.item_rotation = bi.__item_rotation + rotation_delta_degrees
+            bi.rotation = bi.__rotation + rotation_delta_degrees
             if not multi_item_mode and ctrl_mod:
-                bi.item_rotation = self.step_rotation(bi.item_rotation)
+                bi.rotation = self.step_rotation(bi.rotation)
             # position component
             pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__position)
             pos_radius_vector = pos - pivot
@@ -2752,7 +2752,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         if cancel:
             for bi in self.selected_items:
-                bi.item_rotation = bi.__item_rotation_init
+                bi.rotation = bi.__rotation_init
                 bi.position = QPointF(bi.__position_init)
         else:
             self.init_selection_bounding_box_widget(cf)
