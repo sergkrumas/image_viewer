@@ -7,7 +7,7 @@
 
 import hid
 import time
-import _utils
+from _utils import *
 
 def find_gamepad():
     gamepad_device = None
@@ -58,8 +58,8 @@ def read_left_stick_to_obj(obj):
 
 def read_left_stick(data):
 
-    x_axis = _utils.fit(data[3], 0, 256, -1.0, 1.0)
-    y_axis = _utils.fit(data[4], 0, 256, -1.0, 1.0)
+    x_axis = fit(data[3], 0, 256, -1.0, 1.0)
+    y_axis = fit(data[4], 0, 256, -1.0, 1.0)
 
     return x_axis, y_axis
 
