@@ -194,7 +194,7 @@ class BoardTextEditItemMixin():
         element.end_point = content_rect.bottomRight()
         if False:
             element.scale_x = 1.0
-            element.item_scale_y = 1.0
+            element.scale_y = 1.0
         element.calc_local_data()
 
     def board_GetPenFromElement(self, element):
