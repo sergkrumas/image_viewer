@@ -99,7 +99,7 @@ class BoardItem():
         self.width = 1000
         self.height = 1000
 
-        self.item_image_source = None
+        self.image_source_url = None
 
         self.label = ""
         self.status = ''
@@ -150,8 +150,8 @@ class BoardItem():
         if self.type == self.types.ITEM_IMAGE:
             image_data = self.image_data
             text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
-            if self.item_image_source is not None:
-                text = f'{text}\n{self.item_image_source}'
+            if self.image_source_url is not None:
+                text = f'{text}\n{self.image_source_url}'
             return text
         elif self.type == self.types.ITEM_FOLDER:
             path = self.item_folder_data.folder_path
@@ -3417,7 +3417,7 @@ class BoardMixin(BoardTextEditItemMixin):
         image_data = self.LibraryData().create_image_data(filepath, current_folder)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
         board_item.image_data = image_data
-        board_item.item_image_source = source_url
+        board_item.image_source_url = source_url
         image_data.board_item = board_item
         current_folder.board.items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
