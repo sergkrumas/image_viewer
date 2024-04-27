@@ -8,6 +8,7 @@
 import hid
 import time
 from _utils import *
+from functools import partial
 
 def find_gamepad():
     gamepad_device = None
@@ -32,28 +33,37 @@ def open_device(device):
 def activate_gamepad(obj):
     gamepad_device = find_gamepad()
     if gamepad_device:
-        gamepad = open_device(gamepad_device)
+        obj.gamepad = open_device(gamepad_device)
+        obj.gamepad_timer = timer = QTimer()
+        timer.setInterval(10)
+        timer.timeout.connect(partial(read_left_stick_to_obj, obj))
+        timer.start()
     else:
-        gamepad = None
-    obj.gamepad = gamepad
+        obj.gamepad = None
+        obj.timer = None
 
 def deactivate_gamepad(obj):
     obj.gamepad = None
+    obj.timer.stop()
 
 def read_gamepad(gamepad):
     return gamepad.read(64)
 
 def read_left_stick_to_obj(obj):
-    try:
-        data = read_gamepad(obj.gamepad)
-        if data:
-            x_axis, y_axis = read_left_stick(data)
+    if obj.gamepad:
+        try:
+            data = read_gamepad(obj.gamepad)
+            if data:
+                x_axis, y_axis = read_left_stick(data)
+                offset = QPointF(x_axis, y_axis)
+                if offset:
+                    offset *= 20
+                    obj.board_origin -= offset
+                    obj.update()
 
-            obj.board_origin += QPointF(x_axis, y_axis)
-
-    except OSError:
-        # print('Ошибка чтения. Скорее всего, геймпад отключён.')
-        deactivate_gamepad(gamepad)
+        except OSError:
+            # print('Ошибка чтения. Скорее всего, геймпад отключён.')
+            deactivate_gamepad(obj)
 
 
 def read_left_stick(data):
