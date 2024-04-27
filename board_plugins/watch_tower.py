@@ -62,7 +62,7 @@ def preparePluginBoard(self, plugin_info):
                 ni = append_note_item(self, cf, folderpath)
                 size_rect = ni.get_size_rect(scaled=True)
                 size_rect.moveBottomLeft(offset_point)
-                ni.item_position = size_rect.center()
+                ni.position = size_rect.center()
 
                 # initial max width instead zero
                 max_width = size_rect.width()
@@ -71,7 +71,7 @@ def preparePluginBoard(self, plugin_info):
                     ni = append_note_item(self, cf, 'Путь не найден!', warning=True)
                     size_rect = ni.get_size_rect(scaled=True)
                     size_rect.moveTopLeft(offset_point)
-                    ni.item_position = size_rect.center()
+                    ni.position = size_rect.center()
                 else:
 
                     items = []
@@ -97,7 +97,7 @@ def preparePluginBoard(self, plugin_info):
 
                     for item in items:
                         r = item.get_size_rect(scaled=True)
-                        item.item_position = offset_point + r.center()
+                        item.position = offset_point + r.center()
                         offset_point += QPointF(0, r.height())
 
                 offset_point += QPointF(max_width, 0)
@@ -106,7 +106,7 @@ def preparePluginBoard(self, plugin_info):
             ni = append_note_item(self, cf, "Список папок пуст!", warning=True)
             size_rect = ni.get_size_rect(scaled=True)
             size_rect.moveCenter(self.rect().center())
-            ni.item_position = size_rect.center()
+            ni.position = size_rect.center()
 
 
 def open_data_file(self):
