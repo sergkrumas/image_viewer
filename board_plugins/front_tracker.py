@@ -89,6 +89,10 @@ class Task(object):
         self.start_line_number = linenum
 
         self.ui_height = TASK_CELL_SIZE
+        if random.random() > 0.5:
+            self.status = TaskStatus.TODO
+        else:
+            self.status = STATUS_INPROGRESS
 
     def __repr__(self):
         return f'{self.text} ({self.group.name}'
@@ -351,7 +355,7 @@ def paintEvent(self, painter, event):
                 b = self.board_MapToViewport(b)
                 task_cell_rect = QRectF(a, b)
 
-                task_cells_to_draw.append((QRectF(task_cell_rect), task.text))
+                task_cells_to_draw.append((QRectF(task_cell_rect), task.text, task.status))
                 task_cell_offset += QPointF(0, task.ui_height)
 
                 if task_cell_rect.contains(cursor_pos):
@@ -404,8 +408,12 @@ def paintEvent(self, painter, event):
 
     set_font(20)
     self_rect = self.rect()
-    for task_cell_rect, text in task_cells_to_draw:
+    for task_cell_rect, text, status in task_cells_to_draw:
         if task_cell_rect.intersected(QRectF(self_rect)):
+            if status == TaskStatus.IN_PROGRESS:
+                painter.setBrush(QColor(150, 20, 20))
+            else:
+                painter.setBrush(Qt.NoBrush)
             painter.drawRect(task_cell_rect)
             task_cell_rect.adjust(10, 10, -10, -10)
             painter.drawText(task_cell_rect, Qt.AlignLeft, text)
@@ -498,6 +506,7 @@ def paintEvent(self, painter, event):
         rect = QRect(self.rect().center(), self.rect().bottomRight())
         rect.adjust(10, 10, -10, -10)
         painter.fillRect(rect, QColor(10, 10, 10, 200))
+        painter.setBrush(Qt.NoBrush)
         painter.drawRect(rect)
         rect = rect.adjusted(25, 25, -25, -25)
         painter.setPen(QPen(Qt.white))
