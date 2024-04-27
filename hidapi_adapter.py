@@ -7,7 +7,7 @@
 
 import hid
 import time
-
+import _utils
 
 def find_gamepad():
     gamapad_device = None
@@ -30,6 +30,13 @@ def open_device(device):
 
     return gamepad
 
+def read_left_stick(data):
+
+    x_axis = _utils.fit(data[3], 0, 256, -1.0, 1.0)
+    y_axis = _utils.fit(data[4], 0, 256, -1.0, 1.0)
+
+    return x_axis, y_axis
+
 def main():
 
     gamapad_device = find_gamepad()
@@ -45,7 +52,11 @@ def main():
             while True:
                 data = read_gamepad()
                 if data:
-                    print(data)
+                    # print(data)
+                    x_axis, y_axis = read_left_stick(data)
+
+                    print(f'{x_axis}, {y_axis}')
+
                     # delta = time.time() - a
                     # print(delta)
         except OSError:
