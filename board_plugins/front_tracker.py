@@ -497,7 +497,7 @@ def paintEvent(self, painter, event):
         painter.setPen(QPen(color, 1))
         rect = QRect(self.rect().center(), self.rect().bottomRight())
         rect.adjust(10, 10, -10, -10)
-        painter.fillRect(rect, QColor(10, 10, 10, 150))
+        painter.fillRect(rect, QColor(10, 10, 10, 200))
         painter.drawRect(rect)
         rect = rect.adjusted(25, 25, -25, -25)
         painter.setPen(QPen(Qt.white))
