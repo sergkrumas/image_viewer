@@ -79,17 +79,17 @@ class BoardItem():
         self.pixmap = None
         self.animated = False
 
-        self.item_scale_x = 1.0
+        self.scale_x = 1.0
         self.item_scale_y = 1.0
         self.position = QPointF()
         self.rotation = 0
 
-        self.__item_scale_x = None
+        self.__scale_x = None
         self.__item_scale_y = None
         self.__position = None
         self.__rotation = None
 
-        self.__item_scale_x_init = None
+        self.__scale_x_init = None
         self.__item_scale_y_init = None
         self.__position_init = None
 
@@ -177,19 +177,19 @@ class BoardItem():
     def get_size_rect(self, scaled=False):
         if scaled:
             if self.type == self.types.ITEM_IMAGE:
-                scale_x = self.item_scale_x
+                scale_x = self.scale_x
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_FOLDER:
-                scale_x = self.item_scale_x
+                scale_x = self.scale_x
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_GROUP:
-                scale_x = self.item_scale_x
+                scale_x = self.scale_x
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_FRAME:
-                scale_x = self.item_scale_x
+                scale_x = self.scale_x
                 scale_y = self.item_scale_y
             elif self.type == self.types.ITEM_NOTE:
-                scale_x = self.item_scale_x
+                scale_x = self.scale_x
                 scale_y = self.item_scale_y
         else:
             scale_x = 1.0
@@ -225,7 +225,7 @@ class BoardItem():
         global_scaling = QTransform()
         translation = QTransform()
         if apply_local_scale:
-            local_scaling.scale(self.item_scale_x, self.item_scale_y)
+            local_scaling.scale(self.scale_x, self.item_scale_y)
         rotation.rotate(self.rotation)
         if apply_translation:
             if apply_global_scale:
@@ -263,19 +263,19 @@ class BoardItem():
                 QPointF(self.local_start_point),
                 self.item_width,
                 self.item_height,
-                self.item_scale_x,
+                self.scale_x,
                 self.item_scale_y
             )
 
-            self.local_end_point.setX(self.local_end_point.x() * self.item_scale_x)
+            self.local_end_point.setX(self.local_end_point.x() * self.scale_x)
             self.local_end_point.setY(self.local_end_point.y() * self.item_scale_y)
 
-            self.local_start_point.setX(self.local_start_point.x() * self.item_scale_x)
+            self.local_start_point.setX(self.local_start_point.x() * self.scale_x)
             self.local_start_point.setY(self.local_start_point.y() * self.item_scale_y)
 
-            self.item_width *= self.item_scale_x
+            self.item_width *= self.scale_x
             self.item_height *= self.item_scale_y
-            self.item_scale_x = self.item_scale_y = 1.0
+            self.scale_x = self.item_scale_y = 1.0
 
     def disable_distortion_fixer(self):
         if hasattr(self, '_saved_data'):
@@ -283,7 +283,7 @@ class BoardItem():
             self.local_start_point, \
             self.item_width, \
             self.item_height, \
-            self.item_scale_x, \
+            self.scale_x, \
             self.item_scale_y = self._saved_data
 
 BoardCallbacksNames = [
@@ -1193,7 +1193,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                     fd.board.items_list.append(fd_bi)
                     fd_bi.board_index = i
-                    fd_bi.item_scale_x = 1.0
+                    fd_bi.scale_x = 1.0
                     fd_bi.item_scale_y = 1.0
 
                     fd_bi.position = offset + QPointF(pixmap.width(), pixmap.height())/2
@@ -2800,8 +2800,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if viewport_zoom_changed:
             for bi in self.selected_items:
-                if bi.__item_scale_x is not None:
-                    bi.item_scale_x = bi.__item_scale_x
+                if bi.__scale_x is not None:
+                    bi.scale_x = bi.__scale_x
                 if bi.__item_scale_y is not None:
                     bi.item_scale_y = bi.__item_scale_y
                 if bi.__position is not None:
@@ -2855,11 +2855,11 @@ class BoardMixin(BoardTextEditItemMixin):
         self.scaling_y_axis = y_axis
 
         for bi in self.selected_items:
-            bi.__item_scale_x = bi.item_scale_x
+            bi.__scale_x = bi.scale_x
             bi.__item_scale_y = bi.item_scale_y
             bi.__position = QPointF(bi.position)
             if not viewport_zoom_changed:
-                bi.__item_scale_x_init = bi.item_scale_x
+                bi.__scale_x_init = bi.scale_x
                 bi.__item_scale_y_init = bi.item_scale_y
                 bi.__position_init = QPointF(bi.position)
             position_vec = bi.calculate_absolute_position(board=self) - self.scaling_pivot_corner_point
@@ -2933,10 +2933,10 @@ class BoardMixin(BoardTextEditItemMixin):
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
 
-            bi.item_scale_x = bi.__item_scale_x * x_factor
+            bi.scale_x = bi.__scale_x * x_factor
             bi.item_scale_y = bi.__item_scale_y * y_factor
             if proportional_scaling and not multi_item_mode and not center_is_pivot:
-                bi.item_scale_x = math.copysign(1.0, bi.item_scale_x)*abs(bi.item_scale_y)
+                bi.scale_x = math.copysign(1.0, bi.scale_x)*abs(bi.item_scale_y)
 
             # position component
             if center_is_pivot:
@@ -2963,7 +2963,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         if cancel:
             for bi in self.selected_items:
-                bi.item_scale_x = bi.__item_scale_x_init
+                bi.scale_x = bi.__scale_x_init
                 bi.item_scale_y = bi.__item_scale_y_init
                 bi.position = QPointF(bi.__position_init)
         else:
