@@ -23,14 +23,19 @@ def find_gamepad():
 
     return gamapad_device
 
+def open_device(device):
+    gamepad = hid.device()
+    gamepad.open(device['vendor_id'], device['product_id'])
+    gamepad.set_nonblocking(True)
+
+    return gamepad
+
 def main():
 
     gamapad_device = find_gamepad()
 
     if gamapad_device:
-        gamepad = hid.device()
-        gamepad.open(gamapad_device['vendor_id'], gamapad_device['product_id'])
-        gamepad.set_nonblocking(True)
+        gamepad = open_device(gamapad_device)
 
         def read_gamepad():
             return gamepad.read(64)
