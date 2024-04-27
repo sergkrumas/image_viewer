@@ -410,7 +410,7 @@ def paintEvent(self, painter, event):
     self_rect = self.rect()
     for task_cell_rect, text, status in task_cells_to_draw:
         if task_cell_rect.intersected(QRectF(self_rect)):
-            if status == TaskStatus.IN_PROGRESS:
+            if status == TaskStatus.IN_PROGRESS and self.front_tracker_anim_blink:
                 painter.setBrush(QColor(150, 20, 20))
             else:
                 painter.setBrush(Qt.NoBrush)
@@ -736,6 +736,18 @@ def _watcherFileChanged(self, path):
     restart_buffer_timer(self, partial(watcherFileChangedFiltered, self))
     # print(f'watcher: {path} {time.time()}')
 
+def blink_inpgress(self):
+    self.front_tracker_anim_blink = not self.front_tracker_anim_blink
+    self.update()
+
+def restart_inprogress_timer(self):
+    if hasattr(self, 'front_tracker_inprogress_timer') and self.front_tracker_inprogress_timer is not None:
+        self.front_tracker_inprogress_timer.stop()
+    self.front_tracker_inprogress_timer = timer = QTimer()
+    timer.setInterval(1000)
+    timer.timeout.connect(partial(blink_inpgress, self))
+    timer.start()
+
 def preparePluginBoard(self, plugin_info, rescan=False):
     cf = self.LibraryData().current_folder()
     board = cf.board
@@ -765,6 +777,9 @@ def preparePluginBoard(self, plugin_info, rescan=False):
 
     self.front_tracker_task_info = False
     self.front_tracker_task_timer = None
+    self.front_tracker_anim_blink = True
+
+    restart_inprogress_timer(self)
 
     exts = ('.txt', '.md')
     exts = ('.txt')
