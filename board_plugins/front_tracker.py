@@ -617,8 +617,9 @@ def defineInsertPositions(self, cursor_pos, clear=False):
                 if ip.index in [currend_index, currend_index + 1]:
                     ip.not_used = True
 
-            ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
+            ips = filter(lambda x: not x.not_used, ips)
 
+            ips = list(sorted(ips, key=lambda x: x.distance_to_cursor))
 
             _ip = ips[0]
             _ip.ready = True
