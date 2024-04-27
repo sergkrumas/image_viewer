@@ -101,7 +101,7 @@ class BoardItem():
 
         self.item_image_source = None
 
-        self.item_name = ""
+        self.label = ""
         self.status = ''
 
         self._selected = False
@@ -157,7 +157,7 @@ class BoardItem():
             path = self.item_folder_data.folder_path
             return f'FOLDER {path}'
         elif self.type == self.types.ITEM_GROUP:
-            return f'GROUP {self.board_group_index} {self.item_name}'
+            return f'GROUP {self.board_group_index} {self.label}'
         elif self.type == self.types.ITEM_FRAME:
             return f'FRAME'
         elif self.type == self.types.ITEM_NOTE:
@@ -671,13 +671,13 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_change_frame_item_label(self, frame_item, *args):
         dialog = QInputDialog(self)
         dialog.setInputMode(QInputDialog.TextInput)
-        dialog.setTextValue(frame_item.item_name)
+        dialog.setTextValue(frame_item.label)
         dialog.setWindowTitle('Change frame item label')
         dialog.setLabelText("Label Text:")
         dialog.resize(500,100)
         ok = dialog.exec_()
         if ok:
-            frame_item.item_name = dialog.textValue()
+            frame_item.label = dialog.textValue()
         self.update()
 
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
@@ -718,7 +718,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
-            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма \'{frame_item.item_name}\'')
+            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма \'{frame_item.label}\'')
             board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
@@ -1465,7 +1465,7 @@ class BoardMixin(BoardTextEditItemMixin):
             font.setPixelSize(30)
             painter.setFont(font)
 
-            text = board_item.item_name
+            text = board_item.label
             alignment = Qt.AlignLeft
             rect = painter.boundingRect(area.boundingRect(), alignment, text)
             rect.moveBottomLeft(pos+zoom_delta)
@@ -1733,7 +1733,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board.root_folder is not None:
             lines.append(f'Родительская папка этой доски: {board.root_folder.folder_path}')
         if board.root_item is not None:
-            lines.append(f'Название родительского айтема этой доски: {board.root_item.item_name}')
+            lines.append(f'Название родительского айтема этой доски: {board.root_item.label}')
 
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
@@ -2419,7 +2419,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.height = selection_bounding_rect.height() / self.board_scale_y
             bi.width += BoardItem.FRAME_PADDING
             bi.height += BoardItem.FRAME_PADDING
-            bi.item_name = "FRAME ITEM"
+            bi.label = "FRAME ITEM"
             self.board_select_items([bi])
 
         self.update()
