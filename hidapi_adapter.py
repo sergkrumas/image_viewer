@@ -16,6 +16,8 @@ def find_gamepad():
         manufacturer_string = device['manufacturer_string']
         product_string = device['product_string']
 
+        # print(manufacturer_string, product_string)
+
         if manufacturer_string.startswith('ShanWan') and product_string == 'PC/PS3/Android Gamepad':
             gamapad_device = device
 
@@ -30,13 +32,20 @@ def main():
         gamepad.open(gamapad_device['vendor_id'], gamapad_device['product_id'])
         gamepad.set_nonblocking(True)
 
-        # a = time.time()
-        while True:
-            data = gamepad.read(64)
-            if data:
-                print(data)
-                # delta = time.time() - a
-                # print(delta)
+        def read_gamepad():
+            return gamepad.read(64)
+
+        try:
+            # a = time.time()
+            while True:
+                data = read_gamepad()
+                if data:
+                    print(data)
+                    # delta = time.time() - a
+                    # print(delta)
+        except OSError:
+            print('Ошибка чтения. Скорее всего, геймпад отключён.')
+            pass
 
 if __name__ == '__main__':
     main()
