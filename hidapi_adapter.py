@@ -41,6 +41,7 @@ def activate_gamepad(obj):
     else:
         obj.gamepad = None
         obj.timer = None
+        obj.show_center_label('Gamepad not found!', error=True)
 
 def deactivate_gamepad(obj):
     obj.gamepad = None
