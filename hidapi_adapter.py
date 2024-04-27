@@ -38,6 +38,7 @@ def activate_gamepad(obj):
         timer.setInterval(10)
         timer.timeout.connect(partial(read_sticks_to_obj, obj))
         timer.start()
+        obj.show_center_label('Gamepad control activated!')
     else:
         obj.gamepad = None
         obj.timer = None
@@ -46,6 +47,7 @@ def activate_gamepad(obj):
 def deactivate_gamepad(obj):
     obj.gamepad = None
     obj.timer.stop()
+    obj.show_center_label('Gamepad control deactivated!', error=True)
 
 def read_gamepad(gamepad):
     return gamepad.read(64)
