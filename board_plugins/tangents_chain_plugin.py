@@ -40,7 +40,7 @@ def paintEvent(self, painter, event):
     pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
-    _data = get_data(self)
+    _data = get_data_obj(self)
 
 
     # окно может обновлятся в нижней части из-за обновления панели задач, которая там находится,
@@ -198,7 +198,7 @@ def mousePressEvent(self, event):
     cursor_pos = event.pos()
     breaked = False
 
-    _data = get_data(self)
+    _data = get_data_obj(self)
 
     for index, c in enumerate(_data.circles):
         point = self.board_MapToViewport(c.position)
@@ -217,7 +217,7 @@ def mousePressEvent(self, event):
 
 def mouseMoveEvent(self, event):
 
-    _data = get_data(self)
+    _data = get_data_obj(self)
 
     if bool(event.modifiers() & Qt.ControlModifier):
         if _data.circles:
@@ -250,7 +250,7 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
 
-    _data = get_data(self)
+    _data = get_data_obj(self)
 
     if bool(event.modifiers() & Qt.ControlModifier) and event.button() == Qt.LeftButton:
         if _data.tempPair:
@@ -263,14 +263,14 @@ def mouseReleaseEvent(self, event):
     _data.drag_point = -1
     self.update()
 
-def get_data(self):
+def get_data_obj(self):
     return self.LibraryData().current_folder().board.nonAutoSerialized
 
 def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
 
-    _data = get_data(self)
+    _data = get_data_obj(self)
 
     breaked = False
     for index, c in enumerate(_data.circles):
