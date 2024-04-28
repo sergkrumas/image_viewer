@@ -289,7 +289,7 @@ class Circle():
         self.position = position
         self.radius = radius
 
-def setDefaults(_data):
+def setDefaults(self, _data):
     _data.drag_point = -1
     _data.oldpos = QPoint(0, 0)
 
@@ -297,13 +297,34 @@ def setDefaults(_data):
     _data.tempPair = None
     _data.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
 
-
 def dumpNonAutoSerialized(self, data):
-    return self.board_dumpNonAutoSerializedDefault(data)
+    # return self.board_dumpNonAutoSerializedDefault(data)
+    out = dict()
+    out['circles'] = [(c.position.x(), c.position.y(), c.radius) for c in data.circles]
+    tangent_pairs = []
+    for tp in data.tangent_pairs:
+        i1 = data.circles.index(tp[0])
+        i2 = data.circles.index(tp[1])
+        tangent_pairs.append((i1, i2))
+    out['tangent_pairs'] = tangent_pairs
+    return out
 
 def loadNonAutoSerialized(self, data):
-    return self.board_loadNonAutoSerializedDefault(data)
+    # return self.board_loadNonAutoSerializedDefault(data)
+    circles = data['circles']
+    tangent_pairs = data['tangent_pairs']
 
+    data = self.BoardNonAutoSerializedData()
+    setDefaults(self, data)
+    data.circles = []
+    data.tangent_pairs = []
+    for c in circles:
+        data.circles.append(Circle(QPointF(c[0], c[1]), c[2]))
+    for tp in tangent_pairs:
+        c1 = data.circles[tp[0]]
+        c2 = data.circles[tp[1]]
+        data.tangent_pairs.append((c1, c2))
+    return data
 
 def preparePluginBoard(self, plugin_info, file_loading=False):
 
@@ -315,7 +336,7 @@ def preparePluginBoard(self, plugin_info, file_loading=False):
         fd.board.prepareBoardOnFileLoad = True
 
         _data = fd.board.nonAutoSerialized
-        setDefaults(_data)
+        setDefaults(self, _data)
 
         W = self.rect().width()/30
         H = self.rect().height()/20
