@@ -52,6 +52,12 @@ def dropEvent(self, event):
 def getBoardFilepath(self):
     return self.board_getBoardFilepathDefault()
 
+def dumpNonAutoSerialized(self, data):
+    return self.board_dumpNonAutoSerializedDefault(data)
+
+def loadNonAutoSerialized(self, data):
+    return self.board_loadNonAutoSerializedDefault(data)
+
 
 def preparePluginBoard(self, plugin_info):
     pass
@@ -83,6 +89,9 @@ def register(board_obj, plugin_info):
     plugin_info.dropEvent = dropEvent
 
     plugin_info.getBoardFilepath = getBoardFilepath
+
+    plugin_info.dumpNonAutoSerialized = dumpNonAutoSerialized
+    plugin_info.loadNonAutoSerialized = loadNonAutoSerialized
 
 
 if __name__ == '__main__':
