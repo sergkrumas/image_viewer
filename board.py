@@ -416,11 +416,12 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.show_center_label(f'plugin {plugin_filename} is not found in \\boards_plugins folder!', error=True)
 
-    def board_SetCallbacks(self):
-        cf = self.LibraryData().current_folder()
+    def board_SetCallbacks(self, fd=None):
+        if fd is None:
+            fd = self.LibraryData().current_folder()
         found_pi = None
-        if cf is not None:
-            plugin_filename = cf.board.plugin_filename
+        if fd is not None:
+            plugin_filename = fd.board.plugin_filename
             found_pi = self.board_FindPlugin(plugin_filename)
 
         for name in BoardCallbacksNames:
@@ -825,6 +826,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # ЗАГРУЗКА ДАННЫХ
         # атрибуты доски
+        # при загрузке доски могут использоваться колбэки и их нужно установить заранее
+        self.board_SetCallbacks(fd)
         self.board_serial_to_object_attributes(fd.board, board_attributes)
         # айтемы доски
         for board_item_attributes in board_items:
