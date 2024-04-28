@@ -1096,7 +1096,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return dict()
 
     def board_loadNonAutoSerializedDefault(self, data):
-        return data
+        return self.BoardNonAutoSerializedData()
 
     def board_getBoardFilepathDefault(self):
         cf = self.LibraryData().current_folder()
