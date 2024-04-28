@@ -279,33 +279,38 @@ def preparePluginBoard(self, plugin_info, file_loading=False):
     self.drag_point = -1
     self.oldpos = QPoint(0, 0)
 
-    if not file_loading:
+
+    creating = not file_loading
+
+    if creating:
         fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
         self.board_make_board_current(fd)
+        fd.board.prepareBoardOnFileLoad = True
+        
 
-    W = self.rect().width()/30
-    H = self.rect().height()/20
+        W = self.rect().width()/30
+        H = self.rect().height()/20
 
-    P1 = QPointF(W*10, H*10)
-    P2 = QPointF(W*20, H*10)
+        P1 = QPointF(W*10, H*10)
+        P2 = QPointF(W*20, H*10)
 
-    P3 = QPointF(W*5, H*18)
-    P4 = QPointF(W*7, H*4)
+        P3 = QPointF(W*5, H*18)
+        P4 = QPointF(W*7, H*4)
 
-    self.tempPair = None
-    self.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
+        self.tempPair = None
+        self.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
 
-    self.circles = [
-        Circle(P1, 8.0),
-        Circle(P2, 5.0),
-        Circle(P3, 10.0),
-        Circle(P4, 9.0),
-    ]
-    self.tangent_pairs = [
-        (self.circles[0], self.circles[1]),
-        (self.circles[0], self.circles[2]),
-        (self.circles[0], self.circles[3]),
-    ]
+        self.circles = [
+            Circle(P1, 8.0),
+            Circle(P2, 5.0),
+            Circle(P3, 10.0),
+            Circle(P4, 9.0),
+        ]
+        self.tangent_pairs = [
+            (self.circles[0], self.circles[1]),
+            (self.circles[0], self.circles[2]),
+            (self.circles[0], self.circles[3]),
+        ]
 
 
     self.bckg_rects = dict()
