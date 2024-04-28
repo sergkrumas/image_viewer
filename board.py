@@ -301,6 +301,8 @@ BoardCallbacksNames = [
     'dragMoveEvent',
     'dropEvent',
     'getBoardFilepath',
+    'dumpNonAutoSerialized',
+    'loadNonAutoSerialized',
 ]
 
 class PluginInfo():
@@ -1070,6 +1072,18 @@ class BoardMixin(BoardTextEditItemMixin):
             file_format = 'json'
         board_filepath = os.path.normpath(os.path.join(folder_path, f"{filename}.{file_format}.board"))
         return board_filepath
+
+    def board_dumpNonAutoSerialized(self, data):
+        return dict()
+
+    def board_loadNonAutoSerialized(self, data):
+        return data
+
+    def board_dumpNonAutoSerializedDefault(self, data):
+        return self.board_dumpNonAutoSerializedBoardCallback(data)
+
+    def board_loadNonAutoSerializedDefault(self, data):
+        return self.board_loadNonAutoSerializedBoardCallback(data)
 
     def board_getBoardFilepathDefault(self):
         cf = self.LibraryData().current_folder()
