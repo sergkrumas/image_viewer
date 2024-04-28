@@ -1094,6 +1094,8 @@ class BoardData():
 
         self.nonAutoSerialized = None
 
+        self.prepareBoardOnFileLoad = False
+
 class FolderData():
 
     def check_insert_position(self, index):

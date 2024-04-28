@@ -84,7 +84,7 @@ def dropEvent(self, event):
     else:
         event.ignore()
 
-def preparePluginBoard(self, plugin_info):
+def preparePluginBoard(self, plugin_info, file_loading=False):
     board_filepath = getBoardFilepath(self)
     if os.path.exists(board_filepath):
         self.board_loadBoard(path=board_filepath)
