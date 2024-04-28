@@ -274,13 +274,14 @@ class Circle():
         self.position = position
         self.radius = radius
 
-def preparePluginBoard(self, plugin_info):
+def preparePluginBoard(self, plugin_info, file_loading=False):
 
     self.drag_point = -1
     self.oldpos = QPoint(0, 0)
 
-    fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
-    self.board_make_board_current(fd)
+    if not file_loading:
+        fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
+        self.board_make_board_current(fd)
 
     W = self.rect().width()/30
     H = self.rect().height()/20
@@ -340,6 +341,11 @@ def preparePluginBoard(self, plugin_info):
     painter_.end()
     diagonal_lines_br.setTexture(pixmap)
 
+def dumpNonAutoSerialized(self, data):
+    return self.board_dumpNonAutoSerializedDefault(data)
+
+def loadNonAutoSerialized(self, data):
+    return self.board_loadNonAutoSerializedDefault(data)
 
 
 
@@ -356,6 +362,8 @@ def register(board_obj, plugin_info):
 
     plugin_info.wheelEvent = wheelEvent
 
+    plugin_info.dumpNonAutoSerialized = dumpNonAutoSerialized
+    plugin_info.loadNonAutoSerialized = loadNonAutoSerialized
 
 
 if __name__ == '__main__':
