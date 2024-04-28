@@ -21,8 +21,8 @@
 from _utils import *
 
 
-from library_data import (LibraryData, FolderData, ImageData, BoardData, LibraryModeImageColumn,
-                                                                            ThumbnailsThread)
+from library_data import (LibraryData, FolderData, ImageData, BoardData, BoardNonAutoSerializedData,
+                                                         LibraryModeImageColumn, ThumbnailsThread)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
@@ -467,6 +467,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.ImageData = ImageData
         self.FolderData = FolderData
         self.BoardData = BoardData
+        self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
 
         if SettingsWindow.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True

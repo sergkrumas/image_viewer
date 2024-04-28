@@ -827,8 +827,8 @@ class BoardMixin(BoardTextEditItemMixin):
         # ЗАГРУЗКА ДАННЫХ
         # атрибуты доски
         # при загрузке доски могут использоваться колбэки и их нужно установить заранее
-        self.board_SetCallbacks(fd)
         self.board_serial_to_object_attributes(fd.board, board_attributes)
+        self.board_SetCallbacks(fd)        
         # айтемы доски
         for board_item_attributes in board_items:
             board_item = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
