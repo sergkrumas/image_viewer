@@ -1068,6 +1068,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def scan_for_lost_records(self):
         pass
 
+class BoardNonAutoSerializedData():
+    pass
+
 class BoardData():
 
     def __init__(self):
@@ -1092,7 +1095,7 @@ class BoardData():
         self.root_folder = None
         self.root_item = None
 
-        self.nonAutoSerialized = None
+        self.nonAutoSerialized = BoardNonAutoSerializedData()
 
         self.prepareBoardOnFileLoad = False
 

@@ -40,23 +40,26 @@ def paintEvent(self, painter, event):
     pen4 = QPen(QColor(220, 220, 220, 150), 1, Qt.DashLine)
     pen5 = QPen(QColor(50, 220, 50, 50), 1, Qt.DashLine)
 
+    _data = get_data(self)
+
+
     # окно может обновлятся в нижней части из-за обновления панели задач, которая там находится,
     # и нам нужно отслеживать этот момент и рисовать только при полном обновлении окна
     if self.rect() == event.rect():
-        for key in list(self.bckg_rects.keys()):
-            if self.bckg_rects[key] > 1:
-                self.bckg_rects[key] -= 4
+        for key in list(_data.bckg_rects.keys()):
+            if _data.bckg_rects[key] > 1:
+                _data.bckg_rects[key] -= 4
             else:
-                self.bckg_rects.pop(key)
+                _data.bckg_rects.pop(key)
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         SIZE = 125
 
         cursor_pos = self.board_MapToBoard(cursor_pos).toPoint()
         x = (cursor_pos.x() // SIZE) * SIZE
         y = (cursor_pos.y() // SIZE) * SIZE
-        self.bckg_rects[(x,y)] = 255
+        _data.bckg_rects[(x,y)] = 255
         base = QColor(self.selection_color).darker(200)
-        for key, alpha in self.bckg_rects.items():
+        for key, alpha in _data.bckg_rects.items():
             _x, _y = key
             bckg_rect_board = QRect(_x, _y, SIZE, SIZE)
             bckg_rect_viewport = QRectF(
@@ -68,14 +71,14 @@ def paintEvent(self, painter, event):
 
 
 
-    tangent_pairs = self.tangent_pairs[:]
-    if bool(QApplication.queryKeyboardModifiers() & Qt.ControlModifier) and self.tempPair is not None:
+    tangent_pairs = _data.tangent_pairs[:]
+    if bool(QApplication.queryKeyboardModifiers() & Qt.ControlModifier) and _data.tempPair is not None:
         ghost_circle = True
     else:
         ghost_circle = False
 
     if ghost_circle:
-        tangent_pairs.extend((self.tempPair,))
+        tangent_pairs.extend((_data.tempPair,))
 
     for c1, c2 in tangent_pairs:
 
@@ -150,12 +153,12 @@ def paintEvent(self, painter, event):
 
 
 
-    circles = self.circles[:]
+    circles = _data.circles[:]
 
     if ghost_circle:
-        circles.append(self.tempCircle)
+        circles.append(_data.tempCircle)
 
-    self.center_under_cursor = None
+    _data.center_under_cursor = None
     for c in circles:
         center_point = self.board_MapToViewport(c.position)
         radius = c.radius
@@ -167,12 +170,12 @@ def paintEvent(self, painter, event):
         painter.drawEllipse(build_rect_from_point(self, center_point, radius))
         painter.drawEllipse(rect)
         hover = rect.contains(self.mapFromGlobal(QCursor().pos()))
-        if hover or self.drag_point != -1 and self.circles.index(c) == self.drag_point:
+        if hover or _data.drag_point != -1 and _data.circles.index(c) == _data.drag_point:
             brush = QBrush(QColor(220, 50, 50))
             painter.setPen(Qt.NoPen)
             painter.setBrush(brush)
             painter.drawEllipse(rect)
-            self.center_under_cursor = center_point
+            _data.center_under_cursor = center_point
         r_text = radius*get_pixels_in_radius_unit(self)
         painter.setPen(QPen(Qt.green))
         painter.drawText(center_point, f'{r_text:.01f}')
@@ -194,47 +197,52 @@ def paintEvent(self, painter, event):
 def mousePressEvent(self, event):
     cursor_pos = event.pos()
     breaked = False
-    for index, c in enumerate(self.circles):
+
+    _data = get_data(self)
+
+    for index, c in enumerate(_data.circles):
         point = self.board_MapToViewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
-            self.drag_point = index
-            self.start_pos = event.pos()
-            self.oldpos = QPointF(c.position)
+            _data.drag_point = index
+            _data.start_pos = event.pos()
+            _data.oldpos = QPointF(c.position)
             breaked = True
             break
         else:
-            self.drag_point = -1
+            _data.drag_point = -1
     if not breaked:
         self.board_mousePressEventDefault(event)
     self.update()
 
 def mouseMoveEvent(self, event):
 
+    _data = get_data(self)
+
     if bool(event.modifiers() & Qt.ControlModifier):
-        if self.circles:
+        if _data.circles:
             nearest_circle = None
-            for c in self.circles:
+            for c in _data.circles:
                 l = self.board_MapToViewport(c.position) - event.pos()
                 c._l = QVector2D(l).length()
 
-            nearest_circle = list(sorted(self.circles, key=lambda x: x._l))[0]
+            nearest_circle = list(sorted(_data.circles, key=lambda x: x._l))[0]
 
-            self.tempCircle.position = self.board_MapToBoard(QPointF(event.pos()))
-            self.tempPair = (self.tempCircle, nearest_circle)
+            _data.tempCircle.position = self.board_MapToBoard(QPointF(event.pos()))
+            _data.tempPair = (_data.tempCircle, nearest_circle)
         else:
-            self.tempPair = None
-    elif self.drag_point != -1:
-        self.tempPair = None
-        delta = QPointF(self.start_pos - event.pos())
+            _data.tempPair = None
+    elif _data.drag_point != -1:
+        _data.tempPair = None
+        delta = QPointF(_data.start_pos - event.pos())
         delta.setX(delta.x()/self.board_scale_x)
         delta.setY(delta.y()/self.board_scale_y)
-        self.circles[self.drag_point].position = self.oldpos - delta
+        _data.circles[_data.drag_point].position = _data.oldpos - delta
 
     else:
         self.board_mouseMoveEventDefault(event)
     if not self.corner_buttons_cursor_glitch_fixer():
-        if self.center_under_cursor is not None:
+        if _data.center_under_cursor is not None:
             self.setCursor(Qt.PointingHandCursor)
         else:
             self.setCursor(Qt.ArrowCursor)
@@ -242,27 +250,34 @@ def mouseMoveEvent(self, event):
 
 def mouseReleaseEvent(self, event):
 
+    _data = get_data(self)
+
     if bool(event.modifiers() & Qt.ControlModifier) and event.button() == Qt.LeftButton:
-        if self.tempPair:
-            newCircle = Circle(self.tempCircle.position, self.tempCircle.radius)
-            self.circles.append(newCircle)
-            self.tangent_pairs.append((newCircle, self.tempPair[1]))
-            self.tempPair = None
+        if _data.tempPair:
+            newCircle = Circle(_data.tempCircle.position, _data.tempCircle.radius)
+            _data.circles.append(newCircle)
+            _data.tangent_pairs.append((newCircle, _data.tempPair[1]))
+            _data.tempPair = None
     else:
         self.board_mouseReleaseEventDefault(event)
-    self.drag_point = -1
+    _data.drag_point = -1
     self.update()
+
+def get_data(self):
+    return self.LibraryData().current_folder().board.nonAutoSerialized
 
 def wheelEvent(self, event):
     cursor_pos = event.pos()
     value = event.angleDelta().y()/100/1.2
 
+    _data = get_data(self)
+
     breaked = False
-    for index, c in enumerate(self.circles):
+    for index, c in enumerate(_data.circles):
         point = self.board_MapToViewport(c.position)
         rect = build_rect_from_point(self, point)
         if rect.contains(cursor_pos):
-            self.circles[index].radius += value
+            _data.circles[index].radius += value
             breaked = True
             break
     if not breaked:
@@ -274,11 +289,23 @@ class Circle():
         self.position = position
         self.radius = radius
 
+def setDefaults(_data):
+    _data.drag_point = -1
+    _data.oldpos = QPoint(0, 0)
+
+    _data.bckg_rects = dict()
+    _data.tempPair = None
+    _data.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
+
+
+def dumpNonAutoSerialized(self, data):
+    return self.board_dumpNonAutoSerializedDefault(data)
+
+def loadNonAutoSerialized(self, data):
+    return self.board_loadNonAutoSerializedDefault(data)
+
+
 def preparePluginBoard(self, plugin_info, file_loading=False):
-
-    self.drag_point = -1
-    self.oldpos = QPoint(0, 0)
-
 
     creating = not file_loading
 
@@ -286,7 +313,9 @@ def preparePluginBoard(self, plugin_info, file_loading=False):
         fd = self.board_CreatePluginVirtualFolder(plugin_info.name)
         self.board_make_board_current(fd)
         fd.board.prepareBoardOnFileLoad = True
-        
+
+        _data = fd.board.nonAutoSerialized
+        setDefaults(_data)
 
         W = self.rect().width()/30
         H = self.rect().height()/20
@@ -297,23 +326,18 @@ def preparePluginBoard(self, plugin_info, file_loading=False):
         P3 = QPointF(W*5, H*18)
         P4 = QPointF(W*7, H*4)
 
-        self.tempPair = None
-        self.tempCircle = Circle(QPointF(self.rect().center()), 5.0)
-
-        self.circles = [
+        _data.circles = [
             Circle(P1, 8.0),
             Circle(P2, 5.0),
             Circle(P3, 10.0),
             Circle(P4, 9.0),
         ]
-        self.tangent_pairs = [
-            (self.circles[0], self.circles[1]),
-            (self.circles[0], self.circles[2]),
-            (self.circles[0], self.circles[3]),
+        _data.tangent_pairs = [
+            (_data.circles[0], _data.circles[1]),
+            (_data.circles[0], _data.circles[2]),
+            (_data.circles[0], _data.circles[3]),
         ]
 
-
-    self.bckg_rects = dict()
 
     self.diagonal_lines_br = diagonal_lines_br = QBrush()
     pixmap = QPixmap(100, 100)
@@ -346,11 +370,6 @@ def preparePluginBoard(self, plugin_info, file_loading=False):
     painter_.end()
     diagonal_lines_br.setTexture(pixmap)
 
-def dumpNonAutoSerialized(self, data):
-    return self.board_dumpNonAutoSerializedDefault(data)
-
-def loadNonAutoSerialized(self, data):
-    return self.board_loadNonAutoSerializedDefault(data)
 
 
 
