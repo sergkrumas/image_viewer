@@ -952,11 +952,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif exclude is not None and attr_name in exclude:
                 continue
 
-            elif attr_name in ['referer_board_folder']:
-                attr_data = None
-                attr_type = 'NoneType'
-
-            elif attr_name in ['root_folder', 'root_item']:
+            elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized']:
                 attr_data = None
                 attr_type = 'NoneType'
 
