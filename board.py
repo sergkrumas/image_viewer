@@ -808,6 +808,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_items = board_dict['board_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
+        board_nonAutoSerialized = board_dict['board_nonAutoSerialized']
 
         is_virtual = board_folder_data['is_virtual']
         folder_name = board_folder_data['folder_name']
@@ -830,6 +831,8 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
             self.board_serial_to_object_attributes(board_item, board_item_attributes, fd=fd)
             fd.board.items_list.append(board_item)
+
+        fd.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
         self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
         fd.board.ready = True
@@ -1058,10 +1061,13 @@ class BoardMixin(BoardTextEditItemMixin):
             board_items.append(new_item_base)
             self.board_object_attributes_to_serial(item, new_item_base)
 
+        board_nonAutoSerialized = self.board_dumpNonAutoSerialized(board.nonAutoSerialized)
+
         board_base.update({
             'board_items': board_items,
             'board_attributes': board_attributes,
             'board_folder_data': board_folder_data,
+            'board_nonAutoSerialized': board_nonAutoSerialized,
         })
         return board_base
 
@@ -1074,16 +1080,16 @@ class BoardMixin(BoardTextEditItemMixin):
         return board_filepath
 
     def board_dumpNonAutoSerialized(self, data):
-        return dict()
+        return self.dumpNonAutoSerializedBoardCallback(data)
 
     def board_loadNonAutoSerialized(self, data):
-        return data
+        return self.loadNonAutoSerializedBoardCallback(data)
 
     def board_dumpNonAutoSerializedDefault(self, data):
-        return self.board_dumpNonAutoSerializedBoardCallback(data)
+        return dict()
 
     def board_loadNonAutoSerializedDefault(self, data):
-        return self.board_loadNonAutoSerializedBoardCallback(data)
+        return data
 
     def board_getBoardFilepathDefault(self):
         cf = self.LibraryData().current_folder()
