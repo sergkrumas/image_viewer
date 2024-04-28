@@ -808,7 +808,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_items = board_dict['board_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
-        board_nonAutoSerialized = board_dict['board_nonAutoSerialized']
+        board_nonAutoSerialized = board_dict.get('board_nonAutoSerialized', {})
 
         is_virtual = board_folder_data['is_virtual']
         folder_name = board_folder_data['folder_name']
