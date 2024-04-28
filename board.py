@@ -108,6 +108,8 @@ class BoardItem():
         self._touched = False
         self._show_file_info_overlay = False
 
+        self.__label_ui_rect = None
+
     def calc_local_data(self):
         if self.type in [self.types.ITEM_NOTE]:
             self.calc_local_data_default()
@@ -1469,6 +1471,7 @@ class BoardMixin(BoardTextEditItemMixin):
             alignment = Qt.AlignLeft
             rect = painter.boundingRect(area.boundingRect(), alignment, text)
             rect.moveBottomLeft(pos+zoom_delta)
+            board_item.__label_ui_rect = None
             show_text = True
             if rect.width() > area.boundingRect().width():
                 show_text = False
@@ -1478,6 +1481,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 show_text = True
 
             if show_text:
+                board_item.__label_ui_rect = rect
                 painter.drawText(rect, alignment, text)
                 self.board_frame_items_text_rects.append((board_item, rect, area.boundingRect()))
 
@@ -2430,10 +2434,14 @@ class BoardMixin(BoardTextEditItemMixin):
     def isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
+    def is_pos_over_item_area(self, item, position):
+        sa = item.get_selection_area(board=self)
+        return sa.containsPoint(position, Qt.WindingFill) or \
+                (item.type == BoardItem.types.ITEM_FRAME and item.__label_ui_rect is not None and item.__label_ui_rect.contains(position))
+
     def is_over_translation_activation_area(self, position):
         for item in self.selected_items:
-            sa = item.get_selection_area(board=self)
-            if sa.containsPoint(position, Qt.WindingFill):
+            if self.is_pos_over_item_area(item, position):
                 return True
         return False
 
@@ -2541,9 +2549,11 @@ class BoardMixin(BoardTextEditItemMixin):
             return False
         min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
         # reversed для того, чтобы картинки на переднем плане чекались первыми
+        pos = self.mapped_cursor_pos()
         for board_item in reversed(current_folder.board.items_list):
             item_selection_area = board_item.get_selection_area(board=self)
-            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            is_under_mouse = self.is_pos_over_item_area(board_item, pos)
 
             if is_under_mouse and not board_item._selected:
                 if board_item.type == BoardItem.types.ITEM_FRAME:
@@ -2577,7 +2587,8 @@ class BoardMixin(BoardTextEditItemMixin):
         undermouse_items = []
         for board_item in folder_data.board.items_list:
             item_selection_area = board_item.get_selection_area(board=self)
-            is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
+            # is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
+            is_under_mouse = self.is_pos_over_item_area(board_item, pos)
             if is_under_mouse:
                 undermouse_items.append(board_item)
         return undermouse_items
@@ -2600,9 +2611,11 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
             # reversed для того, чтобы картинки на переднем плане чекались первыми
+            pos = self.mapped_cursor_pos()
             for board_item in reversed(current_folder.board.items_list):
                 item_selection_area = board_item.get_selection_area(board=self)
-                is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                is_under_mouse = self.is_pos_over_item_area(board_item, pos)
                 if add_to_selection and board_item._selected:
                     # subtract item from selection!
                     if is_under_mouse and not self.prevent_item_deselection:
