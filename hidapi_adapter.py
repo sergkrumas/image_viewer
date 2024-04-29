@@ -33,7 +33,7 @@ class ListenThread(QThread):
                     x_axis, y_axis = read_right_stick(data)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
-                        scroll_value = -offset.y()
+                        scroll_value = offset.y()
                         self.update_signal.emit(('scale', scroll_value))
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
                 # В обратном случае использование CPU падает до привычного значения
@@ -54,7 +54,8 @@ def update_board_viewer(obj, data):
     elif key == 'scale':
         scroll_value = data[1]
         pivot = obj.rect().center()
-        obj.do_scale_board(scroll_value, False, False, True, pivot=pivot, scale_speed=100.0)
+        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 150.0, 10.0)
+        obj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
     elif key == 'stop':
         deactivate_listening(obj)
 
