@@ -10,6 +10,56 @@ import time
 from _utils import *
 from functools import partial
 
+
+
+class ListenThread(QThread):
+    update_signal = pyqtSignal(object)
+
+    def __init__(self, gamepad):
+        QThread.__init__(self)
+        self.gamepad = gamepad
+
+    def run(self):
+        try:
+            while True:
+                data = read_gamepad(self.gamepad)
+                if data:
+                    x_axis, y_axis = read_left_stick(data)
+                    offset = QPointF(x_axis, y_axis)
+                    if offset:
+                        offset *= 20
+                        self.update_signal.emit(('offset', offset))
+
+                    x_axis, y_axis = read_right_stick(data)
+                    offset = QPointF(x_axis, y_axis)
+                    if offset:
+                        scroll_value = -offset.y()
+                        self.update_signal.emit(('scale', scroll_value))
+                # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
+                # В случае же использование CPU падает до привычного значения
+                time.sleep(0.001)
+
+        except OSError:
+            # print('Ошибка чтения. Скорее всего, геймпад отключён.')
+            self.update_signal.emit(('stop',))
+
+        self.exec_()
+
+def update_board_viewer(obj, data):
+
+    key = data[0]
+    if key == 'offset':
+        offset = data[1]
+        obj.board_origin -= offset
+    elif key == 'scale':
+        scroll_value = data[1]
+        pivot = obj.rect().center()
+        obj.do_scale_board(scroll_value, False, False, True, pivot=pivot, scale_speed=100.0)
+    elif key == 'stop':
+        deactivate_listening(obj)
+
+    obj.update()
+
 def find_gamepad():
     gamepad_device = None
 
@@ -32,24 +82,30 @@ def open_device(device):
 
 def activate_gamepad(obj):
     if obj.gamepad:
-        deactivate_gamepad(obj)
+        deactivate_listening(obj)
     else:
         gamepad_device = find_gamepad()
         if gamepad_device:
             obj.gamepad = open_device(gamepad_device)
             obj.gamepad_timer = timer = QTimer()
-            timer.setInterval(10)
-            timer.timeout.connect(partial(read_sticks_to_obj, obj))
-            timer.start()
+            # timer.setInterval(10)
+            # timer.timeout.connect(partial(read_sticks_to_obj, obj))
+            # timer.start()
+            obj.thread_instance = ListenThread(obj.gamepad)
+            obj.thread_instance.update_signal.connect(partial(update_board_viewer, obj))
+            obj.thread_instance.start()
+
             obj.show_center_label('Gamepad control activated!')
         else:
             obj.gamepad = None
-            obj.timer = None
+            # obj.timer = None
             obj.show_center_label('Gamepad not found!', error=True)
 
-def deactivate_gamepad(obj):
+def deactivate_listening(obj):
     obj.gamepad = None
-    obj.timer.stop()
+    # obj.timer.stop()
+    obj.thread_instance.terminate()
+    obj.thread_instance = None
     obj.show_center_label('Gamepad control deactivated!', error=True)
 
 def read_gamepad(gamepad):
@@ -77,7 +133,7 @@ def read_sticks_to_obj(obj):
 
         except OSError:
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
-            deactivate_gamepad(obj)
+            deactivate_listening(obj)
 
 
 def read_right_stick(data):
