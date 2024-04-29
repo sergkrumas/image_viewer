@@ -36,7 +36,7 @@ class ListenThread(QThread):
                         scroll_value = -offset.y()
                         self.update_signal.emit(('scale', scroll_value))
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
-                # В случае же использование CPU падает до привычного значения
+                # В обратном случае использование CPU падает до привычного значения
                 time.sleep(0.001)
 
         except OSError:
