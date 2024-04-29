@@ -54,7 +54,7 @@ def update_board_viewer(obj, data):
     elif key == 'scale':
         scroll_value = data[1]
         pivot = obj.rect().center()
-        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 150.0, 10.0)
+        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 150.0, 90.0)
         obj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
     elif key == 'stop':
         deactivate_listening(obj)
