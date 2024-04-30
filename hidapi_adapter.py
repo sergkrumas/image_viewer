@@ -73,6 +73,9 @@ def find_gamepad():
         if manufacturer_string.startswith('ShanWan') and product_string == 'PC/PS3/Android Gamepad':
             gamepad_device = device
 
+        if manufacturer_string.startswith('Sony Interactive Entertainment') and product_string.startswith('Wireless Controller'):
+            gamepad_device = device
+
     return gamepad_device
 
 def open_device(device):
@@ -137,14 +140,14 @@ def read_sticks_to_obj(obj):
             deactivate_listening(obj)
 
 
-def read_right_stick(data):
-    x_axis = fit(data[5], 0, 256, -1.0, 1.0)
-    y_axis = fit(data[6], 0, 256, -1.0, 1.0)
+def read_right_stick(data, start_byte_index=5):
+    x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
+    y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
     return x_axis, y_axis
 
-def read_left_stick(data):
-    x_axis = fit(data[3], 0, 256, -1.0, 1.0)
-    y_axis = fit(data[4], 0, 256, -1.0, 1.0)
+def read_left_stick(data, start_byte_index=3):
+    x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
+    y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
     return x_axis, y_axis
 
 def main():
@@ -162,10 +165,10 @@ def main():
             while True:
                 data = read_gamepad()
                 if data:
-                    # print(data)
-                    x_axis, y_axis = read_left_stick(data)
+                    print(data)
+                    # x_axis, y_axis = read_left_stick(data)
 
-                    print(f'{x_axis}, {y_axis}')
+                    # print(f'{x_axis}, {y_axis}')
 
                     # delta = time.time() - a
                     # print(delta)
