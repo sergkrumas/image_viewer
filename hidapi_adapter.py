@@ -15,22 +15,34 @@ from functools import partial
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
 
-    def __init__(self, gamepad):
+    def __init__(self, gamepad, gamepad_device):
         QThread.__init__(self)
         self.gamepad = gamepad
+
+        manufacturer_string = gamepad_device['manufacturer_string']
+
+        if manufacturer_string.startswith('ShanWan'):
+            self.start_byte_left_stick = 3
+            self.start_byte_right_stick = 5
+            self.dead_zone = 0.0
+
+        elif manufacturer_string.startswith('Sony Interactive Entertainment'):
+            self.start_byte_left_stick = 1
+            self.start_byte_right_stick = 3
+            self.dead_zone = 0.1
 
     def run(self):
         try:
             while True:
                 data = read_gamepad(self.gamepad)
                 if data:
-                    x_axis, y_axis = read_left_stick(data)
+                    x_axis, y_axis = read_left_stick(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
                         self.update_signal.emit(('offset', offset))
 
-                    x_axis, y_axis = read_right_stick(data)
+                    x_axis, y_axis = read_right_stick(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
@@ -95,7 +107,7 @@ def activate_gamepad(obj):
             # timer.setInterval(10)
             # timer.timeout.connect(partial(read_sticks_to_obj, obj))
             # timer.start()
-            obj.thread_instance = ListenThread(obj.gamepad)
+            obj.thread_instance = ListenThread(obj.gamepad, gamepad_device)
             obj.thread_instance.update_signal.connect(partial(update_board_viewer, obj))
             obj.thread_instance.start()
 
@@ -139,15 +151,29 @@ def read_sticks_to_obj(obj):
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
             deactivate_listening(obj)
 
-
-def read_right_stick(data, start_byte_index=5):
-    x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
-    y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
+def apply_dead_zone(x_axis, y_axis, dead_zone):
+    if abs(x_axis) < dead_zone:
+        x_axis = 0.0
+    if abs(y_axis) < dead_zone:
+        y_axis = 0.0
     return x_axis, y_axis
 
-def read_left_stick(data, start_byte_index=3):
+def read_left_stick(data, start_byte_index=3, dead_zone=0.0):
     x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
     y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
+
+    if dead_zone != 0.0:
+        x_axis, y_axis = apply_dead_zone(x_axis, y_axis, dead_zone)
+
+    return x_axis, y_axis
+
+def read_right_stick(data, start_byte_index=5, dead_zone=0.0):
+    x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
+    y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
+
+    if dead_zone != 0.0:
+        x_axis, y_axis = apply_dead_zone(x_axis, y_axis, dead_zone)
+
     return x_axis, y_axis
 
 def main():
