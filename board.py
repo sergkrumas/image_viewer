@@ -3548,14 +3548,38 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_place_items_in_column(self):
         folder_data = self.LibraryData().current_folder()
-        offset = self.board_MapToBoard(self.rect().center())
+
         items_list = folder_data.board.items_list
-        for bi in items_list:
+
+        if not items_list:
+            self.show_center_label('На доске нет айтемов! Отмена.', error=True)
+
+        all_items = self.get_original_items_order(items_list)
+        item = self.board_get_nearest_item(folder_data, by_window_center=True)
+
+        item_index = all_items.index(item)
+
+        pos_list = all_items[item_index:]
+        neg_list = all_items[:item_index]
+
+        main_offset = self.board_MapToBoard(self.rect().center())
+
+        offset = QPointF(main_offset)
+        for bi in pos_list:
             b_rect = bi.get_selection_area(board=self, apply_global_scale=False).boundingRect()
             bi_width = b_rect.width()
             bi_height = b_rect.height()
             bi.position = offset + QPointF(bi_width/2, bi_height/2)
             offset += QPointF(0, bi_height)
+
+        offset = QPointF(main_offset)
+        for bi in reversed(neg_list):
+            b_rect = bi.get_selection_area(board=self, apply_global_scale=False).boundingRect()
+            bi_width = b_rect.width()
+            bi_height = b_rect.height()
+            bi.position = offset + QPointF(bi_width/2, -bi_height/2)
+            offset -= QPointF(0, bi_height)
+
         self.build_board_bounding_rect(folder_data)
         self.update()
 
