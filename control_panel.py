@@ -615,8 +615,18 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.underMouseImageData = None
 
+        self.setMouseTracking(True)
+
     def control_panel_timer_handler(self):
         self.opacity_handler()
+
+        # если обновлять здесь,
+        # то активно будет сжираться CPU
+        # обновлять лучше внутри opacity_handler и делать это только тогда,
+        # когда значение opacity меняется, а равняется одному и тому же значению
+        # self.update()
+
+    def label_text_update(self):
         MW = self.globals.main_window
         if MW.handling_input:
             return
@@ -652,7 +662,9 @@ class ControlPanel(QWidget, UtilsMixin):
     def opacity_handler(self):
         def setOpacity(value):
             safe_value = max(min(value, self.MAX_OPACITY), 0.0)
-            self.opacity_effect.setOpacity(safe_value)
+            if self.opacity_effect.opacity() != value:
+                self.opacity_effect.setOpacity(safe_value)
+                self.update()
 
         main_window = self.globals.main_window
         if main_window.is_library_page_active():
@@ -1372,6 +1384,9 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def mouseMoveEvent(self, event):
         MW = self.globals.main_window
+
+        self.label_text_update()
+
         if MW.is_library_page_active():
             super().mouseMoveEvent(event)
 

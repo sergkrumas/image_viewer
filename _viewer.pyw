@@ -1526,6 +1526,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def mouseMoveEvent(self, event):
 
+        CP = Globals.control_panel
+        if CP is not None:
+            CP.label_text_update()
+
         if self.is_board_page_active():
             self.board_mouseMoveEvent(event)
 
