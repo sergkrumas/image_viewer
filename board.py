@@ -721,6 +721,9 @@ class BoardMixin(BoardTextEditItemMixin):
         board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
         board_load_highres.triggered.connect(self.board_load_highres)
 
+        board_place_items_in_column = contextMenu.addAction('Разместить айтемы вертикально')
+        board_place_items_in_column.triggered.connect(self.board_place_items_in_column)
+
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
             board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма \'{frame_item.label}\'')
@@ -3542,6 +3545,19 @@ class BoardMixin(BoardTextEditItemMixin):
                 pass
                 filepath = item.item_folder_data.current_image().filepath
             self.start_lite_process(filepath)
+
+    def board_place_items_in_column(self):
+        folder_data = self.LibraryData().current_folder()
+        offset = self.board_MapToBoard(self.rect().center())
+        items_list = folder_data.board.items_list
+        for bi in items_list:
+            b_rect = bi.get_selection_area(board=self, apply_global_scale=False).boundingRect()
+            bi_width = b_rect.width()
+            bi_height = b_rect.height()
+            bi.position = offset + QPointF(bi_width/2, bi_height/2)
+            offset += QPointF(0, bi_height)
+        self.build_board_bounding_rect(folder_data)
+        self.update()
 
     def board_open_in_google_chrome(self):
         item = self.retrieve_selected_item()
