@@ -1407,7 +1407,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_for_center_label_fade_effect()
         self.threads_info_watcher()
         self.control_timer_handler()
-        self.cursor_setter()
 
         if self.is_viewer_page_active():
             self.viewport_image_animation()
@@ -1529,6 +1528,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         CP = Globals.control_panel
         if CP is not None:
             CP.label_text_update()
+        self.cursor_setter()            
 
         if self.is_board_page_active():
             self.board_mouseMoveEvent(event)

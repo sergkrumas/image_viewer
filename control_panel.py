@@ -662,7 +662,7 @@ class ControlPanel(QWidget, UtilsMixin):
     def opacity_handler(self):
         def setOpacity(value):
             safe_value = max(min(value, self.MAX_OPACITY), 0.0)
-            if self.opacity_effect.opacity() != value:
+            if self.opacity_effect.opacity() != safe_value:
                 self.opacity_effect.setOpacity(safe_value)
                 self.update()
 
@@ -1386,6 +1386,7 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
 
         self.label_text_update()
+        MW.cursor_setter()
 
         if MW.is_library_page_active():
             super().mouseMoveEvent(event)
