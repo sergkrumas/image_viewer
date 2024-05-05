@@ -200,19 +200,19 @@ def main():
                         # byte_descr = f'{byte_value}'
                         byte_descr = f'{data_byte:08b} {data_byte}'
 
-
-                        triangle_button = 1 << 7
-                        circle_button = 1 << 6
-                        cross_button = 1 << 5
-                        square_button = 1 << 4
-                        if data_byte & triangle_button:
-                            byte_descr += 't'
-                        if data_byte & circle_button:
-                            byte_descr += 'c'
-                        if data_byte & cross_button:
-                            byte_descr += 'x'
-                        if data_byte & square_button:
-                            byte_descr += 's'
+                        if n == 5:
+                            triangle_button = 1 << 7
+                            circle_button = 1 << 6
+                            cross_button = 1 << 5
+                            square_button = 1 << 4
+                            if data_byte & triangle_button:
+                                byte_descr += ' t'
+                            if data_byte & circle_button:
+                                byte_descr += ' c'
+                            if data_byte & cross_button:
+                                byte_descr += ' x'
+                            if data_byte & square_button:
+                                byte_descr += ' s'
 
                         if n in [5, 6]:
                             out.append(byte_descr)
