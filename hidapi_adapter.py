@@ -188,16 +188,52 @@ def main():
 
         try:
             # a = time.time()
+            before_data = None
+
             while True:
                 data = read_gamepad()
                 if data:
-                    print(data)
+                    out = []
+                    for n, data_byte in enumerate(data):
+                        byte_value = str(data_byte).zfill(3)
+                        # byte_descr = f'({n}){byte_value}'
+                        # byte_descr = f'{byte_value}'
+                        byte_descr = f'{data_byte:08b} {data_byte}'
+
+
+                        triangle_button = 1 << 7
+                        circle_button = 1 << 6
+                        cross_button = 1 << 5
+                        square_button = 1 << 4
+                        if data_byte & triangle_button:
+                            byte_descr += 't'
+                        if data_byte & circle_button:
+                            byte_descr += 'c'
+                        if data_byte & cross_button:
+                            byte_descr += 'x'
+                        if data_byte & square_button:
+                            byte_descr += 's'
+
+                        if n in [5, 6]:
+                            out.append(byte_descr)
+                    out = " ".join(out)
+                    print(out)
                     # x_axis, y_axis = read_left_stick(data)
 
                     # print(f'{x_axis}, {y_axis}')
 
                     # delta = time.time() - a
                     # print(delta)
+                    if False and before_data is not None:
+                        changed_indexes = []
+                        for n, byte_value in enumerate(data):
+                            if byte_value != before_data[n]:
+                                changed_indexes.append(n)
+
+                        print(changed_indexes)
+                    else:
+
+                        before_data = data
         except OSError:
             print('Ошибка чтения. Скорее всего, геймпад отключён.')
             pass
