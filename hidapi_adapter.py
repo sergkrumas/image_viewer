@@ -42,8 +42,13 @@ class ListenThread(QThread):
 
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
 
-    def swap_byte_indexes(self):
+        self.byte_indexes_swapped = False
+
+    def swap_read_byte_indexes(self):
+        # меняем роли стиков местами
         self.start_byte_left_stick, self.start_byte_right_stick = self.start_byte_right_stick, self.start_byte_left_stick
+        self.byte_indexes_swapped = not self.byte_indexes_swapped
+        return self.byte_indexes_swapped
 
     def run(self):
         try:
@@ -58,13 +63,14 @@ class ListenThread(QThread):
             while True:
                 data = read_gamepad(self.gamepad)
                 if data:
-                    x_axis, y_axis = read_left_stick(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone)
+
+                    x_axis, y_axis = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
                         self.update_signal.emit((BOARD_OFFSET, offset))
 
-                    x_axis, y_axis = read_right_stick(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone)
+                    x_axis, y_axis = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
@@ -79,7 +85,7 @@ class ListenThread(QThread):
                         elif but_state and not before_triangle_pressed:
                             self.update_signal.emit((BUTTON_STATE, BUTTON_PRESSED, BUTTON_TRIANGLE))
                         elif not but_state and before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE, BUTTON_RELEASED, BUTTON_TRIANGLE))
+                            self.update_signal.emit((BUTTON_STATE, BUTTON_RELEASED, BUTTON_TRIANGLE, self.swap_read_byte_indexes()))
 
                         before_triangle_pressed = but_state
 
@@ -109,8 +115,13 @@ def update_board_viewer(obj, data):
     elif key == BUTTON_STATE:
         state = data[1]
         button = data[2]
-        if state != BUTTON_AUTOREPEAT:
-            obj.show_center_label(f'{state}')
+        if state == BUTTON_RELEASED:
+            status = data[3]
+            if status:
+                status = 'Левый и правый стики поменялись ролями'
+            else:
+                status = 'Левый и правый стики восстановили свои роли'
+            obj.show_center_label(f'{status}')
 
     obj.update()
 
@@ -173,7 +184,7 @@ def read_sticks_to_obj(obj):
         try:
             data = read_gamepad(obj.gamepad)
             if data:
-                x_axis, y_axis = read_left_stick(data)
+                x_axis, y_axis = read_stick_data(data)
                 offset = QPointF(x_axis, y_axis)
                 if offset:
                     offset *= 20
@@ -199,7 +210,7 @@ def apply_dead_zone(x_axis, y_axis, dead_zone):
         y_axis = 0.0
     return x_axis, y_axis
 
-def read_left_stick(data, start_byte_index=3, dead_zone=0.0):
+def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
     x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
     y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
 
