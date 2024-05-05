@@ -29,6 +29,8 @@ class ControlPanelButton(QPushButton):
     def __init__(self, id, *args, callback=None):
         super().__init__(*args)
         self.id = id
+        # для того, чтобы подсказка изменялась в лейбле панели управления
+        self.setMouseTracking(True)
         if callback:
             self.clicked.connect(callback)
 
@@ -480,7 +482,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.space_btn_generator = lambda: ControlPanelButton("space")
 
-        self.control_panel_label = QLabel("", self) #"picture_filename.extension (XxW)"
+        self.control_panel_label = QLabel(" ", self) #"picture_filename.extension (XxW)"
         self.control_panel_label.setStyleSheet("font-weight: bold; color: white; font-size: 12pt; padding: 5px;")
         self.control_panel_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
@@ -628,8 +630,6 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def label_text_update(self):
         MW = self.globals.main_window
-        if MW.handling_input:
-            return
 
         # control panel label
         text = ""

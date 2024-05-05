@@ -236,6 +236,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.previews_list_active_item = None
         MW.autoscroll_set_or_reset()
         self.update_current_folder_columns()
+        MW.update_control_panel_label_text()
         MW.update()
 
     @staticmethod
@@ -274,6 +275,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.previews_list_active_item = None
         MW.autoscroll_set_or_reset()
         self.update_current_folder_columns()
+        MW.update_control_panel_label_text()
         MW.update()
 
     def choose_doom_scroll(self):
@@ -291,6 +293,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         self.load_board_data()
         ThumbnailsThread(self._current_folder, self.globals).start()
         MW = self.globals.main_window
+        MW.update_control_panel_label_text()
         MW.update()
 
     def save_board_data(self):
@@ -418,6 +421,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             cf.current_image().load_ui_data()
         MW.set_window_title(MW.current_image_details())
         MW.update()
+        MW.update_control_panel_label_text()
         if leave_history_record:
             self.add_current_image_to_view_history()
 

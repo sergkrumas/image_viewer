@@ -658,6 +658,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         if self.handling_input and not force:
+            self.update_control_panel_label_text()
             return
 
         if self.current_page == self.pages.VIEWER_PAGE:
@@ -707,6 +708,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.current_page == self.pages.START_PAGE and requested_page == self.pages.VIEWER_PAGE:
             self.restore_image_transformations()
+
+        self.update_control_panel_label_text()
 
         self.current_page = requested_page
         self.update()
@@ -1205,6 +1208,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.tags_list = []
         else:
             self.tags_list = LibraryData().get_tags_for_image_data(image_data)
+        self.update_control_panel_label_text()
         self.update()
 
     def error_pixmap_and_reset(self, title, message, no_background=False):
@@ -1523,12 +1527,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update()
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-
+    def update_control_panel_label_text(self):
         CP = Globals.control_panel
         if CP is not None:
             CP.label_text_update()
-        self.cursor_setter()            
+
+    def mouseMoveEvent(self, event):
+
+        self.cursor_setter()
+        self.update_control_panel_label_text()
 
         if self.is_board_page_active():
             self.board_mouseMoveEvent(event)
