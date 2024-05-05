@@ -10,7 +10,16 @@ import time
 from _utils import *
 from functools import partial
 
+LISTENING_STOP = 0
+BOARD_SCALE = 1
+BOARD_OFFSET = 2
+BUTTON_STATE = 3
 
+BUTTON_PRESSED = 10
+BUTTON_AUTOREPEAT = 11
+BUTTON_RELEASED = 12
+
+BUTTON_TRIANGLE = 20
 
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
@@ -31,8 +40,21 @@ class ListenThread(QThread):
             self.start_byte_right_stick = 3
             self.dead_zone = 0.1
 
+        self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
+
+    def swap_byte_indexes(self):
+        self.start_byte_left_stick, self.start_byte_right_stick = self.start_byte_right_stick, self.start_byte_left_stick
+
     def run(self):
         try:
+
+            PS_triangle_button_bit = 1 << 7
+            PS_circle_button_bit = 1 << 6
+            PS_cross_button_bit = 1 << 5
+            PS_square_button_bit = 1 << 4
+
+            before_triangle_pressed = False
+
             while True:
                 data = read_gamepad(self.gamepad)
                 if data:
@@ -40,36 +62,55 @@ class ListenThread(QThread):
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
-                        self.update_signal.emit(('offset', offset))
+                        self.update_signal.emit((BOARD_OFFSET, offset))
 
                     x_axis, y_axis = read_right_stick(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
-                        self.update_signal.emit(('scale', scroll_value))
+                        self.update_signal.emit((BOARD_SCALE, scroll_value))
+
+                    if self.isPlayStation4DualShockGamepad:
+                        rbb = data[5] #right buttons byte
+                        but_state = bool(rbb & PS_triangle_button_bit)
+
+                        if but_state and before_triangle_pressed:
+                            self.update_signal.emit((BUTTON_STATE, BUTTON_AUTOREPEAT, BUTTON_TRIANGLE))
+                        elif but_state and not before_triangle_pressed:
+                            self.update_signal.emit((BUTTON_STATE, BUTTON_PRESSED, BUTTON_TRIANGLE))
+                        elif not but_state and before_triangle_pressed:
+                            self.update_signal.emit((BUTTON_STATE, BUTTON_RELEASED, BUTTON_TRIANGLE))
+
+                        before_triangle_pressed = but_state
+
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
                 # В обратном случае использование CPU падает до привычного значения
                 time.sleep(0.001)
 
         except OSError:
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
-            self.update_signal.emit(('stop',))
+            self.update_signal.emit((LISTENING_STOP,))
 
         self.exec_()
 
 def update_board_viewer(obj, data):
 
     key = data[0]
-    if key == 'offset':
+    if key == BOARD_OFFSET:
         offset = data[1]
         obj.board_origin -= offset
-    elif key == 'scale':
+    elif key == BOARD_SCALE:
         scroll_value = data[1]
         pivot = obj.rect().center()
         scale_speed = fit(abs(scroll_value), 0.0, 1.0, 350.0, 50.0)
         obj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
-    elif key == 'stop':
+    elif key == LISTENING_STOP:
         deactivate_listening(obj)
+    elif key == BUTTON_STATE:
+        state = data[1]
+        button = data[2]
+        if state != BUTTON_AUTOREPEAT:
+            obj.show_center_label(f'{state}')
 
     obj.update()
 
