@@ -2612,7 +2612,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        self.draw_comments(painter)
+        self.draw_comments_viewer(painter)
 
         self.draw_view_history_row(painter)
 

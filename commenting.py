@@ -145,9 +145,10 @@ class CommentingLibraryDataMixin():
             if filepath == comment.filepath:
                 comment.filepath = found_path
 
-    def get_comments_for_image(self):
-        ci = self.current_folder().current_image()
-        _id = self.image_data_comment_id(ci)
+    def get_comments_for_image(self, imd=None):
+        if imd is None:
+            imd = self.current_folder().current_image()
+        _id = self.image_data_comment_id(imd)
         return self.comments_storage[_id]
 
 class CommentingMixin():
@@ -210,18 +211,28 @@ class CommentingMixin():
         self.comment_data_candidate = None
         self.update()
 
-    def draw_comments(self, painter):
+    def draw_comments_board_item(self, painter, im_rect, imd, cp):
+        self.draw_comments(painter, im_rect=im_rect, imd=imd, cp=cp)
+
+    def draw_comments_viewer(self, painter):
+        self.draw_comments(painter)
+
+    def draw_comments(self, painter, im_rect=None, imd=None, cp=None):
 
         if self.Globals.lite_mode:
             return
 
-        old_pen = painter.pen()
-        old_brush = painter.brush()
+        painter.save()
 
-        for comment in self.LibraryData().get_comments_for_image():
+        comments = self.LibraryData().get_comments_for_image(imd=imd)
+        if im_rect is None:
+            im_rect = self.get_image_viewport_rect()
+        if cp is None:
+            cp = QPointF(self.mapFromGlobal(QCursor().pos()))
+
+        for comment in comments:
             painter.setPen(QPen(Qt.yellow, 1))
             painter.setBrush(Qt.NoBrush)
-            im_rect = self.get_image_viewport_rect()
 
             base_point = im_rect.topLeft()
 
@@ -237,7 +248,7 @@ class CommentingMixin():
                 QPointF(screen_right, screen_bottom)
             ).toRect()
             comment.screen_rect = comment_rect
-            cursor_inside = comment_rect.contains(self.mapFromGlobal(QCursor().pos()))
+            cursor_inside = comment_rect.contains(cp.toPoint())
             if cursor_inside:
                 painter.setOpacity(1.0)
             else:
@@ -256,8 +267,7 @@ class CommentingMixin():
                 painter.setPen(QPen(Qt.white))
                 painter.drawText(rect, Qt.AlignLeft, text_to_draw)
 
-        painter.setPen(old_pen)
-        painter.setBrush(old_brush)
+        painter.restore()
 
     def center_comment_window(self):
         CommentWindow.center_if_on_screen()
