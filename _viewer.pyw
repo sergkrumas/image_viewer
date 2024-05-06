@@ -3832,7 +3832,7 @@ def _main():
 
     ServerOrClient.globals = Globals
 
-    if Globals.DEBUG or args.board:
+    if (Globals.DEBUG and not Globals.FORCE_FULL_DEBUG) or args.board:
         Globals.lite_mode = True
     else:
         if not Globals.lite_mode:
