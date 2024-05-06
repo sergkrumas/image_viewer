@@ -1589,11 +1589,13 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.draw_comments_board_item(painter, ir, board_item.image_data, cp)
                 painter.resetTransform()
 
-                if show_tag_data:
+                case4 = selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill)
+
+                if show_tag_data and case4:
                     self.draw_board_item_tags_list(painter, selection_area_rect, board_item.image_data)
 
 
-                if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
+                if case4:
                     self.board_item_under_mouse = board_item
 
                 selection_area_bounding_rect = selection_area.boundingRect()
