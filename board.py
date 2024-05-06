@@ -550,7 +550,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         if key == Qt.Key_Control:
-            # for not item selection drag&drop
+            # for note item selection drag&drop
             self.board_cursor_setter()
 
         if key == Qt.Key_Space:
