@@ -401,14 +401,27 @@ class TaggingMixing():
 
             painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 200)))
 
+    def draw_board_item_tags_list(self, painter, bounding_rect, im_data):
+        painter.save()
+        font = painter.font()
+        font.setPixelSize(15)
+        painter.setFont(font)
+        tags_list = self.LibraryData().get_tags_for_image_data(im_data)
+        tags_text = []
+        for i, tag in enumerate(tags_list):
+            tags_text.append(f"#{tag.name}({len(tag.records)})")
+        text = ' '.join(tags_text)
+        text_rect = QRectF(bounding_rect)
+        text_rect.moveTopLeft(text_rect.bottomLeft())
+        painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap, text)
+        painter.restore()
+
     def draw_tags_sidebar_overlay(self, painter):
 
         sidebar_rect = self.get_sidebar_rect()
         curpos = self.mapFromGlobal(QCursor().pos())
 
-        old_brush = painter.brush()
-        old_pen = painter.pen()
-        old_font = painter.font()
+        painter.save()
 
         size = (sidebar_rect.width(), sidebar_rect.height())
         gradient = QLinearGradient(0, 0, *size)
@@ -424,7 +437,7 @@ class TaggingMixing():
             painter.setBrush(QBrush(QColor(0, 0, 0, 200)))
             # painter.drawRect(sidebar_rect)
             painter.fillRect(QRect(0, 0, *size), gradient)
-            font = QFont(old_font)
+            font = painter.font()
             font.setPixelSize(20)
             font.setWeight(1900)
             painter.setFont(font)
@@ -452,9 +465,7 @@ class TaggingMixing():
 
             test_painter.end()
 
-        painter.setFont(old_font)
-        painter.setBrush(old_brush)
-        painter.setPen(old_pen)
+        painter.restore()
 
     def get_tiny_sidebar_rect(self):
         return QRect(0, 0, 50, self.rect().height())

@@ -1579,7 +1579,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 case1 = board_item.type == BoardItem.types.ITEM_IMAGE
                 case2 = not self.Globals.lite_mode
                 case3 = selection_area_rect.intersected(QRectF(self.rect()))
-                if all((case1, case2, case3)):
+                show_tag_data = all((case1, case2, case3))
+                if show_tag_data:
                     ir = board_item.get_size_rect(scaled=True)
                     ir.moveCenter(QPointF(0, 0))
                     inverted_transform, status = transform.inverted()
@@ -1587,6 +1588,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         cp = inverted_transform.map(QPointF(self.mapped_cursor_pos()))
                         self.draw_comments_board_item(painter, ir, board_item.image_data, cp)
                 painter.resetTransform()
+
+                if show_tag_data:
+                    self.draw_board_item_tags_list(painter, selection_area_rect, board_item.image_data)
 
 
                 if selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill):
