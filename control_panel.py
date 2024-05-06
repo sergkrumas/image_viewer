@@ -483,6 +483,7 @@ class ControlPanel(QWidget, UtilsMixin):
         self.space_btn_generator = lambda: ControlPanelButton("space")
 
         self.control_panel_label = QLabel(" ", self) #"picture_filename.extension (XxW)"
+        self.control_panel_label.setMouseTracking(True)
         self.control_panel_label.setStyleSheet("font-weight: bold; color: white; font-size: 12pt; padding: 5px;")
         self.control_panel_label.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
