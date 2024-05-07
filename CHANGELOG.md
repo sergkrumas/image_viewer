@@ -664,3 +664,4 @@ BOARDS
   - восстановил работоспособность лейбла панели управления (теперь она обновляется не от таймера, а от события перемещения мыши)
 - поддержка формата APNG (*.apng, *.png)
   - https://github.com/eight04/pyAPNG
+  - APNG Disassembler https://apngdis.sourceforge.net/
