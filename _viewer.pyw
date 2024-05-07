@@ -112,7 +112,7 @@ class APNGMovie():
     def speed(self):
         return self._speed
     def setSpeed(self, speed):
-        return self._speed = speed
+        self._speed = speed
     def frameCount(self):
         return self._frameCount
 
@@ -1139,46 +1139,28 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.correct_scale()
 
     def animation_stamp(self):
-        if self.movie:
-            self.frame_delay = self.movie.nextFrameDelay()
-        elif self.APNGmovie:
-            self.frame_delay = self.APNGmovie.nextFrameDelay()
-        else:
-            raise Exception('')
+        movie = self.getMovie()
+        self.frame_delay = movie.nextFrameDelay()
         self.frame_time = time.time()
 
     def tick_animation(self):
         delta = (time.time() - self.frame_time) * 1000
         is_playing = not self.image_data.anim_paused
-        if self.movie:
-            is_animation = self.movie.frameCount() > 1
-        elif self.APNGmovie:
-            is_animation = self.APNGmovie.frameCount > 1
+        movie = self.getMovie()
+        is_animation = movie.frameCount() > 1
         if delta > self.frame_delay and is_playing and is_animation:
-            if self.movie:
-                self.movie.jumpToNextFrame()
-            elif self.APNGmovie:
-                self.APNGmovie.jumpToNextFrame()
+            movie.jumpToNextFrame()
             self.animation_stamp()
-            if self.movie:
-                self.frame_delay = self.movie.nextFrameDelay()
-                self.pixmap = self.movie.currentPixmap()
-            elif self.APNGmovie:
-                self.frame_delay = self.APNGmovie.nextFrameDelay()
-                self.pixmap = self.APNGmovie.currentPixmap()
+            self.frame_delay = movie.nextFrameDelay()
+            self.pixmap = movie.currentPixmap()
             self.get_rotated_pixmap(force_update=True)
             self.update()
 
     def is_animated_file_valid(self, apng):
-        if apng:
-            self.APNGmovie.jumpToFrame(0)
-        else:
-            self.movie.jumpToFrame(0)
+        movie = self.getMovie()
+        movie.jumpToFrame(0)
         self.animation_stamp()
-        if apng:
-            fr = self.APNGmovie.frameRect()
-        else:
-            fr = self.movie.frameRect()
+        fr = movie.frameRect()
         if fr.isNull():
             self.invalid_movie = True
             self.animated = False
