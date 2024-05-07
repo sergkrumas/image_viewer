@@ -350,7 +350,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.show_center_label("Это не удалить!", error=True)
         MW.update()
 
-    def show_that_preview_on_viewer_page(self, image_data):
+    def show_that_imd_on_viewer_page(self, image_data):
         fd = image_data.folder_data
         self._index = self.folders.index(fd)
         self._current_folder = self.folders[self._index]

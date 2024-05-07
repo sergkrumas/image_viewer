@@ -1481,7 +1481,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.previews_list:
                 for item_rect, item_data in self.previews_list:
                     if item_rect.contains(event.pos()):
-                        LibraryData().show_that_preview_on_viewer_page(item_data)
+                        LibraryData().show_that_imd_on_viewer_page(item_data)
 
 
         elif self.is_viewer_page_active():
