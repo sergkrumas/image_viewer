@@ -538,6 +538,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_item.type == BoardItem.types.ITEM_NOTE:
                     self.board_TextElementSetEditMode(board_item)
                     break
+                elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
+                    self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
+                    self.show_center_label('You\'re on viewer page now')
                 else:
                     self.board_fit_content_on_screen(None, board_item=board_item)
                     break
