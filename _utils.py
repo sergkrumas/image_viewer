@@ -363,6 +363,18 @@ def build_valid_rectF(p1, p2):
         bottom = max(p.y(), bottom)
     return QRectF(QPointF(left, top), QPointF(right, bottom))
 
+def is_apng_file_animated(filepath):
+    result = False
+    file_h = open(filepath, "rb")
+    data_bytes = file_h.read()
+    acTL = data_bytes.find(b"\x61\x63\x54\x4C")
+    if acTL > 0: # find returns -1 if it cant find anything
+        iDAT = data_bytes.find(b"\x49\x44\x41\x54")
+        if acTL < iDAT:
+            result = True
+    file_h.close()
+    return result
+
 def is_webp_file_animated(filepath):
     result = False
     file_h = open(filepath, "rb")
