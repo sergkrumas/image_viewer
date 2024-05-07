@@ -503,6 +503,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.secret_height = 0
 
         self.movie = None
+        self.APNGmovie = None
         self.invalid_movie = False
 
         self.CENTER_LABEL_TIME_LIMIT = 2
@@ -1113,43 +1114,90 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.correct_scale()
 
     def animation_stamp(self):
-        self.frame_delay = self.movie.nextFrameDelay()
+        if self.movie:
+            self.frame_delay = self.movie.nextFrameDelay()
+        elif self.APNGmovie:
+            self.frame_delay = self.APNGmovie.nextFrameDelay()
+        else:
+            raise Exception('')
         self.frame_time = time.time()
 
     def tick_animation(self):
         delta = (time.time() - self.frame_time) * 1000
         is_playing = not self.image_data.anim_paused
-        is_animation = self.movie.frameCount() > 1
+        if self.movie:
+            is_animation = self.movie.frameCount() > 1
+        elif self.APNGmovie:
+            is_animation = self.APNGmovie.frameCount > 1
         if delta > self.frame_delay and is_playing and is_animation:
-            self.movie.jumpToNextFrame()
+            if self.movie:
+                self.movie.jumpToNextFrame()
+            elif self.APNGmovie:
+                self.APNGmovie.jumpToNextFrame()
             self.animation_stamp()
-            self.frame_delay = self.movie.nextFrameDelay()
-            self.pixmap = self.movie.currentPixmap()
+            if self.movie:
+                self.frame_delay = self.movie.nextFrameDelay()
+                self.pixmap = self.movie.currentPixmap()
+            elif self.APNGmovie:
+                self.frame_delay = self.APNGmovie.nextFrameDelay()
+                self.pixmap = self.APNGmovie.currentPixmap()
             self.get_rotated_pixmap(force_update=True)
             self.update()
 
-    def is_animated_file_valid(self):
-        self.movie.jumpToFrame(0)
+    def is_animated_file_valid(self, apng):
+        if apng:
+            self.APNGmovie.jumpToFrame(0)
+        else:
+            self.movie.jumpToFrame(0)
         self.animation_stamp()
-        fr = self.movie.frameRect()
+        if apng:
+            fr = self.APNGmovie.frameRect()
+        else:
+            fr = self.movie.frameRect()
         if fr.isNull():
             self.invalid_movie = True
             self.animated = False
             self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")
 
-    def show_animated(self, filepath):
+    def show_animated(self, filepath, is_apng_file):
         if filepath is not None:
             self.invalid_movie = False
-            self.movie = QMovie(filepath)
-            self.movie.setCacheMode(QMovie.CacheAll)
             self.image_filepath = filepath
             self.transformations_allowed = True
             self.animated = True
+
+
+        class APNGMovie():
+            def __init__(self, filepath):
+                self.data = read_APNG_to_QPixmapList(filepath)
+                self.frameCount = len(self.data)
+                self.currentFrameNumber = 0
+            def jumpToFrame(self, n):
+                self.currentFrameNumber = max(n, self.frameCount-1)
+            def frameRect(self):
+                return self.data[self.currentFrameNumber][0].rect()
+            def jumpToNextFrame(self):
+                self.currentFrameNumber += 1
+                self.currentFrameNumber %= self.frameCount
+            def nextFrameDelay(self):
+                return self.data[self.currentFrameNumber][1]
+            def currentPixmap(self):
+                return self.data[self.currentFrameNumber][0]
+
+        if is_apng_file:
+            self.APNGmovie = APNGMovie(filepath)
+            self.is_animated_file_valid(apng=True)
+        elif filepath is not None:
+            self.movie = QMovie(filepath)
+            self.movie.setCacheMode(QMovie.CacheAll)
             self.is_animated_file_valid()
-        else:
+        if filepath is None:
             if self.movie:
                 self.movie.deleteLater()
                 self.movie = None
+        if not is_apng_file:
+            if self.APNGmovie:
+                self.APNGmovie = None
 
     def show_svg(self, filepath):
         self.image_filepath = filepath
@@ -1191,8 +1239,31 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.error_pixmap_and_reset("Невозможно\nотобразить", f"Этот файл не поддерживается\n{filename}")
             else:
                 try:
-                    if LibraryData().is_gif_file(filepath) or LibraryData().is_webp_file_animated(filepath):
-                        self.show_animated(filepath)
+                    is_gif_file = False
+                    is_webp_file = False
+                    is_apng_file = False
+
+                    def fun_is_gif_file():
+                        nonlocal is_gif_file
+                        is_gif_file = value = LibraryData().is_gif_file(filepath)
+                        return value
+
+                    def fun_is_webp_file():
+                        nonlocal is_webp_file
+                        is_webp_file = value = LibraryData().is_webp_file_animated(filepath)
+                        return value
+
+                    def fun_is_apng_file():
+                        nonlocal is_apng_file
+                        is_apng_file = value = LibraryData().is_apng_file_animated(filepath)
+                        return value
+
+                    animated = False or fun_is_gif_file()
+                    animated = animated or fun_is_webp_file()
+                    animated = animated or fun_is_apng_file()
+
+                    if animated:
+                        self.show_animated(filepath, is_apng_file)
                     elif LibraryData().is_svg_file(filepath):
                         self.show_svg(filepath)
                     else:
@@ -1234,7 +1305,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.copied_from_clipboard = False
         self.comment_data = None
         self.comment_data_candidate = None
-        self.show_animated(None)
+        self.show_animated(None, False)
         if not simple:
             self.set_loading_text()
             main_window = Globals.main_window
@@ -1286,7 +1357,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if not self.error: # не поворачиваем пиксмапы с инфой об ошибке
                 rm.rotate(self.image_rotation)
             if self.pixmap is None and self.animated:
-                self.pixmap = self.movie.currentPixmap()
+                if self.movie:
+                    self.pixmap = self.movie.currentPixmap()
+                elif self.APNGmovie:
+                    self.pixmap = self.APNGmovie.currentPixmap()
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
 
