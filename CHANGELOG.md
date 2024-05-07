@@ -665,3 +665,5 @@ BOARDS
 - поддержка формата APNG (*.apng, *.png)
   - https://github.com/eight04/pyAPNG
   - APNG Disassembler https://apngdis.sourceforge.net/
+  - поддержка во вьювере
+  - поддержка в создании миниатюрок для вьювера (работает без вмешательства)
