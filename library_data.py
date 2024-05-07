@@ -83,7 +83,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.folderslist_scroll_offset = 0
             i.fav_folder = None
             i.viewed_list = []
-            i.on_library_page = False
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
 
@@ -359,8 +358,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # change mode to preview
         MW = self.globals.main_window
         MW.change_page(MW.pages.VIEWER_PAGE)
-
-        self.on_library_page = True
 
     def show_next_image(self):
         MW = self.globals.main_window
