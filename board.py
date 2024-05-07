@@ -2134,11 +2134,15 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20, 220)))
 
             minimap_rect = self.board_bounding_rect
-            map_width = max(400, self.rect().width() - 300)
-            factor = map_width / self.board_bounding_rect.width()
-            map_height = self.board_bounding_rect.height()*factor
-            minimap_rect = QRectF(0, 0, map_width, map_height)
-            minimap_rect.moveCenter(self.get_center_position())
+
+            self_rect = self.rect()
+            self_rect.setWidth(self_rect.width()-300)
+            self_rect.setHeight(self_rect.height()-100)
+            minimap_rect = fit_rect_into_rect(minimap_rect.toRect(), self_rect)
+
+            minimap_rect.moveCenter(self.get_center_position().toPoint())
+            map_width = minimap_rect.width()
+            map_height = minimap_rect.height()
             self.minimap_rect = minimap_rect
 
             # backplate
