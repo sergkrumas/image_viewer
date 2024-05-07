@@ -211,20 +211,23 @@ class CommentingMixin():
         self.comment_data_candidate = None
         self.update()
 
-    def draw_comments_board_item(self, painter, im_rect, imd, cp):
-        self.draw_comments(painter, im_rect=im_rect, imd=imd, cp=cp)
+    def draw_board_item_comments(self, painter, im_rect, cl, cp):
+        self.draw_comments(painter, im_rect=im_rect, cl=cl, cp=cp)
 
     def draw_comments_viewer(self, painter):
         self.draw_comments(painter)
 
-    def draw_comments(self, painter, im_rect=None, imd=None, cp=None):
+    def draw_comments(self, painter, im_rect=None, cl=None, cp=None):
 
         if self.Globals.lite_mode:
             return
 
         painter.save()
 
-        comments = self.LibraryData().get_comments_for_image(imd=imd)
+        if cl is None:
+            comments = self.LibraryData().get_comments_for_image()
+        else:
+            comments = cl
         if im_rect is None:
             im_rect = self.get_image_viewport_rect()
         if cp is None:

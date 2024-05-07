@@ -104,6 +104,9 @@ class BoardItem():
         self.label = ""
         self.status = ''
 
+        self.__tags = []
+        self.__comments = []
+
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
@@ -1395,6 +1398,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
 
+                board_item.__tags = self.LibraryData().get_tags_for_image_data(image_data)
+                board_item.__comments = self.LibraryData().get_comments_for_image(imd=image_data)
+
         self.build_board_bounding_rect(folder_data)
 
         folder_data.board.ready = True
@@ -1586,13 +1592,13 @@ class BoardMixin(BoardTextEditItemMixin):
                     inverted_transform, status = transform.inverted()
                     if status:
                         cp = inverted_transform.map(QPointF(self.mapped_cursor_pos()))
-                        self.draw_comments_board_item(painter, ir, board_item.image_data, cp)
+                        self.draw_board_item_comments(painter, ir, board_item.__comments, cp)
                 painter.resetTransform()
 
                 case4 = selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill)
 
                 if show_tag_data and case4:
-                    self.draw_board_item_tags_list(painter, selection_area_rect, board_item.image_data)
+                    self.draw_board_item_tags(painter, selection_area_rect, board_item.__tags)
 
 
                 if case4:

@@ -401,12 +401,11 @@ class TaggingMixing():
 
             painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 200)))
 
-    def draw_board_item_tags_list(self, painter, bounding_rect, im_data):
+    def draw_board_item_tags(self, painter, bounding_rect, tags_list):
         painter.save()
         font = painter.font()
         font.setPixelSize(15)
         painter.setFont(font)
-        tags_list = self.LibraryData().get_tags_for_image_data(im_data)
         tags_text = []
         for i, tag in enumerate(tags_list):
             tags_text.append(f"#{tag.name}({len(tag.records)})")
