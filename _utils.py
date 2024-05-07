@@ -764,3 +764,29 @@ def generate_info_pixmap(title, message, size=1000, no_background=False):
 
     p.end()
     return pxm
+
+class APNGMovie():
+    def __init__(self, filepath):
+        self.data = read_APNG_to_QPixmapList(filepath)
+        self._frameCount = len(self.data)
+        self._currentFrameNumber = 0
+        self._speed = 100.0
+    def jumpToFrame(self, n):
+        self._currentFrameNumber = min(n, self._frameCount-1)
+    def frameRect(self):
+        return self.data[self._currentFrameNumber][0].rect()
+    def jumpToNextFrame(self):
+        self._currentFrameNumber += 1
+        self._currentFrameNumber %= self._frameCount
+    def nextFrameDelay(self):
+        return self.data[self._currentFrameNumber][1]*(self._speed/100.0)
+    def currentPixmap(self):
+        return self.data[self._currentFrameNumber][0]
+    def currentFrameNumber(self):
+        return self._currentFrameNumber
+    def speed(self):
+        return self._speed
+    def setSpeed(self, speed):
+        self._speed = speed
+    def frameCount(self):
+        return self._frameCount
