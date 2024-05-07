@@ -356,7 +356,13 @@ class TaggingLibraryDataMixin():
                     self.store_tag_to_disk(tag)
                     self.update_or_create_tag_virtual_folder(im_data, tag, delete=True)
 
-        return im_data
+        # обновление тегов у board_item
+        tags_list = self.get_tags_for_image_data(im_data)
+        bi = im_data.board_item
+        if bi is not None:
+            bi.set_tags(tags_list[:])
+
+        return tags_list
 
 
 class TaggingMixing():
@@ -889,14 +895,7 @@ class TaggingForm(QWidget):
         #     return
         tagslist_raw_string = self.tagslist_edit.document().toPlainText()
         new_tags_list = text_to_list(tagslist_raw_string)
-        im_data = LibraryData().apply_new_tag_list_to_current_image_data(main_window.tags_list, new_tags_list)
-
-        tags_list = LibraryData().get_tags_for_image_data(im_data)
-
-        bi = im_data.board_item
-        if bi is not None:
-            bi.set_tags(tags_list[:])
-
+        tags_list = LibraryData().apply_new_tag_list_to_current_image_data(main_window.tags_list, new_tags_list)
         main_window.tags_list = tags_list
         main_window.toggle_tags_overlay()
 
