@@ -97,7 +97,7 @@ class APNGMovie():
         self._currentFrameNumber = 0
         self._speed = 100.0
     def jumpToFrame(self, n):
-        self._currentFrameNumber = max(n, self._frameCount-1)
+        self._currentFrameNumber = min(n, self._frameCount-1)
     def frameRect(self):
         return self.data[self._currentFrameNumber][0].rect()
     def jumpToNextFrame(self):
@@ -1156,7 +1156,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.get_rotated_pixmap(force_update=True)
             self.update()
 
-    def is_animated_file_valid(self, apng):
+    def is_animated_file_valid(self):
         movie = self.getMovie()
         movie.jumpToFrame(0)
         self.animation_stamp()
@@ -1167,6 +1167,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")
 
     def show_animated(self, filepath, is_apng_file):
+        if not is_apng_file:
+            if self.APNGmovie:
+                self.APNGmovie = None
         if filepath is not None:
             self.invalid_movie = False
             self.image_filepath = filepath
@@ -1174,7 +1177,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.animated = True
         if is_apng_file:
             self.APNGmovie = APNGMovie(filepath)
-            self.is_animated_file_valid(apng=True)
+            self.is_animated_file_valid()
         elif filepath is not None:
             self.movie = QMovie(filepath)
             self.movie.setCacheMode(QMovie.CacheAll)
@@ -1183,9 +1186,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.movie:
                 self.movie.deleteLater()
                 self.movie = None
-        if not is_apng_file:
-            if self.APNGmovie:
-                self.APNGmovie = None
 
     def show_svg(self, filepath):
         self.image_filepath = filepath
@@ -1345,10 +1345,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if not self.error: # не поворачиваем пиксмапы с инфой об ошибке
                 rm.rotate(self.image_rotation)
             if self.pixmap is None and self.animated:
-                if self.movie:
-                    self.pixmap = self.movie.currentPixmap()
-                elif self.APNGmovie:
-                    self.pixmap = self.APNGmovie.currentPixmap()
+                movie = self.getMovie()
+                self.pixmap = movie.currentPixmap()
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
 
