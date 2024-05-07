@@ -48,6 +48,7 @@ import argparse
 import PIL
 import pillow_avif
 from PIL import Image
+from apng import APNG
 
 import win32con, win32api
 
@@ -172,6 +173,21 @@ def PIL_to_QPixmap(im):
     qim = QImage(data, im.size[0], im.size[1], QImage.Format_ARGB32)
     pixmap = QPixmap.fromImage(qim)
     return pixmap
+
+def read_APNG_to_QPixmapList(filepath):
+    # `pip install apng` required for reading
+    frames = []
+    try:
+        apng_image = APNG.open(filepath)
+        for png_obj, control in apng_image.frames:
+            delay_fraction = control.delay/control.delay_den
+            delay = delay_fraction*1000
+            frame_pixmap = QPixmap()
+            frame_pixmap.loadFromData(png_obj.to_bytes())
+            frames.append((frame_pixmap, delay))
+    except:
+        pass
+    return frames
 
 def read_AVIF_to_QPixmap(filepath):
     # `pip install pillow-avif-plugin` required for reading
