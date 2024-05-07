@@ -1521,7 +1521,10 @@ class ImageData():
         self.position = MW.image_center_position - QPointF(MW.width()/2, MW.height()/2).toPoint()
         self.image_rotation = MW.image_rotation
         if MW.animated:
-            self.anim_cur_frame = MW.movie.currentFrameNumber()
+            if MW.movie:
+                self.anim_cur_frame = MW.movie.currentFrameNumber()
+            elif MW.APNGmovie:
+                self.anim_cur_frame = MW.APNGmovie.currentFrameNumber()
 
     def load_ui_data(self, cp=None):
         MW = LibraryData().globals.main_window
@@ -1547,7 +1550,10 @@ class ImageData():
             MW.image_rotation = self.image_rotation
         self.update_fav_button_state()
         if MW.animated and self.anim_paused:
-            MW.movie.jumpToFrame(self.anim_cur_frame)
+            if MW.movie:
+                MW.movie.jumpToFrame(self.anim_cur_frame)
+            elif MW.APNGmovie:
+                MW.APNGmovie.jumpToFrame(self.anim_cur_frame)
             MW.get_rotated_pixmap(force_update=True)
 
     def update_fav_button_state(self):
