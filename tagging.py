@@ -891,7 +891,13 @@ class TaggingForm(QWidget):
         new_tags_list = text_to_list(tagslist_raw_string)
         im_data = LibraryData().apply_new_tag_list_to_current_image_data(main_window.tags_list, new_tags_list)
 
-        main_window.tags_list = LibraryData().get_tags_for_image_data(im_data)
+        tags_list = LibraryData().get_tags_for_image_data(im_data)
+
+        bi = im_data.board_item
+        if bi is not None:
+            bi.set_tags(tags_list[:])
+
+        main_window.tags_list = tags_list
         main_window.toggle_tags_overlay()
 
     def closeEvent(self, event):

@@ -104,14 +104,17 @@ class BoardItem():
         self.label = ""
         self.status = ''
 
-        self.__tags = []
-        self.__comments = []
+        self._tags = []
+        self._comments = []
 
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
 
         self.__label_ui_rect = None
+
+    def set_tags(self, tags):
+        self._tags = tags
 
     def calc_local_data(self):
         if self.type in [self.types.ITEM_NOTE]:
@@ -977,6 +980,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = None
                 attr_type = 'NoneType'
 
+            elif attr_type in ['_tags', '_comments']:
+                attr_data = []
+                attr_type = 'list'
+
             elif isinstance(attr_value, self.ImageData):
                 attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
 
@@ -1401,8 +1408,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
                 if not self.Globals.lite_mode:
-                    board_item.__tags = self.LibraryData().get_tags_for_image_data(image_data)
-                    board_item.__comments = self.LibraryData().get_comments_for_image(imd=image_data)
+                    board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
+                    board_item._comments = self.LibraryData().get_comments_for_image(imd=image_data)
 
         self.build_board_bounding_rect(folder_data)
 
@@ -1595,13 +1602,13 @@ class BoardMixin(BoardTextEditItemMixin):
                     inverted_transform, status = transform.inverted()
                     if status:
                         cp = inverted_transform.map(QPointF(self.mapped_cursor_pos()))
-                        self.draw_board_item_comments(painter, ir, board_item.__comments, cp)
+                        self.draw_board_item_comments(painter, ir, board_item._comments, cp)
                 painter.resetTransform()
 
                 case4 = selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill)
 
                 if show_tag_data and case4:
-                    self.draw_board_item_tags(painter, selection_area_rect, board_item.__tags)
+                    self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
 
 
                 if case4:
