@@ -1966,10 +1966,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not self.animated:
             return
         speed_values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200]
-        if self.movie:
-            speed = self.movie.speed()
-        elif self.APNGmovie:
-            speed = self.APNGmovie.speed()
+        movie = self.getMovie()
+        speed = movie.speed()
         index = speed_values.index(int(speed))
         if index == len(speed_values)-1 and scroll_value > 0:
             pass
@@ -1981,31 +1979,21 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if scroll_value > 0:
                 index +=1
         speed = speed_values[index]
-        if self.movie:
-            self.movie.setSpeed(speed)
-        elif self.APNGmovie:
-            self.APNGmovie.setSpeed(speed)
+        movie.setSpeed(speed)
 
     def do_scroll_playbar(self, scroll_value):
         if not self.animated:
             return
-        if self.movie:
-            frames_list = list(range(0, self.movie.frameCount()))
-        elif self.APNGmovie:
-            frames_list = list(range(0, self.APNGmovie.frameCount()))
+        movie = self.getMovie()
+        frames_list = list(range(0, movie.frameCount()))
         if scroll_value > 0:
             pass
         else:
             frames_list = list(reversed(frames_list))
         frames_list.append(0)
-        if self.movie:
-            i = frames_list.index(self.movie.currentFrameNumber()) + 1
-            self.movie.jumpToFrame(frames_list[i])
-            self.pixmap = self.movie.currentPixmap()
-        elif self.APNGmovie:
-            i = frames_list.index(self.APNGmovie.currentFrameNumber()) + 1
-            self.APNGmovie.jumpToFrame(frames_list[i])
-            self.pixmap = self.APNGmovie.currentPixmap()
+        i = frames_list.index(movie.currentFrameNumber()) + 1
+        movie.jumpToFrame(frames_list[i])
+        self.pixmap = movie.currentPixmap()
         self.get_rotated_pixmap(force_update=True)
 
     def do_scroll_images_list(self, scroll_value):
@@ -2694,13 +2682,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.draw_secret_hint(painter)
 
-        elif (self.movie or self.APNGmovie):
+        elif self.getMovie():
             pass
         else:
             self.draw_center_label(painter, self.loading_text, large=True)
 
         # draw animation progressbar
-        if (self.movie or self.APNGmovie):
+        if self.getMovie():
             r = self.get_image_viewport_rect()
             movie = self.getMovie()
             progress_width = r.width() * movie.currentFrameNumber()/movie.frameCount()
@@ -2723,6 +2711,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             movie = self.movie
         elif self.APNGmovie:
             movie = self.APNGmovie
+        else:
+            movie = None
         return movie
 
     def draw_center_label_main(self, painter):
