@@ -4,3 +4,4 @@ pip install Pillow==9.2.0
 pip install pillow-avif-plugin
 pip install cbor2
 pip install hidapi
+pip install apng
