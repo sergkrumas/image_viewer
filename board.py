@@ -1400,9 +1400,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 offset += QPointF(image_data.source_width, 0)
-
-                board_item.__tags = self.LibraryData().get_tags_for_image_data(image_data)
-                board_item.__comments = self.LibraryData().get_comments_for_image(imd=image_data)
+                if not self.Globals.lite_mode:
+                    board_item.__tags = self.LibraryData().get_tags_for_image_data(image_data)
+                    board_item.__comments = self.LibraryData().get_comments_for_image(imd=image_data)
 
         self.build_board_bounding_rect(folder_data)
 
