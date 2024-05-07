@@ -94,18 +94,20 @@ class APNGMovie():
     def __init__(self, filepath):
         self.data = read_APNG_to_QPixmapList(filepath)
         self.frameCount = len(self.data)
-        self.currentFrameNumber = 0
+        self._currentFrameNumber = 0
     def jumpToFrame(self, n):
-        self.currentFrameNumber = max(n, self.frameCount-1)
+        self._currentFrameNumber = max(n, self.frameCount-1)
     def frameRect(self):
-        return self.data[self.currentFrameNumber][0].rect()
+        return self.data[self._currentFrameNumber][0].rect()
     def jumpToNextFrame(self):
-        self.currentFrameNumber += 1
-        self.currentFrameNumber %= self.frameCount
+        self._currentFrameNumber += 1
+        self._currentFrameNumber %= self.frameCount
     def nextFrameDelay(self):
-        return self.data[self.currentFrameNumber][1]
+        return self.data[self._currentFrameNumber][1]
     def currentPixmap(self):
-        return self.data[self.currentFrameNumber][0]
+        return self.data[self._currentFrameNumber][0]
+    def currentFrameNumber(self):
+        return self._currentFrameNumber
 
 class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing):
 
