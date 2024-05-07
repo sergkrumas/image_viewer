@@ -3210,12 +3210,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.show_center_label("вставлено")
         self.update()
 
-    def get_selected_comment(self, event):
+    def get_selected_comment(self, pos):
         image_comments = LibraryData().get_comments_for_image()
         selected_comment = None
         if image_comments and hasattr(image_comments[0], "screen_rect"):
             for comment in image_comments:
-                if comment.screen_rect.contains(event.pos()):
+                if comment.screen_rect.contains(pos):
                     selected_comment = comment
                     break
         return selected_comment
@@ -3340,19 +3340,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             contextMenu.addSeparator()
 
             if not Globals.lite_mode:
-                sel_comment = self.get_selected_comment(event)
+                sel_comment = self.get_selected_comment(event.pos())
                 if sel_comment:
                     action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
                     change_comment_text = contextMenu.addAction(action_text)
-                    change_comment_text.triggered.connect(self.change_comment_text_menuitem)
+                    change_comment_text.triggered.connect(partial(self.change_comment_text_menuitem, sel_comment))
 
                     action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
                     change_comment_borders = contextMenu.addAction(action_text)
-                    change_comment_borders.triggered.connect(self.change_comment_borders_menuitem)
+                    change_comment_borders.triggered.connect(partial(self.change_comment_borders_menuitem, sel_comment))
 
                     action_text = f'Удалить комент "{sel_comment.get_title()}"'
                     delete_comment = contextMenu.addAction(action_text)
-                    delete_comment.triggered.connect(self.delete_comment_menuitem)
+                    delete_comment.triggered.connect(partial(self.delete_comment_menuitem, sel_comment))
 
                     contextMenu.addSeparator()
 
@@ -3427,22 +3427,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             self.toggle_to_frameless_mode()
 
-    def delete_comment_menuitem(self):
-        sel_comment = self.get_selected_comment(event)
+    def delete_comment_menuitem(self, sel_comment):
         if sel_comment:
             LibraryData().delete_comment(sel_comment)
             self.update()
 
-    def change_comment_text_menuitem(self):
-        sel_comment = self.get_selected_comment(event)
+    def change_comment_text_menuitem(self, sel_comment):
         if sel_comment:
             self.show_comment_form(sel_comment)
 
-    def change_comment_borders_menuitem(self):
-        sel_comment = self.get_selected_comment(event)
+    def change_comment_borders_menuitem(self, sel_comment):
         if sel_comment:
             self.comment_data_candidate = sel_comment
-        self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
+            self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
 
     def run_unsupported_file(self):
         import win32api
