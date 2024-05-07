@@ -1409,7 +1409,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 offset += QPointF(image_data.source_width, 0)
                 if not self.Globals.lite_mode:
                     board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
-                    board_item._comments = self.LibraryData().get_comments_for_image(imd=image_data)
+                    board_item._comments = self.LibraryData().get_comments_for_image(image_data)
 
         self.build_board_bounding_rect(folder_data)
 
