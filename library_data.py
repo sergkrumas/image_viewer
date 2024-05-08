@@ -85,7 +85,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.viewed_list = []
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
-
+            i.last_apng_check_result = False
             i.fav_folder = ...
             i.comments_folder = ...
 
@@ -260,7 +260,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @staticmethod
     def is_apng_file_animated(filepath):
-        return filepath.lower().endswith(('.apng', '.png')) and is_apng_file_animated(filepath)
+        value = LibraryData().last_apng_check_result = filepath.lower().endswith(('.apng', '.png')) and is_apng_file_animated(filepath)
+        return value
+
+    def reset_apng_check_result(self):
+        self.last_apng_check_result = False
 
     @staticmethod
     def is_webp_file_animated(filepath):

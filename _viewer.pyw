@@ -1201,31 +1201,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.error_pixmap_and_reset("Невозможно\nотобразить", f"Этот файл не поддерживается\n{filename}")
             else:
                 try:
-                    is_gif_file = False
-                    is_webp_file = False
-                    is_apng_file = False
-
-                    def fun_is_gif_file():
-                        nonlocal is_gif_file
-                        is_gif_file = value = LibraryData().is_gif_file(filepath)
-                        return value
-
-                    def fun_is_webp_file():
-                        nonlocal is_webp_file
-                        is_webp_file = value = LibraryData().is_webp_file_animated(filepath)
-                        return value
-
-                    def fun_is_apng_file():
-                        nonlocal is_apng_file
-                        is_apng_file = value = LibraryData().is_apng_file_animated(filepath)
-                        return value
-
-                    animated = False or fun_is_gif_file()
-                    animated = animated or fun_is_webp_file()
-                    animated = animated or fun_is_apng_file()
-
+                    LibraryData().reset_apng_check_result()
+                    animated = False or LibraryData().is_gif_file(filepath)
+                    animated = animated or LibraryData().is_webp_file_animated(filepath)
+                    animated = animated or LibraryData().is_apng_file_animated(filepath)
                     if animated:
-                        self.show_animated(filepath, is_apng_file)
+                        self.show_animated(filepath, self.LibraryData().last_apng_check_result)
                     elif LibraryData().is_svg_file(filepath):
                         self.show_svg(filepath)
                     else:
