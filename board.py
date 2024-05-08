@@ -3604,7 +3604,7 @@ class BoardMixin(BoardTextEditItemMixin):
         pos_list = all_items[item_index:]
         neg_list = all_items[:item_index]
 
-        main_offset = self.board_MapToBoard(self.rect().center())
+        main_offset = item.get_selection_area(board=self, apply_global_scale=False).boundingRect().topLeft()
 
         offset = QPointF(main_offset)
         for bi in pos_list:
