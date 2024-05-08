@@ -1349,6 +1349,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_wait_label(self, painter, primary_text="ПОДОЖДИ",
                                                         socondary_text="создаются превьюшки"):
+        painter.save()
         font = painter.font()
         font.setPixelSize(100)
         font.setWeight(1900)
@@ -1379,6 +1380,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         painter.drawText(secondary_text_rect, alignment, text)
         painter.setBrush(Qt.NoBrush)
+        painter.restore()
 
     def retrieve_new_board_item_index(self):
         cf = self.LibraryData().current_folder()
