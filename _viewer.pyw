@@ -502,7 +502,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.secret_height = 0
 
         self.movie = None
-        self.APNGmovie = None
         self.invalid_movie = False
 
         self.CENTER_LABEL_TIME_LIMIT = 2
@@ -1141,24 +1140,21 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")
 
     def show_animated(self, filepath, is_apng_file):
-        if not is_apng_file:
-            if self.APNGmovie:
-                self.APNGmovie = None
         if filepath is not None:
             self.invalid_movie = False
             self.image_filepath = filepath
             self.transformations_allowed = True
             self.animated = True
-        if is_apng_file:
-            self.APNGmovie = APNGMovie(filepath)
+            if is_apng_file:
+                self.movie = APNGMovie(filepath)
+            else:
+                self.movie = QMovie(filepath)
+                self.movie.setCacheMode(QMovie.CacheAll)
             self.is_animated_file_valid()
-        elif filepath is not None:
-            self.movie = QMovie(filepath)
-            self.movie.setCacheMode(QMovie.CacheAll)
-            self.is_animated_file_valid()
-        if filepath is None:
+        else:
             if self.movie:
-                self.movie.deleteLater()
+                if isinstance(self.movie, QMovie):
+                    self.movie.deleteLater()
                 self.movie = None
 
     def show_svg(self, filepath):
@@ -2642,13 +2638,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.draw_tags_background(painter)
 
     def getMovie(self):
-        if self.movie:
-            movie = self.movie
-        elif self.APNGmovie:
-            movie = self.APNGmovie
-        else:
-            movie = None
-        return movie
+        return self.movie
 
     def draw_center_label_main(self, painter):
         movie = self.getMovie()
