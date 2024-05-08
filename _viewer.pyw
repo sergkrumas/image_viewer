@@ -1112,14 +1112,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.correct_scale()
 
     def animation_stamp(self):
-        movie = self.getMovie()
+        movie = self.movie
         self.frame_delay = movie.nextFrameDelay()
         self.frame_time = time.time()
 
     def tick_animation(self):
         delta = (time.time() - self.frame_time) * 1000
         is_playing = not self.image_data.anim_paused
-        movie = self.getMovie()
+        movie = self.movie
         is_animation = movie.frameCount() > 1
         if delta > self.frame_delay and is_playing and is_animation:
             movie.jumpToNextFrame()
@@ -1130,7 +1130,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.update()
 
     def is_animated_file_valid(self):
-        movie = self.getMovie()
+        movie = self.movie
         movie.jumpToFrame(0)
         self.animation_stamp()
         fr = movie.frameRect()
@@ -1296,7 +1296,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if not self.error: # не поворачиваем пиксмапы с инфой об ошибке
                 rm.rotate(self.image_rotation)
             if self.pixmap is None and self.animated:
-                movie = self.getMovie()
+                movie = self.movie
                 self.pixmap = movie.currentPixmap()
             self.rotated_pixmap = self.pixmap.transformed(rm)
         return self.rotated_pixmap
@@ -1897,7 +1897,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not self.animated:
             return
         speed_values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200]
-        movie = self.getMovie()
+        movie = self.movie
         speed = movie.speed()
         index = speed_values.index(int(speed))
         if index == len(speed_values)-1 and scroll_value > 0:
@@ -1915,7 +1915,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def do_scroll_playbar(self, scroll_value):
         if not self.animated:
             return
-        movie = self.getMovie()
+        movie = self.movie
         frames_list = list(range(0, movie.frameCount()))
         if scroll_value > 0:
             pass
@@ -2613,15 +2613,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.draw_secret_hint(painter)
 
-        elif self.getMovie():
+        elif self.movie:
             pass
         else:
             self.draw_center_label(painter, self.loading_text, large=True)
 
         # draw animation progressbar
-        if self.getMovie():
+        if self.movie:
             r = self.get_image_viewport_rect()
-            movie = self.getMovie()
+            movie = self.movie
             progress_width = r.width() * movie.currentFrameNumber()/movie.frameCount()
             progress_bar_rect = QRectF(r.left(), r.bottom(), int(progress_width), 10)
             painter.setBrush(QBrush(Qt.green))
@@ -2637,11 +2637,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.draw_tags_sidebar_overlay(painter)
         self.draw_tags_background(painter)
 
-    def getMovie(self):
-        return self.movie
-
     def draw_center_label_main(self, painter):
-        movie = self.getMovie()
+        movie = self.movie
         if self.image_center_position:
             if self.center_label_info_type == self.label_type.SCALE:
                 value = math.floor(self.image_scale*100)
