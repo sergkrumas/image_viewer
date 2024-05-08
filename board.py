@@ -3623,6 +3623,7 @@ class BoardMixin(BoardTextEditItemMixin):
             offset -= QPointF(0, bi_height)
 
         self.build_board_bounding_rect(folder_data)
+        self.init_selection_bounding_box_widget(folder_data)
         self.update()
 
     def board_open_in_google_chrome(self):
