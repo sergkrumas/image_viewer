@@ -1672,8 +1672,11 @@ class BoardMixin(BoardTextEditItemMixin):
             print(msg)
 
         def __load_animated(filepath):
-            board_item.movie = QMovie(filepath)
-            board_item.movie.setCacheMode(QMovie.CacheAll)
+            if self.LibraryData().last_apng_check_result:
+                board_item.movie = APNGMovie(filepath)
+            else:
+                board_item.movie = QMovie(filepath)
+                board_item.movie.setCacheMode(QMovie.CacheAll)
             board_item.movie.jumpToFrame(0)
             board_item.pixmap = board_item.movie.currentPixmap()
             board_item.animated = True
@@ -1704,7 +1707,9 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             try:
                 board_item.pixmap = QPixmap()
-                if self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath):
+                self.LibraryData().reset_apng_check_result()
+                animated = self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath) or self.LibraryData().is_apng_file_animated(filepath)
+                if animated:
                     __load_animated(filepath)
                 elif self.LibraryData().is_svg_file(filepath):
                     __load_svg(filepath)
