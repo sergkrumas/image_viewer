@@ -779,7 +779,7 @@ class APNGMovie():
         self._currentFrameNumber += 1
         self._currentFrameNumber %= self._frameCount
     def nextFrameDelay(self):
-        return self.data[self._currentFrameNumber][1]*(self._speed/100.0)
+        return self.data[self._currentFrameNumber][1]/(self._speed/100.0)
     def currentPixmap(self):
         return self.data[self._currentFrameNumber][0]
     def currentFrameNumber(self):
