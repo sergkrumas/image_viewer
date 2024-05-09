@@ -1267,16 +1267,14 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_bounding_rect = board_lib_obj.bounding_rect
 
     def load_cursors(self):
-        folder_path = os.path.dirname(__file__)
-        filepath_scale_svg = os.path.join(folder_path, "cursors", "scale.svg")
-        filepath_rotate_svg = os.path.join(folder_path, "cursors", "rotate.svg")
-        filepath_translate_svg = os.path.join(folder_path, "cursors", "translate.svg")
-        filepath_arrow_png = os.path.join(folder_path, "cursors", "arrow.png")
+        cursors_folder_path = os.path.join(os.path.dirname(__file__), "cursors")
+        filepath_scale_svg = os.path.join(cursors_folder_path, "scale.svg")
+        filepath_rotate_svg = os.path.join(cursors_folder_path, "rotate.svg")
+        filepath_translate_svg = os.path.join(cursors_folder_path, "translate.svg")
 
         scale_rastr_source = QPixmap(filepath_scale_svg)
         rotate_rastr_source = QPixmap(filepath_rotate_svg)
         translate_rastr_source = QPixmap(filepath_translate_svg)
-        arrow_rastr_source = QPixmap(filepath_arrow_png)
 
         if not scale_rastr_source.isNull():
             self.scale_rastr_source = scale_rastr_source
@@ -1284,34 +1282,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.rotate_rastr_source = rotate_rastr_source
         if not translate_rastr_source.isNull():
             self.translate_rastr_source = translate_rastr_source
-        if not arrow_rastr_source.isNull():
-            SIZE = 30
-            arrow_rastr_source = arrow_rastr_source.scaled(SIZE, SIZE, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            def draw_sub_icon(text, bold=False):
-                source = arrow_rastr_source
-                SIGN_HEIGHT = 11
-                out_pix = QPixmap(source.width(), source.height()+SIGN_HEIGHT)
-                out_pix.fill(Qt.transparent)
-                p = QPainter()
-                p.begin(out_pix)
-                p.drawPixmap(QPoint(0, 0), source)
-                alignment = Qt.AlignRight | Qt.AlignTop
-                font = p.font()
-                if bold:
-                    font.setWeight(1900)
-                font.setPixelSize(SIGN_HEIGHT)
-                p.setFont(font)
-                text_rect = p.boundingRect(QRect(), alignment, text)
-                text_rect.setWidth(text_rect.width()+5)
-                text_rect.moveBottomRight(QPoint(out_pix.rect().width(), out_pix.rect().height()))
-                p.setBrush(QBrush(Qt.white))
-                p.setPen(QPen(Qt.black))
-                p.drawRect(text_rect)
-                p.drawText(text_rect, Qt.AlignHCenter | Qt.AlignVCenter, text)
-                p.end()
-                return out_pix
-            self.arrow_move_cursor = QCursor(draw_sub_icon("➜"))
-            self.arrow_copy_cursor = QCursor(draw_sub_icon("+", bold=True))
+
+        self.board_TextElementLoadCursors(cursors_folder_path)
 
     def board_toggle_minimap(self):
         cf = self.LibraryData().current_folder()
