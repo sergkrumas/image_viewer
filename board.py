@@ -2385,11 +2385,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.items_list.append(ni)
         ni.position = self.board_MapToBoard(self.context_menu_exec_point)
-        self.board_TextElementSetDefaults(ni)
-        ni.calc_local_data()
-        self.board_ImplantTextElement(ni)
-        self.board_TextElementRecalculateGabarit(ni)
-        self.board_TextElementActivateEditMode(ni)
+        self.board_TextElementAttributesInitOnCreation(ni)
         self.board_select_items([ni])
         self.update()
 

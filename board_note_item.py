@@ -281,6 +281,13 @@ class BoardTextEditItemMixin():
                     (event.modifiers() == Qt.ControlModifier and ( check_scancode_for(event, "V")) or redo_undo ))
         return is_event
 
+    def board_TextElementAttributesInitOnCreation(self, elem):
+        self.board_TextElementSetDefaults(elem)
+        elem.calc_local_data()
+        self.board_ImplantTextElement(elem)
+        self.board_TextElementRecalculateGabarit(elem)
+        self.board_TextElementActivateEditMode(elem)
+
     def board_ImplantTextElement(self, elem):
         text_doc = QTextDocument()
         elem.text_doc = text_doc
