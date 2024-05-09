@@ -32,7 +32,7 @@ from colorpicker import ColorPicker
 
 class BoardTextEditItemMixin():
 
-	# elements means item
+	# "element" means "item"
 	# code copied from OXXXY Screenshoter
 	# https://github.com/sergkrumas/oxxxy
 
