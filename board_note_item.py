@@ -41,10 +41,10 @@ class BoardTextEditItemMixin():
         self.text_cursor = None
         self.note_item_selection_rects = []
 
-        self.cursorBlinkingTimer = QTimer()
-        self.cursorBlinkingTimer.setInterval(600)
-        self.cursorBlinkingTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
-        self.cursorBlinkingTimer.start()
+        self.blinkingCursorTimer = QTimer()
+        self.blinkingCursorTimer.setInterval(600)
+        self.blinkingCursorTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
+        self.blinkingCursorTimer.start()
 
         self.cursorHide = False
         self.board_note_item_colors_buttons = None
