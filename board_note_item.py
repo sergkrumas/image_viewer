@@ -95,6 +95,18 @@ class BoardTextEditItemMixin():
     def board_TextElementGetFontPixelSize(self, elem):
         return int(20+10*elem.size)
 
+    # def board_TextElementCurrentTextLine(self, cursor):
+    #     block = cursor.block()
+    #     if not block.isValid():
+    #         return QTextLine()
+
+    #     layout = block.layout()
+    #     if not layout:
+    #         return QTextLine()
+
+    #     relativePos = cursor.position() - block.position()
+    #     return layout.lineForTextPosition(relativePos)
+
     def board_TextElementInputEvent(self, event):
         ae = self.active_element
         if not (self.board_TextElementIsActiveElement() and ae.editing):
@@ -234,18 +246,6 @@ class BoardTextEditItemMixin():
         p.begin(element.proxy_pixmap)
         self.board_TextElementDraw(p, element)
         p.end()
-
-    def board_TextElementCurrentTextLine(self, cursor):
-        block = cursor.block()
-        if not block.isValid():
-            return QTextLine()
-
-        layout = block.layout()
-        if not layout:
-            return QTextLine()
-
-        relativePos = cursor.position() - block.position()
-        return layout.lineForTextPosition(relativePos)
 
     def board_TextElementIsInputEvent(self, event):
         ae = self.active_element
