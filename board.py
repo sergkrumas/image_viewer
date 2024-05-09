@@ -1182,11 +1182,6 @@ class BoardMixin(BoardTextEditItemMixin):
     def active_element(self, el):
         self.board_TextElementDeactivateEditMode()
         self._active_element = el
-        # if self.board_TextElementIsElementActiveElement(el):
-        #     self.text_cursor = QTextCursor(el.text_doc)
-        #     self.text_cursor.select(QTextCursor.Document)
-        #     el.editing = True
-        #     self.board_TextElementDefineSelectionRects()
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
