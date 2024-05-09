@@ -38,8 +38,8 @@ class BoardTextEditItemMixin():
 
 
     def board_TextElementInitModule(self):
-        self.text_cursor = None
-        self.note_item_selection_rects = []
+        self.board_ni_text_cursor = None
+        self.board_ni_selection_rects = []
 
         self.blinkingCursorTimer = QTimer()
         self.blinkingCursorTimer.setInterval(600)
@@ -71,8 +71,8 @@ class BoardTextEditItemMixin():
         if self.board_TextElementIsActiveElement():
             if self.active_element.editing:
                 self.active_element.editing = False
-                self.text_cursor = None
-                self.note_item_selection_rects = []
+                self.board_ni_text_cursor = None
+                self.board_ni_selection_rects = []
                 # self.active_element = None
                 # не нужно вызывать здесь self.board_SetSelected(None),
                 # потому что elementsDeactivateTextElement вызывается
@@ -83,8 +83,8 @@ class BoardTextEditItemMixin():
 
     def board_TextElementActivateEditMode(self, elem):
         self.active_element = elem
-        self.text_cursor = QTextCursor(elem.text_doc)
-        self.text_cursor.select(QTextCursor.Document)
+        self.board_ni_text_cursor = QTextCursor(elem.text_doc)
+        self.board_ni_text_cursor.select(QTextCursor.Document)
         elem.editing = True
         self.board_TextElementDefineSelectionRects()
 
@@ -133,7 +133,7 @@ class BoardTextEditItemMixin():
         else:
             text = event.text()
 
-        _cursor = self.text_cursor
+        _cursor = self.board_ni_text_cursor
 
         if event.key() in [Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down]:
             if shift:
@@ -314,7 +314,7 @@ class BoardTextEditItemMixin():
         return False
 
     def board_TextElementGetABFromTextCursor(self):
-        poss = [self.text_cursor.selectionStart(), self.text_cursor.selectionEnd()]
+        poss = [self.board_ni_text_cursor.selectionStart(), self.board_ni_text_cursor.selectionEnd()]
         a = min(*poss)
         b = max(*poss)
         return a, b
@@ -334,7 +334,7 @@ class BoardTextEditItemMixin():
                     # default start
                     print(f'default start')
                     hit_test_result = self.board_TextElementHitTest(event)
-                    self.text_cursor.setPosition(hit_test_result)
+                    self.board_ni_text_cursor.setPosition(hit_test_result)
                     self.board_ni_ts_dragNdrop_ongoing = False
                     self.board_ni_temp_start_cursor_pos = None
         self.board_TextElementDefineSelectionRects()
@@ -347,7 +347,7 @@ class BoardTextEditItemMixin():
             hit_test_result = self.board_TextElementHitTest(event)
             if self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled:
                 if finish:
-                    _cursor = self.text_cursor
+                    _cursor = self.board_ni_text_cursor
                     text_to_copy = _cursor.selectedText()
                     temp_cursor_pos = self.board_ni_temp_cursor_pos
                     a, b = self.board_TextElementGetABFromTextCursor()
@@ -392,9 +392,9 @@ class BoardTextEditItemMixin():
                     if cursor_moved_a_bit:
                         self.board_ni_ts_dragNdrop_ongoing = True
                     elif finish:
-                        self.text_cursor.setPosition(hit_test_result, QTextCursor.MoveAnchor)
+                        self.board_ni_text_cursor.setPosition(hit_test_result, QTextCursor.MoveAnchor)
                 else:
-                    self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
+                    self.board_ni_text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
 
         if finish:
             self.board_ni_ts_dragNdrop_ongoing = False
@@ -416,19 +416,19 @@ class BoardTextEditItemMixin():
     def board_TextElementSelectionMouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.board_TextElementEndSelection(event, finish=True)
-            # tc = self.text_cursor
+            # tc = self.board_ni_text_cursor
             # out = f'{tc.selectionEnd()} {tc.selectionStart()}'
             # print(out)
         self.update()
 
     def board_TextElementDefineSelectionRects(self):
-        self.note_item_selection_rects = []
+        self.board_ni_selection_rects = []
 
         ae = self.active_element
         if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
-        if self.text_cursor.anchor() != self.text_cursor.position():
+        if self.board_ni_text_cursor.anchor() != self.board_ni_text_cursor.position():
             block = ae.text_doc.begin()
             end = ae.text_doc.end()
             docLayout = ae.text_doc.documentLayout()
@@ -450,15 +450,15 @@ class BoardTextEditItemMixin():
                     fragEnd = fragPos + fragment.length()
 
 
-                    start_frg = fragment.contains(self.text_cursor.selectionStart())
-                    end_frg = fragment.contains(self.text_cursor.selectionEnd())
-                    middle_frg = fragment.position() > self.text_cursor.selectionStart() and fragment.position() + fragment.length() <= self.text_cursor.selectionEnd()
+                    start_frg = fragment.contains(self.board_ni_text_cursor.selectionStart())
+                    end_frg = fragment.contains(self.board_ni_text_cursor.selectionEnd())
+                    middle_frg = fragment.position() > self.board_ni_text_cursor.selectionStart() and fragment.position() + fragment.length() <= self.board_ni_text_cursor.selectionEnd()
 
                     if start_frg or end_frg or middle_frg:
                         if start_frg:
-                            fragPos = self.text_cursor.selectionStart() - block.position()
+                            fragPos = self.board_ni_text_cursor.selectionStart() - block.position()
                         if end_frg:
-                            fragEnd = self.text_cursor.selectionEnd() - block.position()
+                            fragEnd = self.board_ni_text_cursor.selectionEnd() - block.position()
 
                         while True:
                             line = blockLayout.lineForTextPosition(fragPos)
@@ -466,7 +466,7 @@ class BoardTextEditItemMixin():
                                 x, _ = line.cursorToX(fragPos)
                                 right, lineEnd = line.cursorToX(fragEnd)
                                 rect = QRectF(blockX + x, blockY + line.y(), right - x, line.height())
-                                self.note_item_selection_rects.append(rect)
+                                self.board_ni_selection_rects.append(rect)
                                 if lineEnd != fragEnd:
                                     fragPos = lineEnd
                                 else:
@@ -477,8 +477,8 @@ class BoardTextEditItemMixin():
                 block = block.next()
 
     def board_TextElementDrawSelectionRects(self, painter):
-        l = len(self.note_item_selection_rects)
-        for n, r in enumerate(self.note_item_selection_rects):
+        l = len(self.board_ni_selection_rects)
+        for n, r in enumerate(self.board_ni_selection_rects):
             alpha = max(35, int(255*n/l))
             painter.fillRect(r, QColor(200, 50, 50, alpha))
 
@@ -537,7 +537,7 @@ class BoardTextEditItemMixin():
                 if self.board_ni_ts_dragNdrop_ongoing:
                     cursor_pos = self.board_ni_temp_cursor_pos
                 else:
-                    cursor_pos = self.text_cursor.position()
+                    cursor_pos = self.board_ni_text_cursor.position()
                 block = text_doc.begin()
                 end = text_doc.end()
                 while block != end:
