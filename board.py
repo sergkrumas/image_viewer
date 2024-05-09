@@ -3102,12 +3102,7 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
-        if self.board_TextElementCheckColorButtons(event) != -1:
-            return
-
-        if self.board_ni_inside_op_ongoing:
-            self.board_TextElementSelectionMouseMoveEvent(event)
-            self.board_cursor_setter()
+        if self.board_TextElementMouseMoveEvent(event):
             return
 
         if event.buttons() == Qt.LeftButton:

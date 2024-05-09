@@ -343,6 +343,17 @@ class BoardTextEditItemMixin():
 
         return False
 
+    def board_TextElementMouseMoveEvent(self, event):
+        if self.board_TextElementCheckColorButtons(event) != -1:
+            return True
+
+        if self.board_ni_inside_op_ongoing:
+            self.board_TextElementSelectionMouseMoveEvent(event)
+            self.board_cursor_setter()
+            return True
+
+        return False
+
     def board_TextElementIsCursorInsideTextElement(self, event):
         ae = self.active_element
         if self.board_TextElementIsActiveElement():
