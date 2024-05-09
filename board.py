@@ -3060,13 +3060,7 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
-        check_code = self.board_TextElementCheckColorButtons(event)
-        if check_code != -1:
-            return
-
-        if self.board_TextElementIsCursorInsideTextElement(event):
-            self.board_ni_inside_op_ongoing = True
-            self.board_TextElementSelectionMousePressEvent(event)
+        if self.board_TextElementMousePressEvent(event):
             return
 
         self.active_element = None

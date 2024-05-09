@@ -331,6 +331,18 @@ class BoardTextEditItemMixin():
         text_doc.setTextWidth(-1)
         text_doc.setDocumentMargin(80)
 
+    def board_TextElementMousePressEvent(self, event):
+        check_code = self.board_TextElementCheckColorButtons(event)
+        if check_code != -1:
+            return True
+
+        if self.board_TextElementIsCursorInsideTextElement(event):
+            self.board_ni_inside_op_ongoing = True
+            self.board_TextElementSelectionMousePressEvent(event)
+            return True
+
+        return False
+
     def board_TextElementIsCursorInsideTextElement(self, event):
         ae = self.active_element
         if self.board_TextElementIsActiveElement():
