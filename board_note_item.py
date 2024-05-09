@@ -47,12 +47,15 @@ class BoardTextEditItemMixin():
         self.blinkingCursorTimer.start()
         self.blinkingCursorHidden = False
 
-        self.board_note_item_colors_buttons = None
+        self.board_ni_colors_buttons = None
         self.board_ni_inside_op_ongoing = False
         self.board_ni_ts_dragNdrop_ongoing = False
         self.board_ni_ts_dragNdrop_cancelled = False
         self.board_ni_temp_cursor_pos = 0
         self.board_ni_temp_start_cursor_pos = None
+
+    def board_TextElementResetColorsButtons(self):
+        self.board_ni_colors_buttons = None        
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
         return self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled
@@ -566,8 +569,8 @@ class BoardTextEditItemMixin():
             tl += QPoint(0, RECT_SIZE + 5)
             backplate_color_rect.moveTopRight(tl)
 
-            self.board_note_item_colors_buttons = (text_color_rect, backplate_color_rect)
-            for n, rect in enumerate(self.board_note_item_colors_buttons):
+            self.board_ni_colors_buttons = (text_color_rect, backplate_color_rect)
+            for n, rect in enumerate(self.board_ni_colors_buttons):
                 painter.setPen(QPen(self.selection_color, 1))
                 if n == 0:
                     painter.setBrush(Qt.NoBrush)
@@ -589,9 +592,9 @@ class BoardTextEditItemMixin():
             painter.restore()
 
     def board_TextElementCheckColorButtons(self, event):
-        if self.board_note_item_colors_buttons is not None:
-            text_color_rect = self.board_note_item_colors_buttons[0]
-            backplate_color_rect = self.board_note_item_colors_buttons[1]
+        if self.board_ni_colors_buttons is not None:
+            text_color_rect = self.board_ni_colors_buttons[0]
+            backplate_color_rect = self.board_ni_colors_buttons[1]
             if text_color_rect.contains(event.pos()):
                 return 0
             elif backplate_color_rect.contains(event.pos()):

@@ -1444,7 +1444,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     )
 
     def board_draw_content(self, painter, folder_data):
-        self.board_note_item_colors_buttons = None
+        self.board_TextElementResetColorsButtons()
         self.board_frame_items_text_rects = []
 
         if not self.is_board_ready():
