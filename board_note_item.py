@@ -67,8 +67,8 @@ class BoardTextEditItemMixin():
             self.blinkingCursorHidden = not self.blinkingCursorHidden
             self.update()
 
-    def board_DeactivateTextElement(self, elem=None):
-        if self.board_TextElementIsElementActiveElement(elem):
+    def board_TextElementDeactivateEditMode(self):
+        if self.board_TextElementIsActiveElement():
             if self.active_element.editing:
                 self.active_element.editing = False
                 self.text_cursor = None
@@ -81,7 +81,7 @@ class BoardTextEditItemMixin():
                 return True
         return False
 
-    def board_TextElementSetEditMode(self, elem):
+    def board_TextElementActivateEditMode(self, elem):
         self.active_element = elem
         elem.editing = True
 

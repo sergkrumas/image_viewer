@@ -539,7 +539,7 @@ class BoardMixin(BoardTextEditItemMixin):
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
                 if board_item.type == BoardItem.types.ITEM_NOTE:
-                    self.board_TextElementSetEditMode(board_item)
+                    self.board_TextElementActivateEditMode(board_item)
                     break
                 elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
                     self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
@@ -1180,7 +1180,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     @active_element.setter
     def active_element(self, el):
-        self.board_DeactivateTextElement()
+        self.board_TextElementDeactivateEditMode()
         self._active_element = el
         if self.board_TextElementIsElementActiveElement(el):
             self.text_cursor = QTextCursor(el.text_doc)
@@ -1192,7 +1192,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
             self.show_center_label("Нельзя погружаться во время незавершённых операций с доской", error=True)
             return
-        self.board_DeactivateTextElement()
+        self.board_TextElementDeactivateEditMode()
         cf = self.LibraryData().current_folder()
         __folder_data = None
         if back_to_referer:
@@ -3137,7 +3137,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_ALLOW_selected_items_TRANSLATION(event.pos())
 
             if any((self.translation_ongoing, self.scaling_ongoing, self.rotation_ongoing)):
-                self.board_DeactivateTextElement()
+                self.board_TextElementDeactivateEditMode()
 
                 # для создания модификаций
                 pass

@@ -637,7 +637,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         for page, next_page in itertools.cycle(zip(pages, pages_shifted)):
             if page == self.current_page:
                 break
-        self.board_DeactivateTextElement()
+        self.board_TextElementDeactivateEditMode()
         self.change_page(next_page)
 
     def change_page(self, requested_page, force=False):
@@ -2942,7 +2942,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.region_zoom_in_cancel()
             elif self.board_magnifier_input_rect:
                 self.board_region_zoom_do_cancel()
-            elif self.is_board_page_active() and self.board_DeactivateTextElement():
+            elif self.is_board_page_active() and self.board_TextElementDeactivateEditMode():
                 return
             elif SettingsWindow.isWindowVisible:
                 SettingsWindow.instance.hide()
