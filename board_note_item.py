@@ -88,6 +88,19 @@ class BoardTextEditItemMixin():
             self.arrow_move_cursor = QCursor(draw_sub_icon("➜"))
             self.arrow_copy_cursor = QCursor(draw_sub_icon("+", bold=True))
 
+    def boardTextElementCursorSetterNeeded(self):
+        return self.board_ni_ts_dragNdrop_ongoing
+
+    def board_TextElementCursorSetter(self):
+        if self.board_ni_ts_dragNdrop_cancelled:
+            self.setCursor(Qt.ArrowCursor)
+        else:
+            modifiers = QApplication.queryKeyboardModifiers()
+            if bool(modifiers & Qt.ControlModifier):
+                self.setCursor(self.arrow_copy_cursor)
+            elif modifiers == Qt.NoModifier:
+                self.setCursor(self.arrow_move_cursor)
+
     def board_TextElementResetColorsButtons(self):
         self.board_ni_colors_buttons = None
 

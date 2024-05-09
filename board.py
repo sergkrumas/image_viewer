@@ -2048,15 +2048,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.setCursor(cursor)
             else:
                 self.setCursor(Qt.OpenHandCursor)
-        elif self.board_ni_ts_dragNdrop_ongoing:
-            if self.board_ni_ts_dragNdrop_cancelled:
-                self.setCursor(Qt.ArrowCursor)
-            else:
-                modifiers = QApplication.queryKeyboardModifiers()
-                if bool(modifiers & Qt.ControlModifier):
-                    self.setCursor(self.arrow_copy_cursor)
-                elif modifiers == Qt.NoModifier:
-                    self.setCursor(self.arrow_move_cursor)
+        elif self.boardTextElementCursorSetterNeeded():
+            self.board_TextElementCursorSetter()
         elif self.selection_bounding_box is not None:
             if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
