@@ -55,7 +55,7 @@ class BoardTextEditItemMixin():
         self.board_ni_temp_start_cursor_pos = None
 
     def board_TextElementResetColorsButtons(self):
-        self.board_ni_colors_buttons = None        
+        self.board_ni_colors_buttons = None
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
         return self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled
