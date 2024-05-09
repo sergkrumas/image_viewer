@@ -45,8 +45,8 @@ class BoardTextEditItemMixin():
         self.blinkingCursorTimer.setInterval(600)
         self.blinkingCursorTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
         self.blinkingCursorTimer.start()
-
         self.blinkingCursorHidden = False
+
         self.board_note_item_colors_buttons = None
         self.board_inside_note_item_operation_ongoing = False
         self.board_note_item_text_selection_drag_n_drop_ongoing = False
