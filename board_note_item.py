@@ -50,15 +50,15 @@ class BoardTextEditItemMixin():
         self.board_note_item_colors_buttons = None
         self.board_inside_note_item_operation_ongoing = False
         self.board_ni_ts_dragNdrop_ongoing = False
-        self.board_note_item_text_selection_drag_n_drop_cancelled = False
+        self.board_ni_ts_dragNdrop_cancelled = False
         self.board_item_note_temp_cursor_pos = 0
         self.board_item_note_temp_start_cursor_pos = None
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
-        return self.board_ni_ts_dragNdrop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled
+        return self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled
 
     def board_TextElementCancelTextSelectionDragNDrop(self):
-        self.board_note_item_text_selection_drag_n_drop_cancelled = True
+        self.board_ni_ts_dragNdrop_cancelled = True
         self.board_cursor_setter()
 
     def board_TextElementCursorBlinkingCycleHandler(self):
@@ -113,7 +113,7 @@ class BoardTextEditItemMixin():
             return
 
         if self.board_ni_ts_dragNdrop_ongoing or \
-            self.board_note_item_text_selection_drag_n_drop_cancelled:
+            self.board_ni_ts_dragNdrop_cancelled:
             return
 
         ctrl = bool(event.modifiers() & Qt.ControlModifier)
@@ -341,7 +341,7 @@ class BoardTextEditItemMixin():
         ctrl = event.modifiers() & Qt.ControlModifier
         if self.board_TextElementIsActiveElement() and ae.editing:
             hit_test_result = self.board_TextElementHitTest(event)
-            if self.board_ni_ts_dragNdrop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled:
+            if self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled:
                 if finish:
                     _cursor = self.text_cursor
                     text_to_copy = _cursor.selectedText()
@@ -395,7 +395,7 @@ class BoardTextEditItemMixin():
         if finish:
             self.board_ni_ts_dragNdrop_ongoing = False
             self.board_item_note_temp_start_cursor_pos = None
-            self.board_note_item_text_selection_drag_n_drop_cancelled = False
+            self.board_ni_ts_dragNdrop_cancelled = False
         self.board_TextElementDefineSelectionRects()
         self.update()
 
