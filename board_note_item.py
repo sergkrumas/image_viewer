@@ -46,7 +46,7 @@ class BoardTextEditItemMixin():
         self.blinkingCursorTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
         self.blinkingCursorTimer.start()
 
-        self.cursorHide = False
+        self.blinkingCursorHidden = False
         self.board_note_item_colors_buttons = None
         self.board_inside_note_item_operation_ongoing = False
         self.board_note_item_text_selection_drag_n_drop_ongoing = False
@@ -64,7 +64,7 @@ class BoardTextEditItemMixin():
     def board_TextElementCursorBlinkingCycleHandler(self):
         ae = self.active_element
         if ae is not None and ae.type == self.BoardItem.types.ITEM_NOTE:
-            self.cursorHide = not self.cursorHide
+            self.blinkingCursorHidden = not self.blinkingCursorHidden
             self.update()
 
     def board_DeactivateTextElement(self, ae=None):
@@ -161,7 +161,7 @@ class BoardTextEditItemMixin():
                     move_mode = QTextCursor.MoveAnchor
                 _cursor.movePosition(QTextCursor.Down, move_mode)
 
-            self.cursorHide = False
+            self.blinkingCursorHidden = False
 
         elif event.key() == Qt.Key_Backspace:
             _cursor.deletePreviousChar()
@@ -381,7 +381,7 @@ class BoardTextEditItemMixin():
                     self.board_item_note_temp_cursor_pos = None
                 else:
                     self.board_item_note_temp_cursor_pos = hit_test_result
-                    self.cursorHide = False
+                    self.blinkingCursorHidden = False
             else:
                 if self.board_item_note_temp_start_cursor_pos:
                     cursor_moved_a_bit = abs(hit_test_result - self.board_item_note_temp_start_cursor_pos) > 0
@@ -528,7 +528,7 @@ class BoardTextEditItemMixin():
                 self.board_TextElementDrawSelectionRects(painter)
 
             # рисуем курсор
-            if element.editing and not self.cursorHide:
+            if element.editing and not self.blinkingCursorHidden:
                 doc_layout = text_doc.documentLayout()
                 if self.board_note_item_text_selection_drag_n_drop_ongoing:
                     cursor_pos = self.board_item_note_temp_cursor_pos
