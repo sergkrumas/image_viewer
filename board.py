@@ -553,14 +553,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         ctrl_mod = bool(event.modifiers() & Qt.ControlModifier)
 
-        if self.board_TextElementIsInputEvent(event):
-            self.board_TextElementInputEvent(event)
-            self.is_board_text_input_event = True
+        if self.board_TextElementKeyPressEventHandler(event):
             return
-
-        if key == Qt.Key_Control:
-            # for note item selection drag&drop
-            self.board_cursor_setter()
 
         if key == Qt.Key_Space:
             self.board_fly_over(user_call=True)

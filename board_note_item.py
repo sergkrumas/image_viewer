@@ -114,6 +114,21 @@ class BoardTextEditItemMixin():
     #     relativePos = cursor.position() - block.position()
     #     return layout.lineForTextPosition(relativePos)
 
+    def board_TextElementKeyPressEventHandler(self, event):
+        key = event.key()
+
+        if self.board_TextElementIsInputEvent(event):
+            self.board_TextElementInputEvent(event)
+            self.is_board_text_input_event = True
+            return True
+
+        if key == Qt.Key_Control:
+            # for note item selection drag&drop
+            self.board_cursor_setter()
+            return False
+
+        return False
+
     def board_TextElementInputEvent(self, event):
         ae = self.active_element
         if not (self.board_TextElementIsActiveElement() and ae.editing):
