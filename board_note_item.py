@@ -51,8 +51,8 @@ class BoardTextEditItemMixin():
         self.board_ni_inside_op_ongoing = False
         self.board_ni_ts_dragNdrop_ongoing = False
         self.board_ni_ts_dragNdrop_cancelled = False
-        self.board_item_note_temp_cursor_pos = 0
-        self.board_item_note_temp_start_cursor_pos = None
+        self.board_ni_temp_cursor_pos = 0
+        self.board_ni_temp_start_cursor_pos = None
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
         return self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled
@@ -324,15 +324,15 @@ class BoardTextEditItemMixin():
                 if hit_test_result is not None and a <= hit_test_result <= b and abs(b-a) > 0:
                     # drag start
                     print(f'drag start {abs(b-a)}')
-                    self.board_item_note_temp_cursor_pos = hit_test_result
-                    self.board_item_note_temp_start_cursor_pos = hit_test_result
+                    self.board_ni_temp_cursor_pos = hit_test_result
+                    self.board_ni_temp_start_cursor_pos = hit_test_result
                 else:
                     # default start
                     print(f'default start')
                     hit_test_result = self.board_TextElementHitTest(event)
                     self.text_cursor.setPosition(hit_test_result)
                     self.board_ni_ts_dragNdrop_ongoing = False
-                    self.board_item_note_temp_start_cursor_pos = None
+                    self.board_ni_temp_start_cursor_pos = None
         self.board_TextElementDefineSelectionRects()
 
     def board_TextElementEndSelection(self, event, finish=False):
@@ -345,7 +345,7 @@ class BoardTextEditItemMixin():
                 if finish:
                     _cursor = self.text_cursor
                     text_to_copy = _cursor.selectedText()
-                    temp_cursor_pos = self.board_item_note_temp_cursor_pos
+                    temp_cursor_pos = self.board_ni_temp_cursor_pos
                     a, b = self.board_TextElementGetABFromTextCursor()
                     selection_center_pos = int(a + (b - a)/2)
                     if text_to_copy:
@@ -377,14 +377,14 @@ class BoardTextEditItemMixin():
                                 _cursor.endEditBlock()
                         self.board_TextElementUpdateAfterInput()
                     self.board_ni_ts_dragNdrop_ongoing = False
-                    self.board_item_note_temp_start_cursor_pos = None
-                    self.board_item_note_temp_cursor_pos = None
+                    self.board_ni_temp_start_cursor_pos = None
+                    self.board_ni_temp_cursor_pos = None
                 else:
-                    self.board_item_note_temp_cursor_pos = hit_test_result
+                    self.board_ni_temp_cursor_pos = hit_test_result
                     self.blinkingCursorHidden = False
             else:
-                if self.board_item_note_temp_start_cursor_pos:
-                    cursor_moved_a_bit = abs(hit_test_result - self.board_item_note_temp_start_cursor_pos) > 0
+                if self.board_ni_temp_start_cursor_pos:
+                    cursor_moved_a_bit = abs(hit_test_result - self.board_ni_temp_start_cursor_pos) > 0
                     if cursor_moved_a_bit:
                         self.board_ni_ts_dragNdrop_ongoing = True
                     elif finish:
@@ -394,7 +394,7 @@ class BoardTextEditItemMixin():
 
         if finish:
             self.board_ni_ts_dragNdrop_ongoing = False
-            self.board_item_note_temp_start_cursor_pos = None
+            self.board_ni_temp_start_cursor_pos = None
             self.board_ni_ts_dragNdrop_cancelled = False
         self.board_TextElementDefineSelectionRects()
         self.update()
@@ -531,7 +531,7 @@ class BoardTextEditItemMixin():
             if element.editing and not self.blinkingCursorHidden:
                 doc_layout = text_doc.documentLayout()
                 if self.board_ni_ts_dragNdrop_ongoing:
-                    cursor_pos = self.board_item_note_temp_cursor_pos
+                    cursor_pos = self.board_ni_temp_cursor_pos
                 else:
                     cursor_pos = self.text_cursor.position()
                 block = text_doc.begin()
