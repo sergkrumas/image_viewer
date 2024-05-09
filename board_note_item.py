@@ -92,10 +92,6 @@ class BoardTextEditItemMixin():
             return True
         return False
 
-    def board_TextElementSetParameters(self, elem):
-        if elem.text_doc is not None:
-            self.board_TextElementSetFont(elem)
-
     def board_TextElementGetFontPixelSize(self, elem):
         return int(20+10*elem.size)
 
