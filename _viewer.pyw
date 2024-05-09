@@ -2928,8 +2928,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
         if key == Qt.Key_Escape:
-            if self.board_TextElementDragNDropOngoing():
-                self.board_TextElementCancelDragNDrop()
+            if self.board_TextElementTextSelectionDragNDropOngoing():
+                self.board_TextElementCancelTextSelectionDragNDrop()
             elif self.start_translation_pos or self.translation_ongoing:
                 self.board_CANCEL_selected_items_TRANSLATION()
             elif self.rotation_ongoing:

@@ -54,10 +54,10 @@ class BoardTextEditItemMixin():
         self.board_item_note_temp_cursor_pos = 0
         self.board_item_note_temp_start_cursor_pos = None
 
-    def board_TextElementDragNDropOngoing(self):
+    def board_TextElementTextSelectionDragNDropOngoing(self):
         return self.board_note_item_text_selection_drag_n_drop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled
 
-    def board_TextElementCancelDragNDrop(self):
+    def board_TextElementCancelTextSelectionDragNDrop(self):
         self.board_note_item_text_selection_drag_n_drop_cancelled = True
         self.board_cursor_setter()
 
