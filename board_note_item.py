@@ -39,15 +39,14 @@ class BoardTextEditItemMixin():
 
 
     def board_TextElementInitModule(self):
-        self.board_ni_text_cursor = None
-        self.board_ni_selection_rects = []
-
         self.blinkingCursorTimer = QTimer()
         self.blinkingCursorTimer.setInterval(600)
         self.blinkingCursorTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
         self.blinkingCursorTimer.start()
         self.blinkingCursorHidden = False
 
+        self.board_ni_text_cursor = None
+        self.board_ni_selection_rects = []
         self.board_ni_colors_buttons = None
         self.board_ni_inside_op_ongoing = False
         self.board_ni_ts_dragNdrop_ongoing = False
