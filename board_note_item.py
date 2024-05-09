@@ -48,7 +48,7 @@ class BoardTextEditItemMixin():
         self.blinkingCursorHidden = False
 
         self.board_note_item_colors_buttons = None
-        self.board_inside_note_item_operation_ongoing = False
+        self.board_ni_inside_op_ongoing = False
         self.board_ni_ts_dragNdrop_ongoing = False
         self.board_ni_ts_dragNdrop_cancelled = False
         self.board_item_note_temp_cursor_pos = 0

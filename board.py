@@ -3081,7 +3081,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         if self.board_TextElementIsCursorInsideTextElement(event):
-            self.board_inside_note_item_operation_ongoing = True
+            self.board_ni_inside_op_ongoing = True
             self.board_TextElementSelectionMousePressEvent(event)
             return
 
@@ -3127,7 +3127,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.board_TextElementCheckColorButtons(event) != -1:
             return
 
-        if self.board_inside_note_item_operation_ongoing:
+        if self.board_ni_inside_op_ongoing:
             self.board_TextElementSelectionMouseMoveEvent(event)
             self.board_cursor_setter()
             return
@@ -3185,9 +3185,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if check_code != -1:
             self.board_TextElementColorButtonsHandlers(check_code)
 
-        if self.board_inside_note_item_operation_ongoing:
+        if self.board_ni_inside_op_ongoing:
             self.board_TextElementSelectionMouseReleaseEvent(event)
-            self.board_inside_note_item_operation_ongoing = False
+            self.board_ni_inside_op_ongoing = False
             return
 
         if self.transform_cancelled:
