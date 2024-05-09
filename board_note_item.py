@@ -49,13 +49,13 @@ class BoardTextEditItemMixin():
 
         self.board_note_item_colors_buttons = None
         self.board_inside_note_item_operation_ongoing = False
-        self.board_note_item_text_selection_drag_n_drop_ongoing = False
+        self.board_ni_ts_dragNdrop_ongoing = False
         self.board_note_item_text_selection_drag_n_drop_cancelled = False
         self.board_item_note_temp_cursor_pos = 0
         self.board_item_note_temp_start_cursor_pos = None
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
-        return self.board_note_item_text_selection_drag_n_drop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled
+        return self.board_ni_ts_dragNdrop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled
 
     def board_TextElementCancelTextSelectionDragNDrop(self):
         self.board_note_item_text_selection_drag_n_drop_cancelled = True
@@ -112,7 +112,7 @@ class BoardTextEditItemMixin():
         if not (self.board_TextElementIsActiveElement() and ae.editing):
             return
 
-        if self.board_note_item_text_selection_drag_n_drop_ongoing or \
+        if self.board_ni_ts_dragNdrop_ongoing or \
             self.board_note_item_text_selection_drag_n_drop_cancelled:
             return
 
@@ -331,7 +331,7 @@ class BoardTextEditItemMixin():
                     print(f'default start')
                     hit_test_result = self.board_TextElementHitTest(event)
                     self.text_cursor.setPosition(hit_test_result)
-                    self.board_note_item_text_selection_drag_n_drop_ongoing = False
+                    self.board_ni_ts_dragNdrop_ongoing = False
                     self.board_item_note_temp_start_cursor_pos = None
         self.board_TextElementDefineSelectionRects()
 
@@ -341,7 +341,7 @@ class BoardTextEditItemMixin():
         ctrl = event.modifiers() & Qt.ControlModifier
         if self.board_TextElementIsActiveElement() and ae.editing:
             hit_test_result = self.board_TextElementHitTest(event)
-            if self.board_note_item_text_selection_drag_n_drop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled:
+            if self.board_ni_ts_dragNdrop_ongoing and not self.board_note_item_text_selection_drag_n_drop_cancelled:
                 if finish:
                     _cursor = self.text_cursor
                     text_to_copy = _cursor.selectedText()
@@ -376,7 +376,7 @@ class BoardTextEditItemMixin():
                                 _cursor.insertText(text_to_copy)
                                 _cursor.endEditBlock()
                         self.board_TextElementUpdateAfterInput()
-                    self.board_note_item_text_selection_drag_n_drop_ongoing = False
+                    self.board_ni_ts_dragNdrop_ongoing = False
                     self.board_item_note_temp_start_cursor_pos = None
                     self.board_item_note_temp_cursor_pos = None
                 else:
@@ -386,14 +386,14 @@ class BoardTextEditItemMixin():
                 if self.board_item_note_temp_start_cursor_pos:
                     cursor_moved_a_bit = abs(hit_test_result - self.board_item_note_temp_start_cursor_pos) > 0
                     if cursor_moved_a_bit:
-                        self.board_note_item_text_selection_drag_n_drop_ongoing = True
+                        self.board_ni_ts_dragNdrop_ongoing = True
                     elif finish:
                         self.text_cursor.setPosition(hit_test_result, QTextCursor.MoveAnchor)
                 else:
                     self.text_cursor.setPosition(hit_test_result, QTextCursor.KeepAnchor)
 
         if finish:
-            self.board_note_item_text_selection_drag_n_drop_ongoing = False
+            self.board_ni_ts_dragNdrop_ongoing = False
             self.board_item_note_temp_start_cursor_pos = None
             self.board_note_item_text_selection_drag_n_drop_cancelled = False
         self.board_TextElementDefineSelectionRects()
@@ -530,7 +530,7 @@ class BoardTextEditItemMixin():
             # рисуем курсор
             if element.editing and not self.blinkingCursorHidden:
                 doc_layout = text_doc.documentLayout()
-                if self.board_note_item_text_selection_drag_n_drop_ongoing:
+                if self.board_ni_ts_dragNdrop_ongoing:
                     cursor_pos = self.board_item_note_temp_cursor_pos
                 else:
                     cursor_pos = self.text_cursor.position()

@@ -2087,7 +2087,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.setCursor(cursor)
             else:
                 self.setCursor(Qt.OpenHandCursor)
-        elif self.board_note_item_text_selection_drag_n_drop_ongoing:
+        elif self.board_ni_ts_dragNdrop_ongoing:
             if self.board_note_item_text_selection_drag_n_drop_cancelled:
                 self.setCursor(Qt.ArrowCursor)
             else:
