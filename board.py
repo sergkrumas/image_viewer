@@ -1179,13 +1179,13 @@ class BoardMixin(BoardTextEditItemMixin):
         return self._active_element
 
     @active_element.setter
-    def active_element(self, value):
-        self.board_DeactivateTextElement(ae=self._active_element)
-        self._active_element = value
-        if self.board_TextElementIsActiveElement(ae=value):
-            self.text_cursor = QTextCursor(value.text_doc)
+    def active_element(self, el):
+        self.board_DeactivateTextElement()
+        self._active_element = el
+        if self.board_TextElementIsElementActiveElement(el):
+            self.text_cursor = QTextCursor(el.text_doc)
             self.text_cursor.select(QTextCursor.Document)
-            value.editing = True
+            el.editing = True
             self.board_TextElementDefineSelectionRects()
 
     def board_dive_inside_board_item(self, back_to_referer=False):

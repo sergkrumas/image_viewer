@@ -67,8 +67,8 @@ class BoardTextEditItemMixin():
             self.blinkingCursorHidden = not self.blinkingCursorHidden
             self.update()
 
-    def board_DeactivateTextElement(self, ae=None):
-        if self.board_TextElementIsActiveElement(ae=ae):
+    def board_DeactivateTextElement(self, elem=None):
+        if self.board_TextElementIsElementActiveElement(elem):
             if self.active_element.editing:
                 self.active_element.editing = False
                 self.text_cursor = None
@@ -85,12 +85,13 @@ class BoardTextEditItemMixin():
         self.active_element = elem
         elem.editing = True
 
-    def board_TextElementIsActiveElement(self, ae=None):
-        if ae is None:
-            ae = self.active_element
-        if ae and ae.type == self.BoardItem.types.ITEM_NOTE:
+    def board_TextElementIsElementActiveElement(self, elem):
+        if elem and elem.type == self.BoardItem.types.ITEM_NOTE:
             return True
         return False
+
+    def board_TextElementIsActiveElement(self):
+        return self.board_TextElementIsElementActiveElement(self.active_element)
 
     def board_TextElementGetFontPixelSize(self, elem):
         return int(20+10*elem.size)
