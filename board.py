@@ -1182,11 +1182,11 @@ class BoardMixin(BoardTextEditItemMixin):
     def active_element(self, el):
         self.board_TextElementDeactivateEditMode()
         self._active_element = el
-        if self.board_TextElementIsElementActiveElement(el):
-            self.text_cursor = QTextCursor(el.text_doc)
-            self.text_cursor.select(QTextCursor.Document)
-            el.editing = True
-            self.board_TextElementDefineSelectionRects()
+        # if self.board_TextElementIsElementActiveElement(el):
+        #     self.text_cursor = QTextCursor(el.text_doc)
+        #     self.text_cursor.select(QTextCursor.Document)
+        #     el.editing = True
+        #     self.board_TextElementDefineSelectionRects()
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -2397,11 +2397,10 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder_data.board.items_list.append(ni)
         ni.position = self.board_MapToBoard(self.context_menu_exec_point)
         self.board_TextElementSetDefaults(ni)
-        ni.editing = True
         ni.calc_local_data()
         self.board_ImplantTextElement(ni)
-        self.active_element = ni
         self.board_TextElementRecalculateGabarit(ni)
+        self.board_TextElementActivateEditMode(ni)
         self.board_select_items([ni])
         self.update()
 

@@ -83,7 +83,10 @@ class BoardTextEditItemMixin():
 
     def board_TextElementActivateEditMode(self, elem):
         self.active_element = elem
+        self.text_cursor = QTextCursor(elem.text_doc)
+        self.text_cursor.select(QTextCursor.Document)
         elem.editing = True
+        self.board_TextElementDefineSelectionRects()
 
     def board_TextElementIsElementActiveElement(self, elem):
         if elem and elem.type == self.BoardItem.types.ITEM_NOTE:
