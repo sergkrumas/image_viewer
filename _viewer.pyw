@@ -2994,7 +2994,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif key == Qt.Key_4 and not self.active_element:
             self.change_page(self.pages.LIBRARY_PAGE)
 
-        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.active_element:
+        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.board_TextElementIsActiveElement():
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
                 length *= 20.0
@@ -3010,6 +3010,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.image_center_position += delta
             elif self.is_board_page_active():
                 self.board_origin += delta
+                self.update_selection_bouding_box()
 
 
         if self.is_start_page_active():
