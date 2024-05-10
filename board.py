@@ -389,7 +389,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.is_board_text_input_event = False
         self._active_element = None
-        self.active_element = None
 
         self.board_TextElementInitModule()
 
