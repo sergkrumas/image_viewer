@@ -254,13 +254,9 @@ class BoardTextEditItemMixin():
                     _cursor.setPosition(new_pos, move_mode)
 
             elif event.key() == Qt.Key_Up:
-                if not ctrl:
-                    move_mode = QTextCursor.MoveAnchor
                 _cursor.movePosition(QTextCursor.Up, move_mode)
 
             elif event.key() == Qt.Key_Down:
-                if not ctrl:
-                    move_mode = QTextCursor.MoveAnchor
                 _cursor.movePosition(QTextCursor.Down, move_mode)
 
             self.blinkingCursorHidden = False
