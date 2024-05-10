@@ -580,6 +580,9 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, "V") and ctrl_mod:
             self.board_control_v()
 
+        elif check_scancode_for(event, "B") and ctrl_mod:
+            self.grab().save('grab.png')
+
         elif key == Qt.Key_Home:
             self.board_viewport_show_first_item()
 
