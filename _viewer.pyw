@@ -2994,10 +2994,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif key == Qt.Key_4 and not self.active_element:
             self.change_page(self.pages.LIBRARY_PAGE)
 
-        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and (self.is_board_page_active() and not self.board_TextElementIsActiveElement()):
+        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.board_TextElementIsActiveElement():
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
                 length *= 20.0
+                if event.modifiers() & Qt.AltModifier:
+                    length *= 5.0
             if check_scancode_for(event, "W"):
                 delta =  QPoint(0, 1) * length
             elif check_scancode_for(event, "S"):

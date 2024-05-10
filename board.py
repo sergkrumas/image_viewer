@@ -552,6 +552,7 @@ class BoardMixin(BoardTextEditItemMixin):
         key = event.key()
 
         ctrl_mod = bool(event.modifiers() & Qt.ControlModifier)
+        only_ctrl_mode = bool(event.modifiers() == Qt.ControlModifier)
 
         if self.board_TextElementKeyPressEventHandler(event):
             return
@@ -559,10 +560,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if key == Qt.Key_Space:
             self.board_fly_over(user_call=True)
 
-        elif check_scancode_for(event, "O") and ctrl_mod:
+        elif check_scancode_for(event, "O") and only_ctrl_mode:
             self.board_loadBoard()
 
-        elif check_scancode_for(event, "S") and ctrl_mod:
+        elif check_scancode_for(event, "S") and only_ctrl_mode:
             self.board_saveBoard()
 
         elif check_scancode_for(event, "M"):
