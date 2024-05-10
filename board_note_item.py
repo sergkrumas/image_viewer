@@ -39,6 +39,9 @@ class BoardTextEditItemMixin():
 
 
     def board_TextElementInitModule(self):
+        """
+            extern method
+        """
         self.blinkingCursorTimer = QTimer()
         self.blinkingCursorTimer.setInterval(600)
         self.blinkingCursorTimer.timeout.connect(self.board_TextElementCursorBlinkingCycleHandler)
@@ -55,6 +58,9 @@ class BoardTextEditItemMixin():
         self.board_ni_temp_start_cursor_pos = None
 
     def board_TextElementLoadCursors(self, cursors_folderpath):
+        """
+            extern method
+        """
         filepath_arrow_png = os.path.join(cursors_folderpath, "arrow.png")
 
         arrow_rastr_source = QPixmap(filepath_arrow_png)
@@ -89,9 +95,15 @@ class BoardTextEditItemMixin():
             self.arrow_copy_cursor = QCursor(draw_sub_icon("+", bold=True))
 
     def boardTextElementCursorSetterNeeded(self):
+        """
+            extern method
+        """
         return self.board_ni_ts_dragNdrop_ongoing
 
     def board_TextElementCursorSetter(self):
+        """
+            extern method
+        """
         if self.board_ni_ts_dragNdrop_cancelled:
             self.setCursor(Qt.ArrowCursor)
         else:
@@ -102,12 +114,21 @@ class BoardTextEditItemMixin():
                 self.setCursor(self.arrow_move_cursor)
 
     def board_TextElementResetColorsButtons(self):
+        """
+            extern method
+        """
         self.board_ni_colors_buttons = None
 
     def board_TextElementTextSelectionDragNDropOngoing(self):
+        """
+            extern method
+        """
         return self.board_ni_ts_dragNdrop_ongoing and not self.board_ni_ts_dragNdrop_cancelled
 
     def board_TextElementCancelTextSelectionDragNDrop(self):
+        """
+            extern method
+        """
         self.board_ni_ts_dragNdrop_cancelled = True
         self.board_cursor_setter()
 
@@ -118,6 +139,9 @@ class BoardTextEditItemMixin():
             self.update()
 
     def board_TextElementDeactivateEditMode(self):
+        """
+            extern method
+        """
         if self.board_TextElementIsActiveElement():
             if self.active_element.editing:
                 self.active_element.editing = False
@@ -132,6 +156,9 @@ class BoardTextEditItemMixin():
         return False
 
     def board_TextElementActivateEditMode(self, elem):
+        """
+            extern method
+        """
         self.active_element = elem
         self.board_ni_text_cursor = QTextCursor(elem.text_doc)
         self.board_ni_text_cursor.select(QTextCursor.Document)
@@ -144,6 +171,9 @@ class BoardTextEditItemMixin():
         return False
 
     def board_TextElementIsActiveElement(self):
+        """
+            extern method
+        """
         return self.board_TextElementIsElementActiveElement(self.active_element)
 
     def board_TextElementGetFontPixelSize(self, elem):
@@ -162,6 +192,9 @@ class BoardTextEditItemMixin():
     #     return layout.lineForTextPosition(relativePos)
 
     def board_TextElementKeyPressEventHandler(self, event):
+        """
+            extern method
+        """
         key = event.key()
 
         if self.board_TextElementIsInputEvent(event):
@@ -261,6 +294,11 @@ class BoardTextEditItemMixin():
 
         self.update()
 
+    def board_TextElementInitAfterLoadFromFile(self, elem):
+        elem.editing = False
+        self.board_ImplantTextElement(elem)
+        self.board_TextElementRecalculateGabarit(elem)
+
     def board_TextElementRecalculateGabarit(self, element):
         # обновление габаритов виджета трансформации
 
@@ -329,6 +367,9 @@ class BoardTextEditItemMixin():
         return is_event
 
     def board_TextElementAttributesInitOnCreation(self, elem):
+        """
+            extern method
+        """
         self.board_TextElementSetDefaults(elem)
         elem.calc_local_data()
         self.board_ImplantTextElement(elem)
@@ -379,6 +420,9 @@ class BoardTextEditItemMixin():
         text_doc.setDocumentMargin(80)
 
     def board_TextElementMousePressEvent(self, event):
+        """
+            extern method
+        """
         check_code = self.board_TextElementCheckColorButtons(event)
         if check_code != -1:
             return True
@@ -391,6 +435,9 @@ class BoardTextEditItemMixin():
         return False
 
     def board_TextElementMouseMoveEvent(self, event):
+        """
+            extern method
+        """
         if self.board_TextElementCheckColorButtons(event) != -1:
             return True
 
@@ -402,6 +449,9 @@ class BoardTextEditItemMixin():
         return False
 
     def board_TextElementMouseReleaseEvent(self, event):
+        """
+            extern method
+        """
         check_code = self.board_TextElementCheckColorButtons(event)
         if check_code != -1:
             self.board_TextElementColorButtonsHandlers(check_code)
@@ -590,6 +640,9 @@ class BoardTextEditItemMixin():
             painter.fillRect(r, QColor(200, 50, 50, alpha))
 
     def board_TextElementDrawOnCanvas(self, painter, element, final):
+        """
+            extern method
+        """
         if element.text_doc is not None:
             text_doc = element.text_doc
 

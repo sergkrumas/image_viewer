@@ -31,8 +31,7 @@ def append_note_item(self, cf, text, warning=False):
     ni.calc_local_data()
     if warning:
         ni.font_color = QColor(220, 50, 50)
-    self.board_ImplantTextElement(ni)
-    self.board_TextElementRecalculateGabarit(ni)
+    self.board_TextElementInitAfterLoadFromFile(ni)
     return ni
 
 def preparePluginBoard(self, plugin_info):
