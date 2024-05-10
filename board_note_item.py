@@ -263,9 +263,14 @@ class BoardTextEditItemMixin():
                     _cursor.setPosition(new_pos, move_mode)
 
             elif event.key() == Qt.Key_Up:
+                if self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc) == 0:
+                    _cursor.movePosition(QTextCursor.Start, move_mode)
                 _cursor.movePosition(QTextCursor.Up, move_mode)
 
             elif event.key() == Qt.Key_Down:
+                lines_count = len(ae.text_doc.toPlainText().split('\n'))
+                if self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc) + 1 == lines_count:
+                    _cursor.movePosition(QTextCursor.End, move_mode)
                 _cursor.movePosition(QTextCursor.Down, move_mode)
 
             self.blinkingCursorHidden = False
@@ -283,8 +288,8 @@ class BoardTextEditItemMixin():
             _cursor.insertText(text)
             _cursor.endEditBlock()
 
-        text_line = self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc)
-        print(f'!> linenum {text_line} ')
+        # text_line = self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc)
+        # print(f'!> linenum {text_line} ')
 
         self.board_TextElementUpdateAfterInput()
 
