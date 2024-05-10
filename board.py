@@ -941,7 +941,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if isinstance(obj, self.BoardItem):
             if obj.type == self.BoardItem.types.ITEM_NOTE:
-                board_TextElementInitAfterLoadFromFile(obj)
+                self.board_TextElementInitAfterLoadFromFile(obj)
 
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
         attributes = list(obj.__dict__.items())
