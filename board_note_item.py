@@ -179,17 +179,26 @@ class BoardTextEditItemMixin():
     def board_TextElementGetFontPixelSize(self, elem):
         return int(20+10*elem.size)
 
-    # def board_TextElementCurrentTextLine(self, cursor):
-    #     block = cursor.block()
-    #     if not block.isValid():
-    #         return QTextLine()
+    def board_TextElementCurrentTextLine(self, pos, text_doc):
+        cursor = QTextCursor(text_doc)
+        cursor.setPosition(pos)
 
-    #     layout = block.layout()
-    #     if not layout:
-    #         return QTextLine()
+        cursor.movePosition(QTextCursor.StartOfLine)
+        lines = 0
 
-    #     relativePos = cursor.position() - block.position()
-    #     return layout.lineForTextPosition(relativePos)
+        lines_text = cursor.block().text().splitlines()
+        lines_pos = 0
+        for line_text in lines_text:
+            lines_pos += len(line_text) + 1
+            if lines_pos > cursor.position() - cursor.block().position():
+                break
+            lines += 1
+
+        block = cursor.block().previous()
+        while block.isValid():
+            lines += block.lineCount()
+            block = block.previous()
+        return lines
 
     def board_TextElementKeyPressEventHandler(self, event):
         """
@@ -274,8 +283,9 @@ class BoardTextEditItemMixin():
             _cursor.insertText(text)
             _cursor.endEditBlock()
 
-        # text_line = self.board_TextElementCurrentTextLine(_cursor)
-        # print('text_line', text_line.lineNumber())
+        text_line = self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc)
+        print(f'!> linenum {text_line} ')
+
         self.board_TextElementUpdateAfterInput()
 
     def board_TextElementUpdateAfterInput(self):
