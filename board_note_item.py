@@ -308,6 +308,9 @@ class BoardTextEditItemMixin():
         self.update()
 
     def board_TextElementInitAfterLoadFromFile(self, elem):
+        """
+            extern method
+        """
         elem.editing = False
         self.board_ImplantTextElement(elem)
         self.board_TextElementRecalculateGabarit(elem)
