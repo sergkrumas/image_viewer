@@ -478,7 +478,7 @@ class ColorPicker(QDialog):
         self.ui.setupUi(self)
 
         # Make Frameless
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setWindowTitle("Color Picker")
 
