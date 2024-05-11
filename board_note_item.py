@@ -268,6 +268,8 @@ class BoardTextEditItemMixin():
                 _cursor.movePosition(QTextCursor.Up, move_mode)
 
             elif event.key() == Qt.Key_Down:
+                # если строки будут образовываться переносами, то придётся
+                # считать общее количество строк по-другому
                 lines_count = len(ae.text_doc.toPlainText().split('\n'))
                 if self.board_TextElementCurrentTextLine(_cursor.position(), ae.text_doc) + 1 == lines_count:
                     _cursor.movePosition(QTextCursor.End, move_mode)
