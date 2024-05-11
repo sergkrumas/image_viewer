@@ -33,9 +33,9 @@ from colorpicker import ColorPicker
 
 class BoardTextEditItemMixin():
 
-	# "element" means "item"
-	# code copied from OXXXY Screenshoter
-	# https://github.com/sergkrumas/oxxxy
+    # "element" means "item"
+    # keep in sync with OXXXY Screenshoter
+    # https://github.com/sergkrumas/oxxxy
 
 
     def board_TextElementInitModule(self):
