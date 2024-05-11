@@ -94,7 +94,7 @@ class BoardTextEditItemMixin():
             self.arrow_move_cursor = QCursor(draw_sub_icon("➜"))
             self.arrow_copy_cursor = QCursor(draw_sub_icon("+", bold=True))
 
-    def boardTextElementCursorSetterNeeded(self):
+    def board_TextElementCursorSetterNeeded(self):
         """
             extern method
         """

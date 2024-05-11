@@ -2049,7 +2049,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.setCursor(cursor)
             else:
                 self.setCursor(Qt.OpenHandCursor)
-        elif self.boardTextElementCursorSetterNeeded():
+        elif self.board_TextElementCursorSetterNeeded():
             self.board_TextElementCursorSetter()
         elif self.selection_bounding_box is not None:
             if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
