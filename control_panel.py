@@ -665,7 +665,11 @@ class ControlPanel(QWidget, UtilsMixin):
             safe_value = max(min(value, self.MAX_OPACITY), 0.0)
             if self.opacity_effect.opacity() != safe_value:
                 self.opacity_effect.setOpacity(safe_value)
-                self.update()
+                if safe_value == 0.0:
+                    self.parent().update()
+                    self.update()
+                else:
+                    self.update()
 
         main_window = self.globals.main_window
         if main_window.is_library_page_active():
