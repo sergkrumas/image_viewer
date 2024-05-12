@@ -2175,7 +2175,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter = QPainter()
         painter.begin(self)
         if self.BW_filter_state > 0:
-            event_rect = event.rect()
+            event_rect = self.rect()
             color_image = QImage(event_rect.size(), QImage.Format_ARGB32)
             color_image.fill(Qt.transparent)
             p = QPainter()
