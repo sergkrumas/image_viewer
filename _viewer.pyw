@@ -563,6 +563,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.fullscreen_mode = False
         self.firstCall_showMaximized = True
 
+        self.BW_filter = False
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -2155,10 +2157,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.restore()
 
     def paintEvent(self, event):
-
         painter = QPainter()
         painter.begin(self)
+        if self.BW_filter:
+            event_rect = event.rect()
+            image = QImage(event_rect.size(), QImage.Format_ARGB32)
+            image.fill(Qt.transparent)
+            p = QPainter()
+            p.begin(image)
+            self._paintEvent(event, p)
+            p.end()
+            image = image.convertToFormat(QImage.Format_Grayscale16)
+            painter.drawImage(event_rect.topLeft(), image)
+        else:
+            self._paintEvent(event, painter)
+        painter.end()
 
+    def _paintEvent(self, event, painter):
         if Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM:
             painter.setRenderHint(QPainter.Antialiasing, True)
             painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
@@ -2219,8 +2234,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # painter.drawLine(self.rect().bottomLeft(), self.rect().topRight())
 
         self.draw_noise_cells(painter)
-
-        painter.end()
 
     def draw_noise_cells(self, painter):
         if noise and self.STNG_show_noise_cells:
@@ -2809,6 +2822,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def start_lite_process(self, path):
         start_lite_process(path)
 
+    def toggle_BW_filter(self):
+        self.BW_filter = not self.BW_filter
+        self.update()
+
     def keyReleaseEvent(self, event):
         key = event.key()
 
@@ -2832,6 +2849,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.frameless_mode:
                 self.fullscreen_mode = not self.fullscreen_mode
                 self.showMaximized()
+
+        if key == Qt.Key_F10 and not event.isAutoRepeat():
+            self.toggle_BW_filter()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
