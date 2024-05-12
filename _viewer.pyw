@@ -2184,10 +2184,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             p.end()
             image = color_image.convertToFormat(QImage.Format_Grayscale16)
             if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
-                painter.drawImage(event_rect.topLeft(), color_image)
+                painter.drawImage(QPoint(0, 0), color_image)
                 painter.save()
                 painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
-            painter.drawImage(event_rect.topLeft(), image)
+            painter.drawImage(QPoint(0, 0), image)
             if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
                 painter.restore()
         else:
