@@ -90,6 +90,21 @@ class Globals():
     app_title = "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
     github_repo = "https://github.com/sergkrumas/image_viewer"
 
+class BWFilterState():
+
+    off = 0
+    on_TRANSPARENT_BACKGROUND = 1
+    on = 2
+
+    @classmethod
+    def cycle_toggle(cls, current_state):
+        states = [cls.off, cls.on_TRANSPARENT_BACKGROUND, cls.on]
+        cycled_states = itertools.cycle(states)
+        for state in cycled_states:
+            if current_state == state:
+                break
+        return next(cycled_states)
+
 class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing):
 
     UPPER_SCALE_LIMIT = 100.0
@@ -563,7 +578,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.fullscreen_mode = False
         self.firstCall_showMaximized = True
 
-        self.BW_filter = False
+        self.BW_filter_state = BWFilterState.off
 
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
@@ -2159,16 +2174,22 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
-        if self.BW_filter:
+        if self.BW_filter_state > 0:
             event_rect = event.rect()
-            image = QImage(event_rect.size(), QImage.Format_ARGB32)
-            image.fill(Qt.transparent)
+            color_image = QImage(event_rect.size(), QImage.Format_ARGB32)
+            color_image.fill(Qt.transparent)
             p = QPainter()
-            p.begin(image)
+            p.begin(color_image)
             self._paintEvent(event, p)
             p.end()
-            image = image.convertToFormat(QImage.Format_Grayscale16)
+            image = color_image.convertToFormat(QImage.Format_Grayscale16)
+            if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
+                painter.drawImage(event_rect.topLeft(), color_image)
+                painter.save()
+                painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
             painter.drawImage(event_rect.topLeft(), image)
+            if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
+                painter.restore()
         else:
             self._paintEvent(event, painter)
         painter.end()
@@ -2823,7 +2844,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         start_lite_process(path)
 
     def toggle_BW_filter(self):
-        self.BW_filter = not self.BW_filter
+        self.BW_filter_state = BWFilterState.cycle_toggle(self.BW_filter_state)
         self.update()
 
     def keyReleaseEvent(self, event):
