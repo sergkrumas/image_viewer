@@ -285,7 +285,7 @@ def paintEvent(self, painter, event):
         painter.drawText(QPointF(5, -5), text)
         painter.resetTransform()
 
-    def draw_group_name(offset, group, board_scale_x):
+    def draw_group_name(offset, group, canvas_scale_x):
         painter.save()
         painter.setPen(QPen(QColor(200, 50, 50)))
         align = Qt.AlignLeft
@@ -300,7 +300,7 @@ def paintEvent(self, painter, event):
             pos.setY(font_pixel_size)
         # то же самое, только теперь название группы будет видно если видно хоть один столбец этой группы
         current_group_width = sum(channel.ui_width for channel in group.channels)
-        current_group_width *= board_scale_x
+        current_group_width *= canvas_scale_x
         if pos.x() < 0 and pos.x() > -current_group_width + rect.width():
             pos.setX(0)
 
@@ -362,7 +362,7 @@ def paintEvent(self, painter, event):
                     self.front_tracker_task_under_mouse = task
 
             sch = QRectF(rect)
-            sch.setWidth(channel.ui_width*self.board_scale_x)
+            sch.setWidth(channel.ui_width*self.canvas_scale_x)
             sch.moveLeft(self.board_MapToViewport(offset).x())
             channel.ui_rect = sch
             if sch.contains(cursor_pos) and not self.front_tracker_captured_group:
@@ -400,7 +400,7 @@ def paintEvent(self, painter, event):
 
     set_font(30)
     for offset, group in group_names_to_draw:
-        draw_group_name(offset, group, self.board_scale_x)
+        draw_group_name(offset, group, self.canvas_scale_x)
 
     set_font(30)
     for offset, name in channel_names_to_draw:

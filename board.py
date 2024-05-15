@@ -172,7 +172,7 @@ class BoardItem():
             return f'TEXT NOTE'
 
     def calculate_absolute_position(self, canvas=None, rel_pos=None):
-        _scale_x = canvas.board_scale_x
+        _scale_x = canvas.canvas_scale_x
         _scale_y = canvas.board_scale_y
         if rel_pos is None:
             rel_pos = self.position
@@ -242,7 +242,7 @@ class BoardItem():
             else:
                 translation.translate(self.position.x(), self.position.y())
         if apply_global_scale:
-            global_scaling.scale(canvas.board_scale_x, canvas.board_scale_y)
+            global_scaling.scale(canvas.canvas_scale_x, canvas.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
@@ -344,7 +344,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_init(self):
         self.canvas_origin = self.get_center_position()
-        self.board_scale_x = 1.0
+        self.canvas_scale_x = 1.0
         self.board_scale_y = 1.0
         self.board_region_zoom_in_init()
         self.scale_rastr_source = None
@@ -372,7 +372,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.images_drawn = 0
         self.pr_viewport = QPointF(0, 0)
         self.fly_pairs = []
-        self._board_scale_x = 1.0
+        self._canvas_scale_x = 1.0
         self._board_scale_y = 1.0
         self.board_selection_transform_box_opacity = 1.0
         self.board_debug_transform_widget = False
@@ -1464,10 +1464,10 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setBrush(Qt.NoBrush)
 
             path = QPainterPath()
-            path.addRoundedRect(area.boundingRect(), FRAME_PADDING*self.board_scale_x, FRAME_PADDING*self.board_scale_y)
+            path.addRoundedRect(area.boundingRect(), FRAME_PADDING*self.canvas_scale_x, FRAME_PADDING*self.board_scale_y)
             painter.drawPath(path)
             pos = area.boundingRect().topLeft()
-            zoom_delta = QPointF(FRAME_PADDING*self.board_scale_x, 0)
+            zoom_delta = QPointF(FRAME_PADDING*self.canvas_scale_x, 0)
             font = painter.font()
             before_font = painter.font()
             font.setPixelSize(30)
@@ -1683,10 +1683,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.pixmap = QPixmap()
 
     def board_draw_grid(self, painter):
-        LINES_INTERVAL_X = 300 * self.board_scale_x
+        LINES_INTERVAL_X = 300 * self.canvas_scale_x
         LINES_INTERVAL_Y = 300 * self.board_scale_y
         r = QRectF(self.rect()).adjusted(-LINES_INTERVAL_X*2, -LINES_INTERVAL_Y*2, LINES_INTERVAL_X*2, LINES_INTERVAL_Y*2)
-        value_x = int(fit(self.board_scale_x, 0.08, 1.0, 0, 200))
+        value_x = int(fit(self.canvas_scale_x, 0.08, 1.0, 0, 200))
         # value_x = 100
         pen = QPen(QColor(220, 220, 220, value_x), 1)
         painter.setPen(pen)
@@ -1705,7 +1705,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
-        for point, board_scale_x, board_scale_y in cf.board.user_points:
+        for point, canvas_scale_x, board_scale_y in cf.board.user_points:
             painter.drawPoint(self.board_MapToViewport(point))
 
     def board_draw_main_default(self, painter, event):
@@ -1924,7 +1924,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # text_rect_center = QPointF(curpos).toPoint() + QPoint(0, -10)
         text_rect_center = point.toPoint()
 
-        scale_percent_x = math.ceil(self.board_scale_x*100)
+        scale_percent_x = math.ceil(self.canvas_scale_x*100)
         scale_percent_y = math.ceil(self.board_scale_y*100)
         text = f'{dist:.2f}\n{scale_percent_x:,}% {scale_percent_y:,}%'.replace(',', ' ')
         font = painter.font()
@@ -2183,9 +2183,9 @@ class BoardMixin(BoardTextEditItemMixin):
             tp = self.board_bounding_rect.topLeft()
 
             # здесь board_scale необходим для правильной передачи смещения вьюпорта
-            delta = viewport_pos - QPointF(tp.x()*self.board_scale_x, tp.y()*self.board_scale_y)
+            delta = viewport_pos - QPointF(tp.x()*self.canvas_scale_x, tp.y()*self.board_scale_y)
             delta = QPointF(
-                delta.x()/self.board_bounding_rect.width()/self.board_scale_x,
+                delta.x()/self.board_bounding_rect.width()/self.canvas_scale_x,
                 delta.y()/self.board_bounding_rect.height()/self.board_scale_y
             )
 
@@ -2200,7 +2200,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 vh/self.board_bounding_rect.height()
             )
             # здесь board scale нужен для передачи мастабирования вьюпорта
-            w = map_width*rel_size.x()/self.board_scale_x
+            w = map_width*rel_size.x()/self.canvas_scale_x
             h = map_height*rel_size.y()/self.board_scale_y
             miniviewport_rect = QRectF(0, 0, w, h)
             miniviewport_rect.moveCenter(point)
@@ -2439,7 +2439,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             selection_bounding_rect = self.selection_bounding_box.boundingRect()
             bi.position = self.board_MapToBoard(selection_bounding_rect.center())
-            bi.width = selection_bounding_rect.width() / self.board_scale_x
+            bi.width = selection_bounding_rect.width() / self.canvas_scale_x
             bi.height = selection_bounding_rect.height() / self.board_scale_y
             bi.width += BoardItem.FRAME_PADDING
             bi.height += BoardItem.FRAME_PADDING
@@ -2765,7 +2765,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pos_radius_vector = rotation.map(pos_radius_vector)
             new_absolute_position = pivot + pos_radius_vector
             rel_pos_global_scaled = new_absolute_position - self.canvas_origin
-            new_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+            new_position = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
             bi.position = new_position
         # bounding box transformation
         translate_to_coord_origin = QTransform()
@@ -2982,7 +2982,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_absolute_position = pivot + mapped_scaling_vector
                 rel_pos_global_scaled = new_absolute_position - self.canvas_origin
-                new_position = QPointF(rel_pos_global_scaled.x()/self.board_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
+                new_position = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.board_scale_y)
                 bi.position = new_position
 
         # bounding box update
@@ -3157,7 +3157,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif ctrl and not shift:
                 cf = self.LibraryData().current_folder()
                 canvas_pos = self.board_MapToBoard(event.pos())
-                cf.board.user_points.append([canvas_pos, self.board_scale_x, self.board_scale_y])
+                cf.board.user_points.append([canvas_pos, self.canvas_scale_x, self.board_scale_y])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
@@ -3180,13 +3180,13 @@ class BoardMixin(BoardTextEditItemMixin):
                     break
 
     def board_MapToViewport(self, canvas_pos):
-        scaled_rel_pos = QPointF(canvas_pos.x()*self.board_scale_x, canvas_pos.y()*self.board_scale_y)
+        scaled_rel_pos = QPointF(canvas_pos.x()*self.canvas_scale_x, canvas_pos.y()*self.board_scale_y)
         viewport_pos = self.canvas_origin + scaled_rel_pos
         return viewport_pos
 
     def board_MapToBoard(self, viewport_pos):
         delta = QPointF(viewport_pos - self.canvas_origin)
-        board_pos = QPointF(delta.x()/self.board_scale_x, delta.y()/self.board_scale_y)
+        board_pos = QPointF(delta.x()/self.canvas_scale_x, delta.y()/self.board_scale_y)
         return board_pos
 
     def board_paste_selected_items(self):
@@ -3208,7 +3208,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.init_selection_bounding_box_widget(cf)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
-                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, board_scale_x=None, board_scale_y=None, scale_speed=10.0):
+                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, board_scale_y=None, scale_speed=10.0):
 
         if not precalculate:
             self.board_region_zoom_do_cancel()
@@ -3235,10 +3235,10 @@ class BoardMixin(BoardTextEditItemMixin):
             factor_y = factor
 
         _canvas_origin = canvas_origin if canvas_origin is not None else self.canvas_origin
-        _board_scale_x = board_scale_x if board_scale_x is not None else self.board_scale_x
+        _canvas_scale_x = canvas_scale_x if canvas_scale_x is not None else self.canvas_scale_x
         _board_scale_y = board_scale_y if board_scale_y is not None else self.board_scale_y
 
-        _board_scale_x *= factor_x
+        _canvas_scale_x *= factor_x
         _board_scale_y *= factor_y
 
         _canvas_origin -= pivot
@@ -3246,10 +3246,10 @@ class BoardMixin(BoardTextEditItemMixin):
         _canvas_origin += pivot
 
         if precalculate:
-            return _board_scale_x, _board_scale_y, _canvas_origin
+            return _canvas_scale_x, _board_scale_y, _canvas_origin
 
         self.canvas_origin  = _canvas_origin
-        self.board_scale_x = _board_scale_x
+        self.canvas_scale_x = _canvas_scale_x
         self.board_scale_y = _board_scale_y
 
         if self.selection_rect:
@@ -3452,7 +3452,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item is None and (image_data is not None) and image_data.board_item is None:
             self.show_center_label("Этот элемент не представлен на доске", error=True)
         else:
-            board_scale_x = self.board_scale_x
+            canvas_scale_x = self.canvas_scale_x
             board_scale_y = self.board_scale_y
 
             if use_selection:
@@ -3462,7 +3462,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     pass
                 else:
                     board_item = image_data.board_item
-                content_pos = QPointF(board_item.position.x()*board_scale_x, board_item.position.y()*board_scale_y)
+                content_pos = QPointF(board_item.position.x()*canvas_scale_x, board_item.position.y()*board_scale_y)
             viewport_center_pos = self.get_center_position()
 
             self.canvas_origin = - content_pos + viewport_center_pos
@@ -3494,11 +3494,11 @@ class BoardMixin(BoardTextEditItemMixin):
         if keep_position:
             self.do_scale_board(0, False, False, False,
                 pivot=pivot,
-                factor_x=1/self.board_scale_x,
+                factor_x=1/self.canvas_scale_x,
                 factor_y=1/self.board_scale_y,
             )
         else:
-            self.board_scale_x = 1.0
+            self.canvas_scale_x = 1.0
             self.board_scale_y = 1.0
 
     def set_default_boardviewport_origin(self):
@@ -3576,14 +3576,14 @@ class BoardMixin(BoardTextEditItemMixin):
         # надо менять и значение self.canvas_origin для того,
         # чтобы увеличивать относительно центра картинки и центра экрана,
         # а они совпадают в данном случае
-        factor_x = self._board_scale_x/self.board_scale_x
+        factor_x = self._canvas_scale_x/self.canvas_scale_x
         factor_y = self._board_scale_y/self.board_scale_y
 
         pivot = self.get_center_position()
 
         _canvas_origin = self.canvas_origin
 
-        self.board_scale_x *= factor_x
+        self.canvas_scale_x *= factor_x
         self.board_scale_y *= factor_y
 
         _canvas_origin -= pivot
@@ -3640,8 +3640,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             item_point = item_to_center_viewport.position
 
-            pos1 = QPointF(current_pos.x()*self.board_scale_x, current_pos.y()*self.board_scale_y)
-            pos2 = QPointF(item_point.x()*self.board_scale_x, item_point.y()*self.board_scale_y)
+            pos1 = QPointF(current_pos.x()*self.canvas_scale_x, current_pos.y()*self.board_scale_y)
+            pos2 = QPointF(item_point.x()*self.canvas_scale_x, item_point.y()*self.board_scale_y)
 
             viewport_center_pos = self.get_center_position()
 
@@ -3651,7 +3651,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             board_item = item_to_center_viewport
 
-            board_scale_x = self.board_scale_x
+            canvas_scale_x = self.canvas_scale_x
             board_scale_y = self.board_scale_y
 
             item_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
@@ -3660,14 +3660,14 @@ class BoardMixin(BoardTextEditItemMixin):
             bx = fitted_rect.width()/item_rect.width()
             by = fitted_rect.height()/item_rect.height()
 
-            new_board_scale_x, new_board_scale_y, new_canvas_origin = self.do_scale_board(1.0,
+            new_canvas_scale_x, new_board_scale_y, new_canvas_origin = self.do_scale_board(1.0,
                 False,
                 False,
                 True,
-                factor_x=bx/self.board_scale_x,
+                factor_x=bx/self.canvas_scale_x,
                 factor_y=by/self.board_scale_y,
                 precalculate=True,
-                board_scale_x=self.board_scale_x,
+                canvas_scale_x=self.canvas_scale_x,
                 board_scale_y=self.board_scale_y,
                 canvas_origin=pos2,
                 pivot = self.get_center_position()
@@ -3676,7 +3676,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.animate_properties(
                 [
                     (self, "canvas_origin", pos1, new_canvas_origin, self.update),
-                    (self, "board_scale_x", self.board_scale_x, new_board_scale_x, self.update),
+                    (self, "canvas_scale_x", self.canvas_scale_x, new_canvas_scale_x, self.update),
                     (self, "board_scale_y", self.board_scale_y, new_board_scale_y, self.update),
                 ],
                 anim_id="flying",
@@ -3722,7 +3722,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.fly_pairs = get_cycled_pairs(_list)
             pair = [
-                [current_pos, self.board_scale_x, self.board_scale_y],
+                [current_pos, self.canvas_scale_x, self.board_scale_y],
                 [_list[0][0], _list[0][1], _list[0][2], ]
             ]
 
@@ -3735,7 +3735,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if bx is None:
                 board_item = by
-                board_scale_x = self.board_scale_x
+                canvas_scale_x = self.canvas_scale_x
                 board_scale_y = self.board_scale_y
 
                 item_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
@@ -3745,7 +3745,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.animate_properties(
                 [
-                    (self, "_board_scale_x", self.board_scale_x, bx, self.animate_scale_update),
+                    (self, "_canvas_scale_x", self.canvas_scale_x, bx, self.animate_scale_update),
                     (self, "_board_scale_y", self.board_scale_y, by, self.animate_scale_update),
                 ],
                 anim_id="flying",
@@ -3761,12 +3761,12 @@ class BoardMixin(BoardTextEditItemMixin):
         current_pos_ = self.board_MapToBoard(self.get_center_position())
 
         pair = [
-            [current_pos_, self.board_scale_x, self.board_scale_y],
+            [current_pos_, self.canvas_scale_x, self.board_scale_y],
             pair[1],
         ]
 
-        pos1 = QPointF(pair[0][0].x()*self.board_scale_x, pair[0][0].y()*self.board_scale_y)
-        pos2 = QPointF(pair[1][0].x()*self.board_scale_x, pair[1][0].y()*self.board_scale_y)
+        pos1 = QPointF(pair[0][0].x()*self.canvas_scale_x, pair[0][0].y()*self.board_scale_y)
+        pos2 = QPointF(pair[1][0].x()*self.canvas_scale_x, pair[1][0].y()*self.board_scale_y)
 
         self.animate_properties(
             [
@@ -3822,7 +3822,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.animate_properties(
                     [
                         (self, "canvas_origin", self.canvas_origin, self.board_orig_origin, self.update),
-                        (self, "board_scale_x", self.board_scale_x, self.board_orig_scale_x, self.update),
+                        (self, "canvas_scale_x", self.canvas_scale_x, self.board_orig_scale_x, self.update),
                         (self, "board_scale_y", self.board_scale_y, self.board_orig_scale_y, self.update),
                     ],
                     anim_id="board_region_zoom_out",
@@ -3830,7 +3830,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     easing=QEasingCurve.InOutCubic
                 )
             else:
-                self.board_scale_x = self.board_orig_scale_x
+                self.canvas_scale_x = self.board_orig_scale_x
                 self.board_scale_y = self.board_orig_scale_y
                 self.canvas_origin = self.board_orig_origin
             self.board_region_zoom_in_init()
@@ -3870,7 +3870,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.animate_properties(
                     [
                         (self, "canvas_origin", before_pos, origin, self.update),
-                        (self, "board_scale_x", self.board_scale_x, scale_x, self.update),
+                        (self, "canvas_scale_x", self.canvas_scale_x, scale_x, self.update),
                         (self, "board_scale_y", self.board_scale_y, scale_y, self.update),
                         (self, "board_magnifier_input_rect_animated", self.board_magnifier_input_rect_animated, self.board_magnifier_projected_rect, self.update)
                     ],
@@ -3880,7 +3880,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 )
             else:
                 self.canvas_origin = origin
-                self.board_scale_x = scale_x
+                self.canvas_scale_x = scale_x
                 self.board_scale_y = scale_y
 
     def board_region_zoom_in_mousePressEvent(self, event):
@@ -3888,7 +3888,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_region_zoom_in_input_started = True
             self.board_INPUT_POINT1 = event.pos()
             self.board_magnifier_input_rect = None
-            self.board_orig_scale_x = self.board_scale_x
+            self.board_orig_scale_x = self.canvas_scale_x
             self.board_orig_scale_y = self.board_scale_y
             self.board_orig_origin = self.canvas_origin
             # self.setCursor(Qt.CrossCursor)
