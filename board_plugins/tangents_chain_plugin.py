@@ -16,7 +16,7 @@ from PyQt5.QtGui import *
 
 def get_pixels_in_radius_unit(self):
     CONST = 20
-    return CONST*max(self.canvas_scale_x, self.board_scale_y)
+    return CONST*max(self.canvas_scale_x, self.canvas_scale_y)
     # return CONST
 
 def build_rect_from_point(self, point, r=1.0):
@@ -236,7 +236,7 @@ def mouseMoveEvent(self, event):
         _data.tempPair = None
         delta = QPointF(_data.start_pos - event.pos())
         delta.setX(delta.x()/self.canvas_scale_x)
-        delta.setY(delta.y()/self.board_scale_y)
+        delta.setY(delta.y()/self.canvas_scale_y)
         _data.circles[_data.drag_point].position = _data.oldpos - delta
 
     else:
