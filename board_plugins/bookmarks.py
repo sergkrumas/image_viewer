@@ -26,7 +26,7 @@ def paintEvent(self, painter, event):
     board = cf.board
     for bi in board.items_list:
         if bi.type in [self.BoardItem.types.ITEM_GROUP]:
-            area = bi.get_selection_area(board=self)
+            area = bi.get_selection_area(canvas=self)
             area_rect = area.boundingRect()
             area_rect.moveLeft(area_rect.left()+25)
             area_rect.moveBottomLeft(area_rect.bottomRight())
@@ -104,7 +104,7 @@ def any_group_item(self):
     cf = self.LibraryData().current_folder()
     for item in cf.board.items_list:
         if item.type == self.BoardItem.types.ITEM_GROUP:
-            if item.get_selection_area(board=self).containsPoint(pos, Qt.WindingFill):
+            if item.get_selection_area(canvas=self).containsPoint(pos, Qt.WindingFill):
                 item_under_mouse = item
                 break
     if cf.board.root_folder is not None:

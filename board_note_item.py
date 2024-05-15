@@ -482,7 +482,7 @@ class BoardTextEditItemMixin():
     def board_TextElementIsCursorInsideTextElement(self, event):
         ae = self.active_element
         if self.board_TextElementIsActiveElement():
-            if ae.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
+            if ae.get_selection_area(canvas=self).containsPoint(event.pos(), Qt.WindingFill):
                 return True
         return False
 
@@ -674,7 +674,7 @@ class BoardTextEditItemMixin():
             offset_translation = QTransform()
             offset_translation.translate(-offset_x, -offset_y)
 
-        item_transform = element.get_transform_obj(board=self)
+        item_transform = element.get_transform_obj(canvas=self)
         if element.text_doc is not None:
             item_transform = offset_translation * item_transform
         element.draw_transform = item_transform
@@ -731,7 +731,7 @@ class BoardTextEditItemMixin():
 
         if self.board_TextElementIsActiveElement() and element.editing:
             painter.save()
-            element_bound_rect = element.get_selection_area(board=self).boundingRect()
+            element_bound_rect = element.get_selection_area(canvas=self).boundingRect()
             tl = element_bound_rect.topLeft() + QPointF(-10, 0)
 
             RECT_SIZE = 25

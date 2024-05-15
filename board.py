@@ -171,12 +171,12 @@ class BoardItem():
         elif self.type == self.types.ITEM_NOTE:
             return f'TEXT NOTE'
 
-    def calculate_absolute_position(self, board=None, rel_pos=None):
-        _scale_x = board.board_scale_x
-        _scale_y = board.board_scale_y
+    def calculate_absolute_position(self, canvas=None, rel_pos=None):
+        _scale_x = canvas.board_scale_x
+        _scale_y = canvas.board_scale_y
         if rel_pos is None:
             rel_pos = self.position
-        return QPointF(board.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
+        return QPointF(canvas.board_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
 
     def aspect_ratio(self):
         rect = self.get_size_rect(scaled=False)
@@ -213,7 +213,7 @@ class BoardItem():
         elif self.type == self.types.ITEM_NOTE:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
 
-    def get_selection_area(self, board=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
+    def get_selection_area(self, canvas=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
         size_rect = self.get_size_rect()
         if place_center_at_origin:
             size_rect.moveCenter(QPointF(0, 0))
@@ -224,10 +224,10 @@ class BoardItem():
             size_rect.bottomLeft(),
         ]
         polygon = QPolygonF(points)
-        transform = self.get_transform_obj(board=board, apply_global_scale=apply_global_scale, apply_translation=apply_translation)
+        transform = self.get_transform_obj(canvas=canvas, apply_global_scale=apply_global_scale, apply_translation=apply_translation)
         return transform.map(polygon)
 
-    def get_transform_obj(self, board=None, apply_local_scale=True, apply_translation=True, apply_global_scale=True):
+    def get_transform_obj(self, canvas=None, apply_local_scale=True, apply_translation=True, apply_global_scale=True):
         local_scaling = QTransform()
         rotation = QTransform()
         global_scaling = QTransform()
@@ -237,12 +237,12 @@ class BoardItem():
         rotation.rotate(self.rotation)
         if apply_translation:
             if apply_global_scale:
-                pos = self.calculate_absolute_position(board=board)
+                pos = self.calculate_absolute_position(canvas=canvas)
                 translation.translate(pos.x(), pos.y())
             else:
                 translation.translate(self.position.x(), self.position.y())
         if apply_global_scale:
-            global_scaling.scale(board.board_scale_x, board.board_scale_y)
+            global_scaling.scale(canvas.board_scale_x, canvas.board_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
         return transform
 
@@ -343,9 +343,7 @@ class BoardMixin(BoardTextEditItemMixin):
     BoardItem = BoardItem
 
     def board_init(self):
-        self.board_origin = self.get_center_position()
-        self.board_scale_x = 1.0
-        self.board_scale_y = 1.0
+
         self.board_region_zoom_in_init()
         self.scale_rastr_source = None
         self.rotate_rastr_source = None
@@ -534,7 +532,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_mouseDoubleClickEventDefault(self, event):
         cf = self.LibraryData().current_folder()
         for board_item in cf.board.items_list:
-            item_selection_area = board_item.get_selection_area(board=self)
+            item_selection_area = board_item.get_selection_area(canvas=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse:
                 if board_item.type == BoardItem.types.ITEM_NOTE:
@@ -1192,7 +1190,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             item = None
             for bi in cf.board.items_list:
-                item_selection_area = bi.get_selection_area(board=self)
+                item_selection_area = bi.get_selection_area(canvas=self)
                 is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 if is_under_mouse:
                     item = bi
@@ -1440,7 +1438,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setBrush(Qt.NoBrush)
         for board_item in folder_data.board.items_list:
             if board_item._selected:
-                painter.drawPolygon(board_item.get_selection_area(board=self))
+                painter.drawPolygon(board_item.get_selection_area(canvas=self))
         painter.restore()
 
     def get_monitor_area(self):
@@ -1457,7 +1455,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
             FRAME_PADDING = BoardItem.FRAME_PADDING
 
-            area = board_item.get_selection_area(board=self)
+            area = board_item.get_selection_area(canvas=self)
             pen = QPen(Qt.white, 2, Qt.DashLine)
             pen.setCosmetic(True) # не скейлить пен
             painter.setPen(pen)
@@ -1506,7 +1504,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             image_data = board_item.retrieve_image_data()
 
-            selection_area = board_item.get_selection_area(board=self)
+            selection_area = board_item.get_selection_area(canvas=self)
 
             if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
                 if self.STNG_board_unloading:
@@ -1514,7 +1512,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             else:
                 self.images_drawn += 1
-                transform = board_item.get_transform_obj(board=self)
+                transform = board_item.get_transform_obj(canvas=self)
 
                 painter.setTransform(transform)
                 item_rect = board_item.get_size_rect()
@@ -1616,7 +1614,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.pixmap is None:
             return
 
-        dist = QVector2D(self.get_center_position() - board_item.calculate_absolute_position(board=self)).length()
+        dist = QVector2D(self.get_center_position() - board_item.calculate_absolute_position(canvas=self)).length()
 
         if dist > 10000.0:
             board_item.pixmap = None
@@ -1987,7 +1985,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # points.append(self.board_origin) #мешает при использовании board_navigate_camera_via_minimap, поэтому убрал нафег
         if folder_data.board.items_list:
             for board_item in folder_data.board.items_list:
-                rf = board_item.get_selection_area(board=self, apply_global_scale=apply_global_scale).boundingRect()
+                rf = board_item.get_selection_area(canvas=self, apply_global_scale=apply_global_scale).boundingRect()
                 points.append(rf.topLeft())
                 points.append(rf.bottomRight())
             p1, p2 = get_bounding_points(points)
@@ -2138,7 +2136,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
                 painter.setPen(QPen(Qt.green, 1))
-                selection_area = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False)
+                selection_area = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False)
                 transform = QTransform()
                 scale_x = map_width/self.board_bounding_rect.width()
                 scale_y = map_height/self.board_bounding_rect.height()
@@ -2297,7 +2295,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.image_data.folder_data = current_folder
             current_folder.images_list.append(im_data)
 
-            pos = self.board_MapToBoard(gi.get_selection_area(board=self).boundingRect().topRight())
+            pos = self.board_MapToBoard(gi.get_selection_area(canvas=self).boundingRect().topRight())
             size_rect = bi.get_size_rect(scaled=False)
             offset = QPointF(size_rect.width()/2, size_rect.height()/2)
             bi.position = (pos + offset)
@@ -2455,7 +2453,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
     def is_pos_over_item_area(self, item, position):
-        sa = item.get_selection_area(board=self)
+        sa = item.get_selection_area(canvas=self)
         return sa.containsPoint(position, Qt.WindingFill) or \
                 (item.type == BoardItem.types.ITEM_FRAME and item.__label_ui_rect is not None and item.__label_ui_rect.contains(position))
 
@@ -2480,9 +2478,9 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
                 this_frame_area = board_item.calc_area
-                item_frame_area = board_item.get_selection_area(board=self)
+                item_frame_area = board_item.get_selection_area(canvas=self)
                 for bi in current_folder.board.items_list[:]:
-                    bi_area = bi.get_selection_area(board=self)
+                    bi_area = bi.get_selection_area(canvas=self)
                     center_point = bi_area.boundingRect().center()
                     if item_frame_area.containsPoint(QPointF(center_point), Qt.WindingFill):
                         if bi.type != BoardItem.types.ITEM_FRAME or (bi.type == BoardItem.types.ITEM_FRAME and bi.calc_area < this_frame_area):
@@ -2556,7 +2554,7 @@ class BoardMixin(BoardTextEditItemMixin):
             cf = self.LibraryData().current_folder()
             for bi in cf.board.items_list:
                 if bi.type is BoardItem.types.ITEM_GROUP:
-                    item_selection_area = bi.get_selection_area(board=self)
+                    item_selection_area = bi.get_selection_area(canvas=self)
                     is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
                     if is_under_mouse:
                         self.item_group_under_mouse = bi
@@ -2571,7 +2569,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # reversed для того, чтобы картинки на переднем плане чекались первыми
         pos = self.mapped_cursor_pos()
         for board_item in reversed(current_folder.board.items_list):
-            item_selection_area = board_item.get_selection_area(board=self)
+            item_selection_area = board_item.get_selection_area(canvas=self)
             # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             is_under_mouse = self.is_pos_over_item_area(board_item, pos)
 
@@ -2606,7 +2604,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def find_all_items_under_this_pos(self, folder_data, pos):
         undermouse_items = []
         for board_item in folder_data.board.items_list:
-            item_selection_area = board_item.get_selection_area(board=self)
+            item_selection_area = board_item.get_selection_area(canvas=self)
             # is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
             is_under_mouse = self.is_pos_over_item_area(board_item, pos)
             if is_under_mouse:
@@ -2620,7 +2618,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.selection_rect is not None:
             selection_rect_area = QPolygonF(self.selection_rect)
             for board_item in current_folder.board.items_list:
-                item_selection_area = board_item.get_selection_area(board=self)
+                item_selection_area = board_item.get_selection_area(canvas=self)
                 if item_selection_area.intersects(selection_rect_area):
                     board_item._selected = True
                 else:
@@ -2633,7 +2631,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # reversed для того, чтобы картинки на переднем плане чекались первыми
             pos = self.mapped_cursor_pos()
             for board_item in reversed(current_folder.board.items_list):
-                item_selection_area = board_item.get_selection_area(board=self)
+                item_selection_area = board_item.get_selection_area(canvas=self)
                 # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
                 is_under_mouse = self.is_pos_over_item_area(board_item, pos)
                 if add_to_selection and board_item._selected:
@@ -2669,11 +2667,11 @@ class BoardMixin(BoardTextEditItemMixin):
     def update_selection_bouding_box(self):
         self.selection_bounding_box = None
         if len(self.selected_items) == 1:
-            self.selection_bounding_box = self.selected_items[0].get_selection_area(board=self)
+            self.selection_bounding_box = self.selected_items[0].get_selection_area(canvas=self)
         elif len(self.selected_items) > 1:
             bounding_box = QRectF()
             for board_item in self.selected_items:
-                bounding_box = bounding_box.united(board_item.get_selection_area(board=self).boundingRect())
+                bounding_box = bounding_box.united(board_item.get_selection_area(canvas=self).boundingRect())
             self.selection_bounding_box = QPolygonF([
                 bounding_box.topLeft(),
                 bounding_box.topRight(),
@@ -2760,7 +2758,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if not multi_item_mode and ctrl_mod:
                 bi.rotation = self.step_rotation(bi.rotation)
             # position component
-            pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__position)
+            pos = bi.calculate_absolute_position(canvas=self, rel_pos=bi.__position)
             pos_radius_vector = pos - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
             new_absolute_position = pivot + pos_radius_vector
@@ -2895,7 +2893,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.__scale_x_init = bi.scale_x
                 bi.__scale_y_init = bi.scale_y
                 bi.__position_init = QPointF(bi.position)
-            position_vec = bi.calculate_absolute_position(board=self) - self.scaling_pivot_corner_point
+            position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_corner_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
 
     def calculate_vector_projection_factors(self, x_axis, y_axis, vector):
@@ -2975,7 +2973,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if center_is_pivot:
                 bi.position = bi.__position
             else:
-                pos = bi.calculate_absolute_position(board=self, rel_pos=bi.__position)
+                pos = bi.calculate_absolute_position(canvas=self, rel_pos=bi.__position)
                 scaling = QTransform()
                 # эти нормализованные координаты актуальны для пропорционального и не для пропорционального редактирования
                 scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
@@ -3174,7 +3172,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_go_to_note(self, event):
         for sel_item in self.selected_items:
             if sel_item.type == BoardItem.types.ITEM_NOTE:
-                if sel_item.get_selection_area(board=self).containsPoint(event.pos(), Qt.WindingFill):
+                if sel_item.get_selection_area(canvas=self).containsPoint(event.pos(), Qt.WindingFill):
                     note_content = sel_item.plain_text
                     execute_clickable_text(note_content)
                     break
@@ -3329,7 +3327,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_toggle_item_info_overlay(self):
         cf = self.LibraryData().current_folder()
         for bi in cf.board.items_list:
-            item_selection_area = bi.get_selection_area(board=self)
+            item_selection_area = bi.get_selection_area(canvas=self)
             is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
             if is_under_mouse or bi._selected:
                 bi._show_file_info_overlay = not bi._show_file_info_overlay
@@ -3470,7 +3468,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if use_selection:
                 content_rect = self.selection_bounding_box.boundingRect().toRect()
             else:
-                content_rect = board_item.get_selection_area(board=self, place_center_at_origin=False).boundingRect().toRect()
+                content_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(content_rect, self.rect())
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
@@ -3539,11 +3537,11 @@ class BoardMixin(BoardTextEditItemMixin):
         pos_list = all_items[item_index:]
         neg_list = all_items[:item_index]
 
-        main_offset = item.get_selection_area(board=self, apply_global_scale=False).boundingRect().topLeft()
+        main_offset = item.get_selection_area(canvas=self, apply_global_scale=False).boundingRect().topLeft()
 
         offset = QPointF(main_offset)
         for bi in pos_list:
-            b_rect = bi.get_selection_area(board=self, apply_global_scale=False).boundingRect()
+            b_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bi_width = b_rect.width()
             bi_height = b_rect.height()
             bi.position = offset + QPointF(bi_width/2, bi_height/2)
@@ -3551,7 +3549,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         offset = QPointF(main_offset)
         for bi in reversed(neg_list):
-            b_rect = bi.get_selection_area(board=self, apply_global_scale=False).boundingRect()
+            b_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bi_width = b_rect.width()
             bi_height = b_rect.height()
             bi.position = offset + QPointF(bi_width/2, -bi_height/2)
@@ -3603,7 +3601,7 @@ class BoardMixin(BoardTextEditItemMixin):
             cursor_pos = self.mapped_cursor_pos()
         for board_item in folder_data.board.items_list:
 
-            pos = board_item.calculate_absolute_position(board=self)
+            pos = board_item.calculate_absolute_position(canvas=self)
             distance = QVector2D(pos - cursor_pos).length()
             if distance < min_distance:
                 min_distance = distance
@@ -3628,7 +3626,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             first_item = _list[0]
             second_item = _list[1]
-            pos = first_item.calculate_absolute_position(board=self)
+            pos = first_item.calculate_absolute_position(canvas=self)
             distance = QVector2D(pos - self.get_center_position()).length()
             if distance < 5.0:
                 # если цент картинки практически совпадает с центром вьюпорта, то выбираем следующую картинку
@@ -3654,7 +3652,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_scale_x = self.board_scale_x
             board_scale_y = self.board_scale_y
 
-            item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+            item_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
 
             fitted_rect = fit_rect_into_rect(item_rect, self.rect())
             bx = fitted_rect.width()/item_rect.width()
@@ -3738,7 +3736,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_scale_x = self.board_scale_x
                 board_scale_y = self.board_scale_y
 
-                item_rect = board_item.get_selection_area(board=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+                item_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
                 by = fitted_rect.height()/item_rect.height()
