@@ -104,7 +104,7 @@ def update_board_viewer(obj, data):
     key = data[0]
     if key == BOARD_OFFSET:
         offset = data[1]
-        obj.board_origin -= offset
+        obj.canvas_origin -= offset
     elif key == BOARD_SCALE:
         scroll_value = data[1]
         pivot = obj.rect().center()
@@ -188,7 +188,7 @@ def read_sticks_to_obj(obj):
                 offset = QPointF(x_axis, y_axis)
                 if offset:
                     offset *= 20
-                    obj.board_origin -= offset
+                    obj.canvas_origin -= offset
                     obj.update()
 
                 x_axis, y_axis = read_right_stick(data)

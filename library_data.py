@@ -309,7 +309,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW = self.globals.main_window
         board.scale_x = MW.board_scale_x
         board.scale_y = MW.board_scale_y
-        board.origin = MW.board_origin
+        board.origin = MW.canvas_origin
         MW.board_save_board_data(board, cf)
 
     def load_board_data(self):
@@ -324,7 +324,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if board.origin is None:
             MW.set_default_boardviewport_origin()
         else:
-            MW.board_origin = board.origin
+            MW.canvas_origin = board.origin
         MW.board_load_board_data(board, cf)
         MW.board_SetCallbacks()
 

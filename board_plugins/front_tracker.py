@@ -821,7 +821,7 @@ def preparePluginBoard(self, plugin_info, rescan=False):
     if not rescan:
         find_sublime_text_exe_filepath(self)
         self.front_tracker_watcher.fileChanged.connect(partial(_watcherFileChanged, self))
-        self.board_origin = QPointF(500, 250)
+        self.canvas_origin = QPointF(500, 250)
 
         generate_brush(self)
 

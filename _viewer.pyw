@@ -3052,7 +3052,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.is_viewer_page_active():
                 self.image_center_position += delta
             elif self.is_board_page_active():
-                self.board_origin += delta
+                self.canvas_origin += delta
                 self.update_selection_bouding_box()
 
 

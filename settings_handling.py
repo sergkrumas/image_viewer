@@ -435,7 +435,7 @@ class SettingsWindow(QWidget):
 
         '---006': ('Страница доски'),
         'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры'),
-        'board_draw_board_origin': (False, 'Показывать точку начала координат на доске'),
+        'board_draw_canvas_origin': (False, 'Показывать точку начала координат на доске'),
         'board_draw_grid': (False, 'Показывать сетку'),
         'board_unloading': (False, 'Оперативно выгружать картинки, если они не просматриваются в данный момент'),
         'board_move_to_current_on_first_open': (True, 'При первом открытии доски из вьювера центрировать вьюпорт доски на текущей картинке'),
