@@ -3554,7 +3554,7 @@ def choose_start_option_callback(do_start_server, path):
                         )
     if ret == QMessageBox.Yes:
         print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
-        start_lite_process(path)
+        restart_process_in_lite_mode()
         sys.exit(0)
     elif ret == QMessageBox.No:
         # finally start server
@@ -3704,6 +3704,14 @@ def exit_threads():
         thread.terminate()
         # нужно вызывать terminate вместо exit
 
+def restart_process_in_lite_mode():
+    app_path = sys.argv[0]
+    args = retrieve_cmd_args()
+    args.insert(0, app_path)
+    args.insert(0, sys.executable)
+    args.append('-lite')
+    subprocess.Popen(args)
+
 def start_lite_process(path):
     if Globals.DEBUG:
         app_path = __file__
@@ -3805,7 +3813,7 @@ def _main():
     sys.excepthook = excepthook
     pid = os.getpid()
     arguments = ", ".join(sys.argv)
-    print(f'Proccess ID: {pid} {arguments}')
+    print(f'Proccess ID: {pid} Command Arguments: {arguments}')
 
     if not Globals.DEBUG:
         RERUN_ARG = '-rerun'
@@ -3858,6 +3866,7 @@ def _main():
     parser.add_argument('-board', help='', action='store_true')
     args = parser.parse_args(sys.argv[1:])
     # print(args)
+    Globals.args = args
     if args.path:
         path = args.path
     if args.frame:
@@ -3890,11 +3899,8 @@ def _main():
 
     ServerOrClient.globals = Globals
 
-    if (Globals.DEBUG and not Globals.FORCE_FULL_DEBUG) or args.board:
-        Globals.lite_mode = True
-    else:
-        if not Globals.lite_mode:
-            path = ServerOrClient.server_or_client_via_sockets(path, open_request,
+    if not Globals.lite_mode:
+        path = ServerOrClient.server_or_client_via_sockets(path, open_request,
                                                                     choose_start_option_callback)
     Globals.is_path_exists = os.path.exists(path)
 
