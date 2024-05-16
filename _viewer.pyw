@@ -3553,7 +3553,7 @@ def choose_start_option_callback(do_start_server, path):
                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
                         )
     if ret == QMessageBox.Yes:
-        print("Rerun from choose_start_option_callback...")
+        print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
         start_lite_process(path)
         sys.exit(0)
     elif ret == QMessageBox.No:
@@ -3961,6 +3961,21 @@ def _main():
     if sti:
         sti.hide()
     sys.exit(exit_code)
+
+def retrieve_cmd_args():
+    bin_args = []
+    iterable = vars(Globals.args).items()
+    for arg_name, arg_value in iterable:
+        if isinstance(arg_value, bool):
+            if arg_value:
+                bin_args.append(f'-{arg_name}')
+        elif isinstance(arg_value, str):
+            bin_args.append(arg_value)
+        elif isinstance(arg_value, type(None)):
+            pass
+        else:
+            raise Exception(f'Not supported argument "{arg_name}" with value "{arg_value}"')
+    return bin_args
 
 def main():
     try:
