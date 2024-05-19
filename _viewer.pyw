@@ -2192,6 +2192,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.restore()
         else:
             self._paintEvent(event, painter)
+            # if event.rect().height() < 500:
+            #     painter.setPen(Qt.green)
+            #     painter.drawLine(self.rect().bottomLeft(), self.rect().topRight())
         painter.end()
 
     def _paintEvent(self, event, painter):
