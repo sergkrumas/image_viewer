@@ -3557,7 +3557,7 @@ def choose_start_option_callback(do_start_server, path):
                         )
     if ret == QMessageBox.Yes:
         print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
-        restart_process_in_lite_mode()
+        restart_process_in_lite_mode(path)
         sys.exit(0)
     elif ret == QMessageBox.No:
         # finally start server
@@ -3707,9 +3707,12 @@ def exit_threads():
         thread.terminate()
         # нужно вызывать terminate вместо exit
 
-def restart_process_in_lite_mode():
+def restart_process_in_lite_mode(path=None):
     app_path = sys.argv[0]
-    args = retrieve_cmd_args()
+    if path is not None:
+        args = [path]
+    else:
+        args = retrieve_cmd_args()
     args.insert(0, app_path)
     args.insert(0, sys.executable)
     args.append('-lite')
