@@ -580,6 +580,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.BW_filter_state = BWFilterState.off
 
+        class CornerUIButtons():
+            NO_BUTTON = 0
+            LEFT_CORNER = 1
+            RIGHT_CORNER = 2
+            LEFT_CORNER_MENU = 3
+
+        self.CornerUIButtons = CornerUIButtons
+        self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -1472,25 +1481,33 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif event.button() == Qt.RightButton:
             self.open_settings_window()
 
+    def ui_check_mouse_over_corners(self, event):
+        if event.button() == Qt.LeftButton:
+            if self.over_corner_button():
+                return self.CornerUIButtons.RIGHT_CORNER
+            elif self.over_corner_button(corner_attr="topLeft"):
+                return self.CornerUIButtons.LEFT_CORNER
+            elif self.over_corner_menu(corner_attr="topLeft"):
+                return self.CornerUIButtons.LEFT_CORNER_MENU
+            else:
+                return self.CornerUIButtons.NO_BUTTON
+
+    def ui_handle_corners_click(self, corner_button):
+        if corner_button == self.CornerUIButtons.RIGHT_CORNER:
+            self.require_window_closing()
+        elif corner_button == self.CornerUIButtons.LEFT_CORNER:
+            self.cycle_change_page()
+        elif corner_button == self.CornerUIButtons.LEFT_CORNER_MENU:
+            self.handle_menu_item_click()
+
     def mousePressEvent(self, event):
 
         self.context_menu_allowed = True
 
-        if event.button() == Qt.LeftButton:
-            if self.over_corner_button():
-                self.require_window_closing()
-                return
-
-            elif self.over_corner_button(corner_attr="topLeft"):
-                self.cycle_change_page()
-                return
-
-            elif self.over_corner_menu(corner_attr="topLeft"):
-                self.handle_menu_item_click()
-                return
-
-
-
+        corner_UI_button = self.ui_check_mouse_over_corners(event)
+        if corner_UI_button > self.CornerUIButtons.NO_BUTTON:
+            self.corner_UI_button_pressed = corner_UI_button
+            return
 
         if self.is_board_page_active():
             self.board_mousePressEvent(event)
@@ -1565,6 +1582,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.cursor_setter()
         self.update_control_panel_label_text()
 
+        if self.corner_UI_button_pressed > self.CornerUIButtons.NO_BUTTON:
+            return
+
         if self.is_board_page_active():
             self.board_mouseMoveEvent(event)
 
@@ -1617,6 +1637,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+
+        if self.corner_UI_button_pressed > self.CornerUIButtons.NO_BUTTON:
+            corner_UI_button = self.ui_check_mouse_over_corners(event)
+            if corner_UI_button > self.CornerUIButtons.NO_BUTTON:
+                self.ui_handle_corners_click(corner_UI_button)
+            self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
+            return
+
 
         if self.is_board_page_active():
             self.board_mouseReleaseEvent(event)
