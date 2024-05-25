@@ -1489,8 +1489,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 return self.CornerUIButtons.LEFT_CORNER
             elif self.over_corner_menu(corner_attr="topLeft"):
                 return self.CornerUIButtons.LEFT_CORNER_MENU
-            else:
-                return self.CornerUIButtons.NO_BUTTON
+        return self.CornerUIButtons.NO_BUTTON
 
     def ui_handle_corners_click(self, corner_button):
         if corner_button == self.CornerUIButtons.RIGHT_CORNER:
