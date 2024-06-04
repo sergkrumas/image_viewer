@@ -589,6 +589,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.CornerUIButtons = CornerUIButtons
         self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
 
+        self.SPT_init()
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -2224,6 +2226,105 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             #     painter.drawLine(self.rect().bottomLeft(), self.rect().topRight())
         painter.end()
 
+    def SPT_init(self):
+        """
+            initializing slice pipette tool
+        """
+        self.spt_tool_activated = False
+        self.spt_tool_input_points = []
+        self.spt_tool_line_points_coords = []
+        self.spt_tool_pixels_colors = []
+
+    def SPT_update(self):
+        pass
+
+    def SPT_toggle_tool_state(self):
+        cursor_pos = self.mapFromGlobal(QCursor().pos())
+        input_points_count = len(self.spt_tool_input_points)
+        if input_points_count < 2:
+            self.spt_tool_input_points.append(cursor_pos)
+            self.spt_tool_activated = True
+            if len(self.spt_tool_input_points) == 2:
+                p1 = self.spt_tool_input_points[0]
+                p2 = self.spt_tool_input_points[1]
+                self.spt_tool_line_points_coords = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
+                image = self.SPT_generate_test_image()
+                self.spt_tool_pixels_colors = list()
+                for pixel_coord in self.spt_tool_line_points_coords:
+                    color = image.pixelColor(pixel_coord)
+                    self.spt_tool_pixels_colors.append(color)
+
+        else:
+            self.spt_tool_input_points = []
+            self.spt_tool_activated = False
+            self.spt_tool_line_points_coords = []
+            self.spt_tool_pixels_colors = []
+            self.show_center_label('Slice pipette disactivated!', error=True)
+        self.update()
+
+    def SPT_generate_test_image(self):
+        rect = self.rect()
+        event = QPaintEvent(rect)
+        image = QImage(rect.size(), QImage.Format_ARGB32)
+        painter = QPainter()
+        painter.begin(image)
+        spt_tool_status = self.spt_tool_activated
+        self.spt_tool_activated = False
+        self._paintEvent(event, painter)
+        self.spt_tool_activated = spt_tool_status
+        painter.end()
+        return image
+
+    def SPT_draw_info(self, painter):
+        if self.spt_tool_activated and len(self.spt_tool_input_points) == 2:
+            p1, p2 = self.spt_tool_input_points
+            painter.save()
+            painter.drawLine(p1, p2)
+            pos = p2 + QPoint(50, 50)
+            pixels_count = len(self.spt_tool_pixels_colors)
+            width = pixels_count
+            height = 255
+            backplate_rect = QRect(0, 0, width, height)
+            backplate_rect.moveBottomLeft(pos)
+            painter.fillRect(backplate_rect, Qt.white)
+            for n, pc in enumerate(self.spt_tool_pixels_colors):
+
+                # for color in [Qt.red, Qt.green, Qt.blue]:
+                #     if color == Qt.red:
+                #         value = pc.red()
+                #     elif color == Qt.green:
+                #         value = pc.green()
+                #     elif color == Qt.blue:
+                #         value = pc.blue()
+                #     plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                #     painter.setPen(QPen(color, 1))
+                #     painter.drawPoint(plot_pos)
+
+                for component in [0, 1, 2]:
+                    hue = pc.hslHueF()
+                    saturation = pc.hslSaturationF()
+                    lightness = pc.lightnessF()
+                    if component == 0:
+                        value = hue
+                    elif component == 1:
+                        value = saturation
+                    elif component == 2:
+                        value = lightness
+
+                    value = int(value*255)
+                    plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                    if component == 0:
+                        color = pc
+                    elif component == 1:
+                        color = Qt.green
+                    elif component == 2:
+                        color = Qt.red
+                    painter.setPen(QPen(color, 1))
+                    painter.drawPoint(plot_pos)
+
+
+            painter.restore()
+
     def _paintEvent(self, event, painter):
         if Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM:
             painter.setRenderHint(QPainter.Antialiasing, True)
@@ -2264,6 +2365,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # draw center label
         self.draw_center_label_main(painter)
+
+        # draw slice pipette tool
+        self.SPT_draw_info(painter)
 
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")
@@ -2903,6 +3007,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if key == Qt.Key_F10 and not event.isAutoRepeat():
             self.toggle_BW_filter()
+
+        if not event.isAutoRepeat():
+            if key == Qt.Key_F5:
+                self.SPT_update()
+            elif key == Qt.Key_F6:
+                self.SPT_toggle_tool_state()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
