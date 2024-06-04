@@ -2284,21 +2284,31 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
+
             backplate_rect = QRect(0, 0, width, height)
             backplate_rect.moveBottomLeft(pos)
             painter.fillRect(backplate_rect, Qt.white)
+
             for n, pc in enumerate(self.spt_tool_pixels_colors):
 
-                # for color in [Qt.red, Qt.green, Qt.blue]:
-                #     if color == Qt.red:
-                #         value = pc.red()
-                #     elif color == Qt.green:
-                #         value = pc.green()
-                #     elif color == Qt.blue:
-                #         value = pc.blue()
-                #     plot_pos = QPoint(pos.x() + n, pos.y() - value)
-                #     painter.setPen(QPen(color, 1))
-                #     painter.drawPoint(plot_pos)
+                for color in [Qt.red, Qt.green, Qt.blue]:
+                    if color == Qt.red:
+                        value = pc.red()
+                    elif color == Qt.green:
+                        value = pc.green()
+                    elif color == Qt.blue:
+                        value = pc.blue()
+                    plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                    painter.setPen(QPen(color, 1))
+                    painter.drawPoint(plot_pos)
+
+            pos2 = pos + QPoint(0, height+5)
+            backplate_rect = QRect(0, 0, width, height)
+            backplate_rect.moveBottomLeft(pos2)
+            painter.fillRect(backplate_rect, Qt.white)
+
+
+            for n, pc in enumerate(self.spt_tool_pixels_colors):
 
                 for component in [0, 1, 2]:
                     hue = pc.hslHueF()
@@ -2312,7 +2322,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         value = lightness
 
                     value = int(value*255)
-                    plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                    plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
                     if component == 0:
                         color = pc
                     elif component == 1:
