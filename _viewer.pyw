@@ -2307,7 +2307,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             backplate_rect.moveBottomLeft(pos2)
             painter.fillRect(backplate_rect, Qt.white)
 
-
             for n, pc in enumerate(self.spt_tool_pixels_colors):
 
                 for component in [0, 1, 2]:
@@ -2325,12 +2324,22 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
                     if component == 0:
                         color = pc
+                        color = Qt.black
                     elif component == 1:
                         color = Qt.green
                     elif component == 2:
                         color = Qt.red
                     painter.setPen(QPen(color, 1))
                     painter.drawPoint(plot_pos)
+
+            tech_color = QColor()
+            for n in range(height):
+                tech_color.setHslF(n/255, 1.0, 0.5)
+                painter.setPen(QPen(tech_color, 1))
+                m = pos2 + QPoint(0, -n)
+                a = m
+                b = m + QPoint(-20, 0)
+                painter.drawLine(a, b)
 
 
             painter.restore()
