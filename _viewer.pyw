@@ -2236,7 +2236,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.spt_tool_pixels_colors = []
 
     def SPT_update(self):
-        pass
+        self._SPT_update_plot()
+        self.update()
+
+    def _SPT_update_plot(self):
+        p1 = self.spt_tool_input_points[0]
+        p2 = self.spt_tool_input_points[1]
+        self.spt_tool_line_points_coords = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
+        image = self.SPT_generate_test_image()
+        self.spt_tool_pixels_colors = list()
+        for pixel_coord in self.spt_tool_line_points_coords:
+            color = image.pixelColor(pixel_coord)
+            self.spt_tool_pixels_colors.append(color)
 
     def SPT_toggle_tool_state(self):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
@@ -2245,14 +2256,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.spt_tool_input_points.append(cursor_pos)
             self.spt_tool_activated = True
             if len(self.spt_tool_input_points) == 2:
-                p1 = self.spt_tool_input_points[0]
-                p2 = self.spt_tool_input_points[1]
-                self.spt_tool_line_points_coords = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
-                image = self.SPT_generate_test_image()
-                self.spt_tool_pixels_colors = list()
-                for pixel_coord in self.spt_tool_line_points_coords:
-                    color = image.pixelColor(pixel_coord)
-                    self.spt_tool_pixels_colors.append(color)
+                self._SPT_update_plot()
 
         else:
             self.spt_tool_input_points = []
@@ -2362,7 +2366,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 a = m
                 b = m + QPoint(-20, 0)
                 painter.drawLine(a, b)
-
 
             painter.restore()
 
