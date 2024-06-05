@@ -2252,18 +2252,29 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def SPT_toggle_tool_state(self):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         input_points_count = len(self.spt_tool_input_points)
+        msg = None
+        desactivate = False
         if input_points_count < 2:
             self.spt_tool_input_points.append(cursor_pos)
             self.spt_tool_activated = True
             if len(self.spt_tool_input_points) == 2:
-                self._SPT_update_plot()
-
+                p1 = self.spt_tool_input_points[0]
+                p2 = self.spt_tool_input_points[1]
+                if QVector2D(p1 - p2).length() < 40:
+                    desactivate = True
+                    msg = 'Distance is too short!'
+                else:
+                    self._SPT_update_plot()
         else:
+            desactivate = True
+        if desactivate:
             self.spt_tool_input_points = []
             self.spt_tool_activated = False
             self.spt_tool_line_points_coords = []
             self.spt_tool_pixels_colors = []
-            self.show_center_label('Slice pipette disactivated!', error=True)
+            if msg is None:
+                msg = 'Slice pipette disactivated!'
+            self.show_center_label(msg, error=True)
         self.update()
 
     def SPT_generate_test_image(self):
