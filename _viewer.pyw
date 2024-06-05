@@ -2275,12 +2275,34 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.end()
         return image
 
+    def _SPT_draw_number(self, painter, pos, number):
+        w = 20
+        plate_rect = QRectF(QPoint(0, 0), QSizeF(w, w))
+        plate_rect.moveCenter(pos)
+        painter.setBrush(QColor(220, 0, 0))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(plate_rect)
+        painter.setPen(QPen(Qt.white))
+        font = painter.font()
+        font.setFamily("Consolas")
+        font.setWeight(1600)
+        painter.setFont(font)
+        painter.drawText(plate_rect.adjusted(-20, -20, 20, 20), Qt.AlignCenter, str(number))
+
     def SPT_draw_info(self, painter):
         if self.spt_tool_activated and len(self.spt_tool_input_points) == 2:
             p1, p2 = self.spt_tool_input_points
             painter.save()
             painter.drawLine(p1, p2)
-            pos = build_valid_rect(p1, p2).bottomRight() + QPoint(50, 50)
+            line = QLineF(p1, p2)
+            nv = line.normalVector()
+            offset = QVector2D(nv.p1() - nv.p2())
+            offset.normalize()
+            offset *= 50.0
+            offset = QPointF(offset.x(), offset.y())
+            self._SPT_draw_number(painter, p1 + offset, 1)
+            self._SPT_draw_number(painter, p2 + offset, 2)
+            pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
