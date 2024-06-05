@@ -2280,7 +2280,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             p1, p2 = self.spt_tool_input_points
             painter.save()
             painter.drawLine(p1, p2)
-            pos = p2 + QPoint(50, 50)
+            pos = build_valid_rect(p1, p2).bottomRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
