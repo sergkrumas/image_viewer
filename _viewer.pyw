@@ -3526,7 +3526,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             wa.setDefaultWidget(chb)
             contextMenu.addAction(wa)
 
-        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        if self.SPT_is_context_menu_allowed():
+            self.SPT_context_menu(event)
+        else:
+            action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
         self.contextMenuActivated = False
 

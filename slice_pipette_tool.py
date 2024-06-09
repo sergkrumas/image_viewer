@@ -19,6 +19,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 from _utils import *
+from functools import partial
 
 
 class SlicePipetteToolMixin():
@@ -42,6 +43,17 @@ class SlicePipetteToolMixin():
         self.spt_input_point_rect_side_width = 50
 
         self.spt_plots_pos = QPoint()
+
+        self.spt_show_red = True
+        self.spt_show_green = True
+        self.spt_show_blue = True
+
+        self.spt_show_hue = True
+        self.spt_show_saturation = True
+        self.spt_show_lightness = True
+
+        self.spt_plot1_rect = QRect()
+        self.spt_plot2_rect = QRect()
 
     def SPT_update(self):
         self._SPT_update_plot()
@@ -161,6 +173,45 @@ class SlicePipetteToolMixin():
         painter.setFont(font)
         painter.drawText(plate_rect.adjusted(-20, -20, 20, 20), Qt.AlignCenter, str(number))
 
+    def SPT_is_context_menu_allowed(self):
+        if self.spt_tool_activated:
+            cursor_pos = self.mapFromGlobal(QCursor().pos())
+            if self.spt_plot1_rect.contains(cursor_pos):
+                return True
+            if self.spt_plot2_rect.contains(cursor_pos):
+                return True
+        return False
+
+    def SPT_context_menu(self, event):
+
+        contextMenu = QMenu()
+        contextMenu.setStyleSheet(self.context_menu_stylesheet)
+
+        def toggle_boolean_var_generic(obj, attr_name):
+            setattr(obj, attr_name, not getattr(obj, attr_name))
+            self.update()
+
+        checkboxes = [
+            ("show red", self.spt_show_red, partial(toggle_boolean_var_generic, self, "spt_show_red")),
+            ("show green", self.spt_show_green, partial(toggle_boolean_var_generic, self, "spt_show_green")),
+            ("show blue", self.spt_show_blue, partial(toggle_boolean_var_generic, self, "spt_show_blue")),
+
+            ("show hue", self.spt_show_hue, partial(toggle_boolean_var_generic, self, "spt_show_hue")),
+            ("show saturation", self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
+            ("show lightness", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
+        ]
+
+        for title, value, callback in checkboxes:
+            wa = QWidgetAction(contextMenu)
+            chb = QCheckBox(title)
+            chb.setStyleSheet(self.context_menu_stylesheet)
+            chb.setChecked(value)
+            chb.stateChanged.connect(callback)
+            wa.setDefaultWidget(chb)
+            contextMenu.addAction(wa)
+
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+
     def SPT_draw_info(self, painter):
         if self.spt_tool_activated and len(self.spt_tool_input_points) > 0:
 
@@ -185,13 +236,15 @@ class SlicePipetteToolMixin():
             backplate_rect2 = QRect(0, 0, WIDTH, HEIGHT)
             backplate_rect2.moveBottomLeft(plot2_pos)
 
+            self.spt_plot1_rect = backplate_rect1
+            self.spt_plot2_rect = backplate_rect2
+
             if backplate_rect1.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect1.bottomLeft()
                 plp_index = delta.x()
             elif backplate_rect2.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect2.bottomLeft()
                 plp_index = delta.x()
-
 
             painter.save()
 
@@ -228,8 +281,6 @@ class SlicePipetteToolMixin():
             self._SPT_draw_number(painter, p2 + offset, 2)
 
 
-
-
             # draw line ends hovers
             for i_pos in self.spt_tool_input_points:
                 r = self.SPT_build_input_point_rect(i_pos)
@@ -262,10 +313,16 @@ class SlicePipetteToolMixin():
 
                     for color in [Qt.red, Qt.green, Qt.blue]:
                         if color == Qt.red:
+                            if not self.spt_show_red:
+                                continue
                             value = pc.red()
                         elif color == Qt.green:
+                            if not self.spt_show_green:
+                                continue
                             value = pc.green()
                         elif color == Qt.blue:
+                            if not self.spt_show_blue:
+                                continue
                             value = pc.blue()
                         plot_pos = QPoint(plot1_pos.x() + n, plot1_pos.y() - value)
                         painter.setPen(QPen(color, 1))
@@ -282,10 +339,16 @@ class SlicePipetteToolMixin():
                         saturation = pc.hslSaturationF()
                         lightness = pc.lightnessF()
                         if component == 0:
+                            if not self.spt_show_hue:
+                                continue
                             value = hue
                         elif component == 1:
+                            if not self.spt_show_saturation:
+                                continue
                             value = saturation
                         elif component == 2:
+                            if not self.spt_show_lightness:
+                                continue
                             value = lightness
 
                         value = int(value*255)
