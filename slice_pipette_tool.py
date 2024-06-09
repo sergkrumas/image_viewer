@@ -152,14 +152,34 @@ class SlicePipetteToolMixin():
 
     def SPT_draw_info(self, painter):
         if self.spt_tool_activated and len(self.spt_tool_input_points) > 0:
+
+            cursor_pos = self.mapFromGlobal(QCursor().pos())
             if len(self.spt_tool_input_points) < 2:
-                p2 = QCursor().pos()
+                p2 = cursor_pos
                 p1 = self.spt_tool_input_points[0]
             else:
                 p1, p2 = self.spt_tool_input_points
             painter.save()
-            painter.drawLine(p1, p2)
 
+            plp_index = -1
+
+            # drawing proximity circle
+            def calc_distance_to_cursor_tuple(x):
+                return QVector2D(x[1]-cursor_pos).length()
+            def calc_distance_to_cursor(x):
+                return QVector2D(x-cursor_pos).length()
+
+            if self.spt_tool_line_points:
+                line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
+                plp_index, plp = line_points[0]
+                if calc_distance_to_cursor(plp) < 30.0:
+                    r = self.SPT_build_input_point_rect(plp)
+                    painter.setPen(QPen(Qt.black, 1))
+                    painter.setBrush(Qt.NoBrush)
+                    painter.drawEllipse(r)
+
+            # drawing line
+            painter.drawLine(p1, p2)
             line = QLineF(p1, p2)
             nv = line.normalVector()
             offset = QVector2D(nv.p1() - nv.p2())
@@ -168,6 +188,8 @@ class SlicePipetteToolMixin():
             offset = QPointF(offset.x(), offset.y())
             self._SPT_draw_number(painter, p1 + offset, 1)
             self._SPT_draw_number(painter, p2 + offset, 2)
+
+
             plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
