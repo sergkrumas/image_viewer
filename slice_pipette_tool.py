@@ -45,11 +45,16 @@ class SlicePipetteToolMixin():
         self._SPT_update_plot()
         self.update()
 
+    def SPT_build_input_point_rect(self, pos):
+        rsw = self.spt_input_point_rect_side_width
+        r = QRect(0, 0, rsw, rsw)
+        r.moveCenter(pos)
+        return r
+
     def SPT_check_mouse_event_inside_input_point(self, event, set_mode=True):
         rsw = self.spt_input_point_rect_side_width
-        area = QRect(0, 0, rsw, rsw)
         for n, pos in enumerate(self.spt_tool_input_points):
-            area.moveCenter(pos)
+            area = self.SPT_build_input_point_rect(pos)
             if area.contains(event.pos()):
                 if set_mode:
                     self.spt_input_point_dragging_INDEX = n
@@ -166,6 +171,16 @@ class SlicePipetteToolMixin():
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
+
+            for i_pos in self.spt_tool_input_points:
+                r = self.SPT_build_input_point_rect(i_pos)
+                if r.contains(self.mapFromGlobal(QCursor().pos())):
+                    painter.save()
+                    painter.setPen(QPen(Qt.black, 1))
+                    painter.setBrush(Qt.NoBrush)
+                    painter.drawEllipse(r)
+                    painter.restore()
+                    break
 
             if len(self.spt_tool_input_points) > 1:
                 backplate_rect = QRect(0, 0, width, height)
