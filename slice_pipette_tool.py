@@ -33,9 +33,52 @@ class SlicePipetteToolMixin():
         self.spt_tool_line_points_coords = []
         self.spt_tool_pixels_colors = []
 
+        self.spt_input_point_dragging = False
+        self.spt_input_point_dragging_INDEX = -1
+
+        self.spt_input_point_dragging_START_CURSOR_POS = QPoint()
+        self.spt_input_point_dragging_START_INPUT_POS = QPoint()
+
+        self.spt_input_point_rect_side_width = 50
+
     def SPT_update(self):
         self._SPT_update_plot()
         self.update()
+
+    def SPT_check_mouse_event_inside_input_point(self, event, set_mode=True):
+        rsw = self.spt_input_point_rect_side_width
+        area = QRect(0, 0, rsw, rsw)
+        for n, pos in enumerate(self.spt_tool_input_points):
+            area.moveCenter(pos)
+            if area.contains(event.pos()):
+                if set_mode:
+                    self.spt_input_point_dragging_INDEX = n
+                    self.spt_input_point_dragging = True
+                return True
+        if set_mode:
+            self.spt_input_point_dragging_INDEX = -1
+            self.spt_input_point_dragging = False
+        return False
+
+    def SPT_mousePressEvent(self, event):
+        if self.spt_input_point_dragging:
+            self.spt_input_point_dragging_START_CURSOR_POS = QPoint(event.pos())
+            self.spt_input_point_dragging_START_INPUT_POS = QPoint(self.spt_tool_input_points[self.spt_input_point_dragging_INDEX])
+            self.update()
+
+    def SPT_mouseMoveEvent(self, event):
+        if self.spt_input_point_dragging and self.spt_input_point_dragging_INDEX > -1:
+            _index = self.spt_input_point_dragging_INDEX
+            scp = self.spt_input_point_dragging_START_CURSOR_POS
+            sip = self.spt_input_point_dragging_START_INPUT_POS
+            self.spt_tool_input_points[_index] = sip + (QPoint(event.pos()) - scp)
+            self._SPT_update_plot()
+            self.update()
+
+    def SPT_mouseReleaseEvent(self, event):
+        if self.spt_input_point_dragging:
+            self.spt_input_point_dragging_INDEX = -1
+            self.spt_input_point_dragging = False
 
     def _SPT_update_plot(self):
         p1 = self.spt_tool_input_points[0]

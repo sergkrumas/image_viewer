@@ -1511,6 +1511,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.corner_UI_button_pressed = corner_UI_button
             return
 
+        if self.SPT_check_mouse_event_inside_input_point(event):
+            self.SPT_mousePressEvent(event)
+            return
+
         if self.is_board_page_active():
             self.board_mousePressEvent(event)
 
@@ -1587,6 +1591,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.corner_UI_button_pressed > self.CornerUIButtons.NO_BUTTON:
             return
 
+        if self.spt_input_point_dragging:
+            self.SPT_mouseMoveEvent(event)
+            return
+
         if self.is_board_page_active():
             self.board_mouseMoveEvent(event)
 
@@ -1647,6 +1655,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
             return
 
+        if self.spt_input_point_dragging:
+            self.SPT_mouseReleaseEvent(event)
+            return
 
         if self.is_board_page_active():
             self.board_mouseReleaseEvent(event)
