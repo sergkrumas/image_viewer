@@ -207,16 +207,19 @@ class SlicePipetteToolMixin():
                     painter.restore()
                     break
 
+            def draw_plot_line(pos):
+                if plp_index > -1:
+                    _x = pos+QPoint(plp_index, 0)
+                    painter.setPen(Qt.black)
+                    painter.drawLine(_x, _x+QPoint(0, -255))
+
             if len(self.spt_tool_input_points) > 1:
                 pos1 = QPoint(PLOTS_POS)
                 backplate_rect = QRect(0, 0, width, height)
                 backplate_rect.moveBottomLeft(pos1)
                 painter.fillRect(backplate_rect, Qt.white)
 
-                if plp_index > -1:
-                    _x = pos1+QPoint(plp_index, 0)
-                    painter.setPen(Qt.black)
-                    painter.drawLine(_x, _x+QPoint(0, -255))
+                draw_plot_line(pos1)
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
@@ -236,6 +239,7 @@ class SlicePipetteToolMixin():
                 backplate_rect.moveBottomLeft(pos2)
                 painter.fillRect(backplate_rect, Qt.white)
 
+                draw_plot_line(pos2)
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
@@ -253,7 +257,7 @@ class SlicePipetteToolMixin():
                         value = int(value*255)
                         plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
                         if component == 0:
-                            color = pc
+                            # color = pc
                             color = Qt.black
                         elif component == 1:
                             color = Qt.green
