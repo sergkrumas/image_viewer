@@ -159,16 +159,23 @@ class SlicePipetteToolMixin():
                 p1 = self.spt_tool_input_points[0]
             else:
                 p1, p2 = self.spt_tool_input_points
-            painter.save()
+
+            PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+            WIDTH = len(self.spt_tool_pixels_colors)
+            HEIGHT = 255
+            plot1_pos = QPoint(PLOTS_POS)
+            plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             plp_index = -1
+
+
+            painter.save()
 
             # drawing proximity circle
             def calc_distance_to_cursor(x):
                 return QVector2D(x-cursor_pos).length()
             def calc_distance_to_cursor_tuple(x):
                 return calc_distance_to_cursor(x[1])
-
 
             if self.spt_tool_line_points:
                 if plp_index == -1:
@@ -193,11 +200,7 @@ class SlicePipetteToolMixin():
             self._SPT_draw_number(painter, p2 + offset, 2)
 
 
-            PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
-            WIDTH = len(self.spt_tool_pixels_colors)
-            HEIGHT = 255
-            plot1_pos = QPoint(PLOTS_POS)
-            plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
+
 
             # line ends hovers
             for i_pos in self.spt_tool_input_points:
