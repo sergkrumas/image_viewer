@@ -177,3 +177,9 @@ class SlicePipetteToolMixin():
                 painter.drawLine(a, b)
 
             painter.restore()
+
+# для запуска программы прямо из этого файла при разработке и отладке
+if __name__ == '__main__':
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()
