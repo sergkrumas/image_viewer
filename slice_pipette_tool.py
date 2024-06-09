@@ -225,6 +225,11 @@ class SlicePipetteToolMixin():
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             if len(self.spt_tool_input_points) > 1:
+
+                painter.setRenderHint(QPainter.Antialiasing, False)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+
                 backplate_rect = QRect(0, 0, width, HEIGHT)
                 backplate_rect.moveBottomLeft(plot1_pos)
                 painter.fillRect(backplate_rect, Qt.white)
@@ -276,9 +281,7 @@ class SlicePipetteToolMixin():
                         painter.drawPoint(plot_pos)
 
                 tech_color = QColor()
-                painter.setRenderHint(QPainter.Antialiasing, False)
-                painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
-                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+
                 for n in range(HEIGHT):
                     tech_color.setHslF(n/255, 1.0, 0.5)
                     painter.setPen(QPen(tech_color, 1))
@@ -286,6 +289,7 @@ class SlicePipetteToolMixin():
                     a = m
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
+
                 painter.setRenderHint(QPainter.Antialiasing, True)
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
