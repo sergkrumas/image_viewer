@@ -194,7 +194,7 @@ class SlicePipetteToolMixin():
             PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
-            height = 255
+            HEIGHT = 255
 
             # line ends hovers
             for i_pos in self.spt_tool_input_points:
@@ -213,9 +213,11 @@ class SlicePipetteToolMixin():
                     painter.setPen(Qt.black)
                     painter.drawLine(_x, _x+QPoint(0, -255))
 
+            pos1 = QPoint(PLOTS_POS)
+            pos2 = PLOTS_POS + QPoint(0, HEIGHT+5)
+
             if len(self.spt_tool_input_points) > 1:
-                pos1 = QPoint(PLOTS_POS)
-                backplate_rect = QRect(0, 0, width, height)
+                backplate_rect = QRect(0, 0, width, HEIGHT)
                 backplate_rect.moveBottomLeft(pos1)
                 painter.fillRect(backplate_rect, Qt.white)
 
@@ -234,8 +236,7 @@ class SlicePipetteToolMixin():
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
-                pos2 = PLOTS_POS + QPoint(0, height+5)
-                backplate_rect = QRect(0, 0, width, height)
+                backplate_rect = QRect(0, 0, width, HEIGHT)
                 backplate_rect.moveBottomLeft(pos2)
                 painter.fillRect(backplate_rect, Qt.white)
 
@@ -267,7 +268,7 @@ class SlicePipetteToolMixin():
                         painter.drawPoint(plot_pos)
 
                 tech_color = QColor()
-                for n in range(height):
+                for n in range(HEIGHT):
                     tech_color.setHslF(n/255, 1.0, 0.5)
                     painter.setPen(QPen(tech_color, 1))
                     m = pos2 + QPoint(0, -n)
