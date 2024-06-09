@@ -202,7 +202,7 @@ class SlicePipetteToolMixin():
 
 
 
-            # line ends hovers
+            # draw line ends hovers
             for i_pos in self.spt_tool_input_points:
                 r = self.SPT_build_input_point_rect(i_pos)
                 if r.contains(self.mapFromGlobal(QCursor().pos())):
@@ -219,6 +219,7 @@ class SlicePipetteToolMixin():
                     painter.setPen(Qt.black)
                     painter.drawLine(_x, _x+QPoint(0, -255))
 
+            # draw plots
             if len(self.spt_tool_input_points) > 1:
 
                 # снимаем модификаторы, чтобы линия шириной 1px не размывалась на несколько пикселей
