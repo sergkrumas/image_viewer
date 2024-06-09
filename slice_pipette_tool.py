@@ -30,7 +30,7 @@ class SlicePipetteToolMixin():
         """
         self.spt_tool_activated = False
         self.spt_tool_input_points = []
-        self.spt_tool_line_points_coords = []
+        self.spt_tool_line_points = []
         self.spt_tool_pixels_colors = []
 
         self.spt_input_point_dragging = False
@@ -88,10 +88,10 @@ class SlicePipetteToolMixin():
     def _SPT_update_plot(self):
         p1 = self.spt_tool_input_points[0]
         p2 = self.spt_tool_input_points[1]
-        self.spt_tool_line_points_coords = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
+        self.spt_tool_line_points = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
         image = self.SPT_generate_test_image()
         self.spt_tool_pixels_colors = list()
-        for pixel_coord in self.spt_tool_line_points_coords:
+        for pixel_coord in self.spt_tool_line_points:
             color = image.pixelColor(pixel_coord)
             self.spt_tool_pixels_colors.append(color)
 
@@ -116,7 +116,7 @@ class SlicePipetteToolMixin():
         if desactivate:
             self.spt_tool_input_points = []
             self.spt_tool_activated = False
-            self.spt_tool_line_points_coords = []
+            self.spt_tool_line_points = []
             self.spt_tool_pixels_colors = []
             if msg is None:
                 msg = 'Slice pipette disactivated!'
@@ -159,6 +159,7 @@ class SlicePipetteToolMixin():
                 p1, p2 = self.spt_tool_input_points
             painter.save()
             painter.drawLine(p1, p2)
+
             line = QLineF(p1, p2)
             nv = line.normalVector()
             offset = QVector2D(nv.p1() - nv.p2())
