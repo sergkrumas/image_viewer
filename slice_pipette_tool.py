@@ -210,22 +210,14 @@ class SlicePipetteToolMixin():
                     break
 
             def draw_plot_line(pos):
-                # снимаем модификаторы, чтобы линия шириной 1px не размывалась на несколько пикселей
-                painter.setRenderHint(QPainter.Antialiasing, False)
-                painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
-                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
                 if plp_index > -1:
                     _x = pos+QPoint(plp_index, 0)
                     painter.setPen(Qt.black)
                     painter.drawLine(_x, _x+QPoint(0, -255))
-                # возвращаем модификаторы обратно 
-                painter.setRenderHint(QPainter.Antialiasing, True)
-                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-
 
             if len(self.spt_tool_input_points) > 1:
 
+                # снимаем модификаторы, чтобы линия шириной 1px не размывалась на несколько пикселей
                 painter.setRenderHint(QPainter.Antialiasing, False)
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
@@ -290,6 +282,7 @@ class SlicePipetteToolMixin():
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
 
+                # возвращаем модификаторы обратно 
                 painter.setRenderHint(QPainter.Antialiasing, True)
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
