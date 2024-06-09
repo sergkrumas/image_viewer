@@ -221,15 +221,15 @@ class SlicePipetteToolMixin():
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
-            pos1 = QPoint(PLOTS_POS)
-            pos2 = PLOTS_POS + QPoint(0, HEIGHT+5)
+            plot1_pos = QPoint(PLOTS_POS)
+            plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             if len(self.spt_tool_input_points) > 1:
                 backplate_rect = QRect(0, 0, width, HEIGHT)
-                backplate_rect.moveBottomLeft(pos1)
+                backplate_rect.moveBottomLeft(plot1_pos)
                 painter.fillRect(backplate_rect, Qt.white)
 
-                draw_plot_line(pos1)
+                draw_plot_line(plot1_pos)
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
@@ -240,15 +240,15 @@ class SlicePipetteToolMixin():
                             value = pc.green()
                         elif color == Qt.blue:
                             value = pc.blue()
-                        plot_pos = QPoint(pos1.x() + n, pos1.y() - value)
+                        plot_pos = QPoint(plot1_pos.x() + n, plot1_pos.y() - value)
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
                 backplate_rect = QRect(0, 0, width, HEIGHT)
-                backplate_rect.moveBottomLeft(pos2)
+                backplate_rect.moveBottomLeft(plot2_pos)
                 painter.fillRect(backplate_rect, Qt.white)
 
-                draw_plot_line(pos2)
+                draw_plot_line(plot2_pos)
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
@@ -264,7 +264,7 @@ class SlicePipetteToolMixin():
                             value = lightness
 
                         value = int(value*255)
-                        plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
+                        plot_pos = QPoint(plot2_pos.x() + n, plot2_pos.y() - value)
                         if component == 0:
                             # color = pc
                             color = Qt.black
@@ -282,7 +282,7 @@ class SlicePipetteToolMixin():
                 for n in range(HEIGHT):
                     tech_color.setHslF(n/255, 1.0, 0.5)
                     painter.setPen(QPen(tech_color, 1))
-                    m = pos2 + QPoint(0, -n)
+                    m = plot2_pos + QPoint(0, -n)
                     a = m
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
