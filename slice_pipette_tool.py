@@ -165,6 +165,11 @@ class SlicePipetteToolMixin():
             HEIGHT = 255
             plot1_pos = QPoint(PLOTS_POS)
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
+            backplate_rect1 = QRect(0, 0, WIDTH, HEIGHT)
+            backplate_rect1.moveBottomLeft(plot1_pos)
+
+            backplate_rect2 = QRect(0, 0, WIDTH, HEIGHT)
+            backplate_rect2.moveBottomLeft(plot2_pos)
 
             plp_index = -1
 
@@ -227,9 +232,7 @@ class SlicePipetteToolMixin():
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
 
-                backplate_rect = QRect(0, 0, WIDTH, HEIGHT)
-                backplate_rect.moveBottomLeft(plot1_pos)
-                painter.fillRect(backplate_rect, Qt.white)
+                painter.fillRect(backplate_rect1, Qt.white)
 
                 draw_plot_line(plot1_pos)
 
@@ -246,9 +249,8 @@ class SlicePipetteToolMixin():
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
-                backplate_rect = QRect(0, 0, WIDTH, HEIGHT)
-                backplate_rect.moveBottomLeft(plot2_pos)
-                painter.fillRect(backplate_rect, Qt.white)
+
+                painter.fillRect(backplate_rect2, Qt.white)
 
                 draw_plot_line(plot2_pos)
 
