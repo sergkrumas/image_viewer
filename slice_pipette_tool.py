@@ -186,7 +186,7 @@ class SlicePipetteToolMixin():
             backplate_rect2.moveBottomLeft(plot2_pos)
 
             if backplate_rect1.contains(cursor_pos):
-                delta = cursor_pos - backplate_rect1.bottomLeft() 
+                delta = cursor_pos - backplate_rect1.bottomLeft()
                 plp_index = delta.x()
             elif backplate_rect2.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect2.bottomLeft()
@@ -310,7 +310,7 @@ class SlicePipetteToolMixin():
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
 
-                # возвращаем модификаторы обратно 
+                # возвращаем модификаторы обратно
                 painter.setRenderHint(QPainter.Antialiasing, True)
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
