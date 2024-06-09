@@ -174,6 +174,7 @@ class SlicePipetteToolMixin():
                 plp_index, plp = line_points[0]
                 if calc_distance_to_cursor(plp) < 30.0:
                     r = self.SPT_build_input_point_rect(plp)
+                    r.adjust(15, 15, -15, -15)
                     painter.setPen(QPen(Qt.black, 1))
                     painter.setBrush(Qt.NoBrush)
                     painter.drawEllipse(r)
@@ -190,11 +191,12 @@ class SlicePipetteToolMixin():
             self._SPT_draw_number(painter, p2 + offset, 2)
 
 
-            plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+            PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
 
+            # line ends hovers
             for i_pos in self.spt_tool_input_points:
                 r = self.SPT_build_input_point_rect(i_pos)
                 if r.contains(self.mapFromGlobal(QCursor().pos())):
@@ -206,9 +208,15 @@ class SlicePipetteToolMixin():
                     break
 
             if len(self.spt_tool_input_points) > 1:
+                pos1 = QPoint(PLOTS_POS)
                 backplate_rect = QRect(0, 0, width, height)
-                backplate_rect.moveBottomLeft(plots_pos)
+                backplate_rect.moveBottomLeft(pos1)
                 painter.fillRect(backplate_rect, Qt.white)
+
+                if plp_index > -1:
+                    _x = pos1+QPoint(plp_index, 0)
+                    painter.setPen(Qt.black)
+                    painter.drawLine(_x, _x+QPoint(0, -255))
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
@@ -219,14 +227,15 @@ class SlicePipetteToolMixin():
                             value = pc.green()
                         elif color == Qt.blue:
                             value = pc.blue()
-                        plot_pos = QPoint(plots_pos.x() + n, plots_pos.y() - value)
+                        plot_pos = QPoint(pos1.x() + n, pos1.y() - value)
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
-                pos2 = plots_pos + QPoint(0, height+5)
+                pos2 = PLOTS_POS + QPoint(0, height+5)
                 backplate_rect = QRect(0, 0, width, height)
                 backplate_rect.moveBottomLeft(pos2)
                 painter.fillRect(backplate_rect, Qt.white)
+
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
