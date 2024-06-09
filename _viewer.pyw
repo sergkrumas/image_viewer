@@ -2926,6 +2926,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.SPT_update()
             elif key == Qt.Key_F6:
                 self.SPT_toggle_tool_state()
+            elif key == Qt.Key_F7:
+                self.SPT_set_plots_position()
+            elif key == Qt.Key_F8:
+                self.SPT_toggle_plots_window()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()

@@ -41,6 +41,8 @@ class SlicePipetteToolMixin():
 
         self.spt_input_point_rect_side_width = 50
 
+        self.spt_plots_pos = QPoint()
+
     def SPT_update(self):
         self._SPT_update_plot()
         self.update()
@@ -85,7 +87,7 @@ class SlicePipetteToolMixin():
             self.spt_input_point_dragging_INDEX = -1
             self.spt_input_point_dragging = False
 
-    def _SPT_update_plot(self):
+    def _SPT_update_plot(self, new=False):
         p1 = self.spt_tool_input_points[0]
         p2 = self.spt_tool_input_points[1]
         self.spt_tool_line_points = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
@@ -94,6 +96,15 @@ class SlicePipetteToolMixin():
         for pixel_coord in self.spt_tool_line_points:
             color = image.pixelColor(pixel_coord)
             self.spt_tool_pixels_colors.append(color)
+        if new:
+            p1, p2 = self.spt_tool_input_points
+            self.spt_plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+
+    def SPT_set_plots_position(self):
+        self.spt_plots_pos = self.mapFromGlobal(QCursor().pos())
+
+    def SPT_toggle_plots_window(self):
+        pass
 
     def SPT_toggle_tool_state(self):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
@@ -110,7 +121,7 @@ class SlicePipetteToolMixin():
                     desactivate = True
                     msg = 'Distance is too short!'
                 else:
-                    self._SPT_update_plot()
+                    self._SPT_update_plot(new=True)
         else:
             desactivate = True
         if desactivate:
@@ -160,7 +171,8 @@ class SlicePipetteToolMixin():
             else:
                 p1, p2 = self.spt_tool_input_points
 
-            PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+            PLOTS_POS = self.spt_plots_pos
+
             WIDTH = len(self.spt_tool_pixels_colors)
             HEIGHT = 255
             plot1_pos = QPoint(PLOTS_POS)
