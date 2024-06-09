@@ -164,10 +164,11 @@ class SlicePipetteToolMixin():
             plp_index = -1
 
             # drawing proximity circle
-            def calc_distance_to_cursor_tuple(x):
-                return QVector2D(x[1]-cursor_pos).length()
             def calc_distance_to_cursor(x):
                 return QVector2D(x-cursor_pos).length()
+            def calc_distance_to_cursor_tuple(x):
+                return calc_distance_to_cursor(x[1])
+
 
             if self.spt_tool_line_points:
                 line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
