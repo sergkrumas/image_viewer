@@ -257,8 +257,16 @@ class SlicePipetteToolMixin():
             def calc_distance_to_cursor_tuple(x):
                 return calc_distance_to_cursor(x[1])
 
-            painter.setPen(QPen(Qt.black, 1))
+            painter.setPen(QPen(QColor(100, 100, 100), 1))
             painter.setBrush(Qt.NoBrush)
+
+            painter.save()
+            painter.setCompositionMode(QPainter.RasterOp_SourceXorDestination)
+
+            painter.setRenderHint(QPainter.Antialiasing, False)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+
 
             if self.spt_tool_line_points:
                 sp_case = False
@@ -279,14 +287,6 @@ class SlicePipetteToolMixin():
 
             # drawing line
             painter.drawLine(p1, p2)
-            line = QLineF(p1, p2)
-            nv = line.normalVector()
-            offset = QVector2D(nv.p1() - nv.p2())
-            offset.normalize()
-            offset *= 50.0
-            offset = QPointF(offset.x(), offset.y())
-            self._SPT_draw_number(painter, p1 + offset, 1)
-            self._SPT_draw_number(painter, p2 + offset, 2)
 
 
             # draw line ends hovers
@@ -295,6 +295,20 @@ class SlicePipetteToolMixin():
                 if r.contains(self.mapFromGlobal(QCursor().pos())):
                     painter.drawEllipse(r)
                     break
+            painter.restore()
+
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+            line = QLineF(p1, p2)
+            nv = line.normalVector()
+            offset = QVector2D(nv.p1() - nv.p2())
+            offset.normalize()
+            offset *= 50.0
+            offset = QPointF(offset.x(), offset.y())
+            self._SPT_draw_number(painter, p1 + offset, 1)
+            self._SPT_draw_number(painter, p2 + offset, 2)
 
             def draw_plot_line(pos):
                 if plp_index > -1:
