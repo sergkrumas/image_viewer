@@ -208,10 +208,18 @@ class SlicePipetteToolMixin():
                     break
 
             def draw_plot_line(pos):
+                # снимаем модификаторы, чтобы линия шириной 1px не размывалась на несколько пикселей
+                painter.setRenderHint(QPainter.Antialiasing, False)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
                 if plp_index > -1:
                     _x = pos+QPoint(plp_index, 0)
                     painter.setPen(Qt.black)
                     painter.drawLine(_x, _x+QPoint(0, -255))
+                # возвращаем модификаторы обратно 
+                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
             pos1 = QPoint(PLOTS_POS)
             pos2 = PLOTS_POS + QPoint(0, HEIGHT+5)
@@ -268,6 +276,9 @@ class SlicePipetteToolMixin():
                         painter.drawPoint(plot_pos)
 
                 tech_color = QColor()
+                painter.setRenderHint(QPainter.Antialiasing, False)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
                 for n in range(HEIGHT):
                     tech_color.setHslF(n/255, 1.0, 0.5)
                     painter.setPen(QPen(tech_color, 1))
@@ -275,6 +286,9 @@ class SlicePipetteToolMixin():
                     a = m
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
+                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
             painter.restore()
 
