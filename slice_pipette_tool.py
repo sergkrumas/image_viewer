@@ -146,8 +146,12 @@ class SlicePipetteToolMixin():
         painter.drawText(plate_rect.adjusted(-20, -20, 20, 20), Qt.AlignCenter, str(number))
 
     def SPT_draw_info(self, painter):
-        if self.spt_tool_activated and len(self.spt_tool_input_points) == 2:
-            p1, p2 = self.spt_tool_input_points
+        if self.spt_tool_activated and len(self.spt_tool_input_points) > 0:
+            if len(self.spt_tool_input_points) < 2:
+                p2 = QCursor().pos()
+                p1 = self.spt_tool_input_points[0]
+            else:
+                p1, p2 = self.spt_tool_input_points
             painter.save()
             painter.drawLine(p1, p2)
             line = QLineF(p1, p2)
@@ -163,61 +167,62 @@ class SlicePipetteToolMixin():
             width = pixels_count
             height = 255
 
-            backplate_rect = QRect(0, 0, width, height)
-            backplate_rect.moveBottomLeft(pos)
-            painter.fillRect(backplate_rect, Qt.white)
+            if len(self.spt_tool_input_points) > 1:
+                backplate_rect = QRect(0, 0, width, height)
+                backplate_rect.moveBottomLeft(pos)
+                painter.fillRect(backplate_rect, Qt.white)
 
-            for n, pc in enumerate(self.spt_tool_pixels_colors):
+                for n, pc in enumerate(self.spt_tool_pixels_colors):
 
-                for color in [Qt.red, Qt.green, Qt.blue]:
-                    if color == Qt.red:
-                        value = pc.red()
-                    elif color == Qt.green:
-                        value = pc.green()
-                    elif color == Qt.blue:
-                        value = pc.blue()
-                    plot_pos = QPoint(pos.x() + n, pos.y() - value)
-                    painter.setPen(QPen(color, 1))
-                    painter.drawPoint(plot_pos)
+                    for color in [Qt.red, Qt.green, Qt.blue]:
+                        if color == Qt.red:
+                            value = pc.red()
+                        elif color == Qt.green:
+                            value = pc.green()
+                        elif color == Qt.blue:
+                            value = pc.blue()
+                        plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                        painter.setPen(QPen(color, 1))
+                        painter.drawPoint(plot_pos)
 
-            pos2 = pos + QPoint(0, height+5)
-            backplate_rect = QRect(0, 0, width, height)
-            backplate_rect.moveBottomLeft(pos2)
-            painter.fillRect(backplate_rect, Qt.white)
+                pos2 = pos + QPoint(0, height+5)
+                backplate_rect = QRect(0, 0, width, height)
+                backplate_rect.moveBottomLeft(pos2)
+                painter.fillRect(backplate_rect, Qt.white)
 
-            for n, pc in enumerate(self.spt_tool_pixels_colors):
+                for n, pc in enumerate(self.spt_tool_pixels_colors):
 
-                for component in [0, 1, 2]:
-                    hue = pc.hslHueF()
-                    saturation = pc.hslSaturationF()
-                    lightness = pc.lightnessF()
-                    if component == 0:
-                        value = hue
-                    elif component == 1:
-                        value = saturation
-                    elif component == 2:
-                        value = lightness
+                    for component in [0, 1, 2]:
+                        hue = pc.hslHueF()
+                        saturation = pc.hslSaturationF()
+                        lightness = pc.lightnessF()
+                        if component == 0:
+                            value = hue
+                        elif component == 1:
+                            value = saturation
+                        elif component == 2:
+                            value = lightness
 
-                    value = int(value*255)
-                    plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
-                    if component == 0:
-                        color = pc
-                        color = Qt.black
-                    elif component == 1:
-                        color = Qt.green
-                    elif component == 2:
-                        color = Qt.red
-                    painter.setPen(QPen(color, 1))
-                    painter.drawPoint(plot_pos)
+                        value = int(value*255)
+                        plot_pos = QPoint(pos2.x() + n, pos2.y() - value)
+                        if component == 0:
+                            color = pc
+                            color = Qt.black
+                        elif component == 1:
+                            color = Qt.green
+                        elif component == 2:
+                            color = Qt.red
+                        painter.setPen(QPen(color, 1))
+                        painter.drawPoint(plot_pos)
 
-            tech_color = QColor()
-            for n in range(height):
-                tech_color.setHslF(n/255, 1.0, 0.5)
-                painter.setPen(QPen(tech_color, 1))
-                m = pos2 + QPoint(0, -n)
-                a = m
-                b = m + QPoint(-20, 0)
-                painter.drawLine(a, b)
+                tech_color = QColor()
+                for n in range(height):
+                    tech_color.setHslF(n/255, 1.0, 0.5)
+                    painter.setPen(QPen(tech_color, 1))
+                    m = pos2 + QPoint(0, -n)
+                    a = m
+                    b = m + QPoint(-20, 0)
+                    painter.drawLine(a, b)
 
             painter.restore()
 
