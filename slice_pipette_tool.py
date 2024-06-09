@@ -230,6 +230,7 @@ class SlicePipetteToolMixin():
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             plp_index = -1
+            plp = None
 
             backplate_rect1 = QRect(0, 0, WIDTH, HEIGHT)
             backplate_rect1.moveBottomLeft(plot1_pos)
@@ -259,10 +260,14 @@ class SlicePipetteToolMixin():
                 if plp_index == -1:
                     line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
                     plp_index, plp = line_points[0]
+                    if calc_distance_to_cursor(plp) < 30.0:
+                        pass
+                    else:
+                        plp_index = -1
                 else:
                     plp = self.spt_tool_line_points[plp_index]
                     sp_case = True
-                if calc_distance_to_cursor(plp) < 30.0 or sp_case:
+                if plp is not None:
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
                     painter.setPen(QPen(Qt.black, 1))
