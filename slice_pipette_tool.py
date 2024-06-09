@@ -193,8 +193,10 @@ class SlicePipetteToolMixin():
 
             PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
-            width = pixels_count
+            WIDTH = pixels_count
             HEIGHT = 255
+            plot1_pos = QPoint(PLOTS_POS)
+            plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             # line ends hovers
             for i_pos in self.spt_tool_input_points:
@@ -221,8 +223,6 @@ class SlicePipetteToolMixin():
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
-            plot1_pos = QPoint(PLOTS_POS)
-            plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
             if len(self.spt_tool_input_points) > 1:
 
@@ -230,7 +230,7 @@ class SlicePipetteToolMixin():
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
 
-                backplate_rect = QRect(0, 0, width, HEIGHT)
+                backplate_rect = QRect(0, 0, WIDTH, HEIGHT)
                 backplate_rect.moveBottomLeft(plot1_pos)
                 painter.fillRect(backplate_rect, Qt.white)
 
@@ -249,7 +249,7 @@ class SlicePipetteToolMixin():
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
-                backplate_rect = QRect(0, 0, width, HEIGHT)
+                backplate_rect = QRect(0, 0, WIDTH, HEIGHT)
                 backplate_rect.moveBottomLeft(plot2_pos)
                 painter.fillRect(backplate_rect, Qt.white)
 
