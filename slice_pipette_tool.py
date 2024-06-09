@@ -161,6 +161,7 @@ class SlicePipetteToolMixin():
 
     def _SPT_draw_number(self, painter, pos, number):
         w = 20
+        painter.save()
         plate_rect = QRectF(QPoint(0, 0), QSizeF(w, w))
         plate_rect.moveCenter(pos)
         painter.setBrush(QColor(220, 0, 0))
@@ -172,6 +173,7 @@ class SlicePipetteToolMixin():
         font.setWeight(1600)
         painter.setFont(font)
         painter.drawText(plate_rect.adjusted(-20, -20, 20, 20), Qt.AlignCenter, str(number))
+        painter.restore()
 
     def SPT_is_context_menu_allowed(self):
         if self.spt_tool_activated:
@@ -255,6 +257,9 @@ class SlicePipetteToolMixin():
             def calc_distance_to_cursor_tuple(x):
                 return calc_distance_to_cursor(x[1])
 
+            painter.setPen(QPen(Qt.black, 1))
+            painter.setBrush(Qt.NoBrush)
+
             if self.spt_tool_line_points:
                 sp_case = False
                 if plp_index == -1:
@@ -270,8 +275,6 @@ class SlicePipetteToolMixin():
                 if plp is not None and sp_case:
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
-                    painter.setPen(QPen(Qt.black, 1))
-                    painter.setBrush(Qt.NoBrush)
                     painter.drawEllipse(r)
 
             # drawing line
@@ -290,11 +293,7 @@ class SlicePipetteToolMixin():
             for i_pos in self.spt_tool_input_points:
                 r = self.SPT_build_input_point_rect(i_pos)
                 if r.contains(self.mapFromGlobal(QCursor().pos())):
-                    painter.save()
-                    painter.setPen(QPen(Qt.black, 1))
-                    painter.setBrush(Qt.NoBrush)
                     painter.drawEllipse(r)
-                    painter.restore()
                     break
 
             def draw_plot_line(pos):
