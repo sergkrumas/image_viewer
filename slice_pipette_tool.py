@@ -171,8 +171,9 @@ class SlicePipetteToolMixin():
 
 
             if self.spt_tool_line_points:
-                line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
-                plp_index, plp = line_points[0]
+                if plp_index == -1:
+                    line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
+                    plp_index, plp = line_points[0]
                 if calc_distance_to_cursor(plp) < 30.0:
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
@@ -193,8 +194,7 @@ class SlicePipetteToolMixin():
 
 
             PLOTS_POS = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
-            pixels_count = len(self.spt_tool_pixels_colors)
-            WIDTH = pixels_count
+            WIDTH = len(self.spt_tool_pixels_colors)
             HEIGHT = 255
             plot1_pos = QPoint(PLOTS_POS)
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
