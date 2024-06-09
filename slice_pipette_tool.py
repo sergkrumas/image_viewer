@@ -261,13 +261,13 @@ class SlicePipetteToolMixin():
                     line_points = sorted(enumerate(self.spt_tool_line_points), key=calc_distance_to_cursor_tuple)
                     plp_index, plp = line_points[0]
                     if calc_distance_to_cursor(plp) < 30.0:
-                        pass
+                        sp_case = True
                     else:
                         plp_index = -1
                 else:
                     plp = self.spt_tool_line_points[plp_index]
                     sp_case = True
-                if plp is not None:
+                if plp is not None and sp_case:
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
                     painter.setPen(QPen(Qt.black, 1))
