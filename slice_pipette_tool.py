@@ -168,7 +168,7 @@ class SlicePipetteToolMixin():
             offset = QPointF(offset.x(), offset.y())
             self._SPT_draw_number(painter, p1 + offset, 1)
             self._SPT_draw_number(painter, p2 + offset, 2)
-            pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+            plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
             pixels_count = len(self.spt_tool_pixels_colors)
             width = pixels_count
             height = 255
@@ -185,7 +185,7 @@ class SlicePipetteToolMixin():
 
             if len(self.spt_tool_input_points) > 1:
                 backplate_rect = QRect(0, 0, width, height)
-                backplate_rect.moveBottomLeft(pos)
+                backplate_rect.moveBottomLeft(plots_pos)
                 painter.fillRect(backplate_rect, Qt.white)
 
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
@@ -197,11 +197,11 @@ class SlicePipetteToolMixin():
                             value = pc.green()
                         elif color == Qt.blue:
                             value = pc.blue()
-                        plot_pos = QPoint(pos.x() + n, pos.y() - value)
+                        plot_pos = QPoint(plots_pos.x() + n, plots_pos.y() - value)
                         painter.setPen(QPen(color, 1))
                         painter.drawPoint(plot_pos)
 
-                pos2 = pos + QPoint(0, height+5)
+                pos2 = plots_pos + QPoint(0, height+5)
                 backplate_rect = QRect(0, 0, width, height)
                 backplate_rect.moveBottomLeft(pos2)
                 painter.fillRect(backplate_rect, Qt.white)
