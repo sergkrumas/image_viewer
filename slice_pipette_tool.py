@@ -39,6 +39,7 @@ class SlicePipetteToolMixin():
 
         self.spt_input_point_dragging_START_CURSOR_POS = QPoint()
         self.spt_input_point_dragging_START_INPUT_POS = QPoint()
+        self.spt_input_point_dragging_START_LINE = QLineF()
 
         self.spt_input_point_rect_side_width = 50
 
@@ -79,10 +80,17 @@ class SlicePipetteToolMixin():
             self.spt_input_point_dragging = False
         return False
 
+    def SPT_find_point_perp_intersection(self, line, point):
+        perpendic_line = QLineF(point, QPointF(point.x(), 0.0))
+        perpendic_line.setAngle(90.0 + line.angle())
+        result = line.intersects(perpendic_line)
+        return result[1].toPoint()
+
     def SPT_mousePressEvent(self, event):
         if self.spt_input_point_dragging:
             self.spt_input_point_dragging_START_CURSOR_POS = QPoint(event.pos())
             self.spt_input_point_dragging_START_INPUT_POS = QPoint(self.spt_tool_input_points[self.spt_input_point_dragging_INDEX])
+            self.spt_input_point_dragging_START_LINE = QLineF(*self.spt_tool_input_points)
             self.update()
 
     def SPT_mouseMoveEvent(self, event):
@@ -90,7 +98,15 @@ class SlicePipetteToolMixin():
             _index = self.spt_input_point_dragging_INDEX
             scp = self.spt_input_point_dragging_START_CURSOR_POS
             sip = self.spt_input_point_dragging_START_INPUT_POS
-            self.spt_tool_input_points[_index] = sip + (QPoint(event.pos()) - scp)
+
+            cursor_pos = QPoint(event.pos())
+            line_mapped_cursor_pos = self.SPT_find_point_perp_intersection(self.spt_input_point_dragging_START_LINE, cursor_pos)
+
+            modifiers = QApplication.queryKeyboardModifiers()
+            if modifiers == Qt.ControlModifier:
+                cursor_pos = line_mapped_cursor_pos
+
+            self.spt_tool_input_points[_index] = sip + (cursor_pos - scp)
             self._SPT_update_plot()
             self.update()
 
