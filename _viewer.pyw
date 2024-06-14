@@ -1411,10 +1411,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def cursor_setter(self):
         CP = Globals.control_panel
         if self.isActiveWindow():
-            if self.over_corner_menu_item():
+
+            if self.SPT_is_spt_tool_activated():
+                self.SPT_set_cursor()
+
+            elif self.over_corner_menu_item():
                 self.setCursor(Qt.PointingHandCursor)
+
             elif self.over_corner_button() or self.over_corner_button(corner_attr="topLeft"):
                 self.setCursor(Qt.PointingHandCursor)
+
             elif self.is_library_page_active():
                 if self.previews_list_active_item:
                     self.setCursor(Qt.PointingHandCursor)
@@ -1434,6 +1440,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.setCursor(Qt.SizeAllCursor)
                 else:
                     self.setCursor(Qt.ArrowCursor)
+
             elif self.is_board_page_active():
                 # курсор определяется в mouseMoveEvent
                 pass

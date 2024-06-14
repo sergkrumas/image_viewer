@@ -80,6 +80,15 @@ class SlicePipetteToolMixin():
             self.spt_input_point_dragging = False
         return False
 
+    def SPT_is_spt_tool_activated(self):
+        return self.spt_tool_activated
+
+    def SPT_set_cursor(self):
+        if self.spt_tool_activated:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
+
     def SPT_find_point_perp_intersection(self, line, point):
         perpendic_line = QLineF(point, QPointF(point.x(), 0.0))
         perpendic_line.setAngle(90.0 + line.angle())
