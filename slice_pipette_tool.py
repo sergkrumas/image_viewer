@@ -56,6 +56,8 @@ class SlicePipetteToolMixin():
         self.spt_plot1_rect = QRect()
         self.spt_plot2_rect = QRect()
 
+        self.SPT_hover_init()
+
     def SPT_update(self):
         self._SPT_update_plot()
         self.update()
@@ -85,7 +87,10 @@ class SlicePipetteToolMixin():
 
     def SPT_set_cursor(self):
         if self.spt_tool_activated:
-            self.setCursor(Qt.PointingHandCursor)
+            if any((self.SPT_hover_ends, self.SPT_hover_line, self.SPT_hover_plots)):
+                self.setCursor(Qt.PointingHandCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
 
     def SPT_find_point_perp_intersection(self, line, point):
         perpendic_line = QLineF(point, QPointF(point.x(), 0.0))
@@ -237,8 +242,14 @@ class SlicePipetteToolMixin():
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
+    def SPT_hover_init(self):
+        self.SPT_hover_ends = False
+        self.SPT_hover_line = False
+        self.SPT_hover_plots = False
+
     def SPT_draw_info(self, painter):
         if self.spt_tool_activated and len(self.spt_tool_input_points) > 0:
+            self.SPT_hover_init()
 
             cursor_pos = self.mapFromGlobal(QCursor().pos())
             if len(self.spt_tool_input_points) < 2:
@@ -268,9 +279,11 @@ class SlicePipetteToolMixin():
             if backplate_rect1.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect1.bottomLeft()
                 plp_index = delta.x()
+                self.SPT_hover_plots = True
             elif backplate_rect2.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect2.bottomLeft()
                 plp_index = delta.x()
+                self.SPT_hover_plots = True
 
             painter.save()
 
@@ -304,6 +317,7 @@ class SlicePipetteToolMixin():
                     plp = self.spt_tool_line_points[plp_index]
                     sp_case = True
                 if plp is not None and sp_case:
+                    self.SPT_hover_line = True
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
                     painter.drawEllipse(r)
@@ -317,6 +331,7 @@ class SlicePipetteToolMixin():
                 r = self.SPT_build_input_point_rect(i_pos)
                 if r.contains(self.mapFromGlobal(QCursor().pos())):
                     painter.drawEllipse(r)
+                    self.SPT_hover_ends = True
                     break
             painter.restore()
 
