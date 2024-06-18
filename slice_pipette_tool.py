@@ -365,6 +365,7 @@ class SlicePipetteToolMixin():
                 painter.fillRect(backplate_rect1, Qt.white)
                 draw_plot_line(plot1_pos)
 
+                # RGB plot
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
                     for color in [Qt.red, Qt.green, Qt.blue]:
@@ -388,6 +389,7 @@ class SlicePipetteToolMixin():
                 painter.fillRect(backplate_rect2, Qt.white)
                 draw_plot_line(plot2_pos)
 
+                # HSL plot
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
                     for component in [0, 1, 2]:
@@ -421,6 +423,7 @@ class SlicePipetteToolMixin():
 
                 tech_color = QColor()
 
+                # rainbow for HSL plot
                 for n in range(HEIGHT):
                     tech_color.setHslF(n/255, 1.0, 0.5)
                     painter.setPen(QPen(tech_color, 1))
