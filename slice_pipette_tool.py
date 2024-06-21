@@ -389,6 +389,19 @@ class SlicePipetteToolMixin():
                 painter.fillRect(backplate_rect2, Qt.white)
                 draw_plot_line(plot2_pos)
 
+                if plp_index > -1:
+                    color = self.spt_tool_pixels_colors[plp_index]
+                    text = f'RGB: {color.redF():.05}  {color.greenF():.05}  {color.blueF():.05}'
+                    text += f'\nHSL: {color.hueF():.05}  {color.saturationF():.05}  {color.lightnessF():.05}'
+                    rect = painter.boundingRect(QRect(), Qt.AlignLeft, text)
+
+                    rect.moveTopLeft(plot2_pos + QPoint(plp_index, 0) + QPoint(0, 10))
+
+                    painter.setPen(Qt.black)
+
+                    painter.fillRect(rect.adjusted(-5, -5, 5,5), Qt.white)
+                    painter.drawText(rect, Qt.AlignLeft, text)
+
                 # HSL plot
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
