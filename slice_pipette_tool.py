@@ -41,7 +41,7 @@ class SlicePipetteToolMixin():
         self.spt_input_point_dragging_START_INPUT_POS = QPoint()
         self.spt_input_point_dragging_START_LINE = QLineF()
 
-        self.spt_input_point_rect_side_width = 50
+        self.spt_input_point_rect_side_width = 51
 
         self.spt_plots_pos = QPoint()
 
