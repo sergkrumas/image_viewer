@@ -322,7 +322,7 @@ class SlicePipetteToolMixin():
                     r.adjust(15, 15, -15, -15)
                     painter.drawEllipse(r)
 
-            # drawing line
+            # drawing pipette line
             painter.drawLine(p1, p2)
 
 
