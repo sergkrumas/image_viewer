@@ -351,7 +351,7 @@ class SlicePipetteToolMixin():
             def draw_plot_line(pos):
                 if plp_index > -1:
                     _x = pos + QPoint(plp_index, 0)
-                    painter.setPen(Qt.black)
+                    painter.setPen(QColor(200, 200, 200))
                     painter.drawLine(_x, _x+QPoint(0, -255))
 
             # draw plots
