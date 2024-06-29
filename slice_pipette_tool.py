@@ -261,7 +261,7 @@ class SlicePipetteToolMixin():
             PLOTS_POS = self.spt_plots_pos
 
             WIDTH = len(self.spt_tool_pixels_colors)
-            HEIGHT = 255
+            HEIGHT = 256
             plot1_pos = QPoint(PLOTS_POS)
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
 
