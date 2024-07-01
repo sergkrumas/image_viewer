@@ -348,11 +348,18 @@ class SlicePipetteToolMixin():
             self._SPT_draw_number(painter, p1 + offset, 1)
             self._SPT_draw_number(painter, p2 + offset, 2)
 
-            def draw_plot_line(pos):
+            def draw_plot_line(pos, hue_level=None):
                 if plp_index > -1:
                     _x = pos + QPoint(plp_index, 0)
                     painter.setPen(QColor(200, 200, 200))
                     painter.drawLine(_x, _x+QPoint(0, -255))
+                    if hue_level:
+                        pc = self.spt_tool_pixels_colors[plp_index]
+                        hue = pc.hslHueF()
+                        value = int(hue*255)
+                        hue_offset = QPoint(0, -value)
+                        painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.spt_tool_pixels_colors), 0))
+
 
             # draw plots
             if len(self.spt_tool_input_points) > 1:
@@ -387,7 +394,7 @@ class SlicePipetteToolMixin():
 
 
                 painter.fillRect(backplate_rect2, Qt.white)
-                draw_plot_line(plot2_pos)
+                draw_plot_line(plot2_pos, hue_level=True)
 
                 if plp_index > -1:
                     color = self.spt_tool_pixels_colors[plp_index]
