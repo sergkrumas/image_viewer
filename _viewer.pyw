@@ -2901,6 +2901,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.BW_filter_state = BWFilterState.cycle_toggle(self.BW_filter_state)
         self.update()
 
+    def set_clipboard(self, text):
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(text, mode=cb.Clipboard)
+
     def keyReleaseEvent(self, event):
         key = event.key()
 
@@ -2936,7 +2941,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_F7:
                 self.SPT_set_plots_position()
             elif key == Qt.Key_F8:
-                self.SPT_toggle_plots_window()
+                self.SPT_copy_current_to_clipboard()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()

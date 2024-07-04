@@ -56,6 +56,8 @@ class SlicePipetteToolMixin():
         self.spt_plot1_rect = QRect()
         self.spt_plot2_rect = QRect()
 
+        self.draw_plp_index = -1
+
         self.SPT_hover_init()
 
     def SPT_update(self):
@@ -143,8 +145,23 @@ class SlicePipetteToolMixin():
     def SPT_set_plots_position(self):
         self.spt_plots_pos = self.mapFromGlobal(QCursor().pos())
 
-    def SPT_toggle_plots_window(self):
-        pass
+    def SPT_copy_current_to_clipboard(self):
+        if self.spt_tool_activated:
+            color = self.spt_tool_pixels_colors[self.draw_plp_index]
+            _hex = color.name()
+            _r = color.red()
+            _g = color.green()
+            _b = color.blue()
+            _rgb = f"rgb({_r}, {_g}, {_b})"
+            color_repr = f"{_hex} {_rgb}"
+            # self.colors_values_copied.append((color, color_repr))
+            # color_reprs = [t[1] for t in self.colors_values_copied]
+            # self.set_clipboard("\n".join(color_reprs))
+            self.set_clipboard(color_repr)
+            self.show_center_label(f'Color {color_repr} has been copied to clipboard!')
+            self.update()
+        else:
+            self.show_center_label('Slice Pipette tool is not activated!', error=True)
 
     def SPT_toggle_tool_state(self):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
@@ -321,6 +338,8 @@ class SlicePipetteToolMixin():
                     r = self.SPT_build_input_point_rect(plp)
                     r.adjust(15, 15, -15, -15)
                     painter.drawEllipse(r)
+
+            self.draw_plp_index = plp_index
 
             # drawing pipette line
             painter.drawLine(p1, p2)
