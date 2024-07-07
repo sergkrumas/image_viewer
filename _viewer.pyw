@@ -2942,6 +2942,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.SPT_set_plots_position()
             elif key == Qt.Key_F8:
                 self.SPT_copy_current_to_clipboard()
+            elif check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier and self.spt_tool_activated:
+                self.SPT_copy_current_to_clipboard()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
