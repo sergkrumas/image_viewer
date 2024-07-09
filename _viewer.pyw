@@ -2283,11 +2283,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_board_page_active():
             self.board_draw(painter, event)
 
-        # draw center label
-        self.draw_center_label_main(painter)
-
         # draw slice pipette tool
         self.SPT_draw_info(painter)
+
+
+
+        # draw center label
+        self.draw_center_label_main(painter)
 
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")
