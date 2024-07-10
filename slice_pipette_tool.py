@@ -58,6 +58,8 @@ class SlicePipetteToolMixin():
 
         self.draw_plp_index = -1
 
+        self.spt_pretty_plots = True
+
         self.SPT_hover_init()
 
     def SPT_update(self):
@@ -246,6 +248,8 @@ class SlicePipetteToolMixin():
             ("show hue", self.spt_show_hue, partial(toggle_boolean_var_generic, self, "spt_show_hue")),
             ("show saturation", self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
             ("show lightness", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
+
+            ("pretty plots", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
         ]
 
         for title, value, callback in checkboxes:
@@ -392,9 +396,10 @@ class SlicePipetteToolMixin():
                 draw_plot_line(plot1_pos)
 
                 # RGB plot
+                prev_pc_pos = [None, None, None]
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
-                    for color in [Qt.red, Qt.green, Qt.blue]:
+                    for color_num, color in enumerate([Qt.red, Qt.green, Qt.blue]):
                         if color == Qt.red:
                             if not self.spt_show_red:
                                 continue
@@ -409,8 +414,17 @@ class SlicePipetteToolMixin():
                             value = pc.blue()
                         plot_pos = QPoint(plot1_pos.x() + n, plot1_pos.y() - value)
                         painter.setPen(QPen(color, 1))
+
+                        # draw plot point
                         painter.drawPoint(plot_pos)
 
+                        if self.spt_pretty_plots:
+                            # draw lines between plot points
+                            _pos = prev_pc_pos[color_num]
+                            if _pos is not None:
+                                if abs(_pos.y() - plot_pos.y()) > 1:
+                                    painter.drawLine(_pos, plot_pos)
+                            prev_pc_pos[color_num] = QPoint(plot_pos)
 
                 painter.fillRect(backplate_rect2, Qt.white)
                 draw_plot_line(plot2_pos, hue_level=True)
@@ -429,6 +443,7 @@ class SlicePipetteToolMixin():
                     painter.drawText(rect, Qt.AlignLeft, text)
 
                 # HSL plot
+                prev_pc_pos = [None, None, None]
                 for n, pc in enumerate(self.spt_tool_pixels_colors):
 
                     for component in [0, 1, 2]:
@@ -458,7 +473,17 @@ class SlicePipetteToolMixin():
                         elif component == 2:
                             color = Qt.red
                         painter.setPen(QPen(color, 1))
+
+                        # draw plot point
                         painter.drawPoint(plot_pos)
+
+                        if self.spt_pretty_plots:
+                            # draw lines between plot points
+                            _pos = prev_pc_pos[component]
+                            if _pos is not None:
+                                if abs(_pos.y() - plot_pos.y()) > 1:
+                                    painter.drawLine(_pos, plot_pos)
+                            prev_pc_pos[component] = QPoint(plot_pos)
 
                 tech_color = QColor()
 
