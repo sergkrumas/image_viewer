@@ -249,7 +249,7 @@ class SlicePipetteToolMixin():
             ("show saturation", self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
             ("show lightness", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
 
-            ("pretty plots", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
+            ("pretty plots", self.spt_pretty_plots, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
         ]
 
         for title, value, callback in checkboxes:
