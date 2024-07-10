@@ -379,6 +379,7 @@ class SlicePipetteToolMixin():
                     if hue_level:
                         pc = self.spt_tool_pixels_colors[plp_index]
                         hue = pc.hslHueF()
+                        hue = max(0.0, hue) # hue будет -1.0 для чисто белого и чёрного цветов
                         value = int(hue*255)
                         hue_offset = QPoint(0, -value)
                         painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.spt_tool_pixels_colors), 0))
@@ -453,7 +454,7 @@ class SlicePipetteToolMixin():
                         if component == 0:
                             if not self.spt_show_hue:
                                 continue
-                            value = hue
+                            value = max(0.0, hue)  # hue будет -1.0 для чисто белого и чёрного цветов
                         elif component == 1:
                             if not self.spt_show_saturation:
                                 continue
