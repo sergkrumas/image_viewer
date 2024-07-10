@@ -496,6 +496,23 @@ class SlicePipetteToolMixin():
                     a = m
                     b = m + QPoint(-20, 0)
                     painter.drawLine(a, b)
+                # lightness version of hue rainbow
+                plot2_pos += QPoint(-20, 0)
+                for n in range(HEIGHT):
+                    tech_color.setHslF(n/256, 1.0, 0.5)
+                    l = tech_color.lightness()
+                    R = tech_color.redF()
+                    G = tech_color.greenF()
+                    B = tech_color.blueF()
+                    luminance = min(1.0, max(0.0, 0.2126*R + 0.7152*G + 0.0722*B))
+                    luminance *= 255
+                    luminance = int(luminance)
+                    painter.setPen(QPen(QColor(luminance, luminance, luminance), 1))
+                    m = plot2_pos + QPoint(-2, -n)
+                    a = m
+                    b = m + QPoint(-20, 0)
+                    painter.drawLine(a, b)
+
 
                 # возвращаем модификаторы обратно
                 painter.setRenderHint(QPainter.Antialiasing, True)
