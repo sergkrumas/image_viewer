@@ -60,7 +60,7 @@ class SlicePipetteToolMixin():
 
         self.spt_pretty_plots = True
 
-        self.spt_hor_scale_factor = 2
+        self.spt_hor_scale_factor = 1
 
         self.SPT_hover_init()
 
