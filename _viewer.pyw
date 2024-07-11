@@ -2946,6 +2946,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.SPT_copy_current_to_clipboard()
             elif check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier and self.spt_tool_activated:
                 self.SPT_copy_current_to_clipboard()
+            elif key == Qt.Key_F4:
+                self.SPT_cycle_toggle_scale_factor_value()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()

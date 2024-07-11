@@ -60,7 +60,21 @@ class SlicePipetteToolMixin():
 
         self.spt_pretty_plots = True
 
+        self.spt_hor_scale_factor = 2
+
         self.SPT_hover_init()
+
+    def SPT_cycle_toggle_scale_factor_value(self):
+        if self.spt_tool_activated:
+            values = [1, 2, 3]
+            current_value = self.spt_hor_scale_factor
+            cycled_values = itertools.cycle(values)
+            for value in cycled_values:
+                if current_value == value:
+                    break
+            self.spt_hor_scale_factor = next(cycled_values)
+            self.show_center_label(f'Plot scale factor is {self.spt_hor_scale_factor}x' )
+            self.update()
 
     def SPT_update(self):
         self._SPT_update_plot()
@@ -281,7 +295,7 @@ class SlicePipetteToolMixin():
 
             PLOTS_POS = self.spt_plots_pos
 
-            WIDTH = len(self.spt_tool_pixels_colors)
+            WIDTH = len(self.spt_tool_pixels_colors)*self.spt_hor_scale_factor-1
             HEIGHT = 256
             plot1_pos = QPoint(PLOTS_POS)
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
@@ -299,11 +313,11 @@ class SlicePipetteToolMixin():
 
             if backplate_rect1.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect1.bottomLeft()
-                plp_index = delta.x()
+                plp_index = int(delta.x()/self.spt_hor_scale_factor)
                 self.SPT_hover_plots = True
             elif backplate_rect2.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect2.bottomLeft()
-                plp_index = delta.x()
+                plp_index = int(delta.x()/self.spt_hor_scale_factor)
                 self.SPT_hover_plots = True
 
             painter.save()
@@ -371,9 +385,9 @@ class SlicePipetteToolMixin():
             self._SPT_draw_number(painter, p1 + offset, 1)
             self._SPT_draw_number(painter, p2 + offset, 2)
 
-            def draw_plot_line(pos, hue_level=None):
+            def draw_plot_line(pos, hue_level=False):
                 if plp_index > -1:
-                    _x = pos + QPoint(plp_index, 0)
+                    _x = pos + QPoint(plp_index*self.spt_hor_scale_factor, 0)
                     painter.setPen(QColor(200, 200, 200))
                     painter.drawLine(_x, _x+QPoint(0, -255))
                     if hue_level:
@@ -382,7 +396,7 @@ class SlicePipetteToolMixin():
                         hue = max(0.0, hue) # hue будет -1.0 для чисто белого и чёрного цветов
                         value = int(hue*255)
                         hue_offset = QPoint(0, -value)
-                        painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.spt_tool_pixels_colors), 0))
+                        painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.spt_tool_pixels_colors)*self.spt_hor_scale_factor, 0))
 
 
             # draw plots
@@ -413,7 +427,7 @@ class SlicePipetteToolMixin():
                             if not self.spt_show_blue:
                                 continue
                             value = pc.blue()
-                        plot_pos = QPoint(plot1_pos.x() + n, plot1_pos.y() - value)
+                        plot_pos = QPoint(plot1_pos.x() + n*self.spt_hor_scale_factor, plot1_pos.y() - value)
                         painter.setPen(QPen(color, 1))
 
                         # draw plot point
@@ -423,7 +437,7 @@ class SlicePipetteToolMixin():
                             # draw lines between plot points
                             _pos = prev_pc_pos[color_num]
                             if _pos is not None:
-                                if abs(_pos.y() - plot_pos.y()) > 1:
+                                if abs(_pos.y() - plot_pos.y()) > 1 or abs(_pos.x() - plot_pos.x()) > 1:
                                     painter.drawLine(_pos, plot_pos)
                             prev_pc_pos[color_num] = QPoint(plot_pos)
 
@@ -436,7 +450,7 @@ class SlicePipetteToolMixin():
                     text += f'\nHSL: {color.hueF():.05}  {color.saturationF():.05}  {color.lightnessF():.05}'
                     rect = painter.boundingRect(QRect(), Qt.AlignLeft, text)
 
-                    rect.moveTopLeft(plot2_pos + QPoint(plp_index, 0) + QPoint(0, 10))
+                    rect.moveTopLeft(plot2_pos + QPoint(plp_index*self.spt_hor_scale_factor, 0) + QPoint(0, 10))
 
                     painter.setPen(Qt.black)
 
@@ -465,7 +479,7 @@ class SlicePipetteToolMixin():
                             value = lightness
 
                         value = int(value*255)
-                        plot_pos = QPoint(plot2_pos.x() + n, plot2_pos.y() - value)
+                        plot_pos = QPoint(plot2_pos.x() + n*self.spt_hor_scale_factor, plot2_pos.y() - value)
                         if component == 0:
                             # color = pc
                             color = Qt.black
@@ -482,7 +496,7 @@ class SlicePipetteToolMixin():
                             # draw lines between plot points
                             _pos = prev_pc_pos[component]
                             if _pos is not None:
-                                if abs(_pos.y() - plot_pos.y()) > 1:
+                                if abs(_pos.y() - plot_pos.y()) > 1 or abs(_pos.x() - plot_pos.x()) > 1:
                                     painter.drawLine(_pos, plot_pos)
                             prev_pc_pos[component] = QPoint(plot_pos)
 
