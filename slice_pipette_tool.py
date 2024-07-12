@@ -66,7 +66,7 @@ class SlicePipetteToolMixin():
 
     def SPT_cycle_toggle_scale_factor_value(self):
         if self.spt_tool_activated:
-            values = [1, 2, 3]
+            values = [1, 2, 3, 4, 5]
             current_value = self.spt_hor_scale_factor
             cycled_values = itertools.cycle(values)
             for value in cycled_values:
