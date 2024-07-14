@@ -77,8 +77,11 @@ class SlicePipetteToolMixin():
             self.update()
 
     def SPT_update(self):
-        self._SPT_update_plot()
-        self.update()
+        if self.spt_tool_activated:
+            self._SPT_update_plot()
+            self.update()
+        else:
+            self.show_center_label('Slice Pipette tool is not activated!', error=True)
 
     def SPT_build_input_point_rect(self, pos):
         rsw = self.spt_input_point_rect_side_width
