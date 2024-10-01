@@ -409,7 +409,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def activate_or_reset_secret_hint(self):
         if not self.secret_hints_list:
-            raise "no data"
+            return # raise Exception("no data")
+
         if not self.STNG_show_deep_secrets_at_zoom:
             return
 
@@ -444,7 +445,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_secret_hint(self, painter):
         if not self.secret_hints_list:
-            raise "no data"
+            return #raise Exception("no data")
 
         if not self.hint_text:
             return
