@@ -1494,6 +1494,7 @@ class ImageData():
         self.source_width = 0
         self.source_height = 0
 
+        self._preview = None
         if self.filepath and not LibraryData().globals.lite_mode:
             if LibraryData.is_interest_file(self.filepath):
                 self.md5, self.md5_tuple = generate_md5(self.filepath)
@@ -1507,10 +1508,6 @@ class ImageData():
             self.md5, self.md5_tuple = "", ()
             self.image_metadata = dict()
             self.disk_size = 0
-            # надо для boards, иначе будет вылет
-            self.preview = generate_info_pixmap("В группе\nнет изображений", "", size=1000, no_background=False)
-            self.source_width = self.preview.width()
-            self.source_height = self.preview.height()
 
         self.board_item = None
 
@@ -1518,6 +1515,22 @@ class ImageData():
         self._touched = False               # обнуляется после отпускания кнопки мыши
         self._selected = False              # обнуляется после каждого перемещения
         self._is_phantom = False
+
+    # атрибут preview нужен для boards, иначе будет вылет
+    @property
+    def preview(self):
+        if self._preview is None:
+            self._preview = generate_info_pixmap("В группе\nнет изображений", "", size=1000, no_background=False)
+            self.source_width = self.preview.width()
+            self.source_height = self.preview.height()
+        else:
+            return self._preview
+    @preview.setter
+    def preview(self, value):
+        self._preview = value
+    @preview.deleter
+    def preview(self):
+        del self._preview
 
     def store_ui_data(self):
         MW = LibraryData().globals.main_window
