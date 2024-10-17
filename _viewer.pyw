@@ -57,6 +57,7 @@ class Globals():
     NULL_PIXMAP = None
     ERROR_PREVIEW_PIXMAP = None
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
+    SUPER_LIGHT = True
     force_full_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
     is_path_exists = False
@@ -3833,26 +3834,27 @@ def open_in_separated_app_copy(folder_data):
         QMessageBox.critical(None, "Отмена!", msg)
 
 def get_predefined_path_if_started_from_sublimeText():
-    process = psutil.Process(os.getpid())
-    cmdline = process.cmdline()
     path = ""
-    if "-u" in cmdline:
-        print('started from sublime text')
-        # run from sublime_text
-        Globals.started_from_sublime_text = True
-        default_paths_txt = os.path.join(os.path.dirname(__file__), "user_data",
-                                                        Globals.DEFAULT_PATHS_FILENAME)
-        create_pathsubfolders_if_not_exist(os.path.dirname(default_paths_txt))
-        if os.path.exists(default_paths_txt):
-            with open(default_paths_txt, "r", encoding="utf8") as file:
-                data = file.read() or None
-                if data:
-                    paths = list(filter(bool, data.split("\n")))
-                    if paths:
-                        path = paths[-1]
-                        print(f"\tdefault path is set to {path}")
-    else:
-        Globals.started_from_sublime_text = False
+    if not Globals.SUPER_LIGHT:
+        process = psutil.Process(os.getpid())
+        cmdline = process.cmdline()
+        if "-u" in cmdline:
+            print('started from sublime text')
+            # run from sublime_text
+            Globals.started_from_sublime_text = True
+            default_paths_txt = os.path.join(os.path.dirname(__file__), "user_data",
+                                                            Globals.DEFAULT_PATHS_FILENAME)
+            create_pathsubfolders_if_not_exist(os.path.dirname(default_paths_txt))
+            if os.path.exists(default_paths_txt):
+                with open(default_paths_txt, "r", encoding="utf8") as file:
+                    data = file.read() or None
+                    if data:
+                        paths = list(filter(bool, data.split("\n")))
+                        if paths:
+                            path = paths[-1]
+                            print(f"\tdefault path is set to {path}")
+        else:
+            Globals.started_from_sublime_text = False
     return path
 
 class HookConsoleOutput:
@@ -3897,14 +3899,15 @@ def _main():
     arguments = ", ".join(sys.argv)
     print(f'Proccess ID: {pid} Command Arguments: {arguments}')
 
-    if not Globals.DEBUG:
-        RERUN_ARG = '-rerun'
-        # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
-        # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
-        # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
-        if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
-            subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
-            sys.exit()
+    if not Globals.SUPER_LIGHT:
+        if not Globals.DEBUG:
+            RERUN_ARG = '-rerun'
+            # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
+            # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
+            # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
+            if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
+                subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
+                sys.exit()
 
     _was_DEBUG = Globals.DEBUG
     if sys.argv[0].lower().endswith("_viewer.pyw"):
@@ -3962,6 +3965,11 @@ def _main():
         Globals.lite_mode = False
         Globals.force_full_mode = True
         path = get_predefined_path_if_started_from_sublimeText()
+
+    if Globals.SUPER_LIGHT:
+        # нужно здесь для того, чтобы не тратить время на долгий вызов server_or_client_via_sockets 
+        # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
+        Globals.lite_mode = True
 
     if Globals.lite_mode:
         app_icon = QIcon()
