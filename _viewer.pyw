@@ -57,7 +57,7 @@ class Globals():
     NULL_PIXMAP = None
     ERROR_PREVIEW_PIXMAP = None
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
-    SUPER_LIGHT = True
+    SUPER_LITE = True
     force_full_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
     is_path_exists = False
@@ -3835,7 +3835,7 @@ def open_in_separated_app_copy(folder_data):
 
 def get_predefined_path_if_started_from_sublimeText():
     path = ""
-    if not Globals.SUPER_LIGHT:
+    if not Globals.SUPER_LITE:
         process = psutil.Process(os.getpid())
         cmdline = process.cmdline()
         if "-u" in cmdline:
@@ -3899,7 +3899,7 @@ def _main():
     arguments = ", ".join(sys.argv)
     print(f'Proccess ID: {pid} Command Arguments: {arguments}')
 
-    if not Globals.SUPER_LIGHT:
+    if not Globals.SUPER_LITE:
         if not Globals.DEBUG:
             RERUN_ARG = '-rerun'
             # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
@@ -3966,7 +3966,7 @@ def _main():
         Globals.force_full_mode = True
         path = get_predefined_path_if_started_from_sublimeText()
 
-    if Globals.SUPER_LIGHT:
+    if Globals.SUPER_LITE:
         # нужно здесь для того, чтобы не тратить время на долгий вызов server_or_client_via_sockets 
         # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
         Globals.lite_mode = True
