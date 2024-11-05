@@ -45,6 +45,10 @@ try:
 except:
     noise = None
 
+if platform.system() == "Windows":
+    viewer_dll = __import__("viewer_dll") #viewer_dll is windows-only module
+else:
+    viewer_dll = None
 
 class Globals():
     is_32bit_exe = platform.architecture()[0] == '32bit'
@@ -3938,6 +3942,11 @@ def _main():
     app_icon.addFile(path_icon)
     app.setWindowIcon(app_icon)
 
+    if viewer_dll is None:
+        Globals.explorer_paths = []
+    else:    
+        Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
+
     frameless_mode = True and SettingsWindow.get_setting_value("show_fullscreen")
     # разбор аргументов
     parser = argparse.ArgumentParser()
@@ -4045,7 +4054,7 @@ def _main():
 
     if default_branch:
         if path:
-            LibraryData().handle_input_data(path)
+            LibraryData().handle_input_data(path, check_windows_explorer_window=True)
         else:
             # без запроса
             LibraryData().create_empty_virtual_folder()

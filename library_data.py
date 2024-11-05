@@ -786,18 +786,24 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepath.lower().endswith(exts)
 
     @staticmethod
-    def list_interest_files(folder_path, deep_scan=False, all_allowed=None):
+    def list_interest_files(folder_path, deep_scan=False, all_allowed=None, check_windows_explorer_window=False):
         filepaths = []
         if all_allowed is None:
             all_allowed = not settings_handling.SettingsWindow.get_setting_value("browse_images_only")
         if os.path.exists(folder_path):
-            for cur_dir, dirs, files in os.walk(folder_path):
-                for name in files:
-                    filepath = os.path.join(cur_dir, name)
+            if check_windows_explorer_window:
+                for filepath in LibraryData.globals.explorer_paths:
+                    filepath = os.path.normpath(filepath)
                     if LibraryData.is_interest_file(filepath) or all_allowed:
                         filepaths.append(filepath)
-                if not deep_scan:
-                    break
+            if (not check_windows_explorer_window) or not filepaths:
+                for cur_dir, dirs, files in os.walk(folder_path):
+                    for name in files:
+                        filepath = os.path.join(cur_dir, name)
+                        if LibraryData.is_interest_file(filepath) or all_allowed:
+                            filepaths.append(filepath)
+                    if not deep_scan:
+                        break
         return filepaths
 
     @staticmethod
@@ -953,7 +959,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 pre_load=False,
                 content_hash=None,
                 modifiers="",
-                library_loading=False):
+                library_loading=False,
+                check_windows_explorer_window=False):
 
         # все пути приводим к единому виду, чтобы не было разных слэшей в путях,
         # из-за которых в библиотеке могут ходить разные дубликаты одной и той же папки
@@ -997,7 +1004,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             folder_path = input_path
         if not modifiers:
             modifiers = LibraryData().find_modifiers(folder_path)
-        files = LibraryData().list_interest_files(folder_path, deep_scan='-deep_scan' in modifiers)
+        files = LibraryData().list_interest_files(folder_path, deep_scan='-deep_scan' in modifiers, check_windows_explorer_window=check_windows_explorer_window)
 
         # creation
         if files:
@@ -1006,7 +1013,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 fd.set_modifiers(modifiers)
         else:
             if not pre_load:
-                QMessageBox.critical(None, "Error", f"No interesting files to show in \n{path}")
+                QMessageBox.critical(None, "Error", f"No interesting files to show in \n{folder_path}")
                 close_app_if_empty()
                 back_to_current_on_fail()
                 return
