@@ -1,6 +1,18 @@
 
 
-
+# Справка
+- **!** `.pyd`-файлы это обёрнутые питоном виндовые `.dll`-файлы
+- **!** Для формирования pyd-файла из исходного .сс-файла нужно воспользоваться командой `python setup.py build_ext --inplace`. setup.py использует модуль **distutils, который снесли окончательно в Python 3.12** https://stackoverflow.com/questions/77247893/modulenotfounderror-no-module-named-distutils-in-python-3-12
+- **!** Если не хочется набирать в консоли команду описанную выше, то достаточно запустить из проводника Windows файл `prepare_pyd.py` 
+- **!** Полученный в результате файл `viewer_dll.pyd` может импортироваться как python-модуль и дарует нам на уровне модуля функцию `viewer_dll.getFileListFromExplorerWindow()`, которая возвращает список файлов из активного окна проводника Windows. Если полные пути до файлов не нужны, то функцию можно вызвать так `viewer_dll.getFileListFromExplorerWindow(fullpaths=False)`
+- **!** `viewer_dll.getFileListFromExplorerWindow` пока не грабит файлы с рабочего стола Windows, функция вернёт пустой список в таком случае
+- **!** Параметры компиляции описываются в файле setup.py, документация доступна через Python:
+```python
+from distutils.core import Extension
+print(help(Extension))
+```
+- **!** Для доступности модуля viewer_dll в приложении Krumassan Image Viewer, нужно скопировать файл `viewer_dll.pyd` в ту же папку, где лежит файл `viewer.pyw`
+- **!** Если .cc-файл нужно изменить, то изменения вносятся, а затем заново выполняется скрипт `prepare_pyd.py`, чтобы сгенерировать обновлённый .pyd-файл
 
 # Былина о ноябрьском внедрении в Python кода на C++, излагается в хронологическом порядке
 - Компиляция .cc-файла происходила за счёт команды `setup.py build_ext --inplace`. На компе была установлена Visual Studio 2022, автоматически был найден компилятор, которым пользовалась команда, данные о компиляторе: *оптимизирующий компилятор Microsoft (R) C/C++ версии 19.34.31937 для x64*. Содержание встроенного хэлпа приводится в файле cl.help.txt
@@ -22,15 +34,16 @@
     - таким образом уяснил какие именно параметры компилятора отвечают за опцию **«Use Unicode Character Set»**
 - До того как понять вышеописанную тему, прочитал доки на все функции, которые принимают участие в формировании строки, даже делал распечатку кода каждого символа из массива `g_szItem`, чтобы проверить, что там действительно одинаковые числа для "ç" для "c"
 - Попробовал прописать эти параметры в `setup.py`, но эффекта не получил. Вызвал встроенный help компилятора, где было объяснено, что они обозначают следующие соврешенно обыкновенные команды, которые я и вбил в исходный код:
-```
+```cpp
     #define _UNICODE
     #define UNICODE
 ```
 - В итоге этих объвлений код стал корректно обрабатывать юникод-символы, и я отказался от `PyByteArray_FromStringAndSize` и вернулся к `PyUnicode_FromWideChar`. К тому же пришлось откатывать вышеописанные замены.
 - На всякий случай заменил `MAX_PATH`, который всего 260, на другую константу, которая уже 2048.
 
-
-
+## 2 главных статьи, с которых надо начинать 
+- https://realpython.com/build-python-c-extension-module/
+- https://docs.python.org/3/extending/extending.html
 
 ## Concrete Object Layer (C API)
 - !!!!! ВАЖНО !!!!! While the functions described in this chapter carefully check the type of the objects which are passed in, many of them do not check for NULL being passed instead of a valid object. Allowing NULL to be passed in can cause memory access violations and immediate termination of the interpreter.
