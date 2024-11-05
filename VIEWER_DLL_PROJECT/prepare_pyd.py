@@ -21,6 +21,8 @@ def main():
                 print(filename, ' -> ', new_filename)
                 os.rename(filename, new_filename)
 
+    input("press any key to exit....")
+
 if __name__ == '__main__':
     main()
 
