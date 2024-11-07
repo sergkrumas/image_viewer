@@ -794,7 +794,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if check_windows_explorer_window:
                 for filepath in LibraryData.globals.explorer_paths:
                     filepath = os.path.normpath(filepath)
-                    if LibraryData.is_interest_file(filepath) or all_allowed:
+                    is_file = os.path.isfile(filepath)
+                    if is_file and (LibraryData.is_interest_file(filepath) or all_allowed):
                         filepaths.append(filepath)
             if (not check_windows_explorer_window) or not filepaths:
                 for cur_dir, dirs, files in os.walk(folder_path):
