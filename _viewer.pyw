@@ -3750,6 +3750,8 @@ def excepthook(exc_type, exc_value, exc_tb):
         crash_log.write("\n"*10)
         crash_log.write(dt_framed)
         crash_log.write("\n")
+        crash_log.write(sys.version)
+        crash_log.write("\n\n")
         crash_log.write(traceback_lines)
     print(traceback_lines)
     app = QApplication.instance()
