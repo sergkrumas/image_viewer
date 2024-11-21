@@ -8,6 +8,13 @@ import locale
 
 
 # https://phrase.com/blog/posts/translate-python-gnu-gettext/
+# https://docs.python.org/3/library/gettext.html
+
+# import gettext
+# el = gettext.translation('base', localedir='locales', languages=['el'])
+# el.install() # copies el.gettext as _ to builtins for all app modules
+
+
 
 
 def get_locales(this_folder):
