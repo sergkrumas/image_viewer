@@ -15,7 +15,22 @@ import locale
 # el.install() # copies el.gettext as _ to builtins for all app modules
 
 
-
+files_to_parse = [
+    '_viewer.pyw',
+    '_utils.py',
+    'app_copy_prevention.py',
+    'board.py',
+    'board_note_item.py',
+    'colorpicker.py',
+    'commenting.py',
+    'control_panel.py',
+    'help_text.py',
+    'hidapi_adapter.py',
+    'library_data.py',
+    'settings_handling.py',
+    'slice_pipette_tool.py',
+    'tagging.py',
+]
 
 def get_locales(this_folder):
     locales = []
@@ -34,7 +49,7 @@ def generate_pot_file(this_folder):
     os.environ['PYTHONUTF8'] = '1' #for utf8 charset in .pot file
 
     # generating pot file
-    args = [sys.executable, pygettext_py, '-d' 'base', '-o', 'locales/base.pot', '_viewer.py']
+    args = [sys.executable, pygettext_py, '-d' 'base', '-o', 'locales/base.pot', *files_to_parse]
     subprocess.Popen(args)
 
 def generate_mo_file(this_folder):
@@ -64,6 +79,8 @@ def move_pot_to_po(this_folder):
 
 def main():
     this_folder = os.path.dirname(__file__)
+
+    os.chdir(this_folder)
 
     generate_pot_file(this_folder)
 
