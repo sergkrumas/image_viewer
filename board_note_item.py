@@ -401,7 +401,7 @@ class BoardTextEditItemMixin():
 
     def board_TextElementSetDefaults(self, elem, plain_text=None):
         if plain_text is None:
-            elem.plain_text = 'Note'
+            elem.plain_text = _("Note")
         else:
             elem.plain_text = plain_text
         elem.size = 10.0
