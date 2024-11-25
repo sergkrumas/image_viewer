@@ -3992,11 +3992,8 @@ def _main():
 
     if Globals.aftercrash:
         filepath = get_crashlog_filepath()
-        _msg0 = _("Crash info saved to file")
-        msg0 = f"{_msg0}\n\t{filepath}"
-        _msg = _("Application crash!")
-        __msg = _("Restart app?")
-        msg = f"{_msg}\n{msg0}\n\n{__msg}"
+        crashfileinfo = _("Crash info save to file\n\t{0}").format(filepath)
+        msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
         ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
         if ret == QMessageBox.Yes:
             _restart_app()
