@@ -25,6 +25,8 @@
 from _utils import *
 import help_text
 
+from gettext import gettext as _
+
 class ControlPanelButton(QPushButton):
     def __init__(self, id, *args, callback=None):
         super().__init__(*args)
@@ -366,7 +368,7 @@ class ControlPanel(QWidget, UtilsMixin):
         if self.LibraryData().current_folder().images_list:
             Slideshow.start_slideshow()
         else:
-            MW.show_center_label("Нет изображений для показа", error=True)
+            MW.show_center_label(_("No images to show"), error=True)
         MW.update()
 
     def show_next(self):
@@ -426,21 +428,21 @@ class ControlPanel(QWidget, UtilsMixin):
     def manage_favorite_list(self):
         MW = self.globals.main_window
         if self.globals.lite_mode:
-            MW.show_center_label("В упрощённом режиме функция не работает!\nПерезапустите программу в обычном режиме через команду контекстного меню", error=True)
+            MW.show_center_label(_("This feature is not working in lite mode\nRerun programm in standart mode via context menu command"), error=True)
             return
         status = self.LibraryData().manage_favorite_list()
         if status == "added":
             self.favorite_btn.setText("-")
             self.favorite_btn.id = "favorite_added"
-            MW.show_center_label("Добавлено в избранное")
+            MW.show_center_label(_("Added to favorites"))
         elif status == "removed":
             self.favorite_btn.setText("+")
             self.favorite_btn.id = "favorite"
-            MW.show_center_label("Удалено из избранного")
+            MW.show_center_label(_("Removed from favorites"))
         elif status == "rejected":
             self.favorite_btn.setText("+")
             self.favorite_btn.id = "favorite"
-            MW.show_center_label("Файлы с таким расширением нельзя добавлять в избранное!", error=True)
+            MW.show_center_label(_("Files with such extensions are now allowed to be added to favorites!"), error=True)
         MW.update()
 
     def show_in_folder(self):
@@ -453,11 +455,11 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         cf = self.LibraryData().current_folder()
         if cf.virtual:
-            MW.show_center_label("Виртуальные папки не обновляются!", error=True)
+            MW.show_center_label(_("Virtual folders are not allowed to be updated!"), error=True)
             return
         self.LibraryData().update_current_folder()
         MW.update_thumbnails_row_relative_offset(cf, only_set=True)
-        MW.show_center_label("Обновлено")
+        MW.show_center_label(_("Updated"))
         self.update()
 
     def board_set_default_scale(self):
@@ -499,41 +501,41 @@ class ControlPanel(QWidget, UtilsMixin):
         main_window = self.parent()
 
         if requested_page is None or requested_page == main_window.pages.VIEWER_PAGE:
-            self.favorite_btn = ControlPanelButton("favorite", "Избранное",
+            self.favorite_btn = ControlPanelButton("favorite", _("Favorites"),
                                                         callback=self.manage_favorite_list)
             self.all_buttons = [
-                ControlPanelButton("orig_scale", "1:1", callback=self.set_original_scale),
-                ControlPanelButton("zoom_out", "Уменьшить", callback=self.zoom_out),
-                ControlPanelButton("zoom_in", "Увеличить", callback=self.zoom_in),
+                ControlPanelButton("orig_scale", _("1:1"), callback=self.set_original_scale),
+                ControlPanelButton("zoom_out", _("Image zoom out"), callback=self.zoom_out),
+                ControlPanelButton("zoom_in", _("Image zoom in"), callback=self.zoom_in),
 
-                ControlPanelButton("help", "Справка", callback=self.toggle_help),
-                ControlPanelButton("settings", "Настройки", callback=self.show_settings_window),
+                ControlPanelButton("help", _("Help"), callback=self.toggle_help),
+                ControlPanelButton("settings", _("Settings"), callback=self.show_settings_window),
 
-                ControlPanelButton("previous", "Предыдущий", callback=self.show_previous),
-                ControlPanelButton("play", "Слайдшоу", callback=self.play),
-                ControlPanelButton("next", "Следующий", callback=self.show_next),
+                ControlPanelButton("previous", _("Show previous"), callback=self.show_previous),
+                ControlPanelButton("play", _("Slideshow"), callback=self.play),
+                ControlPanelButton("next", _("Show next"), callback=self.show_next),
 
-                ControlPanelButton("rotate_counterclockwise", "Повернуть против\nчасовой стрелки",
+                ControlPanelButton("rotate_counterclockwise", _("Rotate counterclockwise"),
                                                     callback=self.rotate_counterclockwise),
-                ControlPanelButton("rotate_clockwise", "Повернуть\nпо часовой стрелке",
+                ControlPanelButton("rotate_clockwise", _("Rotate clockwise"),
                                                     callback=self.rotate_clockwise),
                 self.favorite_btn,
-                ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
+                ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
                 self.space_btn_generator(),
             ]
         elif requested_page == main_window.pages.BOARD_PAGE:
             self.all_buttons = [
-                ControlPanelButton("settings", "Настройки", callback=self.show_settings_window),
-                ControlPanelButton("help", "Справка", callback=self.toggle_help),
+                ControlPanelButton("settings", _("Settings"), callback=self.show_settings_window),
+                ControlPanelButton("help", _("Help"), callback=self.toggle_help),
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("orig_scale", "1:1", callback=self.board_set_default_scale),
-                ControlPanelButton("zoom_out", "Уменьшить", callback=self.board_zoom_out),
-                ControlPanelButton("zoom_in", "Увеличить", callback=self.board_zoom_in),
+                ControlPanelButton("orig_scale", _("1:1"), callback=self.board_set_default_scale),
+                ControlPanelButton("zoom_out", _("Image zoom out"), callback=self.board_zoom_out),
+                ControlPanelButton("zoom_in", _("Image zoom in"), callback=self.board_zoom_in),
 
                 self.space_btn_generator(),
-                ControlPanelButton("update_list", "Обновить список", callback=self.update_folder_list),
+                ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
             ]
         else:
             self.all_buttons = []
@@ -654,7 +656,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 text = f"{foldername} \\ {filename} {w} x {h}"
             else:
-                text = "страница доски"
+                text = _("board page")
 
         self.control_panel_label.setText(text)
 
@@ -1453,18 +1455,18 @@ class ControlPanel(QWidget, UtilsMixin):
         current_sort_type = cf.sort_type
         current_reversed = cf.sort_type_reversed
 
-        open_settings = CM.addAction("Настройки")
+        open_settings = CM.addAction(_("Settings"))
         CM.addSeparator()
-        deep_scan = CM.addAction("Включать подпапки при обновлении и сканировании")
+        deep_scan = CM.addAction(_("Include subfolers when updating files list and scanning"))
         CM.addSeparator()
-        original_order = CM.addAction("Исходный порядок")
-        sort_filename_desc = CM.addAction("Сортировать по имени (по убыванию)")
-        sort_filename_incr = CM.addAction("Сортировать по имени (по возрастанию)")
-        sort_cdate_desc = CM.addAction("Сортировать по дате создания (по убыванию)")
-        sort_cdate_incr = CM.addAction("Сортировать по дате создания (по возрастанию)")
-        save_images_order = CM.addAction("Сохранить порядок изображений в файл")
+        original_order = CM.addAction(_("Original order"))
+        sort_filename_desc = CM.addAction(_("Sort by filename (descending)"))
+        sort_filename_incr = CM.addAction(_("Sort by filename (ascending)"))
+        sort_cdate_desc = CM.addAction(_("Sort by creation date (descending)"))
+        sort_cdate_incr = CM.addAction(_("Sort by creation date (ascending)"))
+        save_images_order = CM.addAction(_("Save order metadata to disk"))
         CM.addSeparator()
-        toggle_fullscreen = CM.addAction("Отобразить панель во весь экран")
+        toggle_fullscreen = CM.addAction(_("Show control panel in full-screen mode"))
 
         checkable_actions = (
             original_order,
