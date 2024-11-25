@@ -30,6 +30,7 @@ import datetime
 import locale
 import operator
 
+from gettext import gettext as _
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 
@@ -337,13 +338,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         ci = cf.current_image()
         if ci in cf.images_list: #служебные объекты ImageData не находятся в списке
             if cf.virtual and not force:
-                MW.show_center_label("Из виртуальных папок нельзя удалять изображения", error=True)
+                MW.show_center_label(_("Deleting images from virtual folders is not allowed"), error=True)
                 return
             # prepare
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
             if not force:
                 delete_to_recyclebin(ci.filepath)
-                MW.show_center_label(f"Файл\n{ci.filepath}\n удален в корзину")
+                MW.show_center_label(_("\n{0}\n removed to recycle bin.").format(ci.filepath))
             cf.images_list.remove(ci)
             # show next
             im_data = self.current_folder().current_image()
@@ -355,7 +356,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if force:
                 return ci
         else:
-            MW.show_center_label("Это не удалить!", error=True)
+            MW.show_center_label(_("You're not allowed to delete this!"), error=True)
         MW.update()
 
     def show_that_imd_on_viewer_page(self, image_data):
@@ -462,7 +463,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             selected_im = viewed_list[index]
         except:
             MW = self.globals.main_window
-            MW.show_center_label("достигнут край истории просмотров")
+            MW.show_center_label(_("you've reached the end of viewing history"))
             return
         # if selected_im not in cf.images_list:
         #     return
@@ -515,10 +516,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW = self.globals.main_window
         cf = self.current_folder()
         if cf.virtual:
-            MW.show_center_label('Нельзя удалять виртуальные папки из библиотеки', error=True)
+            MW.show_center_label(_("You cannot delete virtual folders from the library"), error=True)
             return
         elif len(self.folders) == 1:
-            MW.show_center_label('Нельзя удалить единственную папку из библиотеки', error=True)
+            MW.show_center_label(_("You cannot delete folder if it is the single in current session"), error=True)
             return
         else:
             LibraryData().choose_previous_folder()
@@ -587,7 +588,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 except:
                     errors = True
             if errors:
-                to_print = f'Файл сессии повреждён и должен быть удалён {path}'
+                to_print = f'Session file is broken and should be removed {path}'
                 print(to_print)
                 # очень интересно посмотреть на повреждения, поэтому файл пока что не удаляется
                 # os.remove(path)
@@ -660,7 +661,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     errors = True
             if errors:
                 _path = self.get_fav_list_path()
-                to_print = f'Ошибки при чтении файла {_path}'
+                to_print = f'Errors occured during reading file {_path}'
                 print(to_print)
                 # пока ещё не удаляем, мало ли что
                 # os.remove(self.get_fav_list_path())
@@ -668,7 +669,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def load_fav_list(self):
         files, _ = self.get_fav_files_list()
-        self.fav_folder = self.create_folder_data("Избранное", files, image_filepath=None, virtual=True)
+        self.fav_folder = self.create_folder_data(_("Favorites"), files, image_filepath=None, virtual=True)
 
     def store_fav_list(self):
         images = self.get_fav_virtual_folder().images_list
@@ -688,7 +689,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def create_empty_virtual_folder(self):
         # создаётся одна виртуальная папка, чтобы приложение не крашилось при перелистывании страниц,
         # ведь код каждой из страниц подразумевает, что существует какая-то папка
-        self.empty_virtual_folder = self.create_folder_data("Стартовая виртуальная папка", [], image_filepath=None, virtual=True, make_current=True)
+        self.empty_virtual_folder = self.create_folder_data(_("OnAppStart virtual folder"), [], image_filepath=None, virtual=True, make_current=True)
         self.empty_virtual_folder.previews_done = True
 
     def get_comm_virutal_folder(self):
@@ -1014,7 +1015,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 fd.set_modifiers(modifiers)
         else:
             if not pre_load:
-                QMessageBox.critical(None, "Error", f"No interesting files to show in \n{folder_path}")
+                QMessageBox.critical(None, _("Error"), _("No interesting files to show in \n{0}").format(folder_path))
                 close_app_if_empty()
                 back_to_current_on_fail()
                 return
@@ -1153,7 +1154,7 @@ class FolderData():
 
         win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
         MW = LibraryData().globals.main_window
-        MW.show_center_label('Порядок изображений сохранён в файл')
+        MW.show_center_label(_("Thumbnails orders saved to disk"))
 
     def do_rearrangement(self, insert_index):
 
@@ -1528,7 +1529,7 @@ class ImageData():
     @property
     def preview(self):
         if self._preview is None:
-            self._preview = generate_info_pixmap("В группе\nнет изображений", "", size=1000, no_background=False)
+            self._preview = generate_info_pixmap(_("No images\nin group"), "", size=1000, no_background=False)
             self.source_width = self.preview.width()
             self.source_height = self.preview.height()
         else:
@@ -1690,7 +1691,7 @@ class FinderWindow(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignTop)
         label = QLabel()
-        label.setText("Поиск потерянных файлов")
+        label.setText(_("Find files in outdated database records"))
         label.setFixedHeight(50)
         label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet(style)
@@ -1762,15 +1763,15 @@ class FinderWindow(QWidget):
         self.output_field.setStyleSheet(scroll_bars_style)
         main_layout.addWidget(self.output_field)
 
-        green_button = QPushButton("Определить потерянные записи")
+        green_button = QPushButton(_("Define outdate database records"))
         green_button.clicked.connect(self.green_button_handler)
         green_button.setStyleSheet(main_style_button)
 
-        search_button = QPushButton("Найти потерянные записи")
+        search_button = QPushButton(_("Find lost info"))
         search_button.clicked.connect(self.search_button_handler)
         search_button.setStyleSheet(main_style_button)
 
-        red_button = QPushButton("Закрыть")
+        red_button = QPushButton(_("Close"))
         red_button.clicked.connect(self.red_button_handler)
         red_button.setStyleSheet(main_style_button)
         red_button.setCursor(Qt.PointingHandCursor)
@@ -1814,7 +1815,7 @@ class FinderWindow(QWidget):
         records.extend(self.records_tags)
 
         if not records:
-            self.to_output("Не определено потерянных записей!")
+            self.to_output(_("No lost files detected!"))
             return
 
         search_paths = []
@@ -1895,22 +1896,22 @@ class FinderWindow(QWidget):
         if self.records_comments:
             LibraryData().make_viewer_thumbnails_and_library_previews(comms_folder, None)
             LibraryData().store_comments_list()
-            self.to_output(f'База коментов обновлена!')
+            self.to_output(_('Comments database updated!'))
 
         if self.records_favs:
             LibraryData().make_viewer_thumbnails_and_library_previews(fav_folder, None)
             LibraryData().store_fav_list()
-            self.to_output(f'База избранного обновлена!')
+            self.to_output(_('Favorites database updated!'))
 
         if self.records_tags and tag_records_updated_count > 0:
-            self.to_output(f'База тегов обновлена!')
+            self.to_output(_('Tags database updated!!'))
 
-        self.to_output('\nПроцесс поиска закончен.')
+        self.to_output(_('\nScanning is finished.'))
 
     def find_lost_records(self):
         self.records_comments = LibraryData().retrieve_lost_records_in_comments()
         if self.records_comments:
-            self.to_output(f'Потерянные записи в коментах ({len(self.records_comments)}):')
+            self.to_output(_("Outdated records in comments database ({0}):").format(len(self.records_comments)))
         for record in self.records_comments:
             self.to_output(' '.join(map(str, record)))
 
@@ -1918,7 +1919,7 @@ class FinderWindow(QWidget):
 
         self.records_favs = LibraryData().retrieve_lost_records_in_favs()
         if self.records_favs:
-            self.to_output(f'Потерянные записи в избранном ({len(self.records_favs)}):')
+            self.to_output(_("Outdated records in favorites database ({0}):").format(len(self.records_favs)))
         for record in self.records_favs:
             self.to_output(' '.join(map(str, record)))
 
@@ -1926,7 +1927,7 @@ class FinderWindow(QWidget):
 
         self.records_tags = LibraryData().retrieve_lost_records_in_tags()
         if self.records_tags:
-            self.to_output(f'Потерянные записи в тегах ({len(self.records_tags)}):')
+            self.to_output(_("Outdated records in tags database ({0}):").format(len(self.records_tags)))
         for record in self.records_tags:
             self.to_output(' '.join(map(str, record)))
         # self.hide()
