@@ -21,7 +21,7 @@ files_to_parse = [
     'app_copy_prevention.py', #DONE
     'help_text.py', #DONE
     'library_data.py', #DONE
-    'board.py', #
+    'board.py', #DONE
     'board_note_item.py', #DONE
     'commenting.py', #DONE
     'tagging.py', #DONE

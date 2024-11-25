@@ -34,6 +34,8 @@ from board_note_item import BoardTextEditItemMixin
 
 import cbor2
 
+from gettext import gettext as _
+
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
 
@@ -163,13 +165,13 @@ class BoardItem():
             return text
         elif self.type == self.types.ITEM_FOLDER:
             path = self.item_folder_data.folder_path
-            return f'FOLDER {path}'
+            return _('FOLDER {0}').format(path)
         elif self.type == self.types.ITEM_GROUP:
-            return f'GROUP {self.board_group_index} {self.label}'
+            return _('GROUP {0} {1}').format(self.board_group_index, self.label)
         elif self.type == self.types.ITEM_FRAME:
-            return f'FRAME'
+            return _('FRAME')
         elif self.type == self.types.ITEM_NOTE:
-            return f'TEXT NOTE'
+            return _('TEXT NOTE')
 
     def calculate_absolute_position(self, canvas=None, rel_pos=None):
         _scale_x = canvas.canvas_scale_x
@@ -252,16 +254,16 @@ class BoardItem():
             frame_count = self.movie.frameCount()
             if frame_count > 0:
                 current_frame += 1
-            self.status = f'{current_frame}/{frame_count} ANIMATION'
+            self.status = _('{0}/{1} ANIMATION').format(current_frame, frame_count)
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             current_image_num = self.item_folder_data._index
             images_count = len(self.item_folder_data.images_list)
             if images_count > 0:
                 current_image_num += 1
             if self.type == BoardItem.types.ITEM_FOLDER:
-                item_type = "FOLDER"
+                item_type = _("FOLDER")
             elif self.type == BoardItem.types.ITEM_GROUP:
-                item_type = "GROUP"
+                item_type = _("GROUP")
             self.status = f'{current_image_num}/{images_count} {item_type}'
 
     def enable_distortion_fixer(self):
@@ -397,9 +399,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.active_plugin = None
         self.board_PluginsInit()
 
-        self.debug_file_io_filepath = "[переменная self.debug_file_io_filepath не задана!]"
+        self.debug_file_io_filepath = _("[variable self.debug_file_io_filepath is not set!]")
 
-        self.long_process_label_text =  "обработка запроса"
+        self.long_process_label_text =  _("request processing")
 
         self.board_SetCallbacks()
 
@@ -419,7 +421,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if found_pi:
             self.board_SetPlugin(found_pi)
         else:
-            self.show_center_label(f'plugin {plugin_filename} is not found in \\boards_plugins folder!', error=True)
+            msg = _("plugin {0} is not found in \\boards_plugins folder!").format(plugin_filename)
+            self.show_center_label(msg, error=True)
 
     def board_SetCallbacks(self, fd=None):
         if fd is None:
@@ -488,7 +491,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board = cf.board
         board.plugin_filename = pi.filename
         self.board_SetCallbacks()
-        self.show_center_label(f'{pi.name} activated')
+        self.show_center_label(_("{0} activated").format(pi.name))
         self.update()
 
     def board_PluginsInit(self):
@@ -542,7 +545,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     break
                 elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
                     self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
-                    self.show_center_label('You\'re on viewer page now')
+                    self.show_center_label(_('You\'re on viewer page now'))
                 else:
                     self.board_fit_content_on_screen(None, board_item=board_item)
                     break
@@ -648,7 +651,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         if os.path.isdir(path):
                             self.board_add_item_folder(folder_path=path)
                         else:
-                            self.show_center_label('Файлы не поддерживаются, поддерживаются только папки')
+                            self.show_center_label(_("No files, only folders supported"))
                 else:
                     url = url.url()
                     if self.is_board_page_active():
@@ -665,7 +668,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 pis.append(pi)
 
         if pis:
-            submenu = contextMenu.addMenu('Plugin Boards')
+            submenu = contextMenu.addMenu(_('Plugin Boards'))
             for pi in pis:
                 create_board_for_plugin = submenu.addAction(pi.name)
                 create_board_for_plugin.triggered.connect(pi.menu_callback)
@@ -683,8 +686,8 @@ class BoardMixin(BoardTextEditItemMixin):
         dialog = QInputDialog(self)
         dialog.setInputMode(QInputDialog.TextInput)
         dialog.setTextValue(frame_item.label)
-        dialog.setWindowTitle('Change frame item label')
-        dialog.setLabelText("Label Text:")
+        dialog.setWindowTitle(_('Change frame item label'))
+        dialog.setLabelText(_("Label Text:"))
         dialog.resize(500,100)
         ok = dialog.exec_()
         if ok:
@@ -693,7 +696,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
         checkboxes.append(
-            ("Отображать отладочную графику виджета трансформации",
+            (_("Show debug graphics for transformation widget"),
             self.board_debug_transform_widget,
                 partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
             ),
@@ -705,66 +708,68 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
-        board_go_to_note = contextMenu.addAction("Пройти по ссылке в заметке (проводник или браузер)")
+        board_go_to_note = contextMenu.addAction(_("Go to the link in the note (Explorer or Browser)"))
         board_go_to_note.triggered.connect(partial(self.board_go_to_note, event))
 
-        board_add_item_folder = contextMenu.addAction("Папка...")
+        board_add_item_folder = contextMenu.addAction(_("Folder..."))
         board_add_item_folder.triggered.connect(self.board_add_item_folder)
 
-        command_label = "Группа"
+        command_label = _("Group")
         sel_count = self.board_selected_items_count()
         if sel_count > 0:
-            command_label = f'{command_label} (добавить в неё выделенные айтемы: {sel_count})'
+            command_label = _("{0} (add selected items to it: {1})").format(command_label, sel_count)
         board_add_item_group = contextMenu.addAction(command_label)
         board_add_item_group.triggered.connect(self.board_add_item_group_noargs)
 
-        board_add_item_frame = contextMenu.addAction("Фрейм")
+        board_add_item_frame = contextMenu.addAction(_("Frame"))
         board_add_item_frame.triggered.connect(self.board_add_item_frame)
 
-        board_add_item_note = contextMenu.addAction("Заметка")
+        board_add_item_note = contextMenu.addAction(_("Note"))
         board_add_item_note.triggered.connect(self.board_add_item_note)
 
-        board_load_highres = contextMenu.addAction('Загрузить хайрезные версии всем айтемам (может занять время)')
+        board_load_highres = contextMenu.addAction(_("Force highres loading for all items(takes some time)"))
         board_load_highres.triggered.connect(self.board_load_highres)
 
-        board_place_items_in_column = contextMenu.addAction('Разместить айтемы вертикально')
+        board_place_items_in_column = contextMenu.addAction(_('Place items in column'))
         board_place_items_in_column.triggered.connect(self.board_place_items_in_column)
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
-            board_change_frame_item_label = contextMenu.addAction(f'Изменить название фрейма \'{frame_item.label}\'')
+            board_change_frame_item_label = contextMenu.addAction(_('Change frame title \'{0}\'').format(frame_item.label))
             board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
-            board_retrieve_current_from_group_item = contextMenu.addAction('Вынуть текущую картинку из группы')
+            board_retrieve_current_from_group_item = contextMenu.addAction(_('Take current image out from group and place nearby'))
             board_retrieve_current_from_group_item.triggered.connect(self.board_retrieve_current_from_group_item)
 
         contextMenu.addSeparator()
 
-        board_open_in_app_copy = contextMenu.addAction("Открыть в копии приложения (упрощённый режим)")
+        board_open_in_app_copy = contextMenu.addAction(_("Open in separated app copy running in lite mode"))
         board_open_in_app_copy.triggered.connect(self.board_open_in_app_copy)
 
-        board_open_in_google_chrome = contextMenu.addAction("Открыть в Google Chrome")
+        board_open_in_google_chrome = contextMenu.addAction(_("Open in Google Chrome"))
         board_open_in_google_chrome.triggered.connect(self.board_open_in_google_chrome)
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
-        fd = self.LibraryData().create_folder_data(f"{plugin_name} Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+        fd = self.LibraryData().create_folder_data(
+            _("{0} Virtual Folder").format(plugin_name),
+            [], image_filepath=None, make_current=False, virtual=True)
         fd.board.ready = True
         return fd
 
     def board_loadBoard(self, path=None):
-        with self.show_longtime_process_ongoing(self, 'Загрузка доски'):
+        with self.show_longtime_process_ongoing(self, _("Board loading")):
             self.board_loadBoardDefault(path)
 
     def board_saveBoard(self):
-        with self.show_longtime_process_ongoing(self, 'Сохранение доски'):
+        with self.show_longtime_process_ongoing(self, _("Board saving")):
             self.board_saveBoardDefault()
 
     def dialog_open_boardfile(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
         title = ""
-        filter_data = "Board File (*.board)"
+        filter_data = _("Board File (*.board)")
         folder_path = self.SettingsWindow.get_setting_value("inframed_folderpath")
         if not os.path.exists(folder_path):
             folder_path = self.set_path_for_saved_pictures(folder_path)
@@ -786,7 +791,8 @@ class BoardMixin(BoardTextEditItemMixin):
         is_file_extension_ok = board_filepath.lower().endswith(".board")
         is_file = os.path.isfile(board_filepath)
         if not (is_file_exists and is_file_extension_ok and is_file):
-            self.show_center_label(f"Ошибка: либо файла не существует, либо расширение не то.\nОтмена!\n{board_filepath}", error=True)
+            msg = _("Error: either the file does not exist or the extension is wrong.\nAbort!\n{0}").format(board_filepath)
+            self.show_center_label(msg, error=True)
             return
 
         project_format = ''
@@ -806,13 +812,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 data = json.loads(read_data)
                 project_format = 'json'
             except:
-                self.show_center_label("Ошибка чтения файла доски: ни cbor2, ни json не читаются. Отмена!", error=True)
+                self.show_center_label(_("Reading error: neither cbor2 nor json could be read. Abort!"), error=True)
                 return
 
         main_board_dict = data['main_board']
         self.board_recreate_board_from_serial(main_board_dict, main_board=True, board_load_filepath=board_filepath)
 
-        self.show_center_label(f'Доска загружена из файла {board_filepath} формата {project_format}')
+        msg = _("Board have been loaded from file {0} of format {1}").format(board_filepath, project_format)
+        self.show_center_label(msg)
 
     def board_recreate_board_from_serial(self, board_dict, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
@@ -1163,7 +1170,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 file.write(data_to_write)
 
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
-        text = f"Проект сохранён в \n{board_filepath}"
+        text = _("Projects is saved to {0}").format(board_filepath)
         self.show_center_label(text)
 
         if self.Globals.DEBUG:
@@ -1180,7 +1187,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
-            self.show_center_label("Нельзя погружаться во время незавершённых операций с доской", error=True)
+            msg = _("You cannot dive inside item when unfinised operations is ongoing")
+            self.show_center_label(msg, error=True)
             return
         self.board_TextElementDeactivateEditMode()
         cf = self.LibraryData().current_folder()
@@ -1201,12 +1209,13 @@ class BoardMixin(BoardTextEditItemMixin):
             case1 = bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
             case2 = bi.type == BoardItem.types.ITEM_IMAGE and bi.animated
             if not (case1 or case2):
-                self.show_center_label("Нырять можно только в группы, папки и анимированные картинки!", error=True)
+                msg = "You can dive insde groups, folders and animated items only!"
+                self.show_center_label(msg, error=True)
                 return
             if item is not None and hasattr(item, 'item_folder_data'):
                 __folder_data = item.item_folder_data
             elif case2:
-                __folder_data = fd = self.LibraryData().create_folder_data("ANIMATED FILE Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+                __folder_data = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
                 bi.item_folder_data = fd
 
                 movie = item.movie
@@ -1240,7 +1249,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.root_item = bi
 
             else:
-                self.show_center_label("Наведи курсор на группу!", error=True)
+                self.show_center_label(_("Place cursor above group item!"), error=True)
                 return
         if __folder_data is not None:
             self.board_make_board_current(__folder_data)
@@ -1248,7 +1257,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.LibraryData().current_folder().board.referer_board_folder = cf
             self.init_selection_bounding_box_widget(__folder_data)
         else:
-            self.show_center_label("Некуда возвращаться!", error=True)
+            self.show_center_label(_("No place to return"), error=True)
         self.update()
 
     def board_make_board_current(self, folder_data):
@@ -1297,7 +1306,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setFont(font)
         pen = QPen(QColor(180, 180, 180), 1)
         painter.setPen(pen)
-        painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, "WELCOME TO \n BOARDS")
+        painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, _("WELCOME TO \n BOARDS"))
 
     def board_draw(self, painter, event):
         self.board_draw_main(painter, event)
@@ -1309,8 +1318,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 socondary_text=self.long_process_label_text
             )
 
-    def board_draw_wait_label(self, painter, primary_text="ПОДОЖДИ",
-                                                        socondary_text="создаются превьюшки"):
+    def board_draw_wait_label(self, painter, primary_text=_("WAIT..."),
+                                                        socondary_text=_("creating previews")):
         painter.save()
         font = painter.font()
         font.setPixelSize(100)
@@ -1431,7 +1440,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.draw_selection(painter, folder_data)
 
-            painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), f'perfomance status: {self.images_drawn} images drawn')
+            painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
     def draw_selection(self, painter, folder_data):
         painter.save()
@@ -1747,25 +1756,25 @@ class BoardMixin(BoardTextEditItemMixin):
         lines = []
         board = current_folder.board
         if current_folder.virtual:
-            lines.append(f'Доска виртуальной папки {current_folder.folder_path}')
+            lines.append(_('Virtual folder board: {}').format(current_folder.folder_path))
         else:
-            lines.append(f'Доска папки {current_folder.folder_path}')
+            lines.append(_('Board folder: {}').format(current_folder.folder_path))
         if board.plugin_filename:
-            lines.append(f'Имя файла-плагина: {board.plugin_filename}')
+            lines.append(_('File-plugin name: {}').format(board.plugin_filename))
         else:
-            lines.append('Доска без плагина')
-        lines.append(f'Текущий индекс айтема: {board.current_item_index}')
-        lines.append(f'Текущий индекс айтема-группы: {board.current_item_group_index}')
-        lines.append(f'Board bounding rect: {board.bounding_rect}')
+            lines.append(_('This board has no plugin attached'))
+        lines.append(_('Current item index: {}').format(board.current_item_index))
+        lines.append(_('Curreint item-group index: {}').format(board.current_item_group_index))
+        lines.append(_('Board bounding rect: {}').format(board.bounding_rect))
 
         lines.append('')
 
         if board.referer_board_folder is not None:
-            lines.append(f'Вы зашли на эту доску из доски папки {board.referer_board_folder.folder_path}')
+            lines.append(_("You've entered this board from the board of folder {}").format(board.referer_board_folder.folder_path))
         if board.root_folder is not None:
-            lines.append(f'Родительская папка этой доски: {board.root_folder.folder_path}')
+            lines.append(_("Parent folder of this board").format(board.root_folder.folder_path))
         if board.root_item is not None:
-            lines.append(f'Название родительского айтема этой доски: {board.root_item.label}')
+            lines.append(_("This board parent item title").format(board.root_item.label))
 
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
@@ -1786,7 +1795,7 @@ class BoardMixin(BoardTextEditItemMixin):
         referer = folder_data.board.referer_board_folder
         if referer is not None:
             folder_name = referer.folder_path
-            text = f"клавиша Backspace ➜ вернуться на доску папки {folder_name}"
+            text = _("Backspace key    ➜ return to board of the folder {0}").format(folder_name)
             font = painter.font()
             font.setPixelSize(20)
             painter.setFont(font)
@@ -1804,7 +1813,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.item_group_under_mouse:
             pos = self.mapped_cursor_pos()
             count = len(self.selected_items)
-            text = f'Добавить в группу ({count})'
+            text = _("Add to the group ({})").format(count)
             bounding_rect = painter.boundingRect(QRect(0, 0, 500, 500), Qt.AlignLeft, text)
             painter.setBrush(QBrush(Qt.black))
             painter.setPen(Qt.NoPen)
@@ -1971,12 +1980,12 @@ class BoardMixin(BoardTextEditItemMixin):
         max_rect = self.rect()
         alignment = Qt.AlignCenter
 
-        text = "НАЧАЛО"
+        text = _("AXES")
         text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, -80))
         painter.drawText(text_rect, alignment, text)
 
-        text = "КООРДИНАТ"
+        text = _("ORIGIN")
         text_rect = painter.boundingRect(max_rect, alignment, text)
         text_rect.moveCenter(QPointF(pos).toPoint() + QPoint(0, 80))
         painter.drawText(text_rect, alignment, text)
@@ -2087,9 +2096,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_origin = new_canvas_origin
             # восстанавливаем прежний bounding rect
             self.build_board_bounding_rect(cf, apply_global_scale=False)
-            self.show_center_label("Камера перемещена!")
+            self.show_center_label(_("The camera has been moved"))
         else:
-            self.show_center_label("Вне прямоугольника! Отмена", error=True)
+            self.show_center_label(_("Out of the rectangle frame! Abort"), error=True)
         self.update()
 
     def board_draw_minimap(self, painter):
@@ -2216,7 +2225,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.init_selection_bounding_box_widget(current_folder)
 
     def board_load_highres(self):
-        with self.show_longtime_process_ongoing(self, "Загрузка изображений в высоком качестве"):
+        with self.show_longtime_process_ongoing(self, _("Loading hires images")):
             items = self.LibraryData().current_folder().board.items_list
             for bi in items:
                 self.trigger_board_item_pixmap_loading(bi)
@@ -2227,7 +2236,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         root_item = cf.board.root_item
         if root_item and root_item.type == BoardItem.types.ITEM_IMAGE and root_item.animated:
-            self.show_center_label('Нельзя удалять айтемы из доски анимированного файла', error=True)
+            self.show_center_label(_("You cannot delete items from animated file board"), error=True)
             return
 
         if root_item is None:
@@ -2262,7 +2271,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if bi.board_group_index == 0:
                 return bi
 
-        item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
 
         gi.item_folder_data = item_folder_data
@@ -2284,7 +2293,7 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder = self.LibraryData().current_folder()
         current_board = current_folder.board
         if len(gi.item_folder_data.board.items_list) == 0:
-            self.show_center_label('Нечего удалять, группа пуста', error=True)
+            self.show_center_label(_("Nothing to delete, the group is empty"), error=True)
             return
 
         if gi is not None:
@@ -2306,7 +2315,7 @@ class BoardMixin(BoardTextEditItemMixin):
             gi.update_corner_info()
             gi.pixmap = None
         else:
-            self.show_center_label('Айтем-группа не найдена!', error=True)
+            self.show_center_label(_("Group-item not found"), error=True)
         self.update()
 
     def board_add_item_group_noargs(self):
@@ -2318,9 +2327,9 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_add_item_group(self, move_selection_to_group=True, virtual_allowed=False, item_position=None):
         current_folder_data = self.LibraryData().current_folder()
         if not virtual_allowed and current_folder_data.virtual:
-            self.show_center_label('Нельзя создавать айтемы-группы в досках виртуальных папок', error=True)
+            self.show_center_label(_("You cannot create group-items inside virtual folder boards"), error=True)
             return
-        item_folder_data = self.LibraryData().create_folder_data("GROUP Virtual Folder", [], image_filepath=None, make_current=False, virtual=True)
+        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
         gi.item_folder_data = item_folder_data
         gi.board_index = self.retrieve_new_board_item_index()
@@ -2345,7 +2354,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_add_item_note(self):
         current_folder_data = self.LibraryData().current_folder()
         if current_folder_data.virtual:
-            self.show_center_label('Нельзя создавать айтемы-заметки в досках виртуальных папок', error=True)
+            self.show_center_label(_("You cannot create note-items inside virtual folder boards"), error=True)
             return
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
         ni.board_index = self.retrieve_new_board_item_index()
@@ -2357,9 +2366,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_add_item_folder(self, folder_path=None):
         if folder_path is None:
-            folder_path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
+            folder_path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with images in it")))
         if folder_path:
-            with self.show_longtime_process_ongoing(self, 'Загрузка папки на доску'):
+            with self.show_longtime_process_ongoing(self, _("Loading folder to the board")):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                 item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
                 self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
@@ -2430,7 +2439,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_add_item_frame(self):
         if self.selection_bounding_box is None:
-            self.show_center_label('Не выделено ни одного айтема!', error=True)
+            self.show_center_label(_("No any items selected!"), error=True)
         else:
             folder_data = self.LibraryData().current_folder()
             bi = BoardItem(BoardItem.types.ITEM_FRAME)
@@ -2443,7 +2452,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.height = selection_bounding_rect.height() / self.canvas_scale_y
             bi.width += BoardItem.FRAME_PADDING
             bi.height += BoardItem.FRAME_PADDING
-            bi.label = "FRAME ITEM"
+            bi.label = _("FRAME ITEM")
             self.board_select_items([bi])
 
         self.update()
@@ -3401,7 +3410,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_download_file(self, url):
-        with self.show_longtime_process_ongoing(self, 'Загрузка изображения на доску'):
+        with self.show_longtime_process_ongoing(self, _("Loading image to the board")):
             cf = self.LibraryData().current_folder()
             try:
                 response = urllib.request.urlopen(url)
@@ -3450,7 +3459,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_fit_content_on_screen(self, image_data, board_item=None, use_selection=False):
 
         if board_item is None and (image_data is not None) and image_data.board_item is None:
-            self.show_center_label("Этот элемент не представлен на доске", error=True)
+            self.show_center_label(_("This elements is not presented on the board"), error=True)
         else:
             canvas_scale_x = self.canvas_scale_x
             canvas_scale_y = self.canvas_scale_y
@@ -3529,7 +3538,7 @@ class BoardMixin(BoardTextEditItemMixin):
         items_list = folder_data.board.items_list
 
         if not items_list:
-            self.show_center_label('На доске нет айтемов! Отмена.', error=True)
+            self.show_center_label(_("No items on the board! Abort!"), error=True)
 
         all_items = self.get_original_items_order(items_list)
         item = self.board_get_nearest_item(folder_data, by_window_center=True)
