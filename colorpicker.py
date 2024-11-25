@@ -30,6 +30,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from gettext import gettext as _
+
 
 class ExitButton(QPushButton):
 
@@ -443,7 +445,7 @@ class UI_object(object):
         self.lbl_hex.setBuddy(self.blue)
         self.lbl_alpha.setBuddy(self.blue)
 
-        self.window_title.setText('<b>Select Color<b>')
+        self.window_title.setText(_('<b>Select Color<b>'))
         self.lbl_red.setText("R:")
         self.red.setText("255")
         self.lbl_green.setText("G:")
