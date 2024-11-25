@@ -444,7 +444,7 @@ class CommentWindow(QWidget):
                 self.comment.date_edited = time.time()
                 self.comment.update_strings()
             self.editfield.setText(self.comment.text)
-            self.date_label.setText(_('Created: {0})'.format(self.comment.date_str)))
+            self.date_label.setText(_('Created: {0}').format(self.comment.date_str))
             if self.comment.date_edited:
                 self.date_edited_label.setText(_('Edited: {0}').format(self.comment.date_edited_str) )
         super().show()
