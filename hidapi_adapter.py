@@ -10,6 +10,8 @@ import time
 from _utils import *
 from functools import partial
 
+from gettext import gettext as _
+
 LISTENING_STOP = 0
 BOARD_SCALE = 1
 BOARD_OFFSET = 2
@@ -118,9 +120,9 @@ def update_board_viewer(obj, data):
         if state == BUTTON_RELEASED:
             status = data[3]
             if status:
-                status = 'Левый и правый стики поменялись ролями'
+                status = _("The left and right sticks have swapped their default roles")
             else:
-                status = 'Левый и правый стики восстановили свои роли'
+                status = _("Default roles of the right and left sticks have been reenabled") 
             obj.show_center_label(f'{status}')
 
     obj.update()
@@ -163,18 +165,18 @@ def activate_gamepad(obj):
             obj.thread_instance.update_signal.connect(partial(update_board_viewer, obj))
             obj.thread_instance.start()
 
-            obj.show_center_label('Gamepad control activated!')
+            obj.show_center_label(_('Gamepad control activated!'))
         else:
             obj.gamepad = None
             # obj.timer = None
-            obj.show_center_label('Gamepad not found!', error=True)
+            obj.show_center_label(_('Gamepad not found!'), error=True)
 
 def deactivate_listening(obj):
     obj.gamepad = None
     # obj.timer.stop()
     obj.thread_instance.terminate()
     obj.thread_instance = None
-    obj.show_center_label('Gamepad control deactivated!', error=True)
+    obj.show_center_label(_('Gamepad control deactivated!'), error=True)
 
 def read_gamepad(gamepad):
     return gamepad.read(64)
@@ -287,7 +289,7 @@ def main():
 
                         before_data = data
         except OSError:
-            print('Ошибка чтения. Скорее всего, геймпад отключён.')
+            print(_("Reading error. Feels like the gamEpad if off"))
             pass
 
 if __name__ == '__main__':

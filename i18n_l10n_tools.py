@@ -25,7 +25,7 @@ files_to_parse = [
     'commenting.py', #
     'control_panel.py', #
     'help_text.py', #
-    'hidapi_adapter.py', #
+    'hidapi_adapter.py', #DONE
     'library_data.py', #
     'settings_handling.py', #
     'slice_pipette_tool.py', #DONE
