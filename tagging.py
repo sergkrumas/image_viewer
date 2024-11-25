@@ -28,6 +28,7 @@ import urllib.parse
 import random
 import tempfile
 
+from gettext import gettext as _
 
 HTML_FILEPATH = "generated.html"
 HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)
@@ -376,7 +377,7 @@ class TaggingMixing():
     def toggle_tags_overlay(self):
         if self.Globals.lite_mode:
             self.show_tags_overlay = False
-            self.show_center_label("Теги нельзя юзать в упрощённом режиме!", error=True)
+            self.show_center_label(_("Tags are not supposed to be used when app is running in lite mode!"), error=True)
             return
         self.show_tags_overlay = not self.show_tags_overlay
         if self.show_tags_overlay:
@@ -453,7 +454,7 @@ class TaggingMixing():
             test_painter.setFont(font)
 
             painter.setPen(QPen(Qt.gray))
-            painter.drawText(QPoint(50, 250), "Теги изображения")
+            painter.drawText(QPoint(50, 250), _("Image tags"))
 
             for i, tag in enumerate(self.tags_list):
                 tag_text = f"#{tag.name} ({len(tag.records)})"
@@ -503,7 +504,7 @@ class ClickableLabel(QLabel):
         self.setStyleSheet("ClickableLabel{ padding: 4 0;}")
 
     def set_tooltip(self, text):
-        text = text if text else "(не задано описание для этого тега)"
+        text = text if text else _("(No description for the tag)")
         tool_tip_text = f'<b>ID: {self.tag.id}</b><br>{text}'
         self.setToolTip(tool_tip_text)
 
@@ -556,10 +557,10 @@ class ClickableLabel(QLabel):
                 context_menu_stylesheet = main_window.context_menu_stylesheet
                 contextMenu.setStyleSheet(context_menu_stylesheet)
 
-                action_show_images = contextMenu.addAction('Показать изображения')
-                action_edit_description = contextMenu.addAction('Редактирование описания тега')
+                action_show_images = contextMenu.addAction(_('Show image'))
+                action_edit_description = contextMenu.addAction(_('Edit tag description'))
                 contextMenu.addSeparator()
-                action_delete = contextMenu.addAction(f'Удалить тег "{self.tag_string}" и всю его информацию')
+                action_delete = contextMenu.addAction(_('Delete tag "{0}" and its metadata').format(self.tag_string))
 
                 cur_action = contextMenu.exec_(QCursor().pos())
                 if cur_action is None:
@@ -572,9 +573,9 @@ class ClickableLabel(QLabel):
                 elif cur_action == action_delete:
                     dialog_menu = QMenu()
                     dialog_menu.setStyleSheet(context_menu_stylesheet)
-                    cancel_action = dialog_menu.addAction('Отмена')
+                    cancel_action = dialog_menu.addAction(_('Cancel'))
                     dialog_menu.addSeparator()
-                    confirm_action = dialog_menu.addAction('Удалить (подтверждение)')
+                    confirm_action = dialog_menu.addAction(_('Delete (confirmation)'))
                     _action = dialog_menu.exec_(QCursor().pos())
                     if _action is None:
                         pass
@@ -816,7 +817,7 @@ class TaggingForm(QWidget):
 
         vl = QVBoxLayout()
 
-        save_btn = QPushButton("Сохранить")
+        save_btn = QPushButton(_("Save"))
         save_btn.clicked.connect(self.save_button_handler)
         save_btn.setStyleSheet(self.button_style)
         save_btn.setCursor(Qt.PointingHandCursor)

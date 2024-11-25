@@ -26,7 +26,7 @@ files_to_parse = [
     'tagging.py', #
     'control_panel.py', #
     'library_data.py', #
-    'settings_handling.py', #
+    'settings_handling.py', #DONE
     'hidapi_adapter.py', #DONE
     'colorpicker.py', #DONE
     'slice_pipette_tool.py', #DONE
