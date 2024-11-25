@@ -25,6 +25,8 @@ from PyQt5.QtNetwork import QLocalSocket
 
 import traceback, os
 
+from gettext import gettext as _
+
 class ServerOrClient():
 
     @classmethod
