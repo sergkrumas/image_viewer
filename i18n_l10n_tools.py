@@ -20,7 +20,7 @@ files_to_parse = [
     '_viewer.pyw', #done
     'app_copy_prevention.py', #done
     'board.py', #
-    'board_note_item.py', #
+    'board_note_item.py', #done
     'colorpicker.py', #
     'commenting.py', #
     'control_panel.py', #
