@@ -39,6 +39,7 @@ from ctypes import windll
 
 import itertools
 from functools import partial
+from gettext import gettext as _
 
 try:
     noise = __import__("noise")
@@ -93,8 +94,8 @@ class Globals():
     USERROTATIONS_FILENAME = "viewer.ini"
     DEFAULT_PATHS_FILENAME = "default_paths.txt"
 
-    app_title = "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
-    github_repo = "https://github.com/sergkrumas/image_viewer"
+    app_title = _("Krumassan Image Viewer v0.90 Alpha by Sergei Krumas")
+    github_repo = _("https://github.com/sergkrumas/image_viewer")
 
 class BWFilterState():
 
@@ -130,16 +131,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     secret_pic = None
     secret_p = None
 
-    LOADING_MULT = 1 #5
-
-    LOADING_TEXT = (
-        "ЗАГРУЗКА",       # RU
-        "LADE DATEN",     # DE
-        "CHARGEMENT",     # FR
-        "CARICAMENTO",    # IT
-        "LOADING",        # EN
-        "CARGANDO",       # ES
-    )*LOADING_MULT
+    LOADING_TEXT = _('LOADING')
 
     class pages():
         START_PAGE = 'STARTPAGE'
@@ -159,10 +151,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         @classmethod
         def name(cls, page_id):
             return {
-                cls.START_PAGE: 'START',
-                cls.VIEWER_PAGE: 'VIEWER',
-                cls.BOARD_PAGE: 'BOARD',
-                cls.LIBRARY_PAGE: 'LIBRARY',
+                cls.START_PAGE: _('START'),
+                cls.VIEWER_PAGE: _('VIEWER'),
+                cls.BOARD_PAGE: _('BOARD'),
+                cls.LIBRARY_PAGE: _('LIBRARY'),
             }.get(page_id)
 
     class label_type():
@@ -1172,7 +1164,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if fr.isNull():
             self.invalid_movie = True
             self.animated = False
-            self.error_pixmap_and_reset("Невозможно\nотобразить", "Файл повреждён")
+            self.error_pixmap_and_reset(_("Unable\nto display"), _("The file is corrupted"))
 
     def show_animated(self, filepath, is_apng_file):
         if filepath is not None:
@@ -1225,11 +1217,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # setting new image
         self.error = False
         if filepath == "":
-            self.error_pixmap_and_reset("Нет изображений", "", no_background=True)
+            self.error_pixmap_and_reset(_("No images"), "", no_background=True)
         else:
             if not LibraryData().is_supported_file(filepath):
                 filename = os.path.basename(filepath)
-                self.error_pixmap_and_reset("Невозможно\nотобразить", f"Этот файл не поддерживается\n{filename}")
+                _unsup_file_msg = _("The file is not supported")
+                self.error_pixmap_and_reset(_("Unable\nto display"), f"{_unsup_file_msg}\n{filename}")
             else:
                 try:
                     LibraryData().reset_apng_check_result()
@@ -1243,7 +1236,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     else:
                         self.show_static(filepath)
                 except:
-                    self.error_pixmap_and_reset("Файл повреждён", traceback.format_exc())
+                    self.error_pixmap_and_reset(_("The file is corrupted"), traceback.format_exc())
         if not self.error:
             self.read_image_metadata(image_data)
         self.restore_image_transformations()
@@ -1288,7 +1281,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def set_loading_text(self):
         # self.loading_text = random.choice(self.LOADING_TEXT)
-        self.loading_text = "\n".join(self.LOADING_TEXT)
+        # self.loading_text = "\n".join(self.LOADING_TEXT)
+        self.loading_text = self.LOADING_TEXT
 
     def read_image_metadata(self, image_data):
         if not image_data.image_metadata:
@@ -1321,9 +1315,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     return f"{name} ({w}x{h}) [{n}/{l}]"
                 except:
                     pass
-            return f"{name} - broken file"
+            _broken_file_msg = _("broken file")
+            return f"{name} - {_broken_file_msg}"
         else:
-            return "Загрузка"
+            return _("Loading")
 
     def get_rotated_pixmap(self, force_update=False):
         if self.rotated_pixmap is None or force_update:
@@ -2356,27 +2351,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         rect2.setBottom(H)
         set_font_size(70, True)
         painter.setPen(QPen(Qt.white))
-        text = "ПЕРЕТАЩИ СЮДА ФАЙЛ ИЛИ ПАПКУ С ФАЙЛАМИ"
-        painter.drawText(rect1, Qt.TextWordWrap | Qt.AlignCenter, text)
+        start_text = _("DRAG AND DROP A FILE OR A FOLDER")
+        painter.drawText(rect1, Qt.TextWordWrap | Qt.AlignCenter, start_text)
 
         set_font_size(25, False)
-        text = "или кликни левой кнопкой мыши, чтобы открыть диалог"
-        text += "\n\nКлик правой кнопкой — открыть окно настроек"
+        start_text = _("or left mouse click to open Explorer dialog.")
+        start_text += _("\n\nRight mouse click to open settings window.")
 
         if Globals.lite_mode:
-            text += "\n\n[программа запущена в лайтовом (упрощённом) режиме]"
+            start_text += _("\n\n[the program is running in lite mode]")
         else:
-            text += "\n\n\n\n[программа запущена в обычном режиме]"
+            start_text += _("\n\n\n\n[the program is running in standard mode]")
 
-        painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, text)
+        painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, start_text)
 
     def draw_32bit_warning(self, painter):
         if Globals.is_32bit_exe:
-            text = (
-                "Программа была запущена из 32bit-го интерпретатора Python,"
-                "из-за чего сейчас имеет ограничение по потребляемой памяти до 1.5GB"
-                "\n и рискует зависнуть при подходе значения потребляемой памяти к 1.5GB."
-                "\nДля увеличения доступной памяти надо запуститься из 64bit-го интерпретатора!"
+            text = _(
+                "The program is running under 32-bit Python interpreter,"
+                "\nso the memory limit is 1.5GB which is not enough."
+                "\nOnce the limit will be reached, the program deadly freezes."
+                "\nUse 64-bit Python interpreter to avoid this kind of issues."
             )
             painter.drawText(self.rect(), Qt.TextWordWrap | Qt.AlignTop | Qt.AlignHCenter, text)
 
@@ -2547,14 +2542,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         painter.drawPixmap(projected, cached, source_rect)
                     else:
                         painter.setPen(QPen(Qt.white))
-                        error_msg = f'Ошибка\n {item_data.filename}'
-                        painter.drawText(main_rect, Qt.AlignCenter, error_msg)
+                        _error_msg = _("Error")
+                        painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{item_data.filename}')
         else:
             painter.setPen(QPen(QColor(Qt.white)))
             if LibraryData().current_folder().images_list:
-                text = "Подождите"
+                text = _("Please wait")
             else:
-                text = "Нет изображений"
+                text = _("No images")
             painter.drawText(right_col_check_rect, Qt.AlignCenter, text)
 
         self.draw_middle_line(painter)
@@ -2744,11 +2739,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 text = f"{value:,}%".replace(',', ' ')
             elif self.center_label_info_type == self.label_type.PLAYSPEED and self.animated:
                 speed = movie.speed()
-                text = f"speed {speed}%"
+                _speed_msg = _("speed")
+                text = f"{_speed_msg} {speed}%"
             elif self.center_label_info_type == self.label_type.FRAME_NUMBER and self.animated:
                 frame_num = movie.currentFrameNumber()+1
                 frame_count = movie.frameCount()
-                text = f"frame {frame_num}/{frame_count}"
+                _frame_msg = _("frame")
+                text = f"{_frame_msg} {frame_num}/{frame_count}"
             else:
                 text = self.center_label_info_type
             self.draw_center_label(painter, text)
@@ -2798,7 +2795,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 )
             painter.save()
             painter.setPen(QPen(Qt.white))
-            painter.drawText(rect, Qt.AlignCenter | Qt.AlignBottom, "история просмотра")
+            painter.drawText(rect, Qt.AlignCenter | Qt.AlignBottom, _("viewing history"))
             painter.restore()
 
     def draw_center_point(self, painter, pos):
@@ -3197,7 +3194,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 ]
             )
         else:
-            self.show_center_label('Отмена!\nАнимационные эффекты отключены в настройках', error=True)
+            self.show_center_label(_("Abort!\nAnimation effects disabled in settings"), error=True)
 
     def mirror_current_image(self, ctrl_pressed):
         if self.pixmap:
@@ -3216,7 +3213,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def save_inframed_image(self, use_screen_scale, reset_path):
         if not self.image_data.filepath or self.error:
-            self.show_center_label("Невозможно сохранить: нет файла или файл не найден", error=True)
+            self.show_center_label(_("Unable to save: no source file or source file is not found"), error=True)
             return
         path = self.image_data.filepath
         pixmap = self.get_rotated_pixmap()
@@ -3243,17 +3240,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if _path:
                 rootpath = _path
             else:
-                self.show_center_label('Путь не задан или его не существует', error=True)
+                self.show_center_label(_("The folder path is not set or the folder path doesn't exist"), error=True)
         new_path = os.path.abspath(os.path.join(rootpath, f"{formated_datetime}{ext}"))
         if not use_screen_scale:
             factor = 1/self.image_scale
             save_pixmap = save_pixmap.transformed(QTransform().scale(factor, factor), Qt.SmoothTransformation)
 
         save_pixmap.save(new_path)
-        self.show_center_label(f"Изображение сохранено в\n{new_path}")
+        _new_path_msg = _("The image is saved in file")
+        self.show_center_label(f"{_new_path_msg}\n{new_path}")
 
     def set_path_for_saved_pictures(self, init_path):
-        msg = "Выберите папку, в которую будут складываться картинки"
+        msg = _("Choose folder to put images in")
         path = QFileDialog.getExistingDirectory(None, msg, init_path)
         if os.path.exists(path):
             rootpath = str(path)
@@ -3274,7 +3272,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         path, ext = os.path.splitext(content_filepath)
         content_filepath = f"{path}.{_format}"
         filepath = QFileDialog.getSaveFileName(
-            None, "Сохранение файла",
+            None, _("Save file"),
             content_filepath, None
         )
         image.save(filepath[0], _format)
@@ -3338,7 +3336,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 pixmap = self.pixmap
             QApplication.clipboard().setPixmap(pixmap)
         else:
-            label_msg = 'Отмена! Функция не реализована для анимационного контента'
+            label_msg = _("Abort! Feature is not implemented yet for animated images")
             self.show_center_label(label_msg, error=True)
 
     def paste_from_clipboard(self):
@@ -3349,7 +3347,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.pixmap = new_pixmap
                 self.get_rotated_pixmap(force_update=True)
                 self.restore_image_transformations()
-                self.show_center_label("вставлено")
+                self.show_center_label(_("pasted!"))
         self.update()
 
     def get_selected_comment(self, pos):
@@ -3400,7 +3398,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.context_menu_exec_point = self.mapped_cursor_pos()
 
-        minimize_window = contextMenu.addAction("Свернуть")
+        minimize_window = contextMenu.addAction(_("Minimize"))
         minimize_window.triggered.connect(Globals.main_window.showMinimized)
         contextMenu.addSeparator()
 
@@ -3411,43 +3409,42 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.toggle_boolean_var_generic = toggle_boolean_var_generic
 
         checkboxes = [
-            ("DEBUG", Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
-            ("Антиальясинг и сглаживание пиксмапов", Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
-            ("Pixmap-прокси для пометок типа «Текст»", Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')),
+            (_("DEBUG"), Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
+            (_("Antialiasing and pixmap smoothing"), Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
+            (_("Use pixmap-proxy for text items"), Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')),
         ]
 
         if Globals.CRASH_SIMULATOR:
-            crash_simulator = contextMenu.addAction("Крашнуть приложение (для дебага)...")
+            crash_simulator = contextMenu.addAction(_("Make program crash intentionally (for dev purposes only)..."))
             crash_simulator.triggered.connect(lambda: 1/0)
 
-        open_settings = contextMenu.addAction("Настройки...")
+        open_settings = contextMenu.addAction(_("Settings..."))
         open_settings.triggered.connect(self.open_settings_window)
         contextMenu.addSeparator()
 
         if self.frameless_mode:
-            text = "Переключиться в оконный режим"
+            text = _("Enable window mode")
         else:
-            text = "Переключиться в полноэкранный режим"
+            text = _("Enable full-screen mode")
         toggle_frame_mode = contextMenu.addAction(text)
         toggle_frame_mode.triggered.connect(self.toggle_window_frame)
         if self.frameless_mode:
             if self.two_monitors_wide:
-                text = "Вернуть окно в монитор"
+                text = _("Narrow window back to monitor frame")
             else:
-                text = "Развернуть окно на два монитора"
+                text = _("Expand window to two monitors frame")
             toggle_two_monitors_wide = contextMenu.addAction(text)
 
         if Globals.lite_mode:
             contextMenu.addSeparator()
-            rerun_in_extended_mode = contextMenu.addAction("Перезапустить в обычном режиме")
+            rerun_in_extended_mode = contextMenu.addAction(_("Restart app in standard mode"))
             rerun_in_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, False))
         else:
             contextMenu.addSeparator()
-            rerun_extended_mode = contextMenu.addAction("Перезапуск (для сброса лишней памяти)")
+            rerun_extended_mode = contextMenu.addAction(_("Restart app (purging unused memory)"))
             rerun_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
-
-        open_in_sep_app = contextMenu.addAction("Открыть в отдельной копии")
+        open_in_sep_app = contextMenu.addAction(_("Open in separate app instance"))
         open_in_sep_app.triggered.connect(partial(open_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
@@ -3457,15 +3454,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     if item_rect.contains(event.pos()):
                         folder_data = item_data
             if folder_data and not folder_data.virtual:
-                action_title = f"Открыть папку \"{folder_data.folder_path}\" в копии"
+                _action_title = _("Open the folder in separate app")
+                action_title = f"{_action_title} \"{folder_data.folder_path}\""
                 open_separated = contextMenu.addAction(action_title)
                 open_separated.triggered.connect(partial(open_in_separated_app_copy, folder_data))
                 toggle_two_monitors_wide = None
                 if self.frameless_mode:
                     if self.two_monitors_wide:
-                        text = "Вернуть окно в монитор"
+                        text = _("Narrow window back to monitor frame")
                     else:
-                        text = "Развернуть окно на два монитора"
+                        text = _("Expand window to two monitors frame")
                     toggle_two_monitors_wide = contextMenu.addAction(text)
                     toggle_two_monitors_wide.triggered.connect(self.do_toggle_two_monitors_wide)
 
@@ -3476,23 +3474,26 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
-                run_unsupported_file = contextMenu.addAction("Открыть неподдерживаемый файл...")
-                run_unsupported_file.triggered.connect(self.run_unsupported_file)
+                open_unsupported_file = contextMenu.addAction(_("Open unsupported file..."))
+                open_unsupported_file.triggered.connect(self.open_unsupported_file)
 
             contextMenu.addSeparator()
 
             if not Globals.lite_mode:
                 sel_comment = self.get_selected_comment(event.pos())
                 if sel_comment:
-                    action_text = f'Редактировать текст комента "{sel_comment.get_title()}"'
+                    _action_text = _("Edit comment text")
+                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
                     change_comment_text = contextMenu.addAction(action_text)
                     change_comment_text.triggered.connect(partial(self.change_comment_text_menuitem, sel_comment))
 
-                    action_text = f'Переопределить границы комента "{sel_comment.get_title()}"'
+                    _action_text = _("Redefine comment borders")
+                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
                     change_comment_borders = contextMenu.addAction(action_text)
                     change_comment_borders.triggered.connect(partial(self.change_comment_borders_menuitem, sel_comment))
 
-                    action_text = f'Удалить комент "{sel_comment.get_title()}"'
+                    _action_text = _("Delete comment")
+                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
                     delete_comment = contextMenu.addAction(action_text)
                     delete_comment.triggered.connect(partial(self.delete_comment_menuitem, sel_comment))
 
@@ -3500,44 +3501,44 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
-                    copy_image_metadata = contextMenu.addAction("Скопировать метаданные в буферобмена")
+                    copy_image_metadata = contextMenu.addAction(_("Copy metadata to clipboard"))
                     copy_image_metadata.triggered.connect(partial(QApplication.clipboard().setText, ci.image_metadata_info))
 
 
             contextMenu.addSeparator()
 
             if not self.error:
-                show_in_explorer = contextMenu.addAction("Найти на диске")
+                show_in_explorer = contextMenu.addAction(_("Find on disk"))
                 show_in_explorer.triggered.connect(Globals.control_panel.show_in_folder)
-                show_in_gchrome = contextMenu.addAction("Открыть в Google Chrome")
+                show_in_gchrome = contextMenu.addAction(_("Open in Google Chrome"))
                 show_in_gchrome.triggered.connect(self.show_in_gchrome_menuitem)
-                place_at_center = contextMenu.addAction("Вернуть картинку в центр окна")
+                place_at_center = contextMenu.addAction(_("Place image in window center"))
                 place_at_center.triggered.connect(self.place_at_center_menuitem)
 
             contextMenu.addSeparator()
 
             if self.svg_rendered:
-                text = "Изменить разрешение растеризации SVG-файла..."
+                text = _("Change SVG rasterization resolution...")
                 change_svg_scale = contextMenu.addAction(text)
                 change_svg_scale.triggered.connect(self.contextMenuChangeSVGScale)
                 contextMenu.addSeparator()
 
             if not self.error:
-                save_as_png = contextMenu.addAction("Сохранить в .png...")
+                save_as_png = contextMenu.addAction(_("Save .png file..."))
                 save_as_png.triggered.connect(partial(self.save_image_as, 'png'))
 
-                save_as_jpg = contextMenu.addAction("Сохранить в .jpg...")
+                save_as_jpg = contextMenu.addAction(_("Save .jpg file..."))
                 save_as_jpg.triggered.connect(partial(self.save_image_as, 'jpg'))
 
-                copy_to_cp = contextMenu.addAction("Копировать в буфер обмена")
+                copy_to_cp = contextMenu.addAction(_("Copy to clipboard"))
                 copy_to_cp.triggered.connect(self.copy_to_clipboard)
 
-                copy_from_cp = contextMenu.addAction("Вставить из буфера обмена")
+                copy_from_cp = contextMenu.addAction(_("Paste from clipboard"))
                 copy_from_cp.triggered.connect(self.paste_from_clipboard)
 
                 if LibraryData().current_folder().is_fav_folder():
                     contextMenu.addSeparator()
-                    action_title = "Перейти из избранного в папку с этим изображением"
+                    action_title = _("Switch from fovorites folder to actual image folder")
                     go_to_folder = contextMenu.addAction(action_title)
                     go_to_folder.triggered.connect(LibraryData().go_to_folder_of_current_image)
 
@@ -3584,9 +3585,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def change_comment_borders_menuitem(self, sel_comment):
         if sel_comment:
             self.comment_data_candidate = sel_comment
-            self.show_center_label("Теперь переопределите границы комментария через Ctrl+Shift+LMB")
+            _msg = _("Now redefine comment borders by pressing Ctrl+Shift+LMB")
+            self.show_center_label(_msg)
 
-    def run_unsupported_file(self):
+    def open_unsupported_file(self):
         import win32api
         win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)
 
@@ -3631,9 +3633,8 @@ def choose_start_option_callback(do_start_server, path):
             if not Globals.started_from_sublime_text:
                 if os.path.exists(path):
                     ret = QMessageBox.question(None,
-                        "Вопрос",
-                        'Не обнаружено запущенной копии приложения.\n\n'
-                        f"Запуститься в лайтовом (упрощённом) режиме?",
+                        _("Question"),
+                        _("No running app instance at the moment.\nStart app in lite mode?"),
                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
                         )
     if ret == QMessageBox.Yes:
@@ -3661,10 +3662,9 @@ def input_path_dialog(path, exit=True):
     if os.path.exists(path):
         pass
     else:
-        path = str(QFileDialog.getExistingDirectory(None, "Выбери папку с пикчами"))
+        path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with pictures in it")))
         if not path and exit:
-            QMessageBox.critical(None, "Ошибочка",
-                                            "Ну раз ничего не выбрал, то я закрываюсь.\nПака")
+            QMessageBox.critical(None, _("Error-error"), _("Nothing to show, exit.."))
             sys.exit()
     return path
 
@@ -3714,7 +3714,8 @@ def show_system_tray(app, icon):
             menu = QMenu()
             process = psutil.Process(os.getpid())
             mb_size = process.memory_info().rss / 1024 / 1024
-            memory_status = f'Memory allocated ~{mb_size:0.2f} MB'
+            msg = _("Memory allocated")
+            memory_status = f'{msg} ~{mb_size:0.2f} MB'
             memory = menu.addAction(memory_status)
             menu.addSeparator()
             quit = menu.addAction('Quit')
@@ -3723,8 +3724,8 @@ def show_system_tray(app, icon):
                 app = QApplication.instance()
                 app.quit()
             elif action == memory:
-                msg = "Эта команда должна удалять лишние объекты,\nсейчас она этого не делает"
-                QMessageBox.critical(None, "NotImplemented", msg)
+                msg = _("Purge unused objects")
+                QMessageBox.critical(None, "Not implemented", msg)
         return
     sti.activated.connect(on_trayicon_activated)
     sti.setToolTip("\n".join((Globals.app_title, Globals.github_repo)))
@@ -3836,7 +3837,7 @@ def open_in_separated_app_copy(folder_data):
                 break
         start_lite_process(content_path)
     else:
-        msg = "Ни изображение, ни папка, в которой оно находится, не существуют"
+        msg = _("Neither the image nor the folder it is in don't exist")
         QMessageBox.critical(None, "Отмена!", msg)
 
 def get_predefined_path_if_started_from_sublimeText():
@@ -3991,9 +3992,12 @@ def _main():
 
     if Globals.aftercrash:
         filepath = get_crashlog_filepath()
-        msg0 = f"Информация о краше сохранена в файл\n\t{filepath}"
-        msg = f"Программа аварийно завершила работу! Application crash! \n{msg0}\n\nПерезапустить? Restart app?"
-        ret = QMessageBox.question(None, 'Fatal Error!', msg, QMessageBox.Yes | QMessageBox.No)
+        _msg0 = _("Crash info saved to file")
+        msg0 = f"{_msg0}\n\t{filepath}"
+        _msg = _("Application crash!")
+        __msg = _("Restart app?")
+        msg = f"{_msg}\n{msg0}\n\n{__msg}"
+        ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
         if ret == QMessageBox.Yes:
             _restart_app()
         sys.exit(0)

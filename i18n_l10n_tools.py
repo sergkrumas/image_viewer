@@ -17,7 +17,7 @@ import locale
 
 files_to_parse = [
     '_utils.py', #done
-    '_viewer.pyw', #
+    '_viewer.pyw', #done
     'app_copy_prevention.py', #
     'board.py', #
     'board_note_item.py', #
