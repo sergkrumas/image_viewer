@@ -19,13 +19,13 @@ files_to_parse = [
     '_utils.py', #DONE
     '_viewer.pyw', #DONE
     'app_copy_prevention.py', #DONE
-    'board_note_item.py', #DONE
     'help_text.py', #DONE
-    'board.py', #
-    'commenting.py', #
-    'tagging.py', #
-    'control_panel.py', #
     'library_data.py', #
+    'board.py', #
+    'board_note_item.py', #DONE
+    'commenting.py', #DONE
+    'tagging.py', #DONE
+    'control_panel.py', #DONE
     'settings_handling.py', #DONE
     'hidapi_adapter.py', #DONE
     'colorpicker.py', #DONE
