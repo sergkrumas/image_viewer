@@ -21,6 +21,8 @@
 from _utils import *
 from functools import partial
 
+from gettext import gettext as _
+
 
 class SlicePipetteToolMixin():
 
@@ -73,7 +75,7 @@ class SlicePipetteToolMixin():
                 if current_value == value:
                     break
             self.spt_hor_scale_factor = next(cycled_values)
-            self.show_center_label(f'Plot scale factor is {self.spt_hor_scale_factor}x' )
+            self.show_center_label(_('Plot scale factor is {0}x').format(self.spt_hor_scale_factor))
             self.update()
 
     def SPT_update(self):
@@ -81,7 +83,7 @@ class SlicePipetteToolMixin():
             self._SPT_update_plot()
             self.update()
         else:
-            self.show_center_label('Slice Pipette tool is not activated!', error=True)
+            self.show_center_label(_('Slice Pipette tool is not activated!'), error=True)
 
     def SPT_build_input_point_rect(self, pos):
         rsw = self.spt_input_point_rect_side_width
@@ -177,10 +179,10 @@ class SlicePipetteToolMixin():
             # color_reprs = [t[1] for t in self.colors_values_copied]
             # self.set_clipboard("\n".join(color_reprs))
             self.set_clipboard(color_repr)
-            self.show_center_label(f'Color {color_repr} has been copied to clipboard!')
+            self.show_center_label(_('Color {0} has been copied to clipboard!').format(color_repr))
             self.update()
         else:
-            self.show_center_label('Slice Pipette tool is not activated!', error=True)
+            self.show_center_label(_('Slice Pipette tool is not activated!'), error=True)
 
     def SPT_toggle_tool_state(self):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
@@ -195,7 +197,7 @@ class SlicePipetteToolMixin():
                 p2 = self.spt_tool_input_points[1]
                 if QVector2D(p1 - p2).length() < 40:
                     desactivate = True
-                    msg = 'Distance is too short!'
+                    msg = _('Distance is too short!')
                 else:
                     self._SPT_update_plot(new=True)
         else:
@@ -206,7 +208,7 @@ class SlicePipetteToolMixin():
             self.spt_tool_line_points = []
             self.spt_tool_pixels_colors = []
             if msg is None:
-                msg = 'Slice pipette disactivated!'
+                msg = _('Slice pipette disactivated!')
             self.show_center_label(msg, error=True)
         self.update()
 
@@ -258,15 +260,15 @@ class SlicePipetteToolMixin():
             self.update()
 
         checkboxes = [
-            ("show red", self.spt_show_red, partial(toggle_boolean_var_generic, self, "spt_show_red")),
-            ("show green", self.spt_show_green, partial(toggle_boolean_var_generic, self, "spt_show_green")),
-            ("show blue", self.spt_show_blue, partial(toggle_boolean_var_generic, self, "spt_show_blue")),
+            (_("show red"), self.spt_show_red, partial(toggle_boolean_var_generic, self, "spt_show_red")),
+            (_("show green"), self.spt_show_green, partial(toggle_boolean_var_generic, self, "spt_show_green")),
+            (_("show blue"), self.spt_show_blue, partial(toggle_boolean_var_generic, self, "spt_show_blue")),
 
-            ("show hue", self.spt_show_hue, partial(toggle_boolean_var_generic, self, "spt_show_hue")),
-            ("show saturation", self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
-            ("show lightness", self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
+            (_("show hue"), self.spt_show_hue, partial(toggle_boolean_var_generic, self, "spt_show_hue")),
+            (_("show saturation"), self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
+            (_("show lightness"), self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
 
-            ("pretty plots", self.spt_pretty_plots, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
+            (_("pretty plots"), self.spt_pretty_plots, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
         ]
 
         for title, value, callback in checkboxes:

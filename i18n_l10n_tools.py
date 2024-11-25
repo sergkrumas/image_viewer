@@ -16,19 +16,19 @@ import locale
 
 
 files_to_parse = [
-    '_utils.py', #done
-    '_viewer.pyw', #done
-    'app_copy_prevention.py', #done
+    '_utils.py', #DONE
+    '_viewer.pyw', #DONE
+    'app_copy_prevention.py', #DONE
     'board.py', #
-    'board_note_item.py', #done
-    'colorpicker.py', #done
+    'board_note_item.py', #DONE
+    'colorpicker.py', #DONE
     'commenting.py', #
     'control_panel.py', #
     'help_text.py', #
     'hidapi_adapter.py', #
     'library_data.py', #
     'settings_handling.py', #
-    'slice_pipette_tool.py', #
+    'slice_pipette_tool.py', #DONE
     'tagging.py', #
 ]
 
