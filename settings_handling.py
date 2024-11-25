@@ -23,6 +23,8 @@ from _utils import *
 
 from on_windows_startup import (is_app_in_startup, add_to_startup, remove_from_startup)
 
+from gettext import gettext as _
+
 class CustomSlider(QWidget):
     colorGrads = QLinearGradient(0, 0, 1, 0)
     colorGrads.setCoordinateMode(colorGrads.ObjectBoundingMode)
@@ -406,54 +408,54 @@ class SettingsWindow(QWidget):
             json.dump(data, file, indent=True, ensure_ascii=False)
 
     matrix = {
-        '---001': ('Основное'),
-        'run_on_windows_startup': (True, 'Запускать при старте Windows'),
-        'do_not_show_start_dialog': (True, 'Запускать лайтовый (упрощённый) режим сразу, то есть без диалога'),
-        'show_fullscreen': (True, 'Открываться в полноэкранном режиме'),
-        'doubleclick_toggle': (True, 'Переключение между оконным и полноэкранным режимом через двойной клик'),
-        'hide_to_tray_on_close': (True, 'Прятаться в трей при закрытии окна'),
-        'hide_on_app_start': (False, 'Прятать окно в трей на старте'),
-        'show_console_output': (True, 'Показывать поверх контента консольный вывод'),
-        'effects': (True, 'Анимационные эффекты'),
-        'show_noise_cells': (True, 'Показывать анимированнные ячейки поверх всего'),
+        '---001': _('General'),
+        'run_on_windows_startup': (True, _('Run on Windows Startup')),
+        'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
+        'show_fullscreen': (True, _('Show full-screen at application start')),
+        'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
+        'hide_to_tray_on_close': (True, _('Hide to tray on close')),
+        'hide_on_app_start': (False, _('Hide to tray on app start')),
+        'show_console_output': (True, _('Show standard (console) output overlay')),
+        'effects': (True, _('Animated effects')),
+        'show_noise_cells': (True, _('Show animated cells overlay')),
 
-        '---002': ('Страница вьювера'),
-        'animated_zoom': (False, 'Анимированный зум изображения'),
-        'draw_control_panel_backplate': (False, 'Подложка под панель миниатюр и кнопок'),
-        'thumbnail_width': (50.0, (30.0, 100.0), 'Размер миниатюр в нижней панели вьювера'),
-        'zoom_on_mousewheel': (True, 'Зум с помощью колёсика мыши (для навигации удерживать Ctrl)'),
-        'draw_default_thumbnail': (True, 'Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая'),
-        'show_thirds': (False, 'Показывать трети'),
-        'show_cyberpunk': (False, 'Кибирпунк'),
-        'show_image_center': (False, 'Показывать центр'),
-        'show_deep_secrets_at_zoom': (True, 'Показывать рандомную вселенскую истину при сильном увеличении'),
-        'autohide_control_panel': (True, 'Автоматически скрывать панель миниатюр и кнопок'),
-        'use_global_view_history': (False, 'Выключить историю просмотра для каждой папки отдельно и включить глобальную'),
-        'show_image_metadata': (True, 'Показывать метаданные изображения'),
-        'autosave_on_reordering': (True, 'Автоматически сохранять в файл задаваемый порядок изображений через панель миниатюр'),
-        'browse_images_only': (False, 'Показывать только изображения'),
+        '---002': _('Viewer page'),
+        'animated_zoom': (False, _('Animated zoom')),
+        'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
+        'thumbnail_width': (50.0, (30.0, 100.0), _('Image size in thumbnails row')),
+        'zoom_on_mousewheel': (True, _('Mouse wheel zoom (hold Ctrl for image list navigation)')),
+        'draw_default_thumbnail': (True, _('Draw dummy-default thumbnail while generated one is not ready')),
+        'show_thirds': (False, _('Show thirds')),
+        'show_cyberpunk': (False, _('Cyberpunk frame')),
+        'show_image_center': (False, _('Show image center')),
+        'show_deep_secrets_at_zoom': (True, _('Show random secret at deep zoom level')),
+        'autohide_control_panel': (True, _('Autohide control panel')),
+        'use_global_view_history': (False, _('Use global viewing history instead per-folder')),
+        'show_image_metadata': (True, _('Show image metadata')),
+        'autosave_on_reordering': (True, _('Autosave order metadata on thumbnails reordering')),
+        'browse_images_only': (False, _('Browse images only')),
 
-        '---006': ('Страница доски'),
-        'board_draw_origin_compass': (False, 'Показывать компас и уровень зума камеры'),
-        'board_draw_canvas_origin': (False, 'Показывать точку начала координат на доске'),
-        'board_draw_grid': (False, 'Показывать сетку'),
-        'board_unloading': (False, 'Оперативно выгружать картинки, если они не просматриваются в данный момент'),
-        'board_move_to_current_on_first_open': (True, 'При первом открытии доски из вьювера центрировать вьюпорт доски на текущей картинке'),
-        'transform_widget_activation_area_size': (16.0, (12.0, 20.0), 'Размер зон активации скейла или вращения'),
-        'use_cbor2_instead_of_json': (True, 'Использовать CBOR2 вместо JSON для записи данных досок'),        
+        '---006': _('Board page'),
+        'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
+        'board_draw_canvas_origin': (False, _('Show board origin')),
+        'board_draw_grid': (False, _('Show board grid')),
+        'board_unloading': (False, _('Do unloading for images not shown in viewer at the momoment')),
+        'board_move_to_current_on_first_open': (True, _('Focus on current image on first board open')),
+        'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
+        'use_cbor2_instead_of_json': (True, _('Use CBOR2 instead JSON for writing board data')),
 
-        '---003': ('Прозрачность страниц в полноэкранном режиме'),
-        'viewer_page_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы вьювера'),
-        'library_page_transparency': (0.9, (0.0, 1.0), 'Прозрачность страницы библиотеки'),
-        'board_page_transparency': (0.7, (0.0, 1.0), 'Прозрачность страницы досок'),
-        'start_page_transparency': (0.9, (0.0, 1.0), 'Прозрачность стартовой страницы'),
+        '---003': _('Pages transparent setting for full-screen mode'),
+        'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
+        'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
+        'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
+        'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
 
-        '---004': ('Слайдшоу на странице вьювера'),
-        'slides_transition_duration': (1.0, (0.1, 10.0), 'Длительность перехода в сек (для слайдшоу)'),
-        'slides_delay_duration': (2.0, (0.1, 240.0), 'Длительность удержания в сек (для слайдшоу)'),
+        '---004': _('Slideshow for Viewer page'),
+        'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
+        'slides_delay_duration': (2.0, (0.1, 240.0), _('Holding duration in seconds')),
 
-        '---005': ('Пути'),
-        'inframed_folderpath': ('.', 'Папка для кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)'),
+        '---005': _('Paths'),
+        'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
     }
 
     isWindowVisible = False
@@ -652,7 +654,7 @@ class SettingsWindow(QWidget):
         main_layout = QVBoxLayout()
 
         head_label = QLabel()
-        head_label.setText("Настройки")
+        head_label.setText(_("Настройки"))
         head_label.setFixedHeight(50)
         head_label.setAlignment(Qt.AlignCenter)
         head_label.setStyleSheet(style)
@@ -660,10 +662,10 @@ class SettingsWindow(QWidget):
 
         main_layout.addWidget(self.scroll_area)
 
-        save_button = QPushButton("Закрыть и сохранить")
+        save_button = QPushButton(_("Save and close"))
         save_button.clicked.connect(self.save_button_handler)
         save_button.setStyleSheet(main_style_button)
-        exit_button = QPushButton("Закрыть")
+        exit_button = QPushButton(_("Закрыть"))
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
 
