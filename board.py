@@ -1318,7 +1318,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 socondary_text=self.long_process_label_text
             )
 
-    def board_draw_wait_label(self, painter, primary_text=_("WAIT..."),
+    def board_draw_wait_label(self, painter, primary_text=_("WAITING"),
                                                         socondary_text=_("creating previews")):
         painter.save()
         font = painter.font()
