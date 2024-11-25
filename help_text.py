@@ -30,7 +30,7 @@ INFO_ALL_PAGES = _("""
     Esc - exit program
     Tab - switch between pages in cyclic order
     ~ - show/hide settings window
-    P - toggle 
+    P - toggle window state between normal and always-on-top 
     Ctrl+ →/← - move full-screen window from one monitor to another
 """)
 
