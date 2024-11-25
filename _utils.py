@@ -52,6 +52,7 @@ from apng import APNG
 
 import win32con, win32api
 
+from gettext import gettext as _
 
 DEFAULT_SVG_SCALE_FACTOR = 20
 
@@ -305,7 +306,7 @@ def open_in_google_chrome(filepath):
         args = [CHROME_EXE, filepath]
         subprocess.Popen(args)
     else:
-        QMessageBox.critical(None, "Error", "Невозможно открыть в браузере.\nСначала откройте браузер Google Chrome!")
+        QMessageBox.critical(None, _("Error"), _("Unable to open file,\nfirst open Google Chrome browser!"))
 
 def show_in_folder_windows(filepath):
     os.system('explorer /select,"%s"' % filepath)

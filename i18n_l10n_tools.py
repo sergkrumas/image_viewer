@@ -16,20 +16,20 @@ import locale
 
 
 files_to_parse = [
-    '_viewer.pyw',
-    '_utils.py',
-    'app_copy_prevention.py',
-    'board.py',
-    'board_note_item.py',
-    'colorpicker.py',
-    'commenting.py',
-    'control_panel.py',
-    'help_text.py',
-    'hidapi_adapter.py',
-    'library_data.py',
-    'settings_handling.py',
-    'slice_pipette_tool.py',
-    'tagging.py',
+    '_utils.py', #done
+    '_viewer.pyw', #
+    'app_copy_prevention.py', #
+    'board.py', #
+    'board_note_item.py', #
+    'colorpicker.py', #
+    'commenting.py', #
+    'control_panel.py', #
+    'help_text.py', #
+    'hidapi_adapter.py', #
+    'library_data.py', #
+    'settings_handling.py', #
+    'slice_pipette_tool.py', #
+    'tagging.py', #
 ]
 
 def get_locales(this_folder):
