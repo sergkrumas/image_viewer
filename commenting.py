@@ -21,6 +21,7 @@
 from _utils import *
 from collections import defaultdict
 
+from gettext import gettext as _
 
 class CommentingLibraryDataMixin():
     pass
@@ -60,11 +61,11 @@ class CommentingLibraryDataMixin():
                 errors = True
             if errors:
                 _path = self.get_comments_list_path()
-                to_print = f"Ошибки при чтении файла {_path}"
+                to_print = _("Errors occured during reading the file {0}").format(_path)
                 print(to_print)
         files = list(set(files))
 
-        self.comments_folder = self.create_folder_data("С комментариями", files, image_filepath=None, virtual=True)
+        self.comments_folder = self.create_folder_data(_("Commented images"), files, image_filepath=None, virtual=True)
 
     def store_comments_list(self):
         elements = []
@@ -99,8 +100,8 @@ class CommentingLibraryDataMixin():
         return (image_data.md5, image_data.disk_size)
 
     def delete_comment(self, comment):
-        ret = QMessageBox.question(None,'Удаление комментария',
-            f'Комент "{comment.get_title()}". Удалить его?',
+        ret = QMessageBox.question(None, _("Comment removing"),
+            _('Comment "{0}". Delete it?').format(comment.get_title()),
             QMessageBox.Yes | QMessageBox.No)
         if ret == QMessageBox.No:
             return
@@ -169,7 +170,7 @@ class CommentingMixin():
 
     def image_comment_mousePressEvent(self, event):
         if self.Globals.lite_mode:
-            self.show_center_label("Комментарии нельзя задавать и просматривать в упрощённом режиме", error=True)
+            self.show_center_label(_("Comments is not supposed to be edited and viewed when app is running in lite mode"), error=True)
             return
         cf = self.LibraryData().current_folder()
         ci = cf.current_image()
@@ -443,9 +444,9 @@ class CommentWindow(QWidget):
                 self.comment.date_edited = time.time()
                 self.comment.update_strings()
             self.editfield.setText(self.comment.text)
-            self.date_label.setText(f'Создано: {self.comment.date_str}')
+            self.date_label.setText(_('Created: {0})'.format(self.comment.date_str)))
             if self.comment.date_edited:
-                self.date_edited_label.setText(f'Отредактировано: {self.comment.date_edited_str}')
+                self.date_edited_label.setText(_('Edited: {0}').format(self.comment.date_edited_str) )
         super().show()
 
     @classmethod
@@ -481,7 +482,7 @@ class CommentWindow(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignTop)
         label = QLabel()
-        label.setText("Редактирование комента")
+        label.setText(_("Comment editing"))
         label.setFixedHeight(50)
         label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet(style)
@@ -500,10 +501,10 @@ class CommentWindow(QWidget):
         self.editfield.setStyleSheet(editfieled_style)
         main_layout.addWidget(self.editfield)
 
-        save_button = QPushButton("Сохранить")
+        save_button = QPushButton(_("Save"))
         save_button.clicked.connect(self.save_button_handler)
         save_button.setStyleSheet(main_style_button)
-        exit_button = QPushButton("Закрыть")
+        exit_button = QPushButton(_("Close"))
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
 
