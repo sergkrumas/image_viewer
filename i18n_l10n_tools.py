@@ -56,6 +56,7 @@ def get_locales(this_folder):
     for cur_dir, folders, files in os.walk(locales_folder):
         for folder in folders:
             locales.append(os.path.join(cur_dir, folder, 'LC_MESSAGES'))
+        break
     return locales
 
 def generate_pot_file(this_folder):
@@ -72,14 +73,23 @@ def generate_pot_file(this_folder):
 
 def generate_mo_file(this_folder):
 
+    exe_folder = os.path.dirname(sys.executable)
+    i18n_tools_folder = os.path.join(exe_folder, 'Tools', 'i18n')
+    msgfmt_py = os.path.join(i18n_tools_folder, 'msgfmt.py')
     locales = get_locales(this_folder)
-    print(locales)
+    # print(locales)
 
     # generate .mo file for each locale
-    for folder in locales:
-        os.chdir(folder)
-        args = [sys.executable, msgfmt_py, '-o' 'base.mo', 'base']
-        subprocess.Popen(args)
+    for locale_folder in locales:
+        os.chdir(locale_folder)
+        print(locale_folder)
+        if os.path.exists('base.po'):
+            args = [sys.executable, msgfmt_py, '-o' 'base.mo', 'base']
+            subprocess.Popen(args)
+            print(f'    generating {locale_folder}')
+        else:
+            print(f'!!! no base.po {locale_folder}')
+
 
     os.chdir(this_folder)
 
@@ -88,10 +98,12 @@ def move_pot_to_po(this_folder):
 
     source_pot = os.path.join(this_folder, 'locales', 'base.pot')
 
-    for folder in locales:
+    for locale_folder in locales:
         src = source_pot
-        dst = os.path.join(folder, 'base.po')
-        os.makedirs(os.path.dirname(dst))
+        dst = os.path.join(locale_folder, 'base.po')
+        p = os.path.dirname(dst)
+        if not os.path.exists(p):
+            os.makedirs(p)
         shutil.copyfile(src, dst)
 
 def generate_locales(this_folder):
@@ -123,10 +135,10 @@ def main():
 
     # generate_locales(this_folder)
 
-    generate_pot_file(this_folder)
+    # generate_pot_file(this_folder)
 
     # move_pot_to_po(this_folder)
-    # generate_mo_file(this_folder)
+    generate_mo_file(this_folder)
 
 
 if __name__ == '__main__':
