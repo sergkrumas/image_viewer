@@ -94,11 +94,34 @@ def move_pot_to_po(this_folder):
         os.makedirs(os.path.dirname(dst))
         shutil.copyfile(src, dst)
 
+def generate_locales(this_folder):
+
+    langs = [
+        # "en",
+
+        "ru",
+
+        "de",
+        "fr",
+        "it",
+        "es",
+    ]
+    for lang in langs:
+        path = os.path.join(this_folder, 'locales', lang, 'LC_MESSAGES')
+        if not os.path.exists(path):
+            os.makedirs(path)
+            print(path)
+        else:
+            print(f'already exists ', path)
+
+
 
 def main():
     this_folder = os.path.dirname(__file__)
 
     os.chdir(this_folder)
+
+    # generate_locales(this_folder)
 
     generate_pot_file(this_folder)
 
