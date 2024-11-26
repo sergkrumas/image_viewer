@@ -1457,7 +1457,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
         open_settings = CM.addAction(_("Settings"))
         CM.addSeparator()
-        deep_scan = CM.addAction(_("Include subfolers when updating files list and scanning"))
+        deep_scan = CM.addAction(_("Include subfolers when updating files list and scanning on openning"))
         CM.addSeparator()
         original_order = CM.addAction(_("Original order"))
         sort_filename_desc = CM.addAction(_("Sort by filename (descending)"))

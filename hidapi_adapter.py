@@ -289,7 +289,7 @@ def main():
 
                         before_data = data
         except OSError:
-            print(_("Reading error. Feels like the gamEpad if off"))
+            print(_("Reading error. Feels like the gamepad is off"))
             pass
 
 if __name__ == '__main__':

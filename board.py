@@ -727,7 +727,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_add_item_note = contextMenu.addAction(_("Note"))
         board_add_item_note.triggered.connect(self.board_add_item_note)
 
-        board_load_highres = contextMenu.addAction(_("Force highres loading for all items(takes some time)"))
+        board_load_highres = contextMenu.addAction(_("Force highres loading of all items right now (may take some time)"))
         board_load_highres.triggered.connect(self.board_load_highres)
 
         board_place_items_in_column = contextMenu.addAction(_('Place items in column'))
@@ -739,12 +739,12 @@ class BoardMixin(BoardTextEditItemMixin):
             board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
-            board_retrieve_current_from_group_item = contextMenu.addAction(_('Take current image out from group and place nearby'))
+            board_retrieve_current_from_group_item = contextMenu.addAction(_('Take current image from group and place nearby'))
             board_retrieve_current_from_group_item.triggered.connect(self.board_retrieve_current_from_group_item)
 
         contextMenu.addSeparator()
 
-        board_open_in_app_copy = contextMenu.addAction(_("Open in separated app copy running in lite mode"))
+        board_open_in_app_copy = contextMenu.addAction(_("Open in viewer in separated app copy running in lite mode"))
         board_open_in_app_copy.triggered.connect(self.board_open_in_app_copy)
 
         board_open_in_google_chrome = contextMenu.addAction(_("Open in Google Chrome"))
@@ -1187,7 +1187,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_dive_inside_board_item(self, back_to_referer=False):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
-            msg = _("You cannot dive inside item when unfinised operations is ongoing")
+            msg = _("You cannot dive inside item when board operation is not finished!")
             self.show_center_label(msg, error=True)
             return
         self.board_TextElementDeactivateEditMode()
@@ -1249,7 +1249,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.root_item = bi
 
             else:
-                self.show_center_label(_("Place cursor above group item!"), error=True)
+                self.show_center_label(_("Place cursor above a group item!"), error=True)
                 return
         if __folder_data is not None:
             self.board_make_board_current(__folder_data)
@@ -1306,7 +1306,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setFont(font)
         pen = QPen(QColor(180, 180, 180), 1)
         painter.setPen(pen)
-        painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, _("WELCOME TO \n BOARDS"))
+        painter.drawText(self.rect(), Qt.AlignCenter | Qt.AlignVCenter, _("WELCOME TO\nBOARDS"))
 
     def board_draw(self, painter, event):
         self.board_draw_main(painter, event)
@@ -1795,7 +1795,7 @@ class BoardMixin(BoardTextEditItemMixin):
         referer = folder_data.board.referer_board_folder
         if referer is not None:
             folder_name = referer.folder_path
-            text = _("Backspace key    ➜ return to board of the folder {0}").format(folder_name)
+            text = _("Pressing Backspace key returns to board of the folder {0}").format(folder_name)
             font = painter.font()
             font.setPixelSize(20)
             painter.setFont(font)
@@ -2098,7 +2098,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.build_board_bounding_rect(cf, apply_global_scale=False)
             self.show_center_label(_("The camera has been moved"))
         else:
-            self.show_center_label(_("Out of the rectangle frame! Abort"), error=True)
+            self.show_center_label(_("Out of the map frame!"), error=True)
         self.update()
 
     def board_draw_minimap(self, painter):
@@ -2327,7 +2327,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_add_item_group(self, move_selection_to_group=True, virtual_allowed=False, item_position=None):
         current_folder_data = self.LibraryData().current_folder()
         if not virtual_allowed and current_folder_data.virtual:
-            self.show_center_label(_("You cannot create group-items inside virtual folder boards"), error=True)
+            self.show_center_label(_("You cannot create group-item inside virtual folder board"), error=True)
             return
         item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
@@ -2354,7 +2354,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_add_item_note(self):
         current_folder_data = self.LibraryData().current_folder()
         if current_folder_data.virtual:
-            self.show_center_label(_("You cannot create note-items inside virtual folder boards"), error=True)
+            self.show_center_label(_("You cannot create note-item inside virtual folder board"), error=True)
             return
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
         ni.board_index = self.retrieve_new_board_item_index()
@@ -2439,7 +2439,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_add_item_frame(self):
         if self.selection_bounding_box is None:
-            self.show_center_label(_("No any items selected!"), error=True)
+            self.show_center_label(_("No items selected!"), error=True)
         else:
             folder_data = self.LibraryData().current_folder()
             bi = BoardItem(BoardItem.types.ITEM_FRAME)

@@ -40,7 +40,7 @@ INFO_VIEWER_PAGE = _("""
     ↓ - image zoom out
     → - show next image
     ← - show previous image
-    Space - Pause/Resume for animated .gif- and .webp-files
+    Space - pause/resume for animated images
     W, A, S, D - image move
     Home - show first image in current folder
     End - show last image in currend folder
@@ -53,21 +53,21 @@ INFO_VIEWER_PAGE = _("""
     Ctrl + LMB - zoom in to user-defined region and sets magnifier mode
         - Esc - disable magnifier mode
     I - invert image colors
-    R - Grab window canvas in default image scale
-        - in magnifier mode saves user-defined region of window canvas
+    R - grab window canvas with default image scale
+        - as magnifier mode is enabled saves user-defined region of window canvas
         + Shift - take viewport scale instead default image scale  
     M - mirror image horizontally
         + Ctrl - vertically
-    Alt + →/← - Navigate through viewing history
+    Alt + →/← - navigate through viewing history
 """)
 
 INFO_LIBRARY_PAGE = _("""
 ➜ LIBRARY PAGE
-    ↑ - Choose previous folder in library list
-    ↓ - Choose next folder in library list
-    Shift+Tab - switch to next folder in library list
-    Delete - Delete folder from current session
-    U - Update image list for current folder
+    ↑ - choose previous folder in the library list
+    ↓ - choose next folder in library list
+    Shift+Tab - switch to next folder in the library list
+    Delete - delete folder from current session
+    U - update image list for the current folder
 """)
 
 INFO_BOARD_PAGE = _("""

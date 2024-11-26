@@ -3454,7 +3454,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     if item_rect.contains(event.pos()):
                         folder_data = item_data
             if folder_data and not folder_data.virtual:
-                _action_title = _("Open the folder in separate app")
+                _action_title = _("Open the folder in separate app instance")
                 action_title = f"{_action_title} \"{folder_data.folder_path}\""
                 open_separated = contextMenu.addAction(action_title)
                 open_separated.triggered.connect(partial(open_in_separated_app_copy, folder_data))
@@ -3664,7 +3664,7 @@ def input_path_dialog(path, exit=True):
     else:
         path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with pictures in it")))
         if not path and exit:
-            QMessageBox.critical(None, _("Error-error"), _("Nothing to show, exit.."))
+            QMessageBox.critical(None, _("Error-error"), _("Nothing to show, exit..."))
             sys.exit()
     return path
 

@@ -575,7 +575,7 @@ class ClickableLabel(QLabel):
                     dialog_menu.setStyleSheet(context_menu_stylesheet)
                     cancel_action = dialog_menu.addAction(_('Cancel'))
                     dialog_menu.addSeparator()
-                    confirm_action = dialog_menu.addAction(_('Delete (confirmation)'))
+                    confirm_action = dialog_menu.addAction(_('Delete (no confirmation)'))
                     _action = dialog_menu.exec_(QCursor().pos())
                     if _action is None:
                         pass

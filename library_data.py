@@ -344,7 +344,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
             if not force:
                 delete_to_recyclebin(ci.filepath)
-                MW.show_center_label(_("File\n{0}\nremoved to recycle bin.").format(ci.filepath))
+                MW.show_center_label(_("File\n{0}\nremoved to recycle bin").format(ci.filepath))
             cf.images_list.remove(ci)
             # show next
             im_data = self.current_folder().current_image()
@@ -463,7 +463,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             selected_im = viewed_list[index]
         except:
             MW = self.globals.main_window
-            MW.show_center_label(_("you've reached the end of viewing history"))
+            MW.show_center_label(_("you've reached the end of the viewing history"))
             return
         # if selected_im not in cf.images_list:
         #     return
@@ -519,7 +519,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.show_center_label(_("You cannot delete virtual folders from the library"), error=True)
             return
         elif len(self.folders) == 1:
-            MW.show_center_label(_("You cannot delete folder if it is the single in current session"), error=True)
+            MW.show_center_label(_("You cannot delete the folder if it is the single one in current session"), error=True)
             return
         else:
             LibraryData().choose_previous_folder()
@@ -1904,7 +1904,7 @@ class FinderWindow(QWidget):
             self.to_output(_('Favorites database updated!'))
 
         if self.records_tags and tag_records_updated_count > 0:
-            self.to_output(_('Tags database updated!!'))
+            self.to_output(_('Tags database updated!'))
 
         self.to_output(_('\nScanning is finished.'))
 

@@ -411,7 +411,7 @@ class SettingsWindow(QWidget):
         '---001': _('General'),
         'run_on_windows_startup': (True, _('Run on Windows Startup')),
         'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
-        'show_fullscreen': (True, _('Show full-screen at application start')),
+        'show_fullscreen': (True, _('Full-screen mode on application start')),
         'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
         'hide_to_tray_on_close': (True, _('Hide to tray on close')),
         'hide_on_app_start': (False, _('Hide to tray on app start')),
@@ -422,25 +422,25 @@ class SettingsWindow(QWidget):
         '---002': _('Viewer page'),
         'animated_zoom': (False, _('Animated zoom')),
         'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
-        'thumbnail_width': (50.0, (30.0, 100.0), _('Image size in thumbnails row')),
+        'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
         'zoom_on_mousewheel': (True, _('Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list')),
         'draw_default_thumbnail': (True, _('Show dummy-default thumbnail while generated one is not ready')),
         'show_thirds': (False, _('Show thirds')),
         'show_cyberpunk': (False, _('Cyberpunk frame')),
         'show_image_center': (False, _('Show image center')),
-        'show_deep_secrets_at_zoom': (True, _('Show random secret at deep zoom level')),
+        'show_deep_secrets_at_zoom': (True, _('Show random secret when approaching high zoom level')),
         'autohide_control_panel': (True, _('Autohide control panel')),
         'use_global_view_history': (False, _('Enable global viewing history instead per-folder one')),
         'show_image_metadata': (True, _('Show image metadata')),
-        'autosave_on_reordering': (True, _('Autosave order metadata on thumbnails reordering')),
-        'browse_images_only': (False, _('Browse images only')),
+        'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
+        'browse_images_only': (False, _('Allow browsing image filetypes only')),
 
         '---006': _('Board page'),
         'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
         'board_draw_canvas_origin': (False, _('Show board origin')),
         'board_draw_grid': (False, _('Show board grid')),
-        'board_unloading': (False, _('Do unloading for images not shown in viewer at the momoment')),
-        'board_move_to_current_on_first_open': (True, _('Focus on current image on first board open')),
+        'board_unloading': (False, _('Do unloading for images not shown in the viewer at the momoment')),
+        'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
         'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
         'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
 
@@ -452,7 +452,7 @@ class SettingsWindow(QWidget):
 
         '---004': _('Slideshow for Viewer page'),
         'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
-        'slides_delay_duration': (2.0, (0.1, 240.0), _('Holding duration in seconds')),
+        'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
 
         '---005': _('Paths'),
         'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
@@ -654,7 +654,7 @@ class SettingsWindow(QWidget):
         main_layout = QVBoxLayout()
 
         head_label = QLabel()
-        head_label.setText(_("Настройки"))
+        head_label.setText(_("Settings"))
         head_label.setFixedHeight(50)
         head_label.setAlignment(Qt.AlignCenter)
         head_label.setStyleSheet(style)
@@ -665,7 +665,7 @@ class SettingsWindow(QWidget):
         save_button = QPushButton(_("Save and close"))
         save_button.clicked.connect(self.save_button_handler)
         save_button.setStyleSheet(main_style_button)
-        exit_button = QPushButton(_("Закрыть"))
+        exit_button = QPushButton(_("Close"))
         exit_button.clicked.connect(self.exit_button_handler)
         exit_button.setStyleSheet(main_style_button)
 
