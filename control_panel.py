@@ -25,7 +25,7 @@
 from _utils import *
 import help_text
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class ControlPanelButton(QPushButton):
     def __init__(self, id, *args, callback=None):

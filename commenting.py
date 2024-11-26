@@ -21,7 +21,7 @@
 from _utils import *
 from collections import defaultdict
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class CommentingLibraryDataMixin():
     pass

@@ -25,7 +25,7 @@ from PyQt5.QtNetwork import QLocalSocket
 
 import traceback, os
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class ServerOrClient():
 

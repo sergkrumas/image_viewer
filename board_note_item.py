@@ -30,7 +30,7 @@ from _utils import (check_scancode_for,)
 
 from colorpicker import ColorPicker
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class BoardTextEditItemMixin():
 

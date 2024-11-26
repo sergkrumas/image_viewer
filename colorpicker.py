@@ -30,7 +30,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 
 class ExitButton(QPushButton):
