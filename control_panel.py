@@ -442,7 +442,7 @@ class ControlPanel(QWidget, UtilsMixin):
         elif status == "rejected":
             self.favorite_btn.setText("+")
             self.favorite_btn.id = "favorite"
-            MW.show_center_label(_("Files with such extensions are now allowed to be added to favorites!"), error=True)
+            MW.show_center_label(_("Files with such extensions are not allowed to be added to favorites!"), error=True)
         MW.update()
 
     def show_in_folder(self):

@@ -40,7 +40,7 @@ INFO_VIEWER_PAGE = _("""
     ↓ - image zoom out
     → - show next image
     ← - show previous image
-    Space - Pause/Resume for animated .gif- and .webp files
+    Space - Pause/Resume for animated .gif- and .webp-files
     W, A, S, D - image move
     Home - show first image in current folder
     End - show last image in currend folder
@@ -50,8 +50,8 @@ INFO_VIEWER_PAGE = _("""
     D - show/hide thirds
     F - add to/remove from favorites
     C - show/hide image center point
-    Ctrl + LMB - zoom in to user-defined region in magnifier mode
-        - Esc - Cancel
+    Ctrl + LMB - zoom in to user-defined region and sets magnifier mode
+        - Esc - disable magnifier mode
     I - invert image colors
     R - Grab window canvas in default image scale
         - in magnifier mode saves user-defined region of window canvas

@@ -3441,7 +3441,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             rerun_in_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, False))
         else:
             contextMenu.addSeparator()
-            rerun_extended_mode = contextMenu.addAction(_("Restart app (purging unused memory)"))
+            rerun_extended_mode = contextMenu.addAction(_("Restart app (to purge unused data in memory)"))
             rerun_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
         open_in_sep_app = contextMenu.addAction(_("Open in separate app instance"))

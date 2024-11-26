@@ -344,7 +344,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             cf.set_current_index(max(0, cf.images_list.index(ci)-1))
             if not force:
                 delete_to_recyclebin(ci.filepath)
-                MW.show_center_label(_("\n{0}\n removed to recycle bin.").format(ci.filepath))
+                MW.show_center_label(_("File\n{0}\nremoved to recycle bin.").format(ci.filepath))
             cf.images_list.remove(ci)
             # show next
             im_data = self.current_folder().current_image()
@@ -1154,7 +1154,7 @@ class FolderData():
 
         win32api.SetFileAttributes(filepath, win32con.FILE_ATTRIBUTE_HIDDEN)
         MW = LibraryData().globals.main_window
-        MW.show_center_label(_("Thumbnails orders saved to disk"))
+        MW.show_center_label(_("Thumbnails order saved to disk"))
 
     def do_rearrangement(self, insert_index):
 
@@ -1691,7 +1691,7 @@ class FinderWindow(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignTop)
         label = QLabel()
-        label.setText(_("Find files in outdated database records"))
+        label.setText(_("Find outdated records in database"))
         label.setFixedHeight(50)
         label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet(style)
@@ -1767,7 +1767,7 @@ class FinderWindow(QWidget):
         green_button.clicked.connect(self.green_button_handler)
         green_button.setStyleSheet(main_style_button)
 
-        search_button = QPushButton(_("Find lost info"))
+        search_button = QPushButton(_("Try to fix outdated records"))
         search_button.clicked.connect(self.search_button_handler)
         search_button.setStyleSheet(main_style_button)
 
@@ -1815,7 +1815,7 @@ class FinderWindow(QWidget):
         records.extend(self.records_tags)
 
         if not records:
-            self.to_output(_("No lost files detected!"))
+            self.to_output(_("No outdated records detected!"))
             return
 
         search_paths = []
