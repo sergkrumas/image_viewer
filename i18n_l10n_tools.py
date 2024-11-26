@@ -32,6 +32,12 @@ import locale
 # el = gettext.translation('base', localedir='locales', languages=['el'])
 # el.install() # copies el.gettext as _ to builtins for all app modules
 
+# IMPORTANT!
+# use 
+# `__import__('builtins').__dict__['_'] = __import__('gettext').gettext`
+# instead
+# `from gettext import gettext as _`
+# otherwise el.install() will not work at all, because _ in module globals() will have a higher priority over modified builtins dict after calling el.install method(), so calling el.install() will give nothing
 
 files_to_parse = [
     '_utils.py', #DONE

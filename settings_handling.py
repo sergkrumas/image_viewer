@@ -23,7 +23,7 @@ from _utils import *
 
 from on_windows_startup import (is_app_in_startup, add_to_startup, remove_from_startup)
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class CustomSlider(QWidget):
     colorGrads = QLinearGradient(0, 0, 1, 0)

@@ -28,7 +28,7 @@ import urllib.parse
 import random
 import tempfile
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 HTML_FILEPATH = "generated.html"
 HTML_FILEPATH = os.path.join(tempfile.gettempdir(), HTML_FILEPATH)

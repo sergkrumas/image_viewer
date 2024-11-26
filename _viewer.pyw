@@ -39,7 +39,8 @@ from ctypes import windll
 
 import itertools
 from functools import partial
-from gettext import gettext as _
+
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 try:
     noise = __import__("noise")
@@ -3931,6 +3932,11 @@ def _main():
     SettingsWindow.load_from_disk()
 
     Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
+
+    if Globals.DEBUG:
+        import gettext
+        el = gettext.translation('base', localedir='locales', languages=['ru'])
+        el.install() # copies el.gettext as _ to builtins for all app modules
 
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(exit_threads)

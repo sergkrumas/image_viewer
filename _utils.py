@@ -52,7 +52,7 @@ from apng import APNG
 
 import win32con, win32api
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 DEFAULT_SVG_SCALE_FACTOR = 20
 

@@ -30,7 +30,7 @@ import datetime
 import locale
 import operator
 
-from gettext import gettext as _
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 
