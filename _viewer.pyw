@@ -3929,11 +3929,6 @@ def _main():
 
     Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
 
-    if Globals.DEBUG:
-        import gettext
-        el = gettext.translation('base', localedir='locales', languages=['ru'])
-        el.install() # copies el.gettext as _ to builtins for all app modules
-
     app = QApplication(sys.argv)
     app.aboutToQuit.connect(exit_threads)
 

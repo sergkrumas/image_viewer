@@ -1359,3 +1359,9 @@ msgstr "Отмена"
 msgid "Delete (no confirmation)"
 msgstr "Удалить (подтверждение не требуется)"
 
+msgid "UI language"
+msgstr "Язык интерфейса"
+
+#: settings_handling.py:693
+msgid "Restart app to take effect across the entire app!"
+msgstr "Перезапустите приложение, чтобы новый язык активировался!"

@@ -1263,3 +1263,9 @@ msgstr ""
 msgid "Delete (no confirmation)"
 msgstr ""
 
+msgid "UI language"
+msgstr ""
+
+#: settings_handling.py:693
+msgid "Restart app to take effect across the entire app!"
+msgstr ""

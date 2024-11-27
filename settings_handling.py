@@ -368,6 +368,45 @@ class SettingsWindow(QWidget):
             raise Exception('no setting with such ID', setting_id)
 
     @classmethod
+    def langs(cls):
+        return {
+            'en': _('English'),
+            'ru': _('Russian'),
+            # not translated yet
+                # 'de': _('German'), 
+                # 'fr': _('French'),
+                # 'it': _('Italian'),
+                # 'es': _('Spanish'),
+        }
+
+    @classmethod
+    def langs_list(cls, lang_id):
+        return cls.langs().get(lang_id)
+
+    @classmethod
+    def set_ui_language(cls):
+        lang = cls.matrix['ui_lang'][0]
+        allowed_langs = [ # according to /locales folder
+            'en',
+            'ru',
+            # not translated yet
+                # 'de', 
+                # 'fr',
+                # 'it',
+                # 'es',
+        ]
+        if lang not in allowed_langs:
+            lang = 'en'
+
+        if lang == 'en':
+            # there's no special EN-locale, here we're using module `gettext` instead object class one
+            __import__('builtins').__dict__['_'] = __import__('gettext').gettext
+        else:
+            el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
+            el.install() # copies el.gettext as _ to builtins for all app modules
+            # SettingsWindow.actualize_matrix_keys_and_descriptions()
+
+    @classmethod
     def load_from_disk(cls):
         if not os.path.exists(cls.filepath()):
             data = {}
@@ -379,23 +418,38 @@ class SettingsWindow(QWidget):
                     data = {}
         if data:
             cls.matrix.update(data['settings'])
-            # convert tuples to lists
+
+            cls.set_ui_language()
+
+            # convert tuples to lists because tuples don't support item assignment
             for key in cls.matrix.keys():
-                cls.matrix[key] = list(cls.matrix[key])
-            # удаляем старые неактуальные ключи настроек
-            for key in list(cls.matrix.keys()):
-                if key not in cls.backup_matrix.keys():
-                    cls.matrix.pop(key)
-            # copy actual comments from program file, not from settings file
-            for key in cls.matrix.keys():
-                if key in cls.backup_matrix.keys():
-                    info = cls.backup_matrix[key][-1]
-                    data = cls.matrix[key]
-                    data[-1] = info
-                    cls.matrix[key] = data
+                if key.startswith('---'):
+                    cls.matrix[key] = ''.join(cls.matrix[key])
+                else:
+                    cls.matrix[key] = list(cls.matrix[key])
+
+            SettingsWindow.actualize_matrix_keys_and_descriptions()
 
             # apply settings to global variables
             cls.load_settings_to_globals()
+
+    @classmethod
+    def actualize_matrix_keys_and_descriptions(cls):
+        actual_settings_matrix = cls.generate_localized_matrix()
+        # удаляем старые неактуальные ключи настроек
+        for key in list(cls.matrix.keys()):
+            if key not in actual_settings_matrix.keys():
+                cls.matrix.pop(key)
+        # copy actual descriptions from localized object
+        for key in cls.matrix.keys():
+            if key in actual_settings_matrix.keys():
+                if key.startswith('---'):
+                    cls.matrix[key] = actual_settings_matrix[key]
+                else:
+                    description = actual_settings_matrix[key][-1]
+                    data = cls.matrix[key]
+                    data[-1] = description
+                    cls.matrix[key] = data
 
     @classmethod
     def store_to_disk(cls):
@@ -407,71 +461,65 @@ class SettingsWindow(QWidget):
         with open(cls.filepath(), 'w+', encoding="utf8") as file:
             json.dump(data, file, indent=True, ensure_ascii=False)
 
-    @classmethod
-    def langs_list(cls, lang_id):
-        return {
-            'en': _('English'),
-            'ru': _('Russian'),
-            'de': _('German'),
-            'fr': _('French'),
-            'it': _('Italian'),
-            'es': _('Spanish'),
-        }.get(lang_id)
+    @staticmethod
+    def generate_localized_matrix():
 
-    matrix = {
-        '---001': _('General'),
-        'run_on_windows_startup': (True, _('Run on Windows Startup')),
-        'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
-        'show_fullscreen': (True, _('Full-screen mode on application start')),
-        'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
-        'hide_to_tray_on_close': (True, _('Hide to tray on close')),
-        'hide_on_app_start': (False, _('Hide to tray on app start')),
-        'show_console_output': (True, _('Show standard (console) output overlay')),
-        'effects': (True, _('Animated effects')),
-        'show_noise_cells': (True, _('Show animated cells overlay')),
+        matrix = {
+            '---001': _('General'),
+            'ui_lang': ('en', _('UI language')),
+            'run_on_windows_startup': (True, _('Run on Windows Startup')),
+            'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
+            'show_fullscreen': (True, _('Full-screen mode on application start')),
+            'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
+            'hide_to_tray_on_close': (True, _('Hide to tray on close')),
+            'hide_on_app_start': (False, _('Hide to tray on app start')),
+            'show_console_output': (True, _('Show standard (console) output overlay')),
+            'effects': (True, _('Animated effects')),
+            'show_noise_cells': (True, _('Show animated cells overlay')),
 
-        '---002': _('Viewer page'),
-        'animated_zoom': (False, _('Animated zoom')),
-        'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
-        'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
-        'zoom_on_mousewheel': (True, _('Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list')),
-        'draw_default_thumbnail': (True, _('Show dummy-default thumbnail while generated one is not ready')),
-        'show_thirds': (False, _('Show thirds')),
-        'show_cyberpunk': (False, _('Cyberpunk frame')),
-        'show_image_center': (False, _('Show image center')),
-        'show_deep_secrets_at_zoom': (True, _('Show random secret when approaching high zoom level')),
-        'autohide_control_panel': (True, _('Autohide control panel')),
-        'use_global_view_history': (False, _('Enable global viewing history instead per-folder one')),
-        'show_image_metadata': (True, _('Show image metadata')),
-        'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
-        'browse_images_only': (False, _('Allow browsing image filetypes only')),
+            '---002': _('Viewer page'),
+            'animated_zoom': (False, _('Animated zoom')),
+            'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
+            'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
+            'zoom_on_mousewheel': (True, _('Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list')),
+            'draw_default_thumbnail': (True, _('Show dummy-default thumbnail while generated one is not ready')),
+            'show_thirds': (False, _('Show thirds')),
+            'show_cyberpunk': (False, _('Cyberpunk frame')),
+            'show_image_center': (False, _('Show image center')),
+            'show_deep_secrets_at_zoom': (True, _('Show random secret when approaching high zoom level')),
+            'autohide_control_panel': (True, _('Autohide control panel')),
+            'use_global_view_history': (False, _('Enable global viewing history instead per-folder one')),
+            'show_image_metadata': (True, _('Show image metadata')),
+            'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
+            'browse_images_only': (False, _('Allow browsing image filetypes only')),
 
-        '---006': _('Board page'),
-        'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
-        'board_draw_canvas_origin': (False, _('Show board origin')),
-        'board_draw_grid': (False, _('Show board grid')),
-        'board_unloading': (False, _('Do unloading for images not shown in the viewer at the momoment')),
-        'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
-        'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
-        'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
+            '---006': _('Board page'),
+            'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
+            'board_draw_canvas_origin': (False, _('Show board origin')),
+            'board_draw_grid': (False, _('Show board grid')),
+            'board_unloading': (False, _('Do unloading for images not shown in the viewer at the momoment')),
+            'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
+            'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
+            'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
 
-        '---003': _('Pages transparent setting for full-screen mode'),
-        'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
-        'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
-        'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
-        'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
+            '---003': _('Pages transparent setting for full-screen mode'),
+            'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
+            'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
+            'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
+            'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
 
-        '---004': _('Slideshow for Viewer page'),
-        'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
-        'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
+            '---004': _('Slideshow for Viewer page'),
+            'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
+            'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
 
-        '---005': _('Paths'),
-        'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
-    }
+            '---005': _('Paths'),
+            'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
+        }
+        return matrix
+
+    matrix = generate_localized_matrix()
 
     isWindowVisible = False
-
-    backup_matrix = dict(matrix)
 
     is_initialized = False
 
@@ -524,6 +572,15 @@ class SettingsWindow(QWidget):
         style = "color: white; " + main_style
         style_partition_label = "color: black; background-color: gray; padding-left: 20px; " + main_style
         main_style_button = "font-size: 13pt; padding: 5px 0px;"
+        combobox_style = """
+            QComboBox {
+                font-size: 11pt;
+                font-family: 'Consolas';
+                font-weight: normal;
+                color: white;
+                background-color: transparent;
+            }
+        """
         checkbox_style = """
             QCheckBox {
                 font-size: 11pt;
@@ -545,7 +602,11 @@ class SettingsWindow(QWidget):
                 color: gray;
             }
         """
-
+        warn_style = """
+            color: rgb(200, 40, 40);
+            font-weight: 900;
+            font-size: 11pt;
+        """
 
         self.checkboxes_widgets = {}
         self.values_widgets = {}
@@ -613,6 +674,48 @@ class SettingsWindow(QWidget):
                     central_widget_layout.addSpacing(40)
                 central_widget_layout.addLayout(layout)
                 central_widget_layout.addSpacing(10)
+
+            elif id == 'ui_lang':
+                lang_combo_box = QComboBox()
+
+                current_lang_key = SettingsWindow.matrix['ui_lang'][0]
+                for n, (lang_key, lang_name) in enumerate(self.langs().items()):
+                    lang_combo_box.addItem(lang_name)
+                    lang_combo_box.setItemData(n, lang_key)
+                    if lang_key == current_lang_key:
+                        lang_combo_box.setCurrentIndex(n)
+
+                lang_combo_box.setStyleSheet(combobox_style)
+
+                label = QLabel()
+                label.setText(_("UI language"))
+                label.setStyleSheet(style)
+                warn_label = QLabel()
+                warn_label.setText(_("Restart app to take effect across the entire app!"))
+                warn_label.setStyleSheet(warn_style)
+                warn_label.setVisible(False)
+                # warn_label.setAlignment(Qt.AlignRight)
+
+                layout = QHBoxLayout()
+                layout.addWidget(label)
+                layout.addWidget(lang_combo_box)
+                layout_main = QVBoxLayout()
+                layout_main.addLayout(layout)
+                layout_main.addWidget(warn_label)
+
+                central_widget_layout.addLayout(layout_main)
+                central_widget_layout.addSpacing(10)
+
+                def lang_combobox_index_changed(index):
+                    new_lang = lang_combo_box.itemData(index)
+                    SettingsWindow.matrix['ui_lang'][0] = new_lang
+                    SettingsWindow.set_ui_language()
+                    SettingsWindow.actualize_matrix_keys_and_descriptions()
+                    warn_label.setVisible(True)
+                    SettingsWindow.store_to_disk()
+                    # print(index, new_lang)
+
+                lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed)
 
             elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
