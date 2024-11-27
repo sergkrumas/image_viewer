@@ -2157,7 +2157,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             font = pr.font()
             if large:
                 # font.setPixelSize(self.rect().height()//8)
-                font.setPixelSize(40)
+                font.setPixelSize(150)
             else:
                 font.setPixelSize(17)
             font.setWeight(1900)
@@ -4027,17 +4027,29 @@ def _main():
         MW.show()
         MW.resize(800, 540)
     MW.setWindowIcon(app_icon)
-    # Нужно для того, чтобы иконка показалась в таскбаре.
-    # И нужно это делать до того как будет показана панель миниатюр.
-    if not os.path.exists(path):
-        MW.current_page = MW.pages.START_PAGE
-        MW.update()
-    processAppEvents()
+
     # создание панели управления
     ControlPanel.globals = Globals
     ControlPanel.LibraryData = LibraryData
     ControlPanel.SettingsWindow = SettingsWindow
     # CP = MW.recreate_control_panel()
+
+    # Нужно для того, чтобы иконка показалась в таскбаре.
+    # И нужно это делать до того как будет показана панель миниатюр.
+    if not os.path.exists(path):
+        MW.current_page = MW.pages.START_PAGE
+        MW.update()
+    else:
+        # для того, чтобы после старта программы во время загрузки 
+        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница; 
+        # вместо вызова MW.change_page(MW.pages.VIEWER_PAGE)
+        # пришлось вытащить из неё же код сюда 
+        MW.current_page = MW.pages.VIEWER_PAGE
+        MW.recreate_control_panel(requested_page=MW.pages.VIEWER_PAGE)
+        MW.viewer_reset() # для показа сообщения о загрузке
+        MW.update()
+    processAppEvents()
+
     # обработка входящих данных
     default_branch = True
     if args.board:
