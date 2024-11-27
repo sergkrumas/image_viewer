@@ -407,6 +407,17 @@ class SettingsWindow(QWidget):
         with open(cls.filepath(), 'w+', encoding="utf8") as file:
             json.dump(data, file, indent=True, ensure_ascii=False)
 
+    @classmethod
+    def langs_list(cls, lang_id):
+        return {
+            'en': _('English'),
+            'ru': _('Russian'),
+            'de': _('German'),
+            'fr': _('French'),
+            'it': _('Italian'),
+            'es': _('Spanish'),
+        }.get(lang_id)
+
     matrix = {
         '---001': _('General'),
         'run_on_windows_startup': (True, _('Run on Windows Startup')),

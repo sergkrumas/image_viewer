@@ -1079,6 +1079,30 @@ msgstr "Файлы из неактуальных записей избранно
 msgid "Outdated records in tags database ({0}):"
 msgstr "Файлы из неактуальных записей тегов ({0}):"
 
+#: settings_handling.py:413
+msgid "English"
+msgstr "Английский"
+
+#: settings_handling.py:414
+msgid "Russian"
+msgstr "Русский"
+
+#: settings_handling.py:415
+msgid "German"
+msgstr "Немецкий"
+
+#: settings_handling.py:416
+msgid "French"
+msgstr "Французский"
+
+#: settings_handling.py:417
+msgid "Italian"
+msgstr "Итальянский"
+
+#: settings_handling.py:418
+msgid "Spanish"
+msgstr "Испанский"
+
 #: settings_handling.py:411
 msgid "General"
 msgstr "Общее"
