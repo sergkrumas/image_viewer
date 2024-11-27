@@ -39,6 +39,24 @@ import locale
 # `from gettext import gettext as _`
 # otherwise el.install() will not work at all, because _ in module globals() will have a higher priority over modified builtins dict after calling el.install method(), so calling el.install() will give nothing
 
+
+
+
+
+
+
+
+# s = """
+# multistring
+# """
+
+# for line in s.split("\n"):
+#     print(f'"{line}\\n"')
+
+
+
+
+
 files_to_parse = [
     '_utils.py', #DONE
     '_viewer.pyw', #DONE

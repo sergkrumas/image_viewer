@@ -818,7 +818,7 @@ class BoardMixin(BoardTextEditItemMixin):
         main_board_dict = data['main_board']
         self.board_recreate_board_from_serial(main_board_dict, main_board=True, board_load_filepath=board_filepath)
 
-        msg = _("Board have been loaded from file {0} of format {1}").format(board_filepath, project_format)
+        msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
 
     def board_recreate_board_from_serial(self, board_dict, main_board=False, board_load_filepath=None):
@@ -1170,7 +1170,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 file.write(data_to_write)
 
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
-        text = _("Projects is saved to {0}").format(board_filepath)
+        text = _("Project is saved to {0}").format(board_filepath)
         self.show_center_label(text)
 
         if self.Globals.DEBUG:
@@ -1209,7 +1209,7 @@ class BoardMixin(BoardTextEditItemMixin):
             case1 = bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
             case2 = bi.type == BoardItem.types.ITEM_IMAGE and bi.animated
             if not (case1 or case2):
-                msg = "You can dive insde groups, folders and animated items only!"
+                msg = _("You can dive inside groups, folders and animated items only!")
                 self.show_center_label(msg, error=True)
                 return
             if item is not None and hasattr(item, 'item_folder_data'):
@@ -1772,9 +1772,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if board.referer_board_folder is not None:
             lines.append(_("You've entered this board from the board of folder {}").format(board.referer_board_folder.folder_path))
         if board.root_folder is not None:
-            lines.append(_("Parent folder of this board").format(board.root_folder.folder_path))
+            lines.append(_("Parent folder of this board {}").format(board.root_folder.folder_path))
         if board.root_item is not None:
-            lines.append(_("This board parent item title").format(board.root_item.label))
+            lines.append(_("This board parent item title {}").format(board.root_item.label))
 
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
@@ -3459,7 +3459,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_fit_content_on_screen(self, image_data, board_item=None, use_selection=False):
 
         if board_item is None and (image_data is not None) and image_data.board_item is None:
-            self.show_center_label(_("This elements is not presented on the board"), error=True)
+            self.show_center_label(_("This element is not presented on the board"), error=True)
         else:
             canvas_scale_x = self.canvas_scale_x
             canvas_scale_y = self.canvas_scale_y
