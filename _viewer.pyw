@@ -132,8 +132,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     secret_pic = None
     secret_p = None
 
-    LOADING_TEXT = _('LOADING')
-
     class pages():
         START_PAGE = 'STARTPAGE'
         VIEWER_PAGE = 'VIEWERPAGE'
@@ -1281,9 +1279,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             processAppEvents()
 
     def set_loading_text(self):
-        # self.loading_text = random.choice(self.LOADING_TEXT)
-        # self.loading_text = "\n".join(self.LOADING_TEXT)
-        self.loading_text = self.LOADING_TEXT
+        self.loading_text = _('LOADING')
 
     def read_image_metadata(self, image_data):
         if not image_data.image_metadata:

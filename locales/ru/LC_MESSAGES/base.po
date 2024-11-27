@@ -35,10 +35,6 @@ msgstr "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
 msgid "https://github.com/sergkrumas/image_viewer"
 msgstr "https://github.com/sergkrumas/image_viewer"
 
-#: _viewer.pyw:134
-msgid "LOADING"
-msgstr "ЗАГРУЗКА"
-
 #: _viewer.pyw:154
 msgid "START"
 msgstr "START"
@@ -74,6 +70,10 @@ msgstr "Нет изображений"
 #: _viewer.pyw:1224
 msgid "The file is not supported"
 msgstr "Этот файл не поддерживается"
+
+#: _viewer.pyw:134
+msgid "LOADING"
+msgstr "ЗАГРУЗКА"
 
 #: _viewer.pyw:1318
 msgid "broken file"
