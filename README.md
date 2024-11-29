@@ -27,13 +27,13 @@ The first release is planned for the summer 2025, so there's no full user guide 
 
 ## Requirements
 - Operation System: Windows 8.1/10. We don't know anything about Windows 11, you can try out yourself
-- Python 3.10.6 or higher
+- Python 3.10.6 or higher, 64-bit
 - Install Python of the required version on your own using the guide below
 - Install all Python-dependencies on your own by executing **install_dependencies.bat**
 
 ## Installation
 
-First things first, you need to download Python [from here](https://www.python.org/downloads/) and intall it.
+First things first, you need to download 64-bit version of Python [from here](https://www.python.org/downloads/) and intall it.
 
 IMPORTANT: As installation wizard showed up, you need to activate checkbox "Add Python 3.XX to PATH", otherwise there will be problems with dependencies installation and it'll take you knowledge and command line skills to tackle and cope with that on your own.
 
