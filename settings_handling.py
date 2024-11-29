@@ -373,7 +373,7 @@ class SettingsWindow(QWidget):
             'en': _('English'),
             'ru': _('Russian'),
             # not translated yet
-                # 'de': _('German'), 
+                # 'de': _('German'),
                 # 'fr': _('French'),
                 # 'it': _('Italian'),
                 # 'es': _('Spanish'),
@@ -390,7 +390,7 @@ class SettingsWindow(QWidget):
             'en',
             'ru',
             # not translated yet
-                # 'de', 
+                # 'de',
                 # 'fr',
                 # 'it',
                 # 'es',
@@ -556,6 +556,31 @@ class SettingsWindow(QWidget):
         else:
             remove_from_startup(self.STARTUP_CONFIG[0])
 
+    @classmethod
+    def set_new_lang_across_entire_app(cls, new_lang):
+        # записываем в настройки
+        cls.matrix['ui_lang'][0] = new_lang
+        # задаём выбранную локаль по всему приложению
+        cls.set_ui_language()
+        # обновляем описания настроек в соответствии с языком
+        cls.actualize_matrix_keys_and_descriptions()
+        cls.store_to_disk()
+
+        # пересоздаём элементы панели управления, чтобы подсказки обновились
+        MW = cls.globals.main_window
+        MW.recreate_control_panel(requested_page=MW.current_page)
+        # пересоздаём окно настроек, чтобы обновился интерфейс
+        def callback():
+            if SettingsWindow.instance is not None and SettingsWindow.isWindowVisible:
+                SettingsWindow.isWindowVisible = False
+                SettingsWindow.instance.close()
+                del SettingsWindow.instance
+                MW.open_settings_window()
+                del cls.globals._timer
+
+        millisecs_delay = 1
+        cls.globals._timer = timer = QTimer.singleShot(millisecs_delay, callback)
+
     def __init__(self, parent):
         if self.is_initialized:
             return
@@ -706,16 +731,12 @@ class SettingsWindow(QWidget):
                 central_widget_layout.addLayout(layout_main)
                 central_widget_layout.addSpacing(10)
 
-                def lang_combobox_index_changed(index):
+                def lang_combobox_index_changed_callback(index):
                     new_lang = lang_combo_box.itemData(index)
-                    SettingsWindow.matrix['ui_lang'][0] = new_lang
-                    SettingsWindow.set_ui_language()
-                    SettingsWindow.actualize_matrix_keys_and_descriptions()
+                    SettingsWindow.set_new_lang_across_entire_app(new_lang)
                     warn_label.setVisible(True)
-                    SettingsWindow.store_to_disk()
-                    # print(index, new_lang)
 
-                lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed)
+                lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed_callback)
 
             elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
