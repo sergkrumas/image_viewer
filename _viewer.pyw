@@ -3944,7 +3944,7 @@ def _main():
 
     if viewer_dll is None:
         Globals.explorer_paths = []
-    else:    
+    else:
         Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
 
     frameless_mode = True and SettingsWindow.get_setting_value("show_fullscreen")
@@ -3976,7 +3976,7 @@ def _main():
         path = get_predefined_path_if_started_from_sublimeText()
 
     if Globals.SUPER_LITE:
-        # нужно здесь для того, чтобы не тратить время на долгий вызов server_or_client_via_sockets 
+        # нужно здесь для того, чтобы не тратить время на долгий вызов server_or_client_via_sockets
         # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
         Globals.lite_mode = True
 
@@ -4040,10 +4040,10 @@ def _main():
         MW.current_page = MW.pages.START_PAGE
         MW.update()
     else:
-        # для того, чтобы после старта программы во время загрузки 
-        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница; 
+        # для того, чтобы после старта программы во время загрузки
+        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница;
         # вместо вызова MW.change_page(MW.pages.VIEWER_PAGE)
-        # пришлось вытащить из неё же код сюда 
+        # пришлось вытащить из неё же код сюда
         MW.current_page = MW.pages.VIEWER_PAGE
         MW.recreate_control_panel(requested_page=MW.pages.VIEWER_PAGE)
         MW.viewer_reset() # для показа сообщения о загрузке
