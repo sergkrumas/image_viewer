@@ -571,7 +571,7 @@ class SettingsWindow(QWidget):
         MW.recreate_control_panel(requested_page=MW.current_page)
         # пересоздаём окно настроек, чтобы обновился интерфейс
         def callback():
-            if SettingsWindow.instance is not None and SettingsWindow.isWindowVisible:
+            if hasattr(SettingsWindow, 'instance') and SettingsWindow.isWindowVisible:
                 SettingsWindow.isWindowVisible = False
                 SettingsWindow.instance.close()
                 del SettingsWindow.instance

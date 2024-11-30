@@ -1387,6 +1387,14 @@ class ControlPanel(QWidget, UtilsMixin):
         elif MW.is_viewer_page_active():
             self.selection_MousePressEvent(event)
             return
+        elif MW.is_start_page_active():
+            # для того, чтобы можно было повторно кликать
+            # на кнопки выбора языка на стартовой странице.
+            # Иначе панель будет воровать клики,
+            # а она как раз из-за смены языка
+            # (пере)создаётся прозрачной и без кнопок
+            super().mousePressEvent(event)
+
         # убрал здесь return, чтобы на странице библиотеки мышкой можно быдо выделить папку, находящаяся с самом низу на месте панели управления
 
     def mouseMoveEvent(self, event):
@@ -1401,7 +1409,14 @@ class ControlPanel(QWidget, UtilsMixin):
         elif MW.is_viewer_page_active():
             self.selection_MouseMoveEvent(event)
 
-        # super().mouseMoveEvent(event)
+        elif MW.is_start_page_active():
+            # для того, чтобы можно было повторно кликать
+            # на кнопки выбора языка на стартовой странице.
+            # Иначе панель будет воровать клики,
+            # а она как раз из-за смены языка
+            # (пере)создаётся прозрачной и без кнопок
+            super().mouseMoveEvent(event)
+
         return
 
     def mouseReleaseEvent(self, event):
@@ -1430,6 +1445,15 @@ class ControlPanel(QWidget, UtilsMixin):
 
         elif MW.is_board_page_active():
             self.thumbnails_click(click_handler=MW.board_thumbnails_click_handler)
+
+
+        elif MW.is_start_page_active():
+            # для того, чтобы можно было повторно кликать
+            # на кнопки выбора языка на стартовой странице.
+            # Иначе панель будет воровать клики,
+            # а она как раз из-за смены языка
+            # (пере)создаётся прозрачной и без кнопок
+            super().mouseReleaseEvent(event)
 
         self.update()
         MW.update()

@@ -487,6 +487,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.need_for_init_after_call_from_tray = False
         super().__init__(*args, **kwargs)
 
+        self.start_page_lang_btns = []
+
         self.set_loading_text()
 
         self.prepare_secret_hints()
@@ -1482,10 +1484,21 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def mousePressEventStartPage(self, event):
 
         if event.button() == Qt.LeftButton:
-            path = input_path_dialog("", exit=False)
-            if path:
-                LibraryData().handle_input_data(path)
-                self.update()
+
+            lang_button_pressed = False
+            for lang, rect in self.start_page_lang_btns:
+                if rect.contains(event.pos()):
+                    lang_button_pressed = True
+                    SettingsWindow.set_new_lang_across_entire_app(lang)
+                    self.show_center_label(lang.upper())
+                    self.update()
+                    break
+
+            if not lang_button_pressed:
+                path = input_path_dialog("", exit=False)
+                if path:
+                    LibraryData().handle_input_data(path)
+                    self.update()
         elif event.button() == Qt.RightButton:
             self.open_settings_window()
 
@@ -2361,6 +2374,142 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             start_text += _("\n\n\n\n[the program is running in standard mode]")
 
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, start_text)
+
+        langs = ['en', 'ru', 'de', 'fr', 'it', 'es']
+        SPAN_WIDTH = 30
+        LANG_BTN_WIDTH = 100
+        langs_count = len(langs)
+        top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5 
+        left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
+        self.start_page_lang_btns = []
+        for n, lang in enumerate(langs):
+            rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
+            self.draw_startpage_langflag(painter, rect, lang)
+            self.start_page_lang_btns.append((lang, QRectF(rect)))
+            left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
+
+    def draw_startpage_langflag(self, painter, rect, lang):
+        painter.save()
+
+        cur_lang = SettingsWindow.matrix['ui_lang'][0]
+        if cur_lang == lang:
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(Qt.NoBrush)
+            painter.setBrush(QColor(200, 200, 200, 10))
+            path = QPainterPath()
+            path.addRoundedRect(rect, 20, 20)
+            painter.drawPath(path)
+
+        painter.setPen(QPen(Qt.gray, 1))
+        lang_rect = rect.adjusted(20, 20, -20, -20)
+        painter.drawRect(lang_rect)
+
+        if lang == '':
+            pass
+
+        elif lang == 'en':
+
+            red = QColor(201, 7, 42)
+            white = QColor(255, 255, 255)
+            blue = QColor(0, 27, 105)
+
+            painter.fillRect(lang_rect, red)
+
+            offset = 10
+            lang_rect.adjust(offset, 0, 0, -offset)
+            painter.fillRect(lang_rect, white)
+            offset = 8
+            lang_rect.adjust(offset, 0, 0, -offset)
+            painter.fillRect(lang_rect, blue)
+
+            p1 = lang_rect.bottomLeft()
+            p2 = lang_rect.topRight() + QPointF(lang_rect.width()/2, 0)
+
+            painter.setClipping(True)
+            painter.setClipRect(lang_rect)
+            painter.setPen(QPen(white, 15))
+
+            painter.drawLine(p1 + QPoint(0, 6), p2 + QPoint(0, 6))
+            painter.setPen(QPen(red, 5))
+
+            p1 += QPoint(0, 3)
+            p2 += QPoint(0, 3)
+            painter.drawLine(p1, p2)
+
+            painter.setClipping(False)
+
+        elif lang == 'ru':
+
+            white = QColor(255, 255, 255)
+            blue = QColor(0, 54, 167)
+            red = QColor(214, 39, 24)
+
+            painter.fillRect(lang_rect, white)
+            offset = lang_rect.height()/3
+            lang_rect.adjust(0, offset, 0, 0)
+            painter.fillRect(lang_rect, blue)
+            lang_rect.adjust(0, offset, 0, 0)
+            painter.fillRect(lang_rect, red)
+
+        elif lang == 'de':
+
+            schwarz = QColor(0, 0, 0)
+            rot = QColor(222, 0, 0)
+            gelb = QColor(255, 207, 0)
+
+            painter.fillRect(lang_rect, schwarz)
+            offset = lang_rect.height()/3
+            lang_rect.adjust(0, offset, 0, 0)
+            painter.fillRect(lang_rect, rot)
+            lang_rect.adjust(0, offset, 0, 0)
+            painter.fillRect(lang_rect, gelb)
+
+        elif lang == 'fr':
+
+            blue =  QColor(0, 0, 146)
+            white = QColor(255, 255, 255)
+            red =  QColor(226, 0, 6)
+
+            painter.fillRect(lang_rect, blue)
+            offset = lang_rect.width()/3
+            lang_rect.adjust(offset, 0, 0, 0)
+            painter.fillRect(lang_rect, white)
+            lang_rect.adjust(offset, 0, 0, 0)
+            painter.fillRect(lang_rect, red)
+
+        elif lang == 'it':
+
+            green = QColor(0, 147, 68)
+            white = QColor(255, 255, 255)
+            red = QColor(207, 39, 52)
+
+            painter.fillRect(lang_rect, green)
+            offset = lang_rect.width()/3
+            lang_rect.adjust(offset, 0, 0, 0)
+            painter.fillRect(lang_rect, white)
+            lang_rect.adjust(offset, 0, 0, 0)
+            painter.fillRect(lang_rect, red)
+
+        elif lang == 'es':
+
+            red = QColor(199, 3, 24)
+            yellow = QColor(255, 197, 0)
+
+            painter.fillRect(lang_rect, red)
+            offset = lang_rect.height()/4
+            lang_rect.adjust(0, offset, 0, 0)
+            painter.fillRect(lang_rect, yellow)
+            font = QFont()
+            TEXT_HEIGHT = 18
+            font.setPixelSize(TEXT_HEIGHT)
+            font.setWeight(1500)
+            painter.setFont(font)
+            painter.setPen(Qt.black)
+            painter.drawText(lang_rect.topLeft() + QPointF(0, offset + (offset*2 - TEXT_HEIGHT)/2), ' ES')
+            lang_rect.adjust(0, offset*2, 0, 0)
+            painter.fillRect(lang_rect, red)
+
+        painter.restore()
 
     def draw_32bit_warning(self, painter):
         if Globals.is_32bit_exe:
