@@ -6,6 +6,8 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 The first release is planned for the summer 2025, so there's no full user guide at the moment.
 
+## [README.md in Russian](README_ru.md)
+
 ![](docs/screenshot.png)
 
 ## Supported formats
@@ -86,4 +88,3 @@ Once the program won't start after double-clicking on file `viewer.pyw` or after
 
 You get this app for free, so you could help to improve it that way or participate in manual testing. Thank you in advance.
 
-## [README.md in Russian](README_ru.md)
