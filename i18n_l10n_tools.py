@@ -23,7 +23,7 @@ import sys
 import subprocess
 import shutil
 import locale
-
+from collections import defaultdict
 
 # https://phrase.com/blog/posts/translate-python-gnu-gettext/
 # https://docs.python.org/3/library/gettext.html
@@ -151,6 +151,133 @@ def generate_locales(this_folder):
             print(f'already exists ', path)
 
 
+def scan_po_file(filepath):
+
+    reading_header_state = True
+    header_lines = []
+    ENTRIES = []
+
+    with open(filepath, "r", encoding='utf8') as pot:
+        text_lines = pot.readlines()
+
+        for line in text_lines:
+            if line.startswith("#: "):
+                if reading_header_state:
+                    reading_header_state = False
+
+                entry = defaultdict(list)
+                ENTRIES.append(entry)
+                entry['links'].append(line)
+                key = 'msgid'
+                continue
+
+            if line.startswith("msgstr"):
+                key = 'msgstr'
+
+            if reading_header_state:
+                header_lines.append(line)
+            else:
+                entry[key].append(line)
+
+    return header_lines, ENTRIES
+
+def entry_to_string(entry):
+    links = ''.join(entry['links']) #usually it contains the one element
+    msgid = ''.join(entry['msgid'])
+    msgstr = ''.join(entry['msgstr'])
+    data = f'{links}{msgid}{msgstr}'
+    return data
+
+def find_entry_in_pot(entry, pot_ENTRIES):
+
+    def is_msgid_equal(entry1, entry2):
+        l1 = entry1['msgid']
+        l2 = entry2['msgid']
+        if len(l1) != len(l2):
+            return False
+
+        for e1_line, e2_line in zip(l1, l2):
+            if e1_line != e2_line:
+                return False
+
+        return True
+
+    for pot_entry in pot_ENTRIES:
+        if is_msgid_equal(pot_entry, entry):
+            return pot_entry
+
+    return None
+
+def sync_po_files(this_folder, keep_old_entries=True):
+
+    locales = get_locales(this_folder)
+    locales_folder = os.path.join(this_folder, 'locales')
+
+    pot_filepath = os.path.join(locales_folder, 'base.pot')
+    po_filespaths = [os.path.join(path, 'base.po') for path in locales]
+
+
+
+
+    # READING POT FILE
+    pot_header_lines, pot_ENTRIES = scan_po_file(pot_filepath)
+
+
+    # FIXING EVERY PO FILE
+    for PO_FP in po_filespaths:
+        header_lines, ENTRIES = scan_po_file(PO_FP)
+
+        sync_entries = []
+        cur_pot_ENTRIES = pot_ENTRIES.copy()
+
+        counter = defaultdict(int)
+
+        for entry in ENTRIES:
+
+            pot_entry = find_entry_in_pot(entry, cur_pot_ENTRIES)
+            if pot_entry is None:
+
+                if keep_old_entries:
+                    sync_entries.append(entry)
+                else:
+                    # не найдено, значит строка устарела и её надо удалить,
+                    # и для этого ничего особо делать не надо, просто надо пропустить эту итерацию
+                    counter['deleted'] += 1
+                    continue
+
+            else:
+                if entry['links'] != pot_entry['links']:
+                    counter['updated'] += 1
+                    entry['links'] = pot_entry['links'] #обновляем ссылку
+
+                cur_pot_ENTRIES.remove(pot_entry) #удаляем, после цикла в cur_pot_ENTRIES останутся новые записи
+
+                sync_entries.append(entry)
+
+        if cur_pot_ENTRIES:
+
+            # странный способ добавить перенос строки в стройный ряд объектов entry
+            sync_entries.append({'links':[], 'msgid':['\n'], 'msgstr':[]})
+
+            #добавляем новые записи всем скопом в конец файла
+            sync_entries.extend(cur_pot_ENTRIES)
+
+
+        # формируем новое содержимое файла
+        filedata = ""
+        filedata += "".join(pot_header_lines)
+        for sync_entry in sync_entries:
+            filedata += entry_to_string(sync_entry)
+
+        # записываем
+        with open(PO_FP, 'w', encoding='utf8') as result_file:
+            result_file.write(filedata)
+
+        print(PO_FP)
+        print("\tудалено:", counter['deleted'])
+        print("\tобновлено:", counter['updated'])
+        print()
+
 
 def main():
     this_folder = os.path.dirname(__file__)
@@ -159,10 +286,12 @@ def main():
 
     # generate_locales(this_folder)
 
-    # generate_pot_file(this_folder)
 
     # move_pot_to_po(this_folder)
-    generate_mo_file(this_folder)
+
+    generate_pot_file(this_folder)
+    sync_po_files(this_folder, keep_old_entries=True)
+    # generate_mo_file(this_folder)
 
 
 if __name__ == '__main__':
