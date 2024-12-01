@@ -2382,23 +2382,54 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5 
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
+        cursor_pos = self.mapFromGlobal(QCursor().pos())
         for n, lang in enumerate(langs):
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
-            self.draw_startpage_langflag(painter, rect, lang)
+            self.draw_startpage_langflag(painter, rect, cursor_pos, lang)
             self.start_page_lang_btns.append((lang, QRectF(rect)))
             left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
 
-    def draw_startpage_langflag(self, painter, rect, lang):
+    def draw_startpage_langflag(self, painter, rect, cursor_pos, lang):
         painter.save()
 
         cur_lang = SettingsWindow.matrix['ui_lang'][0]
-        if cur_lang == lang:
+
+        is_cursor_over = rect.contains(cursor_pos)
+        is_cur_lang = cur_lang == lang
+
+
+        if is_cur_lang or is_cursor_over:
             painter.setPen(Qt.NoPen)
             painter.setBrush(Qt.NoBrush)
-            painter.setBrush(QColor(200, 200, 200, 10))
+            if is_cursor_over and not is_cur_lang:
+                alpha = 10
+            else:
+                alpha = 20
+            painter.setBrush(QColor(200, 200, 200, alpha))
             path = QPainterPath()
             path.addRoundedRect(rect, 20, 20)
             painter.drawPath(path)
+
+            if is_cursor_over:
+                if lang == '':
+                    pass
+                elif lang == 'ru':
+                    lang_name = _("Russian")
+                elif lang == 'en':
+                    lang_name = _('English')
+                elif lang == 'fr':
+                    lang_name = _('French')
+                elif lang == 'de':
+                    lang_name = _('German')
+                elif lang == 'es':
+                    lang_name = _('Spanish')
+                elif lang == 'it':
+                    lang_name = _('Italian')
+
+                painter.setPen(QPen(Qt.white, 1))
+                lang_name_rect = QRectF(rect).adjusted(-50, -50, 50, 50)
+                painter.drawText(lang_name_rect, Qt.AlignTop | Qt.AlignHCenter, lang_name)
+
 
         painter.setPen(QPen(Qt.gray, 1))
         lang_rect = rect.adjusted(20, 20, -20, -20)
