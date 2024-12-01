@@ -10,6 +10,10 @@ The first release is planned for the summer 2025, so there's no full user guide 
 
 ![](docs/screenshot.png)
 
+Start page shows up when the app is opened directly i.e. without request. You can select UI language at the bottom. The picture on the background is desktop wallpaper.
+
+![](docs/startpage.png)
+
 ## Supported formats
 - .webp (static & animated)
 - .gif
