@@ -232,6 +232,8 @@ def sync_po_files(this_folder, keep_old_entries=True):
 
         counter = defaultdict(int)
 
+        deleted_entries = []
+
         for entry in ENTRIES:
 
             pot_entry = find_entry_in_pot(entry, cur_pot_ENTRIES)
@@ -243,6 +245,7 @@ def sync_po_files(this_folder, keep_old_entries=True):
                     # не найдено, значит строка устарела и её надо удалить,
                     # и для этого ничего особо делать не надо, просто надо пропустить эту итерацию
                     counter['deleted'] += 1
+                    deleted_entries.append(entry)
                     continue
 
             else:
@@ -274,10 +277,25 @@ def sync_po_files(this_folder, keep_old_entries=True):
             result_file.write(filedata)
 
         print(PO_FP)
-        print("\tудалено:", counter['deleted'])
-        print("\tобновлено:", counter['updated'])
-        print()
+        print("\tdeleted entries:", counter['deleted'])
+        print("\tupdated entries:", counter['updated'])
 
+        if deleted_entries:
+            deleted_po_filepath = os.path.join(os.path.dirname(PO_FP), 'deleted.po')
+
+            filedata = ""
+
+            sync_entries.insert(0, {'links':[], 'msgid':['\n----------------\n'], 'msgstr':[]})
+
+            for deleted_entry in deleted_entries:
+                filedata += entry_to_string(deleted_entry)
+
+            with open(deleted_po_filepath, "a+", encoding='utf8') as deleted_file:
+                deleted_file.write(filedata)
+
+            print('\tdeleted entries moved to ', deleted_po_filepath)
+
+        print()
 
 def main():
     this_folder = os.path.dirname(__file__)
@@ -290,7 +308,7 @@ def main():
     # move_pot_to_po(this_folder)
 
     generate_pot_file(this_folder)
-    sync_po_files(this_folder, keep_old_entries=True)
+    sync_po_files(this_folder, keep_old_entries=False)
     # generate_mo_file(this_folder)
 
 
