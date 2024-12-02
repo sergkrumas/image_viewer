@@ -307,9 +307,9 @@ def main():
 
     # move_pot_to_po(this_folder)
 
-    generate_pot_file(this_folder)
-    sync_po_files(this_folder, keep_old_entries=False)
-    # generate_mo_file(this_folder)
+    # generate_pot_file(this_folder)
+    # sync_po_files(this_folder, keep_old_entries=False)
+    generate_mo_file(this_folder)
 
 
 if __name__ == '__main__':

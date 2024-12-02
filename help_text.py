@@ -25,7 +25,12 @@ from _utils import *
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-INFO_ALL_PAGES = _("""
+
+
+
+def retrieve_pages_help_text():
+
+    INFO_ALL_PAGES = _("""
 ➜ FOR ALL PAGES
     Esc - exit program
     Tab - switch between pages in cyclic order
@@ -34,7 +39,7 @@ INFO_ALL_PAGES = _("""
     Ctrl+ →/← - move full-screen window from one monitor to another
 """)
 
-INFO_VIEWER_PAGE = _("""
+    INFO_VIEWER_PAGE = _("""
 ➜ VIEWER PAGE
     ↑ - image zoom in
     ↓ - image zoom out
@@ -61,7 +66,7 @@ INFO_VIEWER_PAGE = _("""
     Alt + →/← - navigate through viewing history
 """)
 
-INFO_LIBRARY_PAGE = _("""
+    INFO_LIBRARY_PAGE = _("""
 ➜ LIBRARY PAGE
     ↑ - choose previous folder in the library list
     ↓ - choose next folder in library list
@@ -70,16 +75,32 @@ INFO_LIBRARY_PAGE = _("""
     U - update image list for the current folder
 """)
 
-INFO_BOARD_PAGE = _("""
+    INFO_BOARD_PAGE = _("""
 ➜ BOARD PAGE
-    not set
+    left mouse click - select picture items & rectangle select
+    middle mouse click - camera moving
+    mouse wheel - camera zooming
+    F12 - activate/desactivate gamepad control
+        Playstation 4 Dualshock Gamepad & Defender Gamepad supported
+        left stick - camera moving
+        right stick (vertical) - camera zooming
+        X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock
 """)
 
-INFO_START_PAGE = _("""
+    INFO_START_PAGE = _("""
 ➜ START PAGE
     not set
 """)
 
+    _vars = [
+        "INFO_ALL_PAGES",
+        "INFO_VIEWER_PAGE",
+        "INFO_LIBRARY_PAGE",
+        "INFO_BOARD_PAGE",
+        "INFO_START_PAGE",
+    ]
+    for var in _vars:
+        globals()[var] = locals()[var]
 
 
 class HelpWidgetMixin():
@@ -168,7 +189,6 @@ class HelpWidget(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setWindowModality(Qt.WindowModal)
 
-
         style = """
         QWidget{
             font-size: 14pt;
@@ -229,6 +249,7 @@ class HelpWidget(QWidget):
         """
 
 
+        retrieve_pages_help_text()
 
         text_browser = QPlainTextEdit()
 

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-12-01 02:25+0300\n"
+"POT-Creation-Date: 2024-12-02 16:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Невозможно выполнить команду,\n"
 "сначала надо запустить браузер Google Chrome!"
 
-#: _utils.py:309 _viewer.pyw:2691 library_data.py:1018
+#: _utils.py:309 _viewer.pyw:2722 library_data.py:1018
 msgid "Error"
 msgstr "Ошибка"
 
@@ -63,7 +63,7 @@ msgstr ""
 msgid "The file is corrupted"
 msgstr "Файл повреждён"
 
-#: _viewer.pyw:1221 _viewer.pyw:2698
+#: _viewer.pyw:1221 _viewer.pyw:2729
 msgid "No images"
 msgstr "Нет изображений"
 
@@ -125,7 +125,7 @@ msgstr ""
 "\n"
 "[программа запущена в обычном режиме]"
 
-#: _viewer.pyw:2516
+#: _viewer.pyw:2547
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -137,23 +137,23 @@ msgstr ""
 "и рискует зависнуть при подходе значения потребляемой памяти к 1.5GB.\n"
 "Для увеличения доступной памяти надо запуститься из 64bit-го интерпретатора!"
 
-#: _viewer.pyw:2696
+#: _viewer.pyw:2727
 msgid "Please wait"
 msgstr "Подождите"
 
-#: _viewer.pyw:2888
+#: _viewer.pyw:2919
 msgid "speed"
 msgstr "скорость"
 
-#: _viewer.pyw:2893
+#: _viewer.pyw:2924
 msgid "frame"
 msgstr "кадр"
 
-#: _viewer.pyw:2944
+#: _viewer.pyw:2975
 msgid "viewing history"
 msgstr "история просмотра"
 
-#: _viewer.pyw:3343
+#: _viewer.pyw:3374
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
@@ -161,155 +161,155 @@ msgstr ""
 "Отмена!\n"
 "Анимационные эффекты отключены в настройках"
 
-#: _viewer.pyw:3362
+#: _viewer.pyw:3393
 msgid "Unable to save: no source file or source file is not found"
 msgstr "Невозможно сохранить: отсутствует исходный файл или исходный файл не найден на диске"
 
-#: _viewer.pyw:3389
+#: _viewer.pyw:3420
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr "Путь к папке не задан или сама заданная папка не найдена на диске"
 
-#: _viewer.pyw:3396
+#: _viewer.pyw:3427
 msgid "The image is saved in file"
 msgstr "Изображение сохранено в файл"
 
-#: _viewer.pyw:3400
+#: _viewer.pyw:3431
 msgid "Choose folder to put images in"
 msgstr "Выберите папку, в которую будут складываться картинки"
 
-#: _viewer.pyw:3421
+#: _viewer.pyw:3452
 msgid "Save file"
 msgstr "Сохранить файл"
 
-#: _viewer.pyw:3485
+#: _viewer.pyw:3516
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr "Отмена! Фича пока не реализована для анимированных изображений"
 
-#: _viewer.pyw:3496
+#: _viewer.pyw:3527
 msgid "pasted!"
 msgstr "вставлено!"
 
-#: _viewer.pyw:3547
+#: _viewer.pyw:3578
 msgid "Minimize"
 msgstr "Свернуть"
 
-#: _viewer.pyw:3558
+#: _viewer.pyw:3589
 msgid "DEBUG"
 msgstr "ОТЛАДКА"
 
-#: _viewer.pyw:3559
+#: _viewer.pyw:3590
 msgid "Antialiasing and pixmap smoothing"
 msgstr "Антиальясинг и сглаживание пиксмапов"
 
-#: _viewer.pyw:3560
+#: _viewer.pyw:3591
 msgid "Use pixmap-proxy for text items"
 msgstr "Pixmap-прокси для пометок типа «Текст»"
 
-#: _viewer.pyw:3564
+#: _viewer.pyw:3595
 msgid "Make program crash intentionally (for dev purposes only)..."
 msgstr "Крашнуть приложение (для дебага)..."
 
-#: _viewer.pyw:3567
+#: _viewer.pyw:3598
 msgid "Settings..."
 msgstr "Настройки..."
 
-#: _viewer.pyw:3572
+#: _viewer.pyw:3603
 msgid "Enable window mode"
 msgstr "Переключиться в оконный режим"
 
-#: _viewer.pyw:3574
+#: _viewer.pyw:3605
 msgid "Enable full-screen mode"
 msgstr "Переключиться в полноэкранный режим"
 
-#: _viewer.pyw:3579 _viewer.pyw:3610
+#: _viewer.pyw:3610 _viewer.pyw:3641
 msgid "Narrow window back to monitor frame"
 msgstr "Вернуть окно в монитор"
 
-#: _viewer.pyw:3581 _viewer.pyw:3612
+#: _viewer.pyw:3612 _viewer.pyw:3643
 msgid "Expand window to two monitors frame"
 msgstr "Развернуть окно на два монитора"
 
-#: _viewer.pyw:3586
+#: _viewer.pyw:3617
 msgid "Restart app in standard mode"
 msgstr "Перезапустить в обычном режиме"
 
-#: _viewer.pyw:3590
+#: _viewer.pyw:3621
 msgid "Restart app (to purge unused data in memory)"
 msgstr "Перезапуск (для сброса лишней памяти)"
 
-#: _viewer.pyw:3593
+#: _viewer.pyw:3624
 msgid "Open in separate app instance"
 msgstr "Открыть в отдельной копии приложения"
 
-#: _viewer.pyw:3603
+#: _viewer.pyw:3634
 msgid "Open the folder in separate app instance"
 msgstr "Открыть папку в копии приложения"
 
-#: _viewer.pyw:3623
+#: _viewer.pyw:3654
 msgid "Open unsupported file..."
 msgstr "Открыть неподдерживаемый файл..."
 
-#: _viewer.pyw:3631
+#: _viewer.pyw:3662
 msgid "Edit comment text"
 msgstr "Редактировать текст комента"
 
-#: _viewer.pyw:3636
+#: _viewer.pyw:3667
 msgid "Redefine comment borders"
 msgstr "Переопределить границы комента"
 
-#: _viewer.pyw:3641
+#: _viewer.pyw:3672
 msgid "Delete comment"
 msgstr "Удалить комент"
 
-#: _viewer.pyw:3650
+#: _viewer.pyw:3681
 msgid "Copy metadata to clipboard"
 msgstr "Скопировать метаданные в буфер обмена"
 
-#: _viewer.pyw:3657
+#: _viewer.pyw:3688
 msgid "Find on disk"
 msgstr "Найти на диске"
 
-#: _viewer.pyw:3659 board.py:750
+#: _viewer.pyw:3690 board.py:750
 msgid "Open in Google Chrome"
 msgstr "Открыть в Google Chrome"
 
-#: _viewer.pyw:3661
+#: _viewer.pyw:3692
 msgid "Place image in window center"
 msgstr "Вернуть картинку в центр окна"
 
-#: _viewer.pyw:3667
+#: _viewer.pyw:3698
 msgid "Change SVG rasterization resolution..."
 msgstr "Изменить разрешение растеризации SVG-файла..."
 
-#: _viewer.pyw:3673
+#: _viewer.pyw:3704
 msgid "Save .png file..."
 msgstr "Сохранить в .png..."
 
-#: _viewer.pyw:3676
+#: _viewer.pyw:3707
 msgid "Save .jpg file..."
 msgstr "Сохранить в .jpg..."
 
-#: _viewer.pyw:3679
+#: _viewer.pyw:3710
 msgid "Copy to clipboard"
 msgstr "Копировать в буфер обмена"
 
-#: _viewer.pyw:3682
+#: _viewer.pyw:3713
 msgid "Paste from clipboard"
 msgstr "Вставить из буфера обмена"
 
-#: _viewer.pyw:3687
+#: _viewer.pyw:3718
 msgid "Switch from fovorites folder to actual image folder"
 msgstr "Перейти из избранного в папку с этим изображением"
 
-#: _viewer.pyw:3734
+#: _viewer.pyw:3765
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr "Теперь переопределите границы комментария через Ctrl+Shift+LMB"
 
-#: _viewer.pyw:3782
+#: _viewer.pyw:3813
 msgid "Question"
 msgstr "Вопрос"
 
-#: _viewer.pyw:3783
+#: _viewer.pyw:3814
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
@@ -317,33 +317,33 @@ msgstr ""
 "Не обнаружено запущенной копии приложения.\n"
 "Запуститься в лайтовом (упрощённом) режиме?"
 
-#: _viewer.pyw:3811
+#: _viewer.pyw:3842
 msgid "Choose folder with pictures in it"
 msgstr "Выбери папку с пикчами"
 
-#: _viewer.pyw:3813
+#: _viewer.pyw:3844
 msgid "Error-error"
 msgstr "Ошибочка"
 
-#: _viewer.pyw:3813
+#: _viewer.pyw:3844
 msgid "Nothing to show, exit..."
 msgstr ""
 "Ну раз ничего не выбрал, то я закрываюсь.\n"
 "Пака"
 
-#: _viewer.pyw:3863
+#: _viewer.pyw:3894
 msgid "Memory allocated"
 msgstr "Выделенная память"
 
-#: _viewer.pyw:3873
+#: _viewer.pyw:3904
 msgid "Purge unused objects"
 msgstr "Удалить ненужные объекты из памяти"
 
-#: _viewer.pyw:3986
+#: _viewer.pyw:4017
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr "Ни изображение, ни папка, в которой оно находится, не существуют"
 
-#: _viewer.pyw:4141
+#: _viewer.pyw:4172
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
@@ -351,7 +351,7 @@ msgstr ""
 "Информация о краше сохранена в файл\n"
 "\t{0}"
 
-#: _viewer.pyw:4142
+#: _viewer.pyw:4173
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -363,7 +363,7 @@ msgstr ""
 "\n"
 "Перезапустить приложение?"
 
-#: _viewer.pyw:4143
+#: _viewer.pyw:4174
 msgid "Fatal Error!"
 msgstr "Это фиаско, мои чюваки"
 
@@ -717,7 +717,7 @@ msgstr "Редактирование комента"
 msgid "Save"
 msgstr "Сохранить"
 
-#: commenting.py:507 help_text.py:185 library_data.py:1774
+#: commenting.py:507 help_text.py:192 library_data.py:1774
 #: settings_handling.py:803
 msgid "Close"
 msgstr "Закрыть"
@@ -933,17 +933,7 @@ msgstr ""
 "    Delete - Удаляет текущую папку из сессии\n"
 "    U - Обновить список изображений для текущей папки\n"
 
-#: help_text.py:73
-msgid ""
-"\n"
-"➜ BOARD PAGE\n"
-"    not set\n"
-msgstr ""
-"\n"
-"➜ СТРАНИЦА BOARD\n"
-"    не прописано\n"
-
-#: help_text.py:78
+#: help_text.py:85
 msgid ""
 "\n"
 "➜ START PAGE\n"
@@ -952,14 +942,6 @@ msgstr ""
 "\n"
 "➜ СТАРТОВАЯ СТРАНИЦА\n"
 "    не прописано\n"
-
-#: hidapi_adapter.py:123
-msgid "The left and right sticks have swapped their default roles"
-msgstr "Левый и правый стики поменялись ролями"
-
-#: hidapi_adapter.py:125
-msgid "Default roles of the right and left sticks have been reenabled"
-msgstr "Левый и правый стики восстановили свои роли"
 
 #: hidapi_adapter.py:168
 msgid "Gamepad control activated!"
@@ -1079,27 +1061,27 @@ msgstr "Файлы из неактуальных записей избранно
 msgid "Outdated records in tags database ({0}):"
 msgstr "Файлы из неактуальных записей тегов ({0}):"
 
-#: settings_handling.py:373
+#: _viewer.pyw:2419 settings_handling.py:373
 msgid "English"
 msgstr "Английский"
 
-#: settings_handling.py:374
+#: _viewer.pyw:2417 settings_handling.py:374
 msgid "Russian"
 msgstr "Русский"
 
-#: settings_handling.py:415
+#: _viewer.pyw:2423
 msgid "German"
 msgstr "Немецкий"
 
-#: settings_handling.py:416
+#: _viewer.pyw:2421
 msgid "French"
 msgstr "Французский"
 
-#: settings_handling.py:417
+#: _viewer.pyw:2427
 msgid "Italian"
 msgstr "Итальянский"
 
-#: settings_handling.py:418
+#: _viewer.pyw:2425
 msgid "Spanish"
 msgstr "Испанский"
 
@@ -1370,3 +1352,35 @@ msgstr "Перезапустите приложение, чтобы новый �
 msgid "UI language"
 msgstr ""
 
+
+#: hidapi_adapter.py:123
+msgid "The left and right sticks exchange"
+msgstr "Левый и правый стики поменялись ролями"
+
+#: hidapi_adapter.py:125
+msgid "The left and right sticks exchange back"
+msgstr "Левый и правый стики поменялись ролями обратно"
+
+
+#: help_text.py:73
+msgid ""
+"\n"
+"➜ BOARD PAGE\n"
+"    left mouse click - select picture items & rectangle select\n"
+"    middle mouse click - camera moving\n"
+"    mouse wheel - camera zooming\n"
+"    F12 - activate/desactivate gamepad control\n"
+"        Playstation 4 Dualshock Gamepad & Defender Gamepad supported\n"
+"        left stick - camera moving\n"
+"        right stick (vertical) - camera zooming\n"
+"        X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock\n"
+msgstr ""
+"➜ СТРАНИЦА BOARD\n"
+"    левая кнопка мыши - выделить картинки & выделить картинки прямоугольником\n"
+"    зажатие средней кнопки мыши/колеса - перемещение камеры\n"
+"    колесо мыши - зум камеры\n"
+"    F12 - включить/выключить управление с геймпада\n"
+"        поддерживаются геймпады Playstation 4 Dualshock & Defender Gamepad\n"
+"        левый стик - перемещение камеры\n"
+"        правый стик (вертикальная ось) - зум камеры\n"
+"        кнопка X на геймпаде - поменять левый и правый стики ролями. При повторном нажатии возвращает всё обратно\n"

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-12-01 02:25+0300\n"
+"POT-Creation-Date: 2024-12-02 16:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid ""
 "first open Google Chrome browser!"
 msgstr ""
 
-#: _utils.py:309 _viewer.pyw:2691 library_data.py:1018
+#: _utils.py:309 _viewer.pyw:2722 library_data.py:1018
 msgid "Error"
 msgstr ""
 
@@ -59,7 +59,7 @@ msgstr ""
 msgid "The file is corrupted"
 msgstr ""
 
-#: _viewer.pyw:1221 _viewer.pyw:2698
+#: _viewer.pyw:1221 _viewer.pyw:2729
 msgid "No images"
 msgstr ""
 
@@ -110,7 +110,7 @@ msgid ""
 "[the program is running in standard mode]"
 msgstr ""
 
-#: _viewer.pyw:2516
+#: _viewer.pyw:2547
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -118,213 +118,213 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:2696
+#: _viewer.pyw:2727
 msgid "Please wait"
 msgstr ""
 
-#: _viewer.pyw:2888
+#: _viewer.pyw:2919
 msgid "speed"
 msgstr ""
 
-#: _viewer.pyw:2893
+#: _viewer.pyw:2924
 msgid "frame"
 msgstr ""
 
-#: _viewer.pyw:2944
+#: _viewer.pyw:2975
 msgid "viewing history"
 msgstr ""
 
-#: _viewer.pyw:3343
+#: _viewer.pyw:3374
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
 msgstr ""
 
-#: _viewer.pyw:3362
+#: _viewer.pyw:3393
 msgid "Unable to save: no source file or source file is not found"
 msgstr ""
 
-#: _viewer.pyw:3389
+#: _viewer.pyw:3420
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr ""
 
-#: _viewer.pyw:3396
+#: _viewer.pyw:3427
 msgid "The image is saved in file"
 msgstr ""
 
-#: _viewer.pyw:3400
+#: _viewer.pyw:3431
 msgid "Choose folder to put images in"
 msgstr ""
 
-#: _viewer.pyw:3421
+#: _viewer.pyw:3452
 msgid "Save file"
 msgstr ""
 
-#: _viewer.pyw:3485
+#: _viewer.pyw:3516
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr ""
 
-#: _viewer.pyw:3496
+#: _viewer.pyw:3527
 msgid "pasted!"
 msgstr ""
 
-#: _viewer.pyw:3547
+#: _viewer.pyw:3578
 msgid "Minimize"
 msgstr ""
 
-#: _viewer.pyw:3558
+#: _viewer.pyw:3589
 msgid "DEBUG"
 msgstr ""
 
-#: _viewer.pyw:3559
+#: _viewer.pyw:3590
 msgid "Antialiasing and pixmap smoothing"
 msgstr ""
 
-#: _viewer.pyw:3560
+#: _viewer.pyw:3591
 msgid "Use pixmap-proxy for text items"
 msgstr ""
 
-#: _viewer.pyw:3564
+#: _viewer.pyw:3595
 msgid "Make program crash intentionally (for dev purposes only)..."
 msgstr ""
 
-#: _viewer.pyw:3567
+#: _viewer.pyw:3598
 msgid "Settings..."
 msgstr ""
 
-#: _viewer.pyw:3572
+#: _viewer.pyw:3603
 msgid "Enable window mode"
 msgstr ""
 
-#: _viewer.pyw:3574
+#: _viewer.pyw:3605
 msgid "Enable full-screen mode"
 msgstr ""
 
-#: _viewer.pyw:3579 _viewer.pyw:3610
+#: _viewer.pyw:3610 _viewer.pyw:3641
 msgid "Narrow window back to monitor frame"
 msgstr ""
 
-#: _viewer.pyw:3581 _viewer.pyw:3612
+#: _viewer.pyw:3612 _viewer.pyw:3643
 msgid "Expand window to two monitors frame"
 msgstr ""
 
-#: _viewer.pyw:3586
+#: _viewer.pyw:3617
 msgid "Restart app in standard mode"
 msgstr ""
 
-#: _viewer.pyw:3590
+#: _viewer.pyw:3621
 msgid "Restart app (to purge unused data in memory)"
 msgstr ""
 
-#: _viewer.pyw:3593
+#: _viewer.pyw:3624
 msgid "Open in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:3603
+#: _viewer.pyw:3634
 msgid "Open the folder in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:3623
+#: _viewer.pyw:3654
 msgid "Open unsupported file..."
 msgstr ""
 
-#: _viewer.pyw:3631
+#: _viewer.pyw:3662
 msgid "Edit comment text"
 msgstr ""
 
-#: _viewer.pyw:3636
+#: _viewer.pyw:3667
 msgid "Redefine comment borders"
 msgstr ""
 
-#: _viewer.pyw:3641
+#: _viewer.pyw:3672
 msgid "Delete comment"
 msgstr ""
 
-#: _viewer.pyw:3650
+#: _viewer.pyw:3681
 msgid "Copy metadata to clipboard"
 msgstr ""
 
-#: _viewer.pyw:3657
+#: _viewer.pyw:3688
 msgid "Find on disk"
 msgstr ""
 
-#: _viewer.pyw:3659 board.py:750
+#: _viewer.pyw:3690 board.py:750
 msgid "Open in Google Chrome"
 msgstr ""
 
-#: _viewer.pyw:3661
+#: _viewer.pyw:3692
 msgid "Place image in window center"
 msgstr ""
 
-#: _viewer.pyw:3667
+#: _viewer.pyw:3698
 msgid "Change SVG rasterization resolution..."
 msgstr ""
 
-#: _viewer.pyw:3673
+#: _viewer.pyw:3704
 msgid "Save .png file..."
 msgstr ""
 
-#: _viewer.pyw:3676
+#: _viewer.pyw:3707
 msgid "Save .jpg file..."
 msgstr ""
 
-#: _viewer.pyw:3679
+#: _viewer.pyw:3710
 msgid "Copy to clipboard"
 msgstr ""
 
-#: _viewer.pyw:3682
+#: _viewer.pyw:3713
 msgid "Paste from clipboard"
 msgstr ""
 
-#: _viewer.pyw:3687
+#: _viewer.pyw:3718
 msgid "Switch from fovorites folder to actual image folder"
 msgstr ""
 
-#: _viewer.pyw:3734
+#: _viewer.pyw:3765
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr ""
 
-#: _viewer.pyw:3782
+#: _viewer.pyw:3813
 msgid "Question"
 msgstr ""
 
-#: _viewer.pyw:3783
+#: _viewer.pyw:3814
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
 msgstr ""
 
-#: _viewer.pyw:3811
+#: _viewer.pyw:3842
 msgid "Choose folder with pictures in it"
 msgstr ""
 
-#: _viewer.pyw:3813
+#: _viewer.pyw:3844
 msgid "Error-error"
 msgstr ""
 
-#: _viewer.pyw:3813
+#: _viewer.pyw:3844
 msgid "Nothing to show, exit..."
 msgstr ""
 
-#: _viewer.pyw:3863
+#: _viewer.pyw:3894
 msgid "Memory allocated"
 msgstr ""
 
-#: _viewer.pyw:3873
+#: _viewer.pyw:3904
 msgid "Purge unused objects"
 msgstr ""
 
-#: _viewer.pyw:3986
+#: _viewer.pyw:4017
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr ""
 
-#: _viewer.pyw:4141
+#: _viewer.pyw:4172
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
 msgstr ""
 
-#: _viewer.pyw:4142
+#: _viewer.pyw:4173
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -332,7 +332,7 @@ msgid ""
 "Restart app?"
 msgstr ""
 
-#: _viewer.pyw:4143
+#: _viewer.pyw:4174
 msgid "Fatal Error!"
 msgstr ""
 
@@ -681,7 +681,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: commenting.py:507 help_text.py:185 library_data.py:1774
+#: commenting.py:507 help_text.py:192 library_data.py:1774
 #: settings_handling.py:803
 msgid "Close"
 msgstr ""
@@ -852,26 +852,11 @@ msgid ""
 "    U - update image list for the current folder\n"
 msgstr ""
 
-#: help_text.py:73
-msgid ""
-"\n"
-"➜ BOARD PAGE\n"
-"    not set\n"
-msgstr ""
-
-#: help_text.py:78
+#: help_text.py:85
 msgid ""
 "\n"
 "➜ START PAGE\n"
 "    not set\n"
-msgstr ""
-
-#: hidapi_adapter.py:123
-msgid "The left and right sticks have swapped their default roles"
-msgstr ""
-
-#: hidapi_adapter.py:125
-msgid "Default roles of the right and left sticks have been reenabled"
 msgstr ""
 
 #: hidapi_adapter.py:168
@@ -983,27 +968,27 @@ msgstr ""
 msgid "Outdated records in tags database ({0}):"
 msgstr ""
 
-#: settings_handling.py:373
+#: _viewer.pyw:2419 settings_handling.py:373
 msgid "English"
 msgstr ""
 
-#: settings_handling.py:374
+#: _viewer.pyw:2417 settings_handling.py:374
 msgid "Russian"
 msgstr ""
 
-#: settings_handling.py:415
+#: _viewer.pyw:2423
 msgid "German"
 msgstr ""
 
-#: settings_handling.py:416
+#: _viewer.pyw:2421
 msgid "French"
 msgstr ""
 
-#: settings_handling.py:417
+#: _viewer.pyw:2427
 msgid "Italian"
 msgstr ""
 
-#: settings_handling.py:418
+#: _viewer.pyw:2425
 msgid "Spanish"
 msgstr ""
 
@@ -1272,5 +1257,29 @@ msgstr ""
 
 #: settings_handling.py:469 settings_handling.py:716
 msgid "UI language"
+msgstr ""
+
+
+#: hidapi_adapter.py:123
+msgid "The left and right sticks exchange"
+msgstr ""
+
+#: hidapi_adapter.py:125
+msgid "The left and right sticks exchange back"
+msgstr ""
+
+
+#: help_text.py:73
+msgid ""
+"\n"
+"➜ BOARD PAGE\n"
+"    left mouse click - select picture items & rectangle select\n"
+"    middle mouse click - camera moving\n"
+"    mouse wheel - camera zooming\n"
+"    F12 - activate/desactivate gamepad control\n"
+"        Playstation 4 Dualshock Gamepad & Defender Gamepad supported\n"
+"        left stick - camera moving\n"
+"        right stick (vertical) - camera zooming\n"
+"        X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock\n"
 msgstr ""
 

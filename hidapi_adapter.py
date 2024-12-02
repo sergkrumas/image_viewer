@@ -120,9 +120,9 @@ def update_board_viewer(obj, data):
         if state == BUTTON_RELEASED:
             status = data[3]
             if status:
-                status = _("The left and right sticks have swapped their default roles")
+                status = _("The left and right sticks exchange")
             else:
-                status = _("Default roles of the right and left sticks have been reenabled") 
+                status = _("The left and right sticks exchange back") 
             obj.show_center_label(f'{status}')
 
     obj.update()
