@@ -1441,6 +1441,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 else:
                     self.setCursor(Qt.ArrowCursor)
 
+            elif self.is_start_page_active():
+                nothing = True
+                cursor_pos = self.mapFromGlobal(QCursor().pos())
+                for lang, rect in self.start_page_lang_btns:
+                    if rect.contains(cursor_pos):
+                        self.setCursor(Qt.PointingHandCursor)
+                        nothing = False
+                        break
+                if nothing:
+                    self.setCursor(Qt.ArrowCursor)
+
             elif self.is_board_page_active():
                 # курсор определяется в mouseMoveEvent
                 pass
