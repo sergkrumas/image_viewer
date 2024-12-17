@@ -708,6 +708,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
+        board_load_multifolder = contextMenu.addAction(_('Multifolder board...'))
+        board_load_multifolder.triggered.connect(self.board_prepare_multifolder_board)
+
         board_go_to_note = contextMenu.addAction(_("Go to the link in the note (Explorer or Browser)"))
         board_go_to_note.triggered.connect(partial(self.board_go_to_note, event))
 
@@ -3919,7 +3922,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_region_zoom_do_cancel()
             self.board_region_zoom_in_input_started = False
 
-
     def board_region_zoom_in_draw(self, painter):
         if self.board_magnifier_input_rect:
             painter.setBrush(Qt.NoBrush)
@@ -3964,6 +3966,64 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawRect(self.rect())
                 painter.setClipping(False)
                 painter.setOpacity(1.0)
+
+    def board_retrieve_default_path_for_multifolder(self):
+        filepath = self.get_user_data_filepath("default_miltifolder_path.txt")
+        if os.path.exists(filepath):
+            with open(filepath, 'r', encoding="utf8") as file:
+                lines = file.readlines()
+                if lines:
+                    default_path = lines[0].strip()
+                    return default_path
+        return "."
+
+    def board_prepare_multifolder_board(self):
+        default_path = self.board_retrieve_default_path_for_multifolder()
+
+        selected_folders = []
+        dialog = QFileDialog(self)
+        dialog.setWindowTitle(_('Choose Directories'))
+        dialog.setDirectory(default_path)
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+        dialog.setFileMode(QFileDialog.DirectoryOnly)
+        for view in dialog.findChildren((QListView, QTreeView)):
+            if isinstance(view.model(), QFileSystemModel):
+                view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        if dialog.exec_() == QDialog.Accepted:
+            selected_folders = dialog.selectedFiles()
+        dialog.deleteLater()
+
+        if not selected_folders:
+            self.show_center_label(_('No folders selected!', error=True))
+
+        cf = self.LibraryData().current_folder()
+
+        cf.images_list.clear()
+        cf.set_current_index(0)
+
+        for folder_path in selected_folders:
+            self.LibraryData().handle_input_data(folder_path, pre_load=True)
+
+            # грузим из папок в стартовую папку
+            cf.images_list.extend(self.LibraryData().current_folder().images_list)
+
+        for image_data in cf.images_list:
+            image_data.folder_data = cf
+
+        # needed for board_place_items_in_column
+        self.LibraryData().make_folder_current(cf, write_view_history=False)
+
+        with self.show_longtime_process_ongoing(self, _("Loading images to the board")):
+
+            self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+
+            cf.board.ready = False
+
+            self.prepare_board(cf)
+            self.board_place_items_in_column()
+
+        self.update()
+
 
 
 

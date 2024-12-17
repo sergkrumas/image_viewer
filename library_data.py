@@ -89,6 +89,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.last_apng_check_result = False
             i.fav_folder = ...
             i.comments_folder = ...
+            i.ThumbnailsThread = ThumbnailsThread
 
             if not i.globals.lite_mode:
                 i.load_fav_list()
@@ -1499,6 +1500,8 @@ class ImageData():
         self.anim_paused = False
         self.svg_scale_factor = 20
         self.anim_cur_frame = 0
+
+        self.preview_error = False
 
         self.source_width = 0
         self.source_height = 0
