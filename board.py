@@ -3995,6 +3995,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if not selected_folders:
             self.show_center_label(_('No folders selected!', error=True))
+            return
 
         cf = self.LibraryData().current_folder()
 
