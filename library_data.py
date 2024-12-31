@@ -195,8 +195,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def all_folders(self):
         return self.folders
 
+    def get_NONE_folder(self):
+        # sometimes self._current_folder returns None and it becomes the cause of applicaton crash at startup
+        cl = self.__class__
+        if not hasattr(cl, 'none_folder'):
+            cl.none_folder = FolderData("", [], virtual=True)
+        return cl.none_folder
+
     def current_folder(self):
-        return self._current_folder
+        if self._current_folder is None:
+            return self.get_NONE_folder()
+        else:
+            return self._current_folder
 
     def before_current_image_changed(self):
         im = LibraryData().current_folder().current_image()
