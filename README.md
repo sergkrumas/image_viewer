@@ -81,7 +81,7 @@ Make sure that python.exe has suited version. See requirements about Python vers
 - complete clone if we talk about the image viewer itself 
 - F1 key to see which key doing what
 - Viewing history per folder and and global one 
-- Small images tend to fit the all screen
+- Small images tend to fit maximum screen area
 - Rearranging image thumbnails so images order changed
 - PureRef Clone on Board Page for observing interactive collage
 - Plugin system for Board Page
