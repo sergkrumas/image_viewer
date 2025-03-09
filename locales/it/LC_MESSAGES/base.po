@@ -542,7 +542,7 @@ msgid "Current item index: {}"
 msgstr ""
 
 #: board.py:1767
-msgid "Curreint item-group index: {}"
+msgid "Current item-group index: {}"
 msgstr ""
 
 #: board.py:1768

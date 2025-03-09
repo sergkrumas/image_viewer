@@ -578,7 +578,7 @@ msgid "Current item index: {}"
 msgstr "Индекс текущего айтема: {}"
 
 #: board.py:1767
-msgid "Curreint item-group index: {}"
+msgid "Current item-group index: {}"
 msgstr "Индекс текущего айтема-группы: {}"
 
 #: board.py:1768

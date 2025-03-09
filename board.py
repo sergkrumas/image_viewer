@@ -1767,7 +1767,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             lines.append(_('This board has no plugin attached'))
         lines.append(_('Current item index: {}').format(board.current_item_index))
-        lines.append(_('Curreint item-group index: {}').format(board.current_item_group_index))
+        lines.append(_('Current item-group index: {}').format(board.current_item_group_index))
         lines.append(_('Board bounding rect: {}').format(board.bounding_rect))
 
         lines.append('')
