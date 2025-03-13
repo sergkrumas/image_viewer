@@ -1508,7 +1508,7 @@ class ImageData():
         self.filepath = filepath
         self.preview_size = QSize(0, 0)
         self.anim_paused = False
-        self.svg_scale_factor = 20
+        self.svg_scale_factor = 2
         self.anim_cur_frame = 0
 
         self.preview_error = False
