@@ -1125,10 +1125,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # чтобы каждая занимала максимум экранного пространства
         # и при этом умещалась полностью независимо от размера
         size_rect = self.get_rotated_pixmap(force_update=True).rect()
-        target_rect = self.rect()
-        target_rect.adjust(0, 50, 0, -50)
-        projected_rect = QRectF(fit_rect_into_rect(size_rect, target_rect))
-        self.image_scale = projected_rect.width()/size_rect.width()
+        viewer_target_rect = self.rect()
+        viewer_target_rect.adjust(0, 50, 0, -50)
+        projected_rect = QRectF(fit_rect_into_rect(size_rect, viewer_target_rect))
+        max_scale_to_fit = projected_rect.width()/size_rect.width()
+        if (size_rect.width() < viewer_target_rect.width()) and (size_rect.height() < viewer_target_rect.height()):
+            # мелкие картинки
+            self.image_scale = fit(self.STNG_small_images_fit_factor, 0.0, 1.0, 1.0, max_scale_to_fit)
+        else:
+            # остальные; ранее этот код обрабатывал и мелкие и большие
+            self.image_scale = max_scale_to_fit
 
     def restore_image_transformations(self, correct=True):
         self.image_rotation = self.image_data.image_rotation

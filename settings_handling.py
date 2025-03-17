@@ -492,6 +492,7 @@ class SettingsWindow(QWidget):
             'show_image_metadata': (True, _('Show image metadata')),
             'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
             'browse_images_only': (False, _('Allow browsing image filetypes only')),
+            'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
             '---006': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
@@ -768,6 +769,9 @@ class SettingsWindow(QWidget):
                 central_widget_layout.addLayout(layout)
                 central_widget_layout.addSpacing(20)
 
+                if id == 'small_images_fit_factor':
+                    sb.value_changed.connect(self.on_small_images_fit_factor_change)
+
             elif isinstance(current_val, str):
                 label = QLabel()
                 label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
@@ -824,6 +828,11 @@ class SettingsWindow(QWidget):
         SettingsWindow.isWindowVisible = True
 
         self.is_initialized = True
+
+    def on_small_images_fit_factor_change(self):
+        MW = type(self).globals.main_window
+        if MW.is_viewer_page_active():
+            MW.restore_image_transformations()
 
     def exit_button_handler(self):
         self.hide()
