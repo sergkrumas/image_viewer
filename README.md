@@ -6,7 +6,7 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 The first release is planned for the summer 2025, so there's no full user guide at the moment.
 
-## [README.md in Russian](README_ru.md)
+## [README.MD на Русском / README.md in Russian](README_ru.md)
 
 ![](docs/screenshot.png)
 
