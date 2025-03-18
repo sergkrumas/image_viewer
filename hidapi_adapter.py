@@ -26,21 +26,24 @@ BUTTON_TRIANGLE = 20
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
 
-    def __init__(self, gamepad, gamepad_device):
+    def __init__(self, gamepad, gamepad_device, obj):
         QThread.__init__(self)
         self.gamepad = gamepad
+
+        self.dead_zone = obj.STNG_gamepad_dead_zone_radius
 
         manufacturer_string = gamepad_device['manufacturer_string']
 
         if manufacturer_string.startswith('ShanWan'):
             self.start_byte_left_stick = 3
             self.start_byte_right_stick = 5
-            self.dead_zone = 0.0
+            # self.dead_zone = 0.0
 
         elif manufacturer_string.startswith('Sony Interactive Entertainment'):
             self.start_byte_left_stick = 1
             self.start_byte_right_stick = 3
-            self.dead_zone = 0.1
+            # self.dead_zone = 0.1
+
 
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
 
@@ -161,9 +164,9 @@ def activate_gamepad(obj):
             # timer.setInterval(10)
             # timer.timeout.connect(partial(read_sticks_to_obj, obj))
             # timer.start()
-            obj.thread_instance = ListenThread(obj.gamepad, gamepad_device)
-            obj.thread_instance.update_signal.connect(partial(update_board_viewer, obj))
-            obj.thread_instance.start()
+            obj.gamepad_thread_instance = ListenThread(obj.gamepad, gamepad_device, obj)
+            obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj))
+            obj.gamepad_thread_instance.start()
 
             obj.show_center_label(_('Gamepad control activated!'))
         else:
@@ -174,8 +177,8 @@ def activate_gamepad(obj):
 def deactivate_listening(obj):
     obj.gamepad = None
     # obj.timer.stop()
-    obj.thread_instance.terminate()
-    obj.thread_instance = None
+    obj.gamepad_thread_instance.terminate()
+    obj.gamepad_thread_instance = None
     obj.show_center_label(_('Gamepad control deactivated!'), error=True)
 
 def read_gamepad(gamepad):

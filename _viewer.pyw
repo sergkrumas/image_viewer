@@ -591,6 +591,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.SPT_init()
 
+        self.gamepad_thread_instance = None
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;

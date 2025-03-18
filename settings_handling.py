@@ -240,7 +240,8 @@ class CustomSlider(QWidget):
 
     def get_value(self):
         out_value = self.a+(self.b-self.a)*self.value
-        if not (self.a == 0.0 and self.b == 1.0):
+        if not (self.a >= 0.0 and self.b <= 1.0):
+            # custom range handling
             # out_value = int(out_value)
             out_value = round(out_value * 2) / 2
             out_value = max(self.a, out_value)
@@ -479,6 +480,7 @@ class SettingsWindow(QWidget):
             'show_console_output': (True, _('Show standard (console) output overlay')),
             'effects': (True, _('Animated effects')),
             'show_noise_cells': (True, _('Show animated cells overlay')),
+            'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad Dead Zone Radius')),
 
             '---002': _('Viewer page'),
             'animated_zoom': (False, _('Animated zoom')),
@@ -775,6 +777,9 @@ class SettingsWindow(QWidget):
                 if id == 'small_images_fit_factor':
                     sb.value_changed.connect(self.on_small_images_fit_factor_change)
 
+                elif id == 'gamepad_dead_zone_radius':
+                    sb.value_changed.connect(lambda x=sb: self.on_gamepad_dead_zone_radius_change(x))
+
             elif isinstance(current_val, str):
                 label = QLabel()
                 label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
@@ -836,6 +841,11 @@ class SettingsWindow(QWidget):
         MW = type(self).globals.main_window
         if MW.is_viewer_page_active():
             MW.restore_image_transformations()
+
+    def on_gamepad_dead_zone_radius_change(self, sb):
+        MW = type(self).globals.main_window
+        if MW.gamepad_thread_instance is not None:
+            MW.gamepad_thread_instance.dead_zone = sb.get_value()
 
     def exit_button_handler(self):
         self.hide()
