@@ -110,7 +110,7 @@ def update_board_viewer(obj, data):
     elif key == BOARD_SCALE:
         scroll_value = data[1]
         pivot = obj.rect().center()
-        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 350.0, 50.0)
+        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 350.0, 30.0)
         obj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
     elif key == LISTENING_STOP:
         deactivate_listening(obj)
@@ -205,11 +205,18 @@ def read_sticks_to_obj(obj):
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
             deactivate_listening(obj)
 
-def apply_dead_zone(x_axis, y_axis, dead_zone):
+def apply_dead_zone_legacy_inaccurate(x_axis, y_axis, dead_zone):
     if abs(x_axis) < dead_zone:
         x_axis = 0.0
     if abs(y_axis) < dead_zone:
         y_axis = 0.0
+    return x_axis, y_axis
+
+def apply_dead_zone_accurately(x_axis, y_axis, dead_zone):
+    x_ = fit(abs(x_axis), dead_zone, 1.0, 0.0, 1.0)
+    y_ = fit(abs(y_axis), dead_zone, 1.0, 0.0, 1.0)
+    x_axis = math.copysign(x_, x_axis)
+    y_axis = math.copysign(y_, y_axis)
     return x_axis, y_axis
 
 def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
@@ -217,7 +224,8 @@ def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
     y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
 
     if dead_zone != 0.0:
-        x_axis, y_axis = apply_dead_zone(x_axis, y_axis, dead_zone)
+        # x_axis, y_axis = apply_dead_zone_legacy_inaccurate(x_axis, y_axis, dead_zone)
+        x_axis, y_axis = apply_dead_zone_accurately(x_axis, y_axis, dead_zone)
 
     return x_axis, y_axis
 
@@ -226,7 +234,7 @@ def read_right_stick(data, start_byte_index=5, dead_zone=0.0):
     y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
 
     if dead_zone != 0.0:
-        x_axis, y_axis = apply_dead_zone(x_axis, y_axis, dead_zone)
+        x_axis, y_axis = apply_dead_zone_legacy_inaccurate(x_axis, y_axis, dead_zone)
 
     return x_axis, y_axis
 
