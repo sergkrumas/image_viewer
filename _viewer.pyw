@@ -592,6 +592,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.SPT_init()
 
         self.gamepad_thread_instance = None
+        self.left_stick_vec = QPointF(0, 0)
+        self.right_stick_vec = QPointF(0, 0)
 
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{

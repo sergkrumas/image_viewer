@@ -480,7 +480,8 @@ class SettingsWindow(QWidget):
             'show_console_output': (True, _('Show standard (console) output overlay')),
             'effects': (True, _('Animated effects')),
             'show_noise_cells': (True, _('Show animated cells overlay')),
-            'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad Dead Zone Radius')),
+            'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
+            'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
 
             '---002': _('Viewer page'),
             'animated_zoom': (False, _('Animated zoom')),
@@ -756,6 +757,9 @@ class SettingsWindow(QWidget):
                     chb.stateChanged.connect(self.on_change_handler)
                 central_widget_layout.addWidget(chb)
 
+                if id == 'show_gamepad_monitor':
+                    chb.stateChanged.connect(lambda state, x=chb: self.handle_show_gamepad_monitor_chbox(state, x))
+
             elif isinstance(current_val, float):
                 range_ = params[1]
                 a, b = range_
@@ -845,7 +849,12 @@ class SettingsWindow(QWidget):
     def on_gamepad_dead_zone_radius_change(self, sb):
         MW = type(self).globals.main_window
         if MW.gamepad_thread_instance is not None:
-            MW.gamepad_thread_instance.dead_zone = sb.get_value()
+            MW.gamepad_thread_instance.dead_zone_radius = sb.get_value()
+
+    def handle_show_gamepad_monitor_chbox(self, state, chb):
+        MW = type(self).globals.main_window
+        if MW.gamepad_thread_instance is not None:
+            MW.gamepad_thread_instance.pass_deadzone_values = chb.isChecked()
 
     def exit_button_handler(self):
         self.hide()

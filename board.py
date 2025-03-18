@@ -32,6 +32,8 @@ from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
 
+from hidapi_adapter import draw_gamepad_monitor
+
 import cbor2
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
@@ -450,6 +452,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_main(self, painter, event):
         self.board_draw_mainBoardCallback(painter, event)
+
+        if self.STNG_show_gamepad_monitor:
+            draw_gamepad_monitor(self, painter, event)
 
     def board_mousePressEvent(self, event):
         self.mousePressEventBoardCallback(event)

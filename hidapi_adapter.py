@@ -30,19 +30,20 @@ class ListenThread(QThread):
         QThread.__init__(self)
         self.gamepad = gamepad
 
-        self.dead_zone = obj.STNG_gamepad_dead_zone_radius
+        self.dead_zone_radius = obj.STNG_gamepad_dead_zone_radius
+        self.pass_deadzone_values = obj.STNG_show_gamepad_monitor
 
         manufacturer_string = gamepad_device['manufacturer_string']
 
         if manufacturer_string.startswith('ShanWan'):
             self.start_byte_left_stick = 3
             self.start_byte_right_stick = 5
-            # self.dead_zone = 0.0
+            # self.dead_zone_radius = 0.0
 
         elif manufacturer_string.startswith('Sony Interactive Entertainment'):
             self.start_byte_left_stick = 1
             self.start_byte_right_stick = 3
-            # self.dead_zone = 0.1
+            # self.dead_zone_radius = 0.1
 
 
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
@@ -69,17 +70,21 @@ class ListenThread(QThread):
                 data = read_gamepad(self.gamepad)
                 if data:
 
-                    x_axis, y_axis = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone)
+                    x_axis, y_axis, rx1, ry1 = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone_radius)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
-                        self.update_signal.emit((BOARD_OFFSET, offset))
+                        self.update_signal.emit((BOARD_OFFSET, offset, rx1, ry1))
+                    elif self.pass_deadzone_values:
+                        self.update_signal.emit((BOARD_OFFSET, QPointF(0, 0), rx1, ry1))
 
-                    x_axis, y_axis = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone)
+                    x_axis, y_axis, rx2, ry2 = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone_radius)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
-                        self.update_signal.emit((BOARD_SCALE, scroll_value))
+                        self.update_signal.emit((BOARD_SCALE, scroll_value, rx2, ry2))
+                    elif self.pass_deadzone_values:
+                        self.update_signal.emit((BOARD_SCALE, 0.0, rx2, ry2))
 
                     if self.isPlayStation4DualShockGamepad:
                         rbb = data[5] #right buttons byte
@@ -104,19 +109,23 @@ class ListenThread(QThread):
 
         self.exec_()
 
-def update_board_viewer(obj, data):
+def update_board_viewer(MainWindowObj, data):
 
     key = data[0]
     if key == BOARD_OFFSET:
         offset = data[1]
-        obj.canvas_origin -= offset
+        if offset:
+            MainWindowObj.canvas_origin -= offset
+        MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
     elif key == BOARD_SCALE:
         scroll_value = data[1]
-        pivot = obj.rect().center()
-        scale_speed = fit(abs(scroll_value), 0.0, 1.0, 350.0, 30.0)
-        obj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
+        if scroll_value:
+            pivot = MainWindowObj.rect().center()
+            scale_speed = fit(abs(scroll_value), 0.0, 1.0, 350.0, 30.0)
+            MainWindowObj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
+        MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
     elif key == LISTENING_STOP:
-        deactivate_listening(obj)
+        deactivate_listening(MainWindowObj)
     elif key == BUTTON_STATE:
         state = data[1]
         button = data[2]
@@ -126,9 +135,60 @@ def update_board_viewer(obj, data):
                 status = _("The left and right sticks exchange")
             else:
                 status = _("The left and right sticks exchange back") 
-            obj.show_center_label(f'{status}')
+            MainWindowObj.show_center_label(f'{status}')
 
-    obj.update()
+    MainWindowObj.update()
+
+def draw_gamepad_monitor(self, painter, event):
+
+    painter.save()
+    rect = self.rect()
+
+    c = rect.center()
+    stick_pixel_radius = int(rect.width() / 5.0)
+    offset = QPoint(stick_pixel_radius, 0)
+
+    left_stick_origin = c - offset
+    right_stick_origin = c + offset
+
+
+    # sticks whole zones
+    D = stick_pixel_radius * 2
+    left_stick_rect = QRect(0, 0, D, D)
+    right_stick_rect = QRect(0, 0, D, D)
+
+    left_stick_rect.moveCenter(left_stick_origin)
+    right_stick_rect.moveCenter(right_stick_origin)
+
+    painter.setPen(QPen(QColor(0, 255, 0, 255)))
+    painter.setBrush(QBrush(QColor(0, 255, 0, 50)))
+    painter.drawEllipse(left_stick_rect)
+    painter.drawEllipse(right_stick_rect)
+
+
+    # sticks dead zones
+    DZ_D = int(self.STNG_gamepad_dead_zone_radius*stick_pixel_radius) * 2
+    left_stick_dead_zone_rect = QRect(0, 0, DZ_D, DZ_D)
+    right_stick_dead_zone_rect = QRect(0, 0, DZ_D, DZ_D)
+
+    left_stick_dead_zone_rect.moveCenter(left_stick_origin)
+    right_stick_dead_zone_rect.moveCenter(right_stick_origin)
+
+    painter.setPen(QPen(QColor(255, 0, 0, 255)))
+    painter.setBrush(QBrush(QColor(255, 0, 0, 50)))
+    painter.drawEllipse(left_stick_dead_zone_rect)
+    painter.drawEllipse(right_stick_dead_zone_rect)
+
+    left_stick_vector = self.left_stick_vec*stick_pixel_radius
+    right_stick_vector = self.right_stick_vec*stick_pixel_radius
+
+    pen = QPen(Qt.white, 3)
+    pen.setCapStyle(Qt.RoundCap)
+    painter.setPen(pen)
+    painter.drawLine(left_stick_origin, left_stick_origin+left_stick_vector)
+    painter.drawLine(right_stick_origin, right_stick_origin+right_stick_vector)
+
+    painter.restore()
 
 def find_gamepad():
     gamepad_device = None
@@ -179,6 +239,10 @@ def deactivate_listening(obj):
     # obj.timer.stop()
     obj.gamepad_thread_instance.terminate()
     obj.gamepad_thread_instance = None
+
+    obj.left_stick_vec = QPointF(0, 0)
+    obj.right_stick_vec = QPointF(0, 0)
+
     obj.show_center_label(_('Gamepad control deactivated!'), error=True)
 
 def read_gamepad(gamepad):
@@ -189,7 +253,7 @@ def read_sticks_to_obj(obj):
         try:
             data = read_gamepad(obj.gamepad)
             if data:
-                x_axis, y_axis = read_stick_data(data)
+                x_axis, y_axis, __, __ = read_stick_data(data)
                 offset = QPointF(x_axis, y_axis)
                 if offset:
                     offset *= 20
@@ -223,14 +287,16 @@ def apply_dead_zone_accurately(x_axis, y_axis, dead_zone):
     return x_axis, y_axis
 
 def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
-    x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
-    y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
+    input_x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
+    input_y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
 
     if dead_zone != 0.0:
-        # x_axis, y_axis = apply_dead_zone_legacy_inaccurate(x_axis, y_axis, dead_zone)
-        x_axis, y_axis = apply_dead_zone_accurately(x_axis, y_axis, dead_zone)
+        # input_x_axis, input_y_axis = apply_dead_zone_legacy_inaccurate(input_x_axis, input_y_axis, dead_zone)
+        x_axis, y_axis = apply_dead_zone_accurately(input_x_axis, input_y_axis, dead_zone)
+    else:
+        x_axis, y_axis = input_x_axis, input_y_axis
 
-    return x_axis, y_axis
+    return x_axis, y_axis, input_x_axis, input_y_axis
 
 def read_right_stick(data, start_byte_index=5, dead_zone=0.0):
     x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
