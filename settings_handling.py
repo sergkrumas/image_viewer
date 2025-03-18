@@ -330,7 +330,10 @@ class SettingsWindow(QWidget):
         self.load_settings_to_globals()
         MW.update_thumbnails_row_relative_offset(None, only_set=True)
         MW.update()
-        cp.update()
+
+        # когда окно настроек открывается на стартовой странице cp будет None
+        if cp is not None:
+            cp.update()
 
     @classmethod
     def load_settings_to_globals(cls):
