@@ -2914,6 +2914,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.__position_init = QPointF(bi.position)
             position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_corner_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
+            position_vec_center = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_center_point
+            # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
+            position_vec_center *= 2
+            bi.normalized_pos_x_center, bi.normalized_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
 
     def calculate_vector_projection_factors(self, x_axis, y_axis, vector):
         x_axis = QVector2D(x_axis)
@@ -2936,7 +2940,7 @@ class BoardMixin(BoardTextEditItemMixin):
         proportional_scaling = multi_item_mode or shift_mod
 
         # отключаем модификатор alt для группы выделенных айтемов
-        center_is_pivot = center_is_pivot and not multi_item_mode
+        # center_is_pivot = center_is_pivot and not multi_item_mode
 
         if center_is_pivot:
             pivot = self.scaling_pivot_center_point
@@ -2983,24 +2987,41 @@ class BoardMixin(BoardTextEditItemMixin):
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
 
+            if center_is_pivot and multi_item_mode:
+                # это решение убирает флип скейла по обеим осям
+                # но также лишает возможности отзеркаливать,
+                # если курсор мыши завести с противоположной стороны относительно пивота 
+                x_factor = abs(x_factor)
+                y_factor = abs(y_factor) 
+
             bi.scale_x = bi.__scale_x * x_factor
             bi.scale_y = bi.__scale_y * y_factor
             if proportional_scaling and not multi_item_mode and not center_is_pivot:
                 bi.scale_x = math.copysign(1.0, bi.scale_x)*abs(bi.scale_y)
 
             # position component
-            if center_is_pivot:
+            if center_is_pivot and not multi_item_mode:
                 bi.position = bi.__position
-            else:
-                pos = bi.calculate_absolute_position(canvas=self, rel_pos=bi.__position)
+
+            elif center_is_pivot and multi_item_mode:
                 scaling = QTransform()
-                # эти нормализованные координаты актуальны для пропорционального и не для пропорционального редактирования
+                # эти нормализованные координаты актуальны для пропорционального и непропорционального масштабирования
+                scaling.scale(bi.normalized_pos_x_center, bi.normalized_pos_y_center)
+                mapped_scaling_vector = scaling.map(scaling_vector)
+                new_viewport_position = pivot + mapped_scaling_vector
+                rel_pos_global_scaled = new_viewport_position - self.canvas_origin
+                new_rel_pos = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.canvas_scale_y)
+                bi.position = new_rel_pos
+
+            else:
+                scaling = QTransform()
+                # эти нормализованные координаты актуальны для пропорционального и непропорционального масштабирования
                 scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
                 mapped_scaling_vector = scaling.map(scaling_vector)
-                new_absolute_position = pivot + mapped_scaling_vector
-                rel_pos_global_scaled = new_absolute_position - self.canvas_origin
-                new_position = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.canvas_scale_y)
-                bi.position = new_position
+                new_viewport_position = pivot + mapped_scaling_vector
+                rel_pos_viewport_scaled = new_viewport_position - self.canvas_origin
+                new_rel_pos = QPointF(rel_pos_viewport_scaled.x()/self.canvas_scale_x, rel_pos_viewport_scaled.y()/self.canvas_scale_y)
+                bi.position = new_rel_pos
 
         # bounding box update
         self.update_selection_bouding_box()
