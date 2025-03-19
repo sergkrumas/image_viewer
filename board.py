@@ -3152,6 +3152,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_cursor_setter()
         self.update()
 
+    def board_is_items_transformation_ongoing(self):
+        return self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing
+
     def board_mouseReleaseEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
@@ -3728,6 +3731,9 @@ class BoardMixin(BoardTextEditItemMixin):
         return bool(self.fly_pairs)
 
     def board_fly_over(self, user_call=False):
+        if self.board_is_items_transformation_ongoing():
+            return
+
         self.board_unselect_all_items()
 
         if user_call and self.fly_pairs:
