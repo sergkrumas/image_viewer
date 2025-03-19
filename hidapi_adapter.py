@@ -315,7 +315,7 @@ def main():
         gamepad = open_device(gamepad_device)
 
         def read_gamepad():
-            return gamepad.read(64)
+            return gamepad.read(48)
 
         try:
             # a = time.time()
@@ -344,18 +344,32 @@ def main():
                                 byte_descr += ' x'
                             if data_byte & square_button:
                                 byte_descr += ' s'
+                        if n == 6:
+                            options_button = 1 << 5
+                            share_button = 1 << 4
+                            if data_byte & share_button:
+                                byte_descr += ' share'
+                            if data_byte & options_button:
+                                byte_descr += ' options'
 
-                        if n in [5, 6]:
-                            out.append(byte_descr)
+
+                        if False:
+                            out.append(str(data_byte).zfill(3))
+                        else:
+
+                            if n in [5, 6]:
+                                out.append(byte_descr)
+
+
                     out = " ".join(out)
-                    print(out)
+                    # print(out)
                     # x_axis, y_axis = read_left_stick(data)
 
                     # print(f'{x_axis}, {y_axis}')
 
                     # delta = time.time() - a
                     # print(delta)
-                    if False and before_data is not None:
+                    if True and before_data is not None:
                         changed_indexes = []
                         for n, byte_value in enumerate(data):
                             if byte_value != before_data[n]:
