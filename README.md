@@ -20,11 +20,11 @@ Viewer Page Presentation on Youtube:
 
 ## Board page (PureRef Clone)
 
+You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
+
 Board Page Presentation on Youtube:
 
 [![Comment](https://img.youtube.com/vi/cWVgUz3I5Po/0.jpg)](https://www.youtube.com/watch?v=cWVgUz3I5Po "Board Page Presentation — Watch on Youtube")
-
-You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
 
 ## Supported formats
 - .webp (static & animated)
