@@ -13,15 +13,19 @@ from functools import partial
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 LISTENING_STOP = 0
-BOARD_SCALE = 1
-BOARD_OFFSET = 2
-BUTTON_STATE = 3
+BOARD_SCALE_DATA = 1
+BOARD_OFFSET_DATA = 2
+BUTTON_STATE_DATA = 3
 
 BUTTON_PRESSED = 10
 BUTTON_AUTOREPEAT = 11
 BUTTON_RELEASED = 12
 
 BUTTON_TRIANGLE = 20
+
+BUTTON_OPTIONS = 50
+BUTTON_SHARE = 51
+
 
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
@@ -64,7 +68,16 @@ class ListenThread(QThread):
             PS_cross_button_bit = 1 << 5
             PS_square_button_bit = 1 << 4
 
+            PS_options_button = 1 << 5
+            PS_share_button = 1 << 4
+
             before_triangle_pressed = False
+
+            buttons_flags = [PS_options_button, PS_share_button]
+            buttons_ints = [50, 51]
+            buttons_count = len(buttons_flags)
+            states = [False] * buttons_count
+            before_states = [False] * buttons_count
 
             while True:
                 data = read_gamepad(self.gamepad)
@@ -74,28 +87,44 @@ class ListenThread(QThread):
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
-                        self.update_signal.emit((BOARD_OFFSET, offset, rx1, ry1))
+                        self.update_signal.emit((BOARD_OFFSET_DATA, offset, rx1, ry1))
                     elif self.pass_deadzone_values:
-                        self.update_signal.emit((BOARD_OFFSET, QPointF(0, 0), rx1, ry1))
+                        self.update_signal.emit((BOARD_OFFSET_DATA, QPointF(0, 0), rx1, ry1))
 
                     x_axis, y_axis, rx2, ry2 = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone_radius)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
-                        self.update_signal.emit((BOARD_SCALE, scroll_value, rx2, ry2))
+                        self.update_signal.emit((BOARD_SCALE_DATA, scroll_value, rx2, ry2))
                     elif self.pass_deadzone_values:
-                        self.update_signal.emit((BOARD_SCALE, 0.0, rx2, ry2))
+                        self.update_signal.emit((BOARD_SCALE_DATA, 0.0, rx2, ry2))
 
                     if self.isPlayStation4DualShockGamepad:
                         rbb = data[5] #right buttons byte
                         but_state = bool(rbb & PS_cross_button_bit)
 
                         if but_state and before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE, BUTTON_AUTOREPEAT, BUTTON_TRIANGLE))
+                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, BUTTON_TRIANGLE))
                         elif but_state and not before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE, BUTTON_PRESSED, BUTTON_TRIANGLE))
+                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, BUTTON_TRIANGLE))
                         elif not but_state and before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE, BUTTON_RELEASED, BUTTON_TRIANGLE, self.swap_read_byte_indexes()))
+                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, BUTTON_TRIANGLE, self.swap_read_byte_indexes()))
+
+
+                        rbb = data[6]
+                        for i, flag in enumerate(buttons_flags):
+                            states[i] = bool(rbb & flag)
+
+                        for i in range(buttons_count):
+                            if states[i] and before_states[i]:
+                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, buttons_ints[i]))
+                            elif states[i] and not before_states[i]:
+                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, buttons_ints[i]))
+                            elif not states[i] and before_states[i]:
+                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, buttons_ints[i], self.swap_read_byte_indexes()))
+
+                            before_states[i] = states[i]
+
 
                         before_triangle_pressed = but_state
 
@@ -112,12 +141,12 @@ class ListenThread(QThread):
 def update_board_viewer(MainWindowObj, data):
 
     key = data[0]
-    if key == BOARD_OFFSET:
+    if key == BOARD_OFFSET_DATA:
         offset = data[1]
         if offset:
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
-    elif key == BOARD_SCALE:
+    elif key == BOARD_SCALE_DATA:
         scroll_value = data[1]
         if scroll_value:
             pivot = MainWindowObj.rect().center()
@@ -126,16 +155,23 @@ def update_board_viewer(MainWindowObj, data):
         MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
     elif key == LISTENING_STOP:
         deactivate_listening(MainWindowObj)
-    elif key == BUTTON_STATE:
+    elif key == BUTTON_STATE_DATA:
         state = data[1]
         button = data[2]
         if state == BUTTON_RELEASED:
-            status = data[3]
-            if status:
-                status = _("The left and right sticks exchange")
-            else:
-                status = _("The left and right sticks exchange back") 
-            MainWindowObj.show_center_label(f'{status}')
+            if button == BUTTON_TRIANGLE:
+                status = data[3]
+                if status:
+                    status = _("The left and right sticks exchange")
+                else:
+                    status = _("The left and right sticks exchange back") 
+                MainWindowObj.show_center_label(f'{status}')
+            elif button == BUTTON_SHARE:
+                MainWindowObj.board_viewport_reset(scale=False)
+                MainWindowObj.show_center_label('viewport position is reset!')
+            elif button == BUTTON_OPTIONS:
+                MainWindowObj.board_viewport_reset(position=False)
+                MainWindowObj.show_center_label('viewport scale is reset!')
 
     MainWindowObj.update()
 

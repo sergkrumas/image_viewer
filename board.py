@@ -346,10 +346,15 @@ class BoardMixin(BoardTextEditItemMixin):
     # для поддержки миксинов
     BoardItem = BoardItem
 
+    def board_viewport_reset(self, scale=True, position=True):
+        if scale:
+            self.canvas_scale_x = 1.0
+            self.canvas_scale_y = 1.0
+        if position:
+            self.canvas_origin = self.get_center_position()
+
     def board_init(self):
-        self.canvas_origin = self.get_center_position()
-        self.canvas_scale_x = 1.0
-        self.canvas_scale_y = 1.0
+        self.board_viewport_reset()
         self.board_region_zoom_in_init()
         self.scale_rastr_source = None
         self.rotate_rastr_source = None
@@ -590,6 +595,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif check_scancode_for(event, "B") and ctrl_mod:
             self.grab().save('grab.png')
+
+        elif check_scancode_for(event, "K"):
+            self.board_viewport_reset()
 
         elif key == Qt.Key_Home:
             self.board_viewport_show_first_item()
