@@ -390,9 +390,9 @@ def main():
                             if data_byte & options_button:
                                 byte_descr += ' options'
                             if data_byte & left_stick:
-                                byte_descr += ' toggle left stick'
+                                byte_descr += ' left stick'
                             if data_byte & right_stick:
-                                byte_descr += ' toggle right stick'
+                                byte_descr += ' right stick'
 
 
                         if False:
