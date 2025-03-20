@@ -381,12 +381,18 @@ def main():
                             if data_byte & square_button:
                                 byte_descr += ' s'
                         if n == 6:
+                            right_stick = 1 << 7
+                            left_stick = 1 << 6
                             options_button = 1 << 5
                             share_button = 1 << 4
                             if data_byte & share_button:
                                 byte_descr += ' share'
                             if data_byte & options_button:
                                 byte_descr += ' options'
+                            if data_byte & left_stick:
+                                byte_descr += ' toggle left stick'
+                            if data_byte & right_stick:
+                                byte_descr += ' toggle right stick'
 
 
                         if False:
@@ -398,14 +404,14 @@ def main():
 
 
                     out = " ".join(out)
-                    # print(out)
+                    print(out)
                     # x_axis, y_axis = read_left_stick(data)
 
                     # print(f'{x_axis}, {y_axis}')
 
                     # delta = time.time() - a
                     # print(delta)
-                    if True and before_data is not None:
+                    if False and before_data is not None:
                         changed_indexes = []
                         for n, byte_value in enumerate(data):
                             if byte_value != before_data[n]:
