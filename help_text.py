@@ -81,7 +81,7 @@ def retrieve_pages_help_text():
     middle mouse click - camera moving
     mouse wheel - camera zooming
     F12 - activate/desactivate gamepad control
-        Playstation 4 Dualshock Gamepad & Defender Gamepad supported
+        Playstation 4 Dualshock Gamepad & ShanWan Gamepad supported
         left stick - camera moving
         right stick (vertical) - camera zooming
         X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock
