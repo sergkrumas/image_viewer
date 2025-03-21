@@ -4143,7 +4143,7 @@ class BoardMixin(BoardTextEditItemMixin):
         dialog.deleteLater()
 
         if not selected_folders:
-            self.show_center_label(_('No folders selected!', error=True))
+            self.show_center_label(_('No folders selected!'), error=True)
             return
 
         cf = self.LibraryData().current_folder()
