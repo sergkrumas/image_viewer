@@ -2955,6 +2955,7 @@ class BoardMixin(BoardTextEditItemMixin):
         proportional_scaling = multi_item_mode or shift_mod
 
         if self.parameterized_transform_widget_scaling:
+            proportional_scaling = True
             if self.scaling_active_point_index_NEAREST == 4:
                 center_is_pivot = True
 
