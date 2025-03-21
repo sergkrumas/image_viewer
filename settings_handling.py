@@ -508,6 +508,7 @@ class SettingsWindow(QWidget):
             'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
             'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
             'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
+            'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
 
             '---003': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),

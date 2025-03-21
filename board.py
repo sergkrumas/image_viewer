@@ -3119,8 +3119,10 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_SCALE_selected_items(self, up=False, down=False, toggle_monitor=False):
 
         if (up or down):
-            VECTOR_LENGTH_FACTOR = 20.0 # in pixels
-  
+
+            # in screen pixels
+            VECTOR_LENGTH_FACTOR = self.STNG_one_key_selected_items_scaling_factor
+
             if up:
                 pass
 
