@@ -3501,7 +3501,7 @@ class BoardMixin(BoardTextEditItemMixin):
             canvas_scale_x = self.canvas_scale_x
             canvas_scale_y = self.canvas_scale_y
 
-            if self.selection_bounding_box is None or not self.selected_items:
+            if (self.selection_bounding_box is None or not self.selected_items) and use_selection:
                 self.show_center_label(_('No items selected!'))
                 return
 
