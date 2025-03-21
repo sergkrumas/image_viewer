@@ -307,11 +307,11 @@ def main():
 
     # move_pot_to_po(this_folder)
 
-    generate_pot_file(this_folder) # updating main template file
+    # generate_pot_file(this_folder) # updating main template file
 
     # sync_po_files(this_folder, keep_old_entries=False) # see CHANGELOG.md for sync_po_files documentation 
 
-    # generate_mo_file(this_folder) # creating compiled locale files
+    generate_mo_file(this_folder) # creating compiled locale files
 
 
 if __name__ == '__main__':
