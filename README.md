@@ -85,10 +85,10 @@ Make sure that python.exe has suited version. See requirements about Python vers
 ## Features 
 - complete clone if we talk about the image viewer itself 
 - F1 key to see which key doing what
-- Viewing history per folder and and global one 
-- Small images tend to fit maximum screen area
-- Rearranging image thumbnails so images order changed
-- PureRef Clone on Board Page for observing interactive collage
+- Viewing history per folder and per global one 
+- Small images tend to fit maximum screen area (this behavior could be finely tuned in the app settings)
+- Changing images order by rearranging image thumbnails
+- Observing interactive collages on Board Page (PureRef Clone) 
 - Plugin system for Board Page
 
 Program runs in lite mode by default, but standard mode is available.
