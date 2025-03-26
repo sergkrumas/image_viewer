@@ -214,7 +214,7 @@ def update_board_viewer(MainWindowObj, thread, data):
     if key == BOARD_OFFSET_DATA:
         offset = data[1]
         if offset:
-            offset *= 20
+            offset *= MainWindowObj.STNG_gamepad_move_stick_speed
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
     elif key == BOARD_SCALE_DATA:
