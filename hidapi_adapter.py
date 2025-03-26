@@ -17,14 +17,61 @@ BOARD_SCALE_DATA = 1
 BOARD_OFFSET_DATA = 2
 BUTTON_STATE_DATA = 3
 
+
 BUTTON_PRESSED = 10
 BUTTON_AUTOREPEAT = 11
 BUTTON_RELEASED = 12
 
+
 BUTTON_TRIANGLE = 20
+BUTTON_CIRCLE = 21
+BUTTON_CROSS = 22
+BUTTON_SQUARE = 23
+
 
 BUTTON_OPTIONS = 50
 BUTTON_SHARE = 51
+
+
+class ButtonsStatesHandler():
+
+    def __init__(self, convert_dict, tag_data_dict):
+        self.buttons_bit_flags = list(convert_dict.keys())
+        self.tag_data_dict = tag_data_dict
+        self.BUTTONS_INTS = list(convert_dict.values())
+        self.buttons_count = len(self.buttons_bit_flags)
+        self.states = [False] * self.buttons_count
+        self.before_states = [False] * self.buttons_count
+
+    def prepare_data(self, data):
+        prepared_data = []
+        for data_item in data:
+            if callable(data_item):
+                data_item = data_item()
+            prepared_data.append(data_item)
+        return prepared_data
+
+    def handler(self, input_byte, update_signal):
+        for i, flag in enumerate(self.buttons_bit_flags):
+            self.states[i] = bool(input_byte & flag)
+
+        for i in range(self.buttons_count):
+            BUTTON_INT = self.BUTTONS_INTS[i]
+            state = self.states[i]
+            if state and self.before_states[i]:
+                st = BUTTON_AUTOREPEAT
+                data = self.tag_data_dict.get((st, BUTTON_INT), [])
+                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+            elif state and not self.before_states[i]:
+                st = BUTTON_PRESSED
+                data = self.tag_data_dict.get((st, BUTTON_INT), [])
+                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+            elif not state and self.before_states[i]:
+                st = BUTTON_RELEASED
+                data = self.tag_data_dict.get((st, BUTTON_INT), [])
+                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+
+            self.before_states[i] = state
 
 
 class ListenThread(QThread):
@@ -33,6 +80,9 @@ class ListenThread(QThread):
     def __init__(self, gamepad, gamepad_device, obj):
         QThread.__init__(self)
         self.gamepad = gamepad
+
+        # exp от 1.0 до 4.0
+        self.easeInExpo = obj.STNG_gamepad_move_stick_ease_in_expo_param
 
         self.dead_zone_radius = obj.STNG_gamepad_dead_zone_radius
         self.pass_deadzone_values = obj.STNG_show_gamepad_monitor
@@ -49,7 +99,6 @@ class ListenThread(QThread):
             self.start_byte_right_stick = 3
             # self.dead_zone_radius = 0.1
 
-
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
 
         self.byte_indexes_swapped = False
@@ -60,13 +109,13 @@ class ListenThread(QThread):
         self.byte_indexes_swapped = not self.byte_indexes_swapped
         return self.byte_indexes_swapped
 
-    def easeInExpo(self, value, exp=2.0):
-        # exp от 1.0 до 4.0
+    def doEaseInExpo(self, value):
+        exp = self.easeInExpo
         if exp > 1.0:
             filtered_value = math.pow(abs(value), exp)
+            return math.copysign(filtered_value, value)
         else:
-            filtered_value = value
-        return math.copysign(filtered_value, value)
+            return value
 
     def run(self):
         try:
@@ -79,20 +128,35 @@ class ListenThread(QThread):
             PS_options_button = 1 << 5
             PS_share_button = 1 << 4
 
+            options_share_btns_handler = ButtonsStatesHandler(
+                {
+                    PS_options_button: BUTTON_OPTIONS,
+                    PS_share_button: BUTTON_SHARE,
+                },
+                {}
+            )
+
+            right_btns_handler = ButtonsStatesHandler(
+                {
+                    PS_triangle_button_bit: BUTTON_TRIANGLE,
+                    PS_circle_button_bit: BUTTON_CIRCLE,
+                    PS_cross_button_bit: BUTTON_CROSS,
+                    PS_square_button_bit: BUTTON_SQUARE,
+                },
+                {
+                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_read_byte_indexes]
+                }
+            )
+
             before_triangle_pressed = False
 
-            buttons_flags = [PS_options_button, PS_share_button]
-            buttons_ints = [50, 51]
-            buttons_count = len(buttons_flags)
-            states = [False] * buttons_count
-            before_states = [False] * buttons_count
 
             while True:
                 data = read_gamepad(self.gamepad)
                 if data:
 
                     x_axis, y_axis, rx1, ry1 = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone_radius)
-                    x_axis, y_axis = self.easeInExpo(x_axis), self.easeInExpo(y_axis)
+                    x_axis, y_axis = self.doEaseInExpo(x_axis), self.doEaseInExpo(y_axis)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         self.update_signal.emit((BOARD_OFFSET_DATA, offset, rx1, ry1))
@@ -108,33 +172,28 @@ class ListenThread(QThread):
                         self.update_signal.emit((BOARD_SCALE_DATA, 0.0, rx2, ry2))
 
                     if self.isPlayStation4DualShockGamepad:
-                        rbb = data[5] #right buttons byte
-                        but_state = bool(rbb & PS_cross_button_bit)
-
-                        if but_state and before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, BUTTON_TRIANGLE))
-                        elif but_state and not before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, BUTTON_TRIANGLE))
-                        elif not but_state and before_triangle_pressed:
-                            self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, BUTTON_TRIANGLE, self.swap_read_byte_indexes()))
 
 
-                        rbb = data[6]
-                        for i, flag in enumerate(buttons_flags):
-                            states[i] = bool(rbb & flag)
+                        # rbb = data[5] #right buttons byte
+                        # but_state = bool(rbb & PS_cross_button_bit)
 
-                        for i in range(buttons_count):
-                            if states[i] and before_states[i]:
-                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, buttons_ints[i]))
-                            elif states[i] and not before_states[i]:
-                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, buttons_ints[i]))
-                            elif not states[i] and before_states[i]:
-                                self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, buttons_ints[i], self.swap_read_byte_indexes()))
+                        # if but_state and before_triangle_pressed:
+                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, BUTTON_CROSS))
+                        # elif but_state and not before_triangle_pressed:
+                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, BUTTON_CROSS))
+                        # elif not but_state and before_triangle_pressed:
+                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, BUTTON_CROSS, self.swap_read_byte_indexes()))
 
-                            before_states[i] = states[i]
+                        # before_triangle_pressed = but_state
 
 
-                        before_triangle_pressed = but_state
+
+                        right_btns_handler.handler(data[5], self.update_signal)
+
+                        options_share_btns_handler.handler(data[6], self.update_signal)
+
+
+
 
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
                 # В обратном случае использование CPU падает до привычного значения
@@ -169,7 +228,7 @@ def update_board_viewer(MainWindowObj, data):
         state = data[1]
         button = data[2]
         if state == BUTTON_RELEASED:
-            if button == BUTTON_TRIANGLE:
+            if button == BUTTON_CROSS:
                 status = data[3]
                 if status:
                     status = _("The left and right sticks exchange")
@@ -395,6 +454,10 @@ def main():
                             left_stick = 1 << 6
                             options_button = 1 << 5
                             share_button = 1 << 4
+
+                            l1_button = 1 << 0
+                            r1_button = 1 << 1
+
                             if data_byte & share_button:
                                 byte_descr += ' share'
                             if data_byte & options_button:
@@ -403,7 +466,10 @@ def main():
                                 byte_descr += ' left stick'
                             if data_byte & right_stick:
                                 byte_descr += ' right stick'
-
+                            if data_byte & l1_button:
+                                byte_descr += ' l1_button'
+                            if data_byte & r1_button:
+                                byte_descr += ' r1_button'
 
                         if False:
                             out.append(str(data_byte).zfill(3))
