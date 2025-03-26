@@ -28,6 +28,8 @@ BUTTON_CIRCLE = 21
 BUTTON_CROSS = 22
 BUTTON_SQUARE = 23
 
+BUTTON_L1 = 24
+BUTTON_R1 = 25
 
 BUTTON_OPTIONS = 50
 BUTTON_SHARE = 51
@@ -109,6 +111,13 @@ class ListenThread(QThread):
         self.byte_indexes_swapped = not self.byte_indexes_swapped
         return self.byte_indexes_swapped
 
+    def change_easeInExpo(self, direction):
+        eie = self.easeInExpo
+        eie *= 10.0
+        eie += direction
+        eie /= 10.0
+        self.easeInExpo = min(4.0, max(1.0, eie))
+
     def doEaseInExpo(self, value):
         exp = self.easeInExpo
         if exp > 1.0:
@@ -128,12 +137,21 @@ class ListenThread(QThread):
             PS_options_button = 1 << 5
             PS_share_button = 1 << 4
 
+            PS_l1_button = 1 << 0
+            PS_r1_button = 1 << 1
+
             options_share_btns_handler = ButtonsStatesHandler(
                 {
                     PS_options_button: BUTTON_OPTIONS,
                     PS_share_button: BUTTON_SHARE,
+
+                    PS_l1_button: BUTTON_L1,
+                    PS_r1_button: BUTTON_R1,
                 },
-                {}
+                {                
+                    (BUTTON_RELEASED, BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
+                    (BUTTON_RELEASED, BUTTON_R1): [lambda: self.change_easeInExpo(1)],
+                }
             )
 
             right_btns_handler = ButtonsStatesHandler(
@@ -144,7 +162,7 @@ class ListenThread(QThread):
                     PS_square_button_bit: BUTTON_SQUARE,
                 },
                 {
-                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_read_byte_indexes]
+                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_read_byte_indexes],
                 }
             )
 
@@ -174,7 +192,6 @@ class ListenThread(QThread):
                     if self.isPlayStation4DualShockGamepad:
 
                         right_btns_handler.handler(data[5], self.update_signal)
-
                         options_share_btns_handler.handler(data[6], self.update_signal)
 
 
@@ -190,7 +207,7 @@ class ListenThread(QThread):
 
         self.exec_()
 
-def update_board_viewer(MainWindowObj, data):
+def update_board_viewer(MainWindowObj, thread, data):
 
     key = data[0]
     if key == BOARD_OFFSET_DATA:
@@ -226,6 +243,8 @@ def update_board_viewer(MainWindowObj, data):
             elif button == BUTTON_OPTIONS:
                 MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                 MainWindowObj.show_center_label('viewport scale is reset!')
+            elif button in [BUTTON_L1, BUTTON_R1]:
+                MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
 
     MainWindowObj.update()
 
@@ -315,7 +334,7 @@ def activate_gamepad(obj):
             # timer.timeout.connect(partial(read_sticks_to_obj, obj))
             # timer.start()
             obj.gamepad_thread_instance = ListenThread(obj.gamepad, gamepad_device, obj)
-            obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj))
+            obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj, obj.gamepad_thread_instance))
             obj.gamepad_thread_instance.start()
 
             obj.show_center_label(_('Gamepad control activated!'))

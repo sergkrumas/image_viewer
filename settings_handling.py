@@ -482,6 +482,7 @@ class SettingsWindow(QWidget):
             'show_noise_cells': (True, _('Show animated cells overlay')),
             'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
             'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
+            'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),
 
             '---002': _('Viewer page'),
             'animated_zoom': (False, _('Animated zoom')),
