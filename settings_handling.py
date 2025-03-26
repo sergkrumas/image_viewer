@@ -601,7 +601,7 @@ class SettingsWindow(QWidget):
         self.setWindowModality(Qt.WindowModal)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
 
-        self.resize(1000, 700)
+        self.resize(1500, 700)
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init
