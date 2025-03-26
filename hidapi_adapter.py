@@ -149,7 +149,7 @@ class ListenThread(QThread):
                     PS_l1_button: BUTTON_L1,
                     PS_r1_button: BUTTON_R1,
                 },
-                {                
+                {
                     (BUTTON_RELEASED, BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
                     (BUTTON_RELEASED, BUTTON_R1): [lambda: self.change_easeInExpo(1)],
                 }
@@ -236,7 +236,7 @@ def update_board_viewer(MainWindowObj, thread, data):
                 if status:
                     status = _("The left and right sticks exchange")
                 else:
-                    status = _("The left and right sticks exchange back") 
+                    status = _("The left and right sticks exchange back")
                 MainWindowObj.show_center_label(f'{status}')
             elif button == BUTTON_SHARE:
                 MainWindowObj.board_viewport_reset(scale=False)
@@ -246,7 +246,7 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.show_center_label('viewport scale is reset!')
             elif button in [BUTTON_L1, BUTTON_R1]:
                 MainWindowObj.STNG_gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
-                MainWindowObj.show_easeInExpo_monitor = True 
+                MainWindowObj.show_easeInExpo_monitor = True
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
@@ -269,8 +269,7 @@ def draw_gamepad_easing_monitor(self, painter, event):
 
     painter.setPen(Qt.NoPen)
     painter.setBrush(QColor(30, 30, 30, 200))
-    painter.drawRect(graph_rect.adjusted(-30, -30, 30, 30))
-
+    painter.drawRect(graph_rect.adjusted(-30, -30, 30, 60))
 
     if True:
         # drawing grid
@@ -281,9 +280,8 @@ def draw_gamepad_easing_monitor(self, painter, event):
         LINES_INTERVAL_X = 25 * canvas_scale_x
         LINES_INTERVAL_Y = 25 * canvas_scale_y
         r = QRectF(graph_rect).adjusted(0, 0, 1, 1)
-        value_x = int(fit(canvas_scale_x, 0.08, 1.0, 0, 200))
-        # value_x = 100
-        pen = QPen(QColor(220, 220, 220, value_x), 1)
+
+        pen = QPen(QColor(220, 220, 220, 40), 1)
         painter.setPen(pen)
         offset = QPointF(icp.x() % LINES_INTERVAL_X, icp.y() % LINES_INTERVAL_Y)
 
@@ -308,6 +306,41 @@ def draw_gamepad_easing_monitor(self, painter, event):
         a = graph_rect.bottomLeft() + QPointF(x1*WIDTH, y1*WIDTH*-1.0)
         b = graph_rect.bottomLeft() + QPointF(x2*WIDTH, y2*WIDTH*-1.0)
         painter.drawLine(a, b)
+
+    font = painter.font()
+    font.setPixelSize(15)
+    painter.setFont(font)
+
+
+    painter.setPen(QPen(Qt.white, 1))
+
+    offset = QPoint(-10, 15)
+    painter.drawText(graph_rect.bottomLeft()+offset, '0.0')
+    painter.drawText(graph_rect.bottomRight()+offset, '1.0')
+    painter.drawText(graph_rect.topLeft()+QPoint(-10, -5), '1.0')
+
+    font = painter.font()
+    font.setPixelSize(60)
+    font.setWeight(1900)
+    painter.setFont(font)
+    painter.setPen(QPen(Qt.red, 1))
+    val = self.STNG_gamepad_move_stick_ease_in_expo_param
+    painter.drawText(graph_rect.topLeft()+QPoint(50, 70), f'{val:.02}')
+
+    if val > 1.0:
+        painter.setPen(QPen(Qt.green, 1))
+        text = 'easing modifier is applied'
+    else:
+        painter.setPen(QPen(Qt.gray, 1))
+        text = 'easing modifier is off'
+
+
+    font = painter.font()
+    font.setPixelSize(15)
+    painter.setFont(font)
+
+    rect = QRectF(graph_rect.bottomLeft(), graph_rect.bottomRight()+QPointF(0, 50))
+    painter.drawText(rect, Qt.AlignVCenter | Qt.AlignHCenter, text)
 
     painter.restore()
 
