@@ -122,8 +122,8 @@ class ListenThread(QThread):
     def doEaseInExpo(self, value):
         exp = self.easeInExpo
         if exp > 1.0:
-            filtered_value = math.pow(abs(value), exp)
-            return math.copysign(filtered_value, value)
+            modified_value = math.pow(abs(value), exp)
+            return math.copysign(modified_value, value)
         else:
             return value
 
