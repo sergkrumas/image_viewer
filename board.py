@@ -415,7 +415,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.show_longtime_process_ongoing = show_longtime_process_ongoing
         self.board_frame_items_text_rects = []
 
-        self.board_SCALE_selected_items_init()
+        self.board_PTWS_init()
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -2954,9 +2954,9 @@ class BoardMixin(BoardTextEditItemMixin):
         center_is_pivot = alt_mod
         proportional_scaling = multi_item_mode or shift_mod
 
-        if self.parameterized_transform_widget_scaling:
+        if self.PTWS:
             proportional_scaling = True
-            if self.scaling_active_point_index_NEAREST == 4:
+            if self.scaling_active_point_index_PTWS == 4:
                 center_is_pivot = True
 
         # отключаем модификатор alt для группы выделенных айтемов
@@ -3068,21 +3068,22 @@ class BoardMixin(BoardTextEditItemMixin):
             self.transform_cancelled = True
             print('cancel scaling')
 
-    def board_SCALE_selected_items_init(self):
-        self.parameterized_transform_widget_scaling = False
-        self.parameterized_transform_widget_scaling_draw_monitor = False
-        self.scaling_active_point_index_NEAREST = None
+    def board_PTWS_init(self):
+        # parameterized transform widget scaling
+        self.PTWS = False
+        self.PTWS_draw_monitor = False
+        self.scaling_active_point_index_PTWS = None
 
     def board_SCALE_selected_items_draw_monitor(self, painter):
-        if not self.parameterized_transform_widget_scaling_draw_monitor:
+        if not self.PTWS_draw_monitor:
             return
         if self.selection_bounding_box is None:
             return
-        if self.scaling_active_point_index_NEAREST is None:
+        if self.scaling_active_point_index_PTWS is None:
             return
 
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        index = self.scaling_active_point_index_NEAREST
+        index = self.scaling_active_point_index_PTWS
         if index == 4:
             pivot_pos = self.__selection_bounding_box_qpolygon_centroid()
         else:
@@ -3110,12 +3111,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 diffs[index] = QVector2D(point - QPointF(position)).length()
             diffs = sorted(diffs.items(), key=lambda x: x[1])
             index = diffs[0][0]
-            self.scaling_active_point_index_NEAREST = index
+            self.scaling_active_point_index_PTWS = index
             if index == 4:
                 # выбираем первую, но по идее, можно было бы выбрать любую другую
-                self.scaling_active_point_index_NEAREST_pos = self.selection_bounding_box[0]
+                self.scaling_active_point_index_PTWS_pos = self.selection_bounding_box[0]
             else:
-                self.scaling_active_point_index_NEAREST_pos = self.selection_bounding_box[index]
+                self.scaling_active_point_index_PTWS_pos = self.selection_bounding_box[index]
 
     def board_SCALE_selected_items(self, up=False, down=False, toggle_monitor=False):
 
@@ -3130,23 +3131,23 @@ class BoardMixin(BoardTextEditItemMixin):
             elif down:
                 VECTOR_LENGTH_FACTOR = -VECTOR_LENGTH_FACTOR
 
-            self.parameterized_transform_widget_scaling = True
+            self.PTWS = True
             self.board_SCALE_selected_items_choose_nearest_corner()
 
-            direction = QVector2D(self.scaling_active_point_index_NEAREST_pos -
+            direction = QVector2D(self.scaling_active_point_index_PTWS_pos -
                                     self.__selection_bounding_box_qpolygon_centroid()).normalized()
             direction *= VECTOR_LENGTH_FACTOR
-            pos = self.scaling_active_point_index_NEAREST_pos
+            pos = self.scaling_active_point_index_PTWS_pos
             parameter_pos = pos + direction.toPointF()
 
-            self.scaling_active_point_index = self.scaling_active_point_index_NEAREST
+            self.scaling_active_point_index = self.scaling_active_point_index_PTWS
 
             self.board_START_selected_items_SCALING(None)
             self.board_DO_selected_items_SCALING(parameter_pos)
             self.board_FINISH_selected_items_SCALING(None)
 
             self.board_SCALE_selected_items_choose_nearest_corner()
-            self.parameterized_transform_widget_scaling = False
+            self.PTWS = False
 
             # restore scale values signs, they may be corrupted by scaling one item with pivot in the center
             for item in self.selected_items:
@@ -3154,9 +3155,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 item.scale_y = math.copysign(item.scale_y, item.__scale_y)
 
         elif toggle_monitor:
-            self.parameterized_transform_widget_scaling_draw_monitor = \
-                                    not self.parameterized_transform_widget_scaling_draw_monitor
-            if self.parameterized_transform_widget_scaling_draw_monitor:
+            self.PTWS_draw_monitor = not self.PTWS_draw_monitor
+            if self.PTWS_draw_monitor:
                 self.board_SCALE_selected_items_choose_nearest_corner()
 
     def boards_do_scaling_key_callback(self):
@@ -3260,7 +3260,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.canvas_origin = end_value
                 self.update_selection_bouding_box()
 
-        if self.parameterized_transform_widget_scaling_draw_monitor:
+        if self.PTWS_draw_monitor:
             self.board_SCALE_selected_items_choose_nearest_corner()
 
         self.board_cursor_setter()
