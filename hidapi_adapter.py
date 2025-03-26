@@ -173,21 +173,6 @@ class ListenThread(QThread):
 
                     if self.isPlayStation4DualShockGamepad:
 
-
-                        # rbb = data[5] #right buttons byte
-                        # but_state = bool(rbb & PS_cross_button_bit)
-
-                        # if but_state and before_triangle_pressed:
-                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_AUTOREPEAT, BUTTON_CROSS))
-                        # elif but_state and not before_triangle_pressed:
-                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_PRESSED, BUTTON_CROSS))
-                        # elif not but_state and before_triangle_pressed:
-                        #     self.update_signal.emit((BUTTON_STATE_DATA, BUTTON_RELEASED, BUTTON_CROSS, self.swap_read_byte_indexes()))
-
-                        # before_triangle_pressed = but_state
-
-
-
                         right_btns_handler.handler(data[5], self.update_signal)
 
                         options_share_btns_handler.handler(data[6], self.update_signal)
