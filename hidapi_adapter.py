@@ -60,6 +60,14 @@ class ListenThread(QThread):
         self.byte_indexes_swapped = not self.byte_indexes_swapped
         return self.byte_indexes_swapped
 
+    def easeInExpo(self, value, exp=2.0):
+        # exp от 1.0 до 4.0
+        if exp > 1.0:
+            filtered_value = math.pow(abs(value), exp)
+        else:
+            filtered_value = value
+        return math.copysign(filtered_value, value)
+
     def run(self):
         try:
 
@@ -84,6 +92,7 @@ class ListenThread(QThread):
                 if data:
 
                     x_axis, y_axis, rx1, ry1 = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone_radius)
+                    x_axis, y_axis = self.easeInExpo(x_axis), self.easeInExpo(y_axis)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         offset *= 20
