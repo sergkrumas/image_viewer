@@ -224,7 +224,7 @@ def update_board_viewer(MainWindowObj, data):
                 MainWindowObj.board_viewport_reset(scale=False)
                 MainWindowObj.show_center_label('viewport position is reset!')
             elif button == BUTTON_OPTIONS:
-                MainWindowObj.board_viewport_reset(position=False)
+                MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                 MainWindowObj.show_center_label('viewport scale is reset!')
 
     MainWindowObj.update()

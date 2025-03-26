@@ -346,10 +346,12 @@ class BoardMixin(BoardTextEditItemMixin):
     # для поддержки миксинов
     BoardItem = BoardItem
 
-    def board_viewport_reset(self, scale=True, position=True):
+    def board_viewport_reset(self, scale=True, position=True, scale_inplace=False):
         if scale:
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
+        if scale_inplace:
+            self.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
         if position:
             self.canvas_origin = self.get_center_position()
 
