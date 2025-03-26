@@ -95,7 +95,6 @@ class ListenThread(QThread):
                     x_axis, y_axis = self.easeInExpo(x_axis), self.easeInExpo(y_axis)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
-                        offset *= 20
                         self.update_signal.emit((BOARD_OFFSET_DATA, offset, rx1, ry1))
                     elif self.pass_deadzone_values:
                         self.update_signal.emit((BOARD_OFFSET_DATA, QPointF(0, 0), rx1, ry1))
@@ -153,6 +152,7 @@ def update_board_viewer(MainWindowObj, data):
     if key == BOARD_OFFSET_DATA:
         offset = data[1]
         if offset:
+            offset *= 20
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
     elif key == BOARD_SCALE_DATA:
