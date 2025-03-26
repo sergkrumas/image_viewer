@@ -2956,7 +2956,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.PTWS:
             proportional_scaling = True
-            if self.scaling_active_point_index_PTWS == 4:
+            if self.PTWS_scaling_active_point_index == 4:
                 center_is_pivot = True
 
         # отключаем модификатор alt для группы выделенных айтемов
@@ -3072,18 +3072,18 @@ class BoardMixin(BoardTextEditItemMixin):
         # parameterized transform widget scaling
         self.PTWS = False
         self.PTWS_draw_monitor = False
-        self.scaling_active_point_index_PTWS = None
+        self.PTWS_scaling_active_point_index = None
 
     def board_SCALE_selected_items_draw_monitor(self, painter):
         if not self.PTWS_draw_monitor:
             return
         if self.selection_bounding_box is None:
             return
-        if self.scaling_active_point_index_PTWS is None:
+        if self.PTWS_scaling_active_point_index is None:
             return
 
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        index = self.scaling_active_point_index_PTWS
+        index = self.PTWS_scaling_active_point_index
         if index == 4:
             pivot_pos = self.__selection_bounding_box_qpolygon_centroid()
         else:
@@ -3111,12 +3111,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 diffs[index] = QVector2D(point - QPointF(position)).length()
             diffs = sorted(diffs.items(), key=lambda x: x[1])
             index = diffs[0][0]
-            self.scaling_active_point_index_PTWS = index
+            self.PTWS_scaling_active_point_index = index
             if index == 4:
                 # выбираем первую, но по идее, можно было бы выбрать любую другую
-                self.scaling_active_point_index_PTWS_pos = self.selection_bounding_box[0]
+                self.PTWS_scaling_active_point_pos = self.selection_bounding_box[0]
             else:
-                self.scaling_active_point_index_PTWS_pos = self.selection_bounding_box[index]
+                self.PTWS_scaling_active_point_pos = self.selection_bounding_box[index]
 
     def board_SCALE_selected_items(self, up=False, down=False, toggle_monitor=False):
 
@@ -3134,13 +3134,13 @@ class BoardMixin(BoardTextEditItemMixin):
             self.PTWS = True
             self.board_SCALE_selected_items_choose_nearest_corner()
 
-            direction = QVector2D(self.scaling_active_point_index_PTWS_pos -
+            direction = QVector2D(self.PTWS_scaling_active_point_pos -
                                     self.__selection_bounding_box_qpolygon_centroid()).normalized()
             direction *= VECTOR_LENGTH_FACTOR
-            pos = self.scaling_active_point_index_PTWS_pos
+            pos = self.PTWS_scaling_active_point_pos
             parameter_pos = pos + direction.toPointF()
 
-            self.scaling_active_point_index = self.scaling_active_point_index_PTWS
+            self.scaling_active_point_index = self.PTWS_scaling_active_point_index
 
             self.board_START_selected_items_SCALING(None)
             self.board_DO_selected_items_SCALING(parameter_pos)
