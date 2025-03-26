@@ -151,7 +151,7 @@ def update_board_viewer(MainWindowObj, data):
         if scroll_value:
             pivot = MainWindowObj.rect().center()
             # in fact, scale_speed is reciprocal of speed, lol
-            scale_speed = 1.0/fit(abs(scroll_value), 0.0, 1.0, 0.001, 0.02)
+            scale_speed = 1.0/fit(abs(scroll_value), 0.0, 1.0, 0.000001, 0.02)
             MainWindowObj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
         MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
     elif key == LISTENING_STOP:
