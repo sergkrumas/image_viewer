@@ -1123,6 +1123,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         delta = time.time() - self.center_label_time
         if delta < self.CENTER_LABEL_TIME_LIMIT:
             self.update()
+        else:
+            self.show_easeInExpo_monitor = False
 
     def correct_scale(self):
         # корректировка скейла для всех картинок таким образом
@@ -3059,6 +3061,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             super().hide()
 
     def hide_center_label(self):
+        self.show_easeInExpo_monitor = False
         self.CENTER_LABEL_TIME_LIMIT = 2.0
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT*5
 

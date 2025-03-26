@@ -32,7 +32,7 @@ from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
 
-from hidapi_adapter import draw_gamepad_monitor
+from hidapi_adapter import draw_gamepad_monitor, draw_gamepad_easing_monitor
 
 import cbor2
 
@@ -419,6 +419,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_PTWS_init()
 
+        self.show_easeInExpo_monitor = False
+
+        self.expo_values = []
+
+        self._expo_save_timer = None
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -464,6 +470,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.STNG_show_gamepad_monitor:
             draw_gamepad_monitor(self, painter, event)
+
+        if self.show_easeInExpo_monitor:
+            draw_gamepad_easing_monitor(self, painter, event)
 
     def board_mousePressEvent(self, event):
         self.mousePressEventBoardCallback(event)
@@ -1712,6 +1721,31 @@ class BoardMixin(BoardTextEditItemMixin):
                     __load_static(filepath)
             except Exception as e:
                 board_item.pixmap = QPixmap()
+
+    def boards_generate_expo_values(self):
+        exp = self.STNG_gamepad_move_stick_ease_in_expo_param
+        SAMPLES = 50
+        values = []
+        for n in range(SAMPLES+1):
+            x = n/SAMPLES
+            y = math.pow(x, exp)
+            values.append((x, y))
+        self.expo_values = values
+
+    def boards_save_expo_to_app_settings(self):
+        def callback():
+            self.SettingsWindow.store_to_disk()
+            self.show_center_label('easeInExpo saved to settings file!')
+
+        if self._expo_save_timer is not None:
+            self._expo_save_timer.stop()
+
+        millisecs_delay = 2000
+        self._expo_save_timer = timer = QTimer(self)
+        timer.setInterval(millisecs_delay)
+        timer.timeout.connect(callback)
+        timer.setSingleShot(True)
+        timer.start()
 
     def board_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.canvas_scale_x

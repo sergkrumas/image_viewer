@@ -114,6 +114,7 @@ class ListenThread(QThread):
     def change_easeInExpo(self, direction):
         eie = self.easeInExpo
         eie *= 10.0
+        eie = int(eie)
         eie += direction
         eie /= 10.0
         self.easeInExpo = min(4.0, max(1.0, eie))
@@ -244,9 +245,72 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                 MainWindowObj.show_center_label('viewport scale is reset!')
             elif button in [BUTTON_L1, BUTTON_R1]:
+                MainWindowObj.STNG_gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
+                MainWindowObj.show_easeInExpo_monitor = True 
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
+                MainWindowObj.boards_generate_expo_values()
+                MainWindowObj.boards_save_expo_to_app_settings()
 
     MainWindowObj.update()
+
+def draw_gamepad_easing_monitor(self, painter, event):
+
+    painter.save()
+    rect = self.rect()
+
+    if not self.expo_values:
+        self.boards_generate_expo_values()
+
+    WIDTH = 300
+    graph_rect = QRectF(0, 0, WIDTH, WIDTH)
+    pos = QPointF(rect.center())
+    pos.setY(WIDTH/2+50)
+    graph_rect.moveCenter(pos)
+
+    painter.setPen(Qt.NoPen)
+    painter.setBrush(QColor(30, 30, 30, 200))
+    painter.drawRect(graph_rect.adjusted(-30, -30, 30, 30))
+
+
+    if True:
+        # drawing grid
+        canvas_scale_x = 1.0
+        canvas_scale_y = 1.0
+        icp = QPointF(0.0, 0.0)
+
+        LINES_INTERVAL_X = 25 * canvas_scale_x
+        LINES_INTERVAL_Y = 25 * canvas_scale_y
+        r = QRectF(graph_rect).adjusted(0, 0, 1, 1)
+        value_x = int(fit(canvas_scale_x, 0.08, 1.0, 0, 200))
+        # value_x = 100
+        pen = QPen(QColor(220, 220, 220, value_x), 1)
+        painter.setPen(pen)
+        offset = QPointF(icp.x() % LINES_INTERVAL_X, icp.y() % LINES_INTERVAL_Y)
+
+        i = r.left()
+        while i < r.right():
+            painter.drawLine(offset+QPointF(i, r.top()), offset+QPointF(i, r.bottom()))
+            i += LINES_INTERVAL_X
+
+        i = r.top()
+        while i < r.bottom():
+            painter.drawLine(offset+QPointF(r.left(), i), offset+QPointF(r.right(), i))
+            i += LINES_INTERVAL_Y
+
+
+
+    pen = QPen(Qt.red, 5)
+    pen.setCapStyle(Qt.RoundCap)
+    painter.setPen(pen)
+    values = self.expo_values
+    for n, (x1, y1) in enumerate(values[:-1]):
+        x2, y2 = values[n+1]
+        a = graph_rect.bottomLeft() + QPointF(x1*WIDTH, y1*WIDTH*-1.0)
+        b = graph_rect.bottomLeft() + QPointF(x2*WIDTH, y2*WIDTH*-1.0)
+        painter.drawLine(a, b)
+
+    painter.restore()
+
 
 def draw_gamepad_monitor(self, painter, event):
 
