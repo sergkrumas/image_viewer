@@ -324,10 +324,10 @@ def draw_gamepad_easing_monitor(self, painter, event):
     font.setWeight(1900)
     painter.setFont(font)
     painter.setPen(QPen(Qt.red, 1))
-    val = self.STNG_gamepad_move_stick_ease_in_expo_param
-    painter.drawText(graph_rect.topLeft()+QPoint(50, 70), f'{val:.02}')
+    exp = self.STNG_gamepad_move_stick_ease_in_expo_param
+    painter.drawText(graph_rect.topLeft()+QPoint(50, 70), f'{exp:.02}')
 
-    if val > 1.0:
+    if exp > 1.0:
         painter.setPen(QPen(Qt.green, 1))
         text = 'easing modifier is applied'
     else:
@@ -341,6 +341,22 @@ def draw_gamepad_easing_monitor(self, painter, event):
 
     rect = QRectF(graph_rect.bottomLeft(), graph_rect.bottomRight()+QPointF(0, 50))
     painter.drawText(rect, Qt.AlignVCenter | Qt.AlignHCenter, text)
+
+
+    curpos = self.mapFromGlobal(QCursor().pos())
+    if graph_rect.contains(curpos):
+        coord = curpos - graph_rect.bottomLeft()
+        x = coord.x()/WIDTH
+        y = math.pow(x, exp)
+
+        xP = QPointF(x*WIDTH, 0) + graph_rect.bottomLeft()
+        graphP = QPointF(x*WIDTH, -y*WIDTH) + graph_rect.bottomLeft()
+        yP = QPointF(0, -y*WIDTH) + graph_rect.bottomLeft()
+        painter.drawLine(xP, graphP)
+        painter.drawLine(graphP, yP)
+
+        painter.drawText(graph_rect, Qt.AlignVCenter | Qt.AlignHCenter, f'X: {x:.02} ➜ Y: {y:.02}')
+
 
     painter.restore()
 
