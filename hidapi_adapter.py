@@ -165,15 +165,15 @@ class ListenThread(QThread):
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
         self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
 
-        self.byte_indexes_swapped = False
+        self.is_sticks_roles_swapped = False
 
         self._triggers_factors = defaultdict(float)
 
-    def swap_read_byte_indexes(self):
+    def swap_sticks_byte_indexes(self):
         # меняем роли стиков местами
         self.start_byte_left_stick, self.start_byte_right_stick = self.start_byte_right_stick, self.start_byte_left_stick
-        self.byte_indexes_swapped = not self.byte_indexes_swapped
-        return self.byte_indexes_swapped
+        self.is_sticks_roles_swapped = not self.is_sticks_roles_swapped
+        return self.is_sticks_roles_swapped
 
     def change_easeInExpo(self, direction):
         eie = self.easeInExpo
@@ -234,7 +234,7 @@ class ListenThread(QThread):
                     GamepadData.SQUARE_WEST_BUTTON: BUTTON_SQUARE,
                 },
                 {
-                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_read_byte_indexes],
+                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_sticks_byte_indexes],
                 }
             )
 
@@ -315,12 +315,23 @@ def update_board_viewer(MainWindowObj, thread, data):
                 else:
                     status = _("The left and right sticks exchange back")
                 MainWindowObj.show_center_label(f'{status}')
-            elif button == BUTTON_LEFT_TRIGGER:
-                MainWindowObj.board_viewport_reset(scale=False)
-                MainWindowObj.show_center_label('viewport position is reset!')
-            elif button == BUTTON_RIGHT_TRIGGER:
-                MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
-                MainWindowObj.show_center_label('viewport scale is reset!')
+            elif button in [BUTTON_LEFT_TRIGGER, BUTTON_RIGHT_TRIGGER]:
+                def reset_position():
+                    MainWindowObj.board_viewport_reset(scale=False)
+                    MainWindowObj.show_center_label('viewport position is reset!')
+                def reset_scale():
+                    MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
+                    MainWindowObj.show_center_label('viewport scale is reset!')
+                if button == BUTTON_LEFT_TRIGGER:
+                    if thread.is_sticks_roles_swapped:
+                        reset_scale()
+                    else:
+                        reset_position()
+                elif button == BUTTON_RIGHT_TRIGGER:
+                    if thread.is_sticks_roles_swapped:
+                        reset_position()
+                    else:
+                        reset_scale()
             elif button in [BUTTON_L1, BUTTON_R1]:
                 MainWindowObj.STNG_gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
                 MainWindowObj.show_easeInExpo_monitor = True
