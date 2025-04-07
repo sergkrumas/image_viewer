@@ -592,6 +592,17 @@ def main():
                             circle_button = 1 << 6
                             cross_button = 1 << 5
                             square_button = 1 << 4
+
+                            dir_none = 8
+                            dir_north = 0
+                            dir_south = 4
+                            dir_west = 6
+                            dir_east = 2
+                            dir_northwest = 7
+                            dir_northeast = 1
+                            dir_southwest = 5
+                            dir_southeast = 3
+
                             if data_byte & triangle_button:
                                 byte_descr += ' t'
                             if data_byte & circle_button:
@@ -600,14 +611,38 @@ def main():
                                 byte_descr += ' x'
                             if data_byte & square_button:
                                 byte_descr += ' s'
+
+                            if not (data_byte ^ dir_none):
+                                byte_descr += ' none'
+                            if not (data_byte ^ dir_north):
+                                byte_descr += ' north'
+                            if not (data_byte ^ dir_south):
+                                byte_descr += ' south'
+                            if not (data_byte ^ dir_west):
+                                byte_descr += ' west'
+                            if not (data_byte ^ dir_east):
+                                byte_descr += ' east'
+
+                            if not (data_byte ^ dir_northwest):
+                                byte_descr += ' northwest'
+                            if not (data_byte ^ dir_northeast):
+                                byte_descr += ' northeast'
+                            if not (data_byte ^ dir_southwest):
+                                byte_descr += ' southwest'
+                            if not (data_byte ^ dir_southeast):
+                                byte_descr += ' southeast'
+
                         if n == 6:
-                            right_stick = 1 << 7
-                            left_stick = 1 << 6
-                            options_button = 1 << 5
-                            share_button = 1 << 4
 
                             l1_button = 1 << 0
                             r1_button = 1 << 1
+                            l2_button = 1 << 2 #left trigger as button
+                            r2_button = 1 << 3 #right trigger as button
+
+                            share_button = 1 << 4
+                            options_button = 1 << 5
+                            left_stick = 1 << 6
+                            right_stick = 1 << 7
 
                             if data_byte & share_button:
                                 byte_descr += ' share'
@@ -621,6 +656,11 @@ def main():
                                 byte_descr += ' l1_button'
                             if data_byte & r1_button:
                                 byte_descr += ' r1_button'
+                            if data_byte & l2_button:
+                                byte_descr += ' l2_button'
+                            if data_byte & r2_button:
+                                byte_descr += ' r2_button'
+
                         if n in [8, 9]:
                             byte_descr += str(data_byte)
 
