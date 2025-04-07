@@ -25,6 +25,7 @@ BUTTON_AUTOREPEAT = 11
 BUTTON_RELEASED = 12
 
 
+
 BUTTON_TRIANGLE = 20
 BUTTON_CIRCLE = 21
 BUTTON_CROSS = 22
@@ -33,14 +34,23 @@ BUTTON_SQUARE = 23
 BUTTON_L1 = 24
 BUTTON_R1 = 25
 
-BUTTON_OPTIONS = 50
-BUTTON_SHARE = 51
-
 LEFT_TRIGGER = 26
 RIGHT_TRIGGER = 27
 
 BUTTON_LEFT_TRIGGER = 28
 BUTTON_RIGHT_TRIGGER = 29
+
+BUTTON_ARROW_NORTH = 30
+BUTTON_ARROW_NORTHEAST = 31
+BUTTON_ARROW_EAST = 32
+BUTTON_ARROW_SOUTHEAST = 33
+BUTTON_ARROW_SOUTH = 34
+BUTTON_ARROW_SOUTHWEST = 35
+BUTTON_ARROW_WEST = 36
+BUTTON_ARROW_NORTHWEST = 37
+
+BUTTON_OPTIONS = 50
+BUTTON_SHARE = 51
 
 
 class ButtonsStatesHandler():
@@ -103,7 +113,7 @@ class PS4DualShockGamepadData():
     SQUARE_WEST_BUTTON = 1 << 4
 
     # byte operation: NOT (XOR (X, Y))
-    ARROW_NOTHING_BUTTON = 8  
+    ARROW_NOTHING_BUTTON = 8
     ARROW_NORTH_BUTTON = 0
     ARROW_NORTHEAST_BUTTON = 1
     ARROW_EAST_BUTTON = 2
@@ -133,7 +143,7 @@ class ShanWanGamepadData():
     START_BYTE_LEFT_STICK = 3
     START_BYTE_RIGHT_STICK = 5
 
-    # !!!! not set !!! 
+    # !!!! not set !!!
     LEFT_TRIGGER_BYTE_INDEX = 8
     RIGHT_TRIGGER_BYTE_INDEX = 9
 
@@ -188,7 +198,7 @@ class ListenThread(QThread):
     def to_pass_or_not_to_pass(self, value, index):
         before_value = self._triggers_factors[index]
         self._triggers_factors[index] = value
-        # мы должны пропустить в очередь сообщений первое нулевое значение, 
+        # мы должны пропустить в очередь сообщений первое нулевое значение,
         # а последующие нулевые значения отбрасывать пока поток снова не сменится на ненулевые значения
         if before_value == .0 and value == .0:
             return False
@@ -211,7 +221,7 @@ class ListenThread(QThread):
 
 
 
-            main_btns_handler = ButtonsStatesHandler(
+            PS_main_btns_handler = ButtonsStatesHandler(
                 {
                     GamepadData.TRIANGLE_NORTH_BUTTON: BUTTON_TRIANGLE,
                     GamepadData.CIRCLE_EAST_BUTTON: BUTTON_CIRCLE,
@@ -223,7 +233,24 @@ class ListenThread(QThread):
                 }
             )
 
-            secondary_btns_handler = ButtonsStatesHandler(
+            PS_main_arrows_btns_handler = ButtonsStatesHandler(
+                {
+                    GamepadData.ARROW_NORTH_BUTTON: BUTTON_ARROW_NORTH,
+                    GamepadData.ARROW_NORTHEAST_BUTTON: BUTTON_ARROW_NORTHEAST,
+                    GamepadData.ARROW_EAST_BUTTON: BUTTON_ARROW_EAST,
+                    GamepadData.ARROW_SOUTHEAST_BUTTON: BUTTON_ARROW_SOUTHEAST,
+                    GamepadData.ARROW_SOUTH_BUTTON: BUTTON_ARROW_SOUTH,
+                    GamepadData.ARROW_SOUTHWEST_BUTTON: BUTTON_ARROW_SOUTHWEST,
+                    GamepadData.ARROW_WEST_BUTTON: BUTTON_ARROW_WEST,
+                    GamepadData.ARROW_NORTHWEST_BUTTON: BUTTON_ARROW_NORTHWEST,
+                },
+                {
+
+                }
+
+            )
+
+            PS_secondary_btns_handler = ButtonsStatesHandler(
                 {
                     GamepadData.OPTIONS_BUTTON: BUTTON_OPTIONS,
                     GamepadData.SHARE_BUTTON: BUTTON_SHARE,
@@ -269,8 +296,9 @@ class ListenThread(QThread):
                         _not_xor_func = lambda x, y: operator.not_(operator.xor(x, y))
                         _and_func = operator.and_
 
-                        main_btns_handler.handler(data[5], self.update_signal, _and_func)
-                        secondary_btns_handler.handler(data[6], self.update_signal, _and_func)
+                        PS_main_btns_handler.handler(data[5], self.update_signal, _and_func)
+                        PS_main_arrows_btns_handler.handler(data[5], self.update_signal, _not_xor_func)
+                        PS_secondary_btns_handler.handler(data[6], self.update_signal, _and_func)
 
 
                     # reading triggers factors
@@ -301,6 +329,7 @@ def update_board_viewer(MainWindowObj, thread, data):
             offset *= MainWindowObj.STNG_gamepad_move_stick_speed
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
+
     elif key == BOARD_SCALE_DATA:
         scroll_value = data[1]
         if scroll_value:
@@ -309,8 +338,10 @@ def update_board_viewer(MainWindowObj, thread, data):
             scale_speed = 1.0/fit(abs(scroll_value), 0.0, 1.0, 0.000001, 0.02)
             MainWindowObj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
         MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
+
     elif key == LISTENING_STOP:
         deactivate_listening(MainWindowObj)
+
     elif key == BUTTON_STATE_DATA:
         state = data[1]
         button = data[2]
@@ -345,6 +376,24 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
+            elif button in [
+                                BUTTON_ARROW_NORTH,
+                                BUTTON_ARROW_NORTHEAST,
+                                BUTTON_ARROW_EAST,
+                                BUTTON_ARROW_SOUTHEAST,
+                                BUTTON_ARROW_SOUTH,
+                                BUTTON_ARROW_SOUTHWEST,
+                                BUTTON_ARROW_WEST,
+                                BUTTON_ARROW_NORTHWEST,
+                            ]:
+                arrow_direction = ""
+                for attr_name, attr_value in globals().items():
+                    if button == attr_value:
+                        arrow_direction = attr_name
+                        break
+                # print(arrow_direction)
+                MainWindowObj.show_center_label(f'{arrow_direction}')
+
     elif key == TRIGGER_STATE_DATA:
         trigger = data[1]
         trigger_factor = data[2]
