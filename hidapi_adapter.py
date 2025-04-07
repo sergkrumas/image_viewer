@@ -694,6 +694,13 @@ def main():
             print(_("Reading error. Feels like the gamepad is off"))
             pass
 
-if __name__ == '__main__':
-    main()
 
+if __name__ == '__main__':
+
+    if False:
+        main()
+    else:
+        # для запуска программы прямо из этого файла при разработке и отладке
+        import subprocess
+        subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+        sys.exit()
