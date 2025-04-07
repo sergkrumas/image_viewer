@@ -102,12 +102,11 @@ class ButtonsStatesHandler():
 
 class PS4DualShockGamepadData():
 
-    START_BYTE_LEFT_STICK = 1
-    START_BYTE_RIGHT_STICK = 3
+    LEFT_STICK_START_BYTE_INDEX = 1
+    RIGHT_STICK_START_BYTE_INDEX = 3
 
     LEFT_TRIGGER_BYTE_INDEX = 8
     RIGHT_TRIGGER_BYTE_INDEX = 9
-
 
 
     # byte index: 5
@@ -117,6 +116,8 @@ class PS4DualShockGamepadData():
     CROSS_SOUTH_BUTTON = 1 << 5
     SQUARE_WEST_BUTTON = 1 << 4
 
+
+    # byte index: 5
     # byte operation: NOT (XOR (X, Y))
     ARROW_NOTHING_BUTTON = 8
     ARROW_NORTH_BUTTON = 0
@@ -140,17 +141,16 @@ class PS4DualShockGamepadData():
     LEFT_STICK_BUTTON = 1 << 6
     RIGHT_STICK_BUTTON = 1 << 7
 
-
-
-
 class ShanWanGamepadData():
 
-    START_BYTE_LEFT_STICK = 3
-    START_BYTE_RIGHT_STICK = 5
+    LEFT_STICK_START_BYTE_INDEX = 3
+    RIGHT_STICK_START_BYTE_INDEX = 5
 
     # !!!! not set !!!
     LEFT_TRIGGER_BYTE_INDEX = 8
     RIGHT_TRIGGER_BYTE_INDEX = 9
+
+
 
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
@@ -171,14 +171,14 @@ class ListenThread(QThread):
         self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
 
         if self.isShanWanGamepad:
-            self.start_byte_left_stick = ShanWanGamepadData.START_BYTE_LEFT_STICK
-            self.start_byte_right_stick = ShanWanGamepadData.START_BYTE_RIGHT_STICK
+            self.start_byte_left_stick = ShanWanGamepadData.LEFT_STICK_START_BYTE_INDEX
+            self.start_byte_right_stick = ShanWanGamepadData.RIGHT_STICK_START_BYTE_INDEX
             self.left_trigger_byte_index = ShanWanGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = ShanWanGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
         elif self.isPlayStation4DualShockGamepad:
-            self.start_byte_left_stick = PS4DualShockGamepadData.START_BYTE_LEFT_STICK
-            self.start_byte_right_stick = PS4DualShockGamepadData.START_BYTE_RIGHT_STICK
+            self.start_byte_left_stick = PS4DualShockGamepadData.LEFT_STICK_START_BYTE_INDEX
+            self.start_byte_right_stick = PS4DualShockGamepadData.RIGHT_STICK_START_BYTE_INDEX
             self.left_trigger_byte_index = PS4DualShockGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = PS4DualShockGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
