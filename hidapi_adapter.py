@@ -540,8 +540,8 @@ def apply_dead_zone_accurately(x_axis, y_axis, dead_zone):
     return x_axis, y_axis
 
 def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
-    input_x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
-    input_y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
+    input_x_axis = fit(data[start_byte_index], 0, 255, -1.0, 1.0)
+    input_y_axis = fit(data[start_byte_index+1], 0, 255, -1.0, 1.0)
 
     if dead_zone != 0.0:
         # input_x_axis, input_y_axis = apply_dead_zone_legacy_inaccurate(input_x_axis, input_y_axis, dead_zone)
