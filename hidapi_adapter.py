@@ -91,6 +91,38 @@ class PS4DualShockGamepadData():
 
 
 
+    # byte index: 5
+    TRIANGLE_NORTH_BUTTON = 1 << 7
+    CIRCLE_EAST_BUTTON = 1 << 6
+    CROSS_SOUTH_BUTTON = 1 << 5
+    SQUARE_WEST_BUTTON = 1 << 4
+
+    DIR_NOTHING_BUTTON = 8
+    
+    DIR_NORTH_BUTTON = 0
+    DIR_NORTHEAST_BUTTON = 1
+    DIR_EAST_BUTTON = 2
+    DIR_SOUTHEAST_BUTTON = 3
+    DIR_SOUTH_BUTTON = 4
+    DIR_SOUTHWEST_BUTTON = 5
+    DIR_WEST_BUTTON = 6
+    DIR_NORTHWEST_BUTTON = 7
+
+
+    # byte index: 6
+    L1_BUTTON = 1 << 0
+    R1_BUTTON = 1 << 1
+    L2_BUTTON = 1 << 2 #left trigger as button
+    R2_BUTTON = 1 << 3 #right trigger as button
+
+    SHARE_BUTTON = 1 << 4
+    OPTIONS_BUTTON = 1 << 5
+    LEFT_STICK_BUTTON = 1 << 6
+    RIGHT_STICK_BUTTON = 1 << 7
+
+
+
+
 class ShanWanGamepadData():
 
     START_BYTE_LEFT_STICK = 3
