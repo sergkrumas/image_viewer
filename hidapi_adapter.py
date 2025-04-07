@@ -219,58 +219,55 @@ class ListenThread(QThread):
             return value
 
     def run(self):
+
+        PS_main_btns_handler = ButtonsStatesHandler(
+            {
+                PS4DualShockGamepadData.TRIANGLE_NORTH_BUTTON:  SignalConstants.BUTTON_TRIANGLE,
+                PS4DualShockGamepadData.CIRCLE_EAST_BUTTON:     SignalConstants.BUTTON_CIRCLE,
+                PS4DualShockGamepadData.CROSS_SOUTH_BUTTON:     SignalConstants.BUTTON_CROSS,
+                PS4DualShockGamepadData.SQUARE_WEST_BUTTON:     SignalConstants.BUTTON_SQUARE,
+            },
+            {
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_CROSS): [self.swap_sticks_byte_indexes],
+            }
+        )
+
+        PS_main_arrows_btns_handler = ButtonsStatesHandler(
+            {
+                PS4DualShockGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
+                PS4DualShockGamepadData.ARROW_NORTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHEAST,
+                PS4DualShockGamepadData.ARROW_EAST_BUTTON:          SignalConstants.BUTTON_ARROW_EAST,
+                PS4DualShockGamepadData.ARROW_SOUTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHEAST,
+                PS4DualShockGamepadData.ARROW_SOUTH_BUTTON:         SignalConstants.BUTTON_ARROW_SOUTH,
+                PS4DualShockGamepadData.ARROW_SOUTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHWEST,
+                PS4DualShockGamepadData.ARROW_WEST_BUTTON:          SignalConstants.BUTTON_ARROW_WEST,
+                PS4DualShockGamepadData.ARROW_NORTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHWEST,
+            },
+            {
+
+            }
+
+        )
+
+        PS_secondary_btns_handler = ButtonsStatesHandler(
+            {
+                PS4DualShockGamepadData.OPTIONS_BUTTON:         SignalConstants.BUTTON_OPTIONS,
+                PS4DualShockGamepadData.SHARE_BUTTON:           SignalConstants.BUTTON_SHARE,
+
+                PS4DualShockGamepadData.L1_BUTTON:              SignalConstants.BUTTON_L1,
+                PS4DualShockGamepadData.R1_BUTTON:              SignalConstants.BUTTON_R1,
+
+                PS4DualShockGamepadData.LEFT_STICK_BUTTON:      SignalConstants.BUTTON_LEFT_STICK,
+                PS4DualShockGamepadData.RIGHT_STICK_BUTTON:     SignalConstants.BUTTON_RIGHT_STICK,
+
+            },
+            {
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_R1): [lambda: self.change_easeInExpo(1)],
+            }
+        )
+
         try:
-
-
-
-            PS_main_btns_handler = ButtonsStatesHandler(
-                {
-                    PS4DualShockGamepadData.TRIANGLE_NORTH_BUTTON:  SignalConstants.BUTTON_TRIANGLE,
-                    PS4DualShockGamepadData.CIRCLE_EAST_BUTTON:     SignalConstants.BUTTON_CIRCLE,
-                    PS4DualShockGamepadData.CROSS_SOUTH_BUTTON:     SignalConstants.BUTTON_CROSS,
-                    PS4DualShockGamepadData.SQUARE_WEST_BUTTON:     SignalConstants.BUTTON_SQUARE,
-                },
-                {
-                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_CROSS): [self.swap_sticks_byte_indexes],
-                }
-            )
-
-            PS_main_arrows_btns_handler = ButtonsStatesHandler(
-                {
-                    PS4DualShockGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
-                    PS4DualShockGamepadData.ARROW_NORTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHEAST,
-                    PS4DualShockGamepadData.ARROW_EAST_BUTTON:          SignalConstants.BUTTON_ARROW_EAST,
-                    PS4DualShockGamepadData.ARROW_SOUTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHEAST,
-                    PS4DualShockGamepadData.ARROW_SOUTH_BUTTON:         SignalConstants.BUTTON_ARROW_SOUTH,
-                    PS4DualShockGamepadData.ARROW_SOUTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHWEST,
-                    PS4DualShockGamepadData.ARROW_WEST_BUTTON:          SignalConstants.BUTTON_ARROW_WEST,
-                    PS4DualShockGamepadData.ARROW_NORTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHWEST,
-                },
-                {
-
-                }
-
-            )
-
-            PS_secondary_btns_handler = ButtonsStatesHandler(
-                {
-                    PS4DualShockGamepadData.OPTIONS_BUTTON:         SignalConstants.BUTTON_OPTIONS,
-                    PS4DualShockGamepadData.SHARE_BUTTON:           SignalConstants.BUTTON_SHARE,
-
-                    PS4DualShockGamepadData.L1_BUTTON:              SignalConstants.BUTTON_L1,
-                    PS4DualShockGamepadData.R1_BUTTON:              SignalConstants.BUTTON_R1,
-
-                    PS4DualShockGamepadData.LEFT_STICK_BUTTON:      SignalConstants.BUTTON_LEFT_STICK,
-                    PS4DualShockGamepadData.RIGHT_STICK_BUTTON:     SignalConstants.BUTTON_RIGHT_STICK,
-
-                },
-                {
-                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
-                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_R1): [lambda: self.change_easeInExpo(1)],
-                }
-            )
-
-
 
             while True:
                 data = read_gamepad(self.gamepad)
