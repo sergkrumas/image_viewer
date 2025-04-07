@@ -55,6 +55,8 @@ class SignalConstants():
     BUTTON_OPTIONS = 50
     BUTTON_SHARE = 51
 
+    BUTTON_LEFT_STICK = 52
+    BUTTON_RIGHT_STICK = 53
 
 class ButtonsStatesHandler():
 
@@ -258,8 +260,8 @@ class ListenThread(QThread):
                     PS4DualShockGamepadData.L1_BUTTON:              SignalConstants.BUTTON_L1,
                     PS4DualShockGamepadData.R1_BUTTON:              SignalConstants.BUTTON_R1,
 
-                    PS4DualShockGamepadData.LEFT_STICK_BUTTON:      SignalConstants.BUTTON_LEFT_TRIGGER,
-                    PS4DualShockGamepadData.RIGHT_STICK_BUTTON:     SignalConstants.BUTTON_RIGHT_TRIGGER,
+                    PS4DualShockGamepadData.LEFT_STICK_BUTTON:      SignalConstants.BUTTON_LEFT_STICK,
+                    PS4DualShockGamepadData.RIGHT_STICK_BUTTON:     SignalConstants.BUTTON_RIGHT_STICK,
 
                 },
                 {
@@ -353,19 +355,19 @@ def update_board_viewer(MainWindowObj, thread, data):
                 else:
                     status = _("The left and right sticks exchange back")
                 MainWindowObj.show_center_label(f'{status}')
-            elif button in [SignalConstants.BUTTON_LEFT_TRIGGER, SignalConstants.BUTTON_RIGHT_TRIGGER]:
+            elif button in [SignalConstants.BUTTON_LEFT_STICK, SignalConstants.BUTTON_RIGHT_STICK]:
                 def reset_position():
                     MainWindowObj.board_viewport_reset(scale=False)
                     MainWindowObj.show_center_label('viewport position is reset!')
                 def reset_scale():
                     MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                     MainWindowObj.show_center_label('viewport scale is reset!')
-                if button == SignalConstants.BUTTON_LEFT_TRIGGER:
+                if button == SignalConstants.BUTTON_LEFT_STICK:
                     if thread.is_sticks_roles_swapped:
                         reset_scale()
                     else:
                         reset_position()
-                elif button == SignalConstants.BUTTON_RIGHT_TRIGGER:
+                elif button == SignalConstants.BUTTON_RIGHT_STICK:
                     if thread.is_sticks_roles_swapped:
                         reset_position()
                     else:
