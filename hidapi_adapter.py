@@ -14,43 +14,46 @@ from collections import defaultdict
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-LISTENING_STOP = 0
-BOARD_SCALE_DATA = 1
-BOARD_OFFSET_DATA = 2
-BUTTON_STATE_DATA = 3
-TRIGGER_STATE_DATA = 4
 
-BUTTON_PRESSED = 10
-BUTTON_AUTOREPEAT = 11
-BUTTON_RELEASED = 12
+class SignalConstants():
+
+    LISTENING_STOP = 0
+    BOARD_SCALE_DATA = 1
+    BOARD_OFFSET_DATA = 2
+    BUTTON_STATE_DATA = 3
+    TRIGGER_STATE_DATA = 4
+
+    BUTTON_PRESSED = 10
+    BUTTON_AUTOREPEAT = 11
+    BUTTON_RELEASED = 12
 
 
 
-BUTTON_TRIANGLE = 20
-BUTTON_CIRCLE = 21
-BUTTON_CROSS = 22
-BUTTON_SQUARE = 23
+    BUTTON_TRIANGLE = 20
+    BUTTON_CIRCLE = 21
+    BUTTON_CROSS = 22
+    BUTTON_SQUARE = 23
 
-BUTTON_L1 = 24
-BUTTON_R1 = 25
+    BUTTON_L1 = 24
+    BUTTON_R1 = 25
 
-LEFT_TRIGGER = 26
-RIGHT_TRIGGER = 27
+    LEFT_TRIGGER = 26
+    RIGHT_TRIGGER = 27
 
-BUTTON_LEFT_TRIGGER = 28
-BUTTON_RIGHT_TRIGGER = 29
+    BUTTON_LEFT_TRIGGER = 28
+    BUTTON_RIGHT_TRIGGER = 29
 
-BUTTON_ARROW_NORTH = 30
-BUTTON_ARROW_NORTHEAST = 31
-BUTTON_ARROW_EAST = 32
-BUTTON_ARROW_SOUTHEAST = 33
-BUTTON_ARROW_SOUTH = 34
-BUTTON_ARROW_SOUTHWEST = 35
-BUTTON_ARROW_WEST = 36
-BUTTON_ARROW_NORTHWEST = 37
+    BUTTON_ARROW_NORTH = 30
+    BUTTON_ARROW_NORTHEAST = 31
+    BUTTON_ARROW_EAST = 32
+    BUTTON_ARROW_SOUTHEAST = 33
+    BUTTON_ARROW_SOUTH = 34
+    BUTTON_ARROW_SOUTHWEST = 35
+    BUTTON_ARROW_WEST = 36
+    BUTTON_ARROW_NORTHWEST = 37
 
-BUTTON_OPTIONS = 50
-BUTTON_SHARE = 51
+    BUTTON_OPTIONS = 50
+    BUTTON_SHARE = 51
 
 
 class ButtonsStatesHandler():
@@ -79,17 +82,17 @@ class ButtonsStatesHandler():
             BUTTON_INT = self.BUTTONS_INTS[i]
             state = self.states[i]
             if state and self.before_states[i]:
-                st = BUTTON_AUTOREPEAT
+                st = SignalConstants.BUTTON_AUTOREPEAT
                 data = self.tag_data_dict.get((st, BUTTON_INT), [])
-                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+                update_signal.emit((SignalConstants.BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
             elif state and not self.before_states[i]:
-                st = BUTTON_PRESSED
+                st = SignalConstants.BUTTON_PRESSED
                 data = self.tag_data_dict.get((st, BUTTON_INT), [])
-                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+                update_signal.emit((SignalConstants.BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
             elif not state and self.before_states[i]:
-                st = BUTTON_RELEASED
+                st = SignalConstants.BUTTON_RELEASED
                 data = self.tag_data_dict.get((st, BUTTON_INT), [])
-                update_signal.emit((BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
+                update_signal.emit((SignalConstants.BUTTON_STATE_DATA, st, BUTTON_INT, *self.prepare_data(data)))
 
             self.before_states[i] = state
 
@@ -216,33 +219,30 @@ class ListenThread(QThread):
     def run(self):
         try:
 
-            GamepadData = PS4DualShockGamepadData
-
-
 
 
             PS_main_btns_handler = ButtonsStatesHandler(
                 {
-                    GamepadData.TRIANGLE_NORTH_BUTTON: BUTTON_TRIANGLE,
-                    GamepadData.CIRCLE_EAST_BUTTON: BUTTON_CIRCLE,
-                    GamepadData.CROSS_SOUTH_BUTTON: BUTTON_CROSS,
-                    GamepadData.SQUARE_WEST_BUTTON: BUTTON_SQUARE,
+                    PS4DualShockGamepadData.TRIANGLE_NORTH_BUTTON:  SignalConstants.BUTTON_TRIANGLE,
+                    PS4DualShockGamepadData.CIRCLE_EAST_BUTTON:     SignalConstants.BUTTON_CIRCLE,
+                    PS4DualShockGamepadData.CROSS_SOUTH_BUTTON:     SignalConstants.BUTTON_CROSS,
+                    PS4DualShockGamepadData.SQUARE_WEST_BUTTON:     SignalConstants.BUTTON_SQUARE,
                 },
                 {
-                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_sticks_byte_indexes],
+                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_CROSS): [self.swap_sticks_byte_indexes],
                 }
             )
 
             PS_main_arrows_btns_handler = ButtonsStatesHandler(
                 {
-                    GamepadData.ARROW_NORTH_BUTTON: BUTTON_ARROW_NORTH,
-                    GamepadData.ARROW_NORTHEAST_BUTTON: BUTTON_ARROW_NORTHEAST,
-                    GamepadData.ARROW_EAST_BUTTON: BUTTON_ARROW_EAST,
-                    GamepadData.ARROW_SOUTHEAST_BUTTON: BUTTON_ARROW_SOUTHEAST,
-                    GamepadData.ARROW_SOUTH_BUTTON: BUTTON_ARROW_SOUTH,
-                    GamepadData.ARROW_SOUTHWEST_BUTTON: BUTTON_ARROW_SOUTHWEST,
-                    GamepadData.ARROW_WEST_BUTTON: BUTTON_ARROW_WEST,
-                    GamepadData.ARROW_NORTHWEST_BUTTON: BUTTON_ARROW_NORTHWEST,
+                    PS4DualShockGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
+                    PS4DualShockGamepadData.ARROW_NORTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHEAST,
+                    PS4DualShockGamepadData.ARROW_EAST_BUTTON:          SignalConstants.BUTTON_ARROW_EAST,
+                    PS4DualShockGamepadData.ARROW_SOUTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHEAST,
+                    PS4DualShockGamepadData.ARROW_SOUTH_BUTTON:         SignalConstants.BUTTON_ARROW_SOUTH,
+                    PS4DualShockGamepadData.ARROW_SOUTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHWEST,
+                    PS4DualShockGamepadData.ARROW_WEST_BUTTON:          SignalConstants.BUTTON_ARROW_WEST,
+                    PS4DualShockGamepadData.ARROW_NORTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHWEST,
                 },
                 {
 
@@ -252,19 +252,19 @@ class ListenThread(QThread):
 
             PS_secondary_btns_handler = ButtonsStatesHandler(
                 {
-                    GamepadData.OPTIONS_BUTTON: BUTTON_OPTIONS,
-                    GamepadData.SHARE_BUTTON: BUTTON_SHARE,
+                    PS4DualShockGamepadData.OPTIONS_BUTTON:         SignalConstants.BUTTON_OPTIONS,
+                    PS4DualShockGamepadData.SHARE_BUTTON:           SignalConstants.BUTTON_SHARE,
 
-                    GamepadData.L1_BUTTON: BUTTON_L1,
-                    GamepadData.R1_BUTTON: BUTTON_R1,
+                    PS4DualShockGamepadData.L1_BUTTON:              SignalConstants.BUTTON_L1,
+                    PS4DualShockGamepadData.R1_BUTTON:              SignalConstants.BUTTON_R1,
 
-                    GamepadData.LEFT_STICK_BUTTON: BUTTON_LEFT_TRIGGER,
-                    GamepadData.RIGHT_STICK_BUTTON: BUTTON_RIGHT_TRIGGER,
+                    PS4DualShockGamepadData.LEFT_STICK_BUTTON:      SignalConstants.BUTTON_LEFT_TRIGGER,
+                    PS4DualShockGamepadData.RIGHT_STICK_BUTTON:     SignalConstants.BUTTON_RIGHT_TRIGGER,
 
                 },
                 {
-                    (BUTTON_RELEASED, BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
-                    (BUTTON_RELEASED, BUTTON_R1): [lambda: self.change_easeInExpo(1)],
+                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
+                    (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_R1): [lambda: self.change_easeInExpo(1)],
                 }
             )
 
@@ -278,17 +278,17 @@ class ListenThread(QThread):
                     x_axis, y_axis = self.doEaseInExpo(x_axis), self.doEaseInExpo(y_axis)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
-                        self.update_signal.emit((BOARD_OFFSET_DATA, offset, rx1, ry1))
+                        self.update_signal.emit((SignalConstants.BOARD_OFFSET_DATA, offset, rx1, ry1))
                     elif self.pass_deadzone_values:
-                        self.update_signal.emit((BOARD_OFFSET_DATA, QPointF(0, 0), rx1, ry1))
+                        self.update_signal.emit((SignalConstants.BOARD_OFFSET_DATA, QPointF(0, 0), rx1, ry1))
 
                     x_axis, y_axis, rx2, ry2 = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone_radius)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
-                        self.update_signal.emit((BOARD_SCALE_DATA, scroll_value, rx2, ry2))
+                        self.update_signal.emit((SignalConstants.BOARD_SCALE_DATA, scroll_value, rx2, ry2))
                     elif self.pass_deadzone_values:
-                        self.update_signal.emit((BOARD_SCALE_DATA, 0.0, rx2, ry2))
+                        self.update_signal.emit((SignalConstants.BOARD_SCALE_DATA, 0.0, rx2, ry2))
 
 
                     if self.isPlayStation4DualShockGamepad:
@@ -303,11 +303,11 @@ class ListenThread(QThread):
 
                     # reading triggers factors
                     for n, (index, TRG_DEF) in enumerate({
-                                            self.left_trigger_byte_index: LEFT_TRIGGER,
-                                            self.right_trigger_byte_index: RIGHT_TRIGGER}.items()):
+                                            self.left_trigger_byte_index: SignalConstants.LEFT_TRIGGER,
+                                            self.right_trigger_byte_index: SignalConstants.RIGHT_TRIGGER}.items()):
                         trigger_factor = read_trigger_data(data, index)
                         if self.to_pass_or_not_to_pass(trigger_factor, n):
-                            self.update_signal.emit((TRIGGER_STATE_DATA, TRG_DEF, trigger_factor))
+                            self.update_signal.emit((SignalConstants.TRIGGER_STATE_DATA, TRG_DEF, trigger_factor))
 
 
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
@@ -316,21 +316,21 @@ class ListenThread(QThread):
 
         except OSError:
             # print('Ошибка чтения. Скорее всего, геймпад отключён.')
-            self.update_signal.emit((LISTENING_STOP,))
+            self.update_signal.emit((SignalConstants.LISTENING_STOP,))
 
         self.exec_()
 
 def update_board_viewer(MainWindowObj, thread, data):
 
     key = data[0]
-    if key == BOARD_OFFSET_DATA:
+    if key == SignalConstants.BOARD_OFFSET_DATA:
         offset = data[1]
         if offset:
             offset *= MainWindowObj.STNG_gamepad_move_stick_speed
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
 
-    elif key == BOARD_SCALE_DATA:
+    elif key == SignalConstants.BOARD_SCALE_DATA:
         scroll_value = data[1]
         if scroll_value:
             pivot = MainWindowObj.rect().center()
@@ -339,38 +339,38 @@ def update_board_viewer(MainWindowObj, thread, data):
             MainWindowObj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
         MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
 
-    elif key == LISTENING_STOP:
+    elif key == SignalConstants.LISTENING_STOP:
         deactivate_listening(MainWindowObj)
 
-    elif key == BUTTON_STATE_DATA:
+    elif key == SignalConstants.BUTTON_STATE_DATA:
         state = data[1]
         button = data[2]
-        if state == BUTTON_RELEASED:
-            if button == BUTTON_CROSS:
+        if state == SignalConstants.BUTTON_RELEASED:
+            if button == SignalConstants.BUTTON_CROSS:
                 status = data[3]
                 if status:
                     status = _("The left and right sticks exchange")
                 else:
                     status = _("The left and right sticks exchange back")
                 MainWindowObj.show_center_label(f'{status}')
-            elif button in [BUTTON_LEFT_TRIGGER, BUTTON_RIGHT_TRIGGER]:
+            elif button in [SignalConstants.BUTTON_LEFT_TRIGGER, SignalConstants.BUTTON_RIGHT_TRIGGER]:
                 def reset_position():
                     MainWindowObj.board_viewport_reset(scale=False)
                     MainWindowObj.show_center_label('viewport position is reset!')
                 def reset_scale():
                     MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                     MainWindowObj.show_center_label('viewport scale is reset!')
-                if button == BUTTON_LEFT_TRIGGER:
+                if button == SignalConstants.BUTTON_LEFT_TRIGGER:
                     if thread.is_sticks_roles_swapped:
                         reset_scale()
                     else:
                         reset_position()
-                elif button == BUTTON_RIGHT_TRIGGER:
+                elif button == SignalConstants.BUTTON_RIGHT_TRIGGER:
                     if thread.is_sticks_roles_swapped:
                         reset_position()
                     else:
                         reset_scale()
-            elif button in [BUTTON_L1, BUTTON_R1]:
+            elif button in [SignalConstants.BUTTON_L1, SignalConstants.BUTTON_R1]:
                 MainWindowObj.STNG_gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
                 MainWindowObj.show_easeInExpo_monitor = True
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
@@ -378,14 +378,14 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.boards_save_expo_to_app_settings()
 
         if button in [
-                            BUTTON_ARROW_NORTH,
-                            BUTTON_ARROW_NORTHEAST,
-                            BUTTON_ARROW_EAST,
-                            BUTTON_ARROW_SOUTHEAST,
-                            BUTTON_ARROW_SOUTH,
-                            BUTTON_ARROW_SOUTHWEST,
-                            BUTTON_ARROW_WEST,
-                            BUTTON_ARROW_NORTHWEST,
+                            SignalConstants.BUTTON_ARROW_NORTH,
+                            SignalConstants.BUTTON_ARROW_NORTHEAST,
+                            SignalConstants.BUTTON_ARROW_EAST,
+                            SignalConstants.BUTTON_ARROW_SOUTHEAST,
+                            SignalConstants.BUTTON_ARROW_SOUTH,
+                            SignalConstants.BUTTON_ARROW_SOUTHWEST,
+                            SignalConstants.BUTTON_ARROW_WEST,
+                            SignalConstants.BUTTON_ARROW_NORTHWEST,
                         ]:
             arrow_direction = ""
             for attr_name, attr_value in globals().items():
@@ -395,7 +395,7 @@ def update_board_viewer(MainWindowObj, thread, data):
             # print(arrow_direction)
             MainWindowObj.show_center_label(f'{arrow_direction}')
 
-    elif key == TRIGGER_STATE_DATA:
+    elif key == SignalConstants.TRIGGER_STATE_DATA:
         trigger = data[1]
         trigger_factor = data[2]
         if trigger == LEFT_TRIGGER:
