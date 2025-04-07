@@ -376,23 +376,24 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
-            elif button in [
-                                BUTTON_ARROW_NORTH,
-                                BUTTON_ARROW_NORTHEAST,
-                                BUTTON_ARROW_EAST,
-                                BUTTON_ARROW_SOUTHEAST,
-                                BUTTON_ARROW_SOUTH,
-                                BUTTON_ARROW_SOUTHWEST,
-                                BUTTON_ARROW_WEST,
-                                BUTTON_ARROW_NORTHWEST,
-                            ]:
-                arrow_direction = ""
-                for attr_name, attr_value in globals().items():
-                    if button == attr_value:
-                        arrow_direction = attr_name
-                        break
-                # print(arrow_direction)
-                MainWindowObj.show_center_label(f'{arrow_direction}')
+
+        if button in [
+                            BUTTON_ARROW_NORTH,
+                            BUTTON_ARROW_NORTHEAST,
+                            BUTTON_ARROW_EAST,
+                            BUTTON_ARROW_SOUTHEAST,
+                            BUTTON_ARROW_SOUTH,
+                            BUTTON_ARROW_SOUTHWEST,
+                            BUTTON_ARROW_WEST,
+                            BUTTON_ARROW_NORTHWEST,
+                        ]:
+            arrow_direction = ""
+            for attr_name, attr_value in globals().items():
+                if button == attr_value:
+                    arrow_direction = attr_name
+                    break
+            # print(arrow_direction)
+            MainWindowObj.show_center_label(f'{arrow_direction}')
 
     elif key == TRIGGER_STATE_DATA:
         trigger = data[1]
