@@ -146,9 +146,21 @@ class ShanWanGamepadData():
     LEFT_STICK_START_BYTE_INDEX = 3
     RIGHT_STICK_START_BYTE_INDEX = 5
 
-    # !!!! not set !!!
-    LEFT_TRIGGER_BYTE_INDEX = 8
-    RIGHT_TRIGGER_BYTE_INDEX = 9
+    LEFT_TRIGGER_BYTE_INDEX = 17
+    RIGHT_TRIGGER_BYTE_INDEX = 18
+
+
+    # byte index: 2
+    # byte operation: NOT (XOR (X, Y))
+    ARROW_NOTHING_BUTTON = 8
+    ARROW_NORTH_BUTTON = 0
+    ARROW_NORTHEAST_BUTTON = 1
+    ARROW_EAST_BUTTON = 2
+    ARROW_SOUTHEAST_BUTTON = 3
+    ARROW_SOUTH_BUTTON = 4
+    ARROW_SOUTHWEST_BUTTON = 5
+    ARROW_WEST_BUTTON = 6
+    ARROW_NORTHWEST_BUTTON = 7
 
 
 
@@ -267,6 +279,28 @@ class ListenThread(QThread):
             }
         )
 
+
+
+
+        ShanWan_main_arrows_btns_handler = ButtonsStatesHandler(
+            {
+                ShanWanGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
+                ShanWanGamepadData.ARROW_NORTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHEAST,
+                ShanWanGamepadData.ARROW_EAST_BUTTON:          SignalConstants.BUTTON_ARROW_EAST,
+                ShanWanGamepadData.ARROW_SOUTHEAST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHEAST,
+                ShanWanGamepadData.ARROW_SOUTH_BUTTON:         SignalConstants.BUTTON_ARROW_SOUTH,
+                ShanWanGamepadData.ARROW_SOUTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_SOUTHWEST,
+                ShanWanGamepadData.ARROW_WEST_BUTTON:          SignalConstants.BUTTON_ARROW_WEST,
+                ShanWanGamepadData.ARROW_NORTHWEST_BUTTON:     SignalConstants.BUTTON_ARROW_NORTHWEST,
+            },
+            {
+
+            }
+
+        )
+
+
+
         try:
 
             while True:
@@ -289,16 +323,16 @@ class ListenThread(QThread):
                     elif self.pass_deadzone_values:
                         self.update_signal.emit((SignalConstants.BOARD_SCALE_DATA, 0.0, rx2, ry2))
 
+                    _not_xor_func = lambda x, y: operator.not_(operator.xor(x, y))
+                    _and_func = operator.and_
 
                     if self.isPlayStation4DualShockGamepad:
-
-                        _not_xor_func = lambda x, y: operator.not_(operator.xor(x, y))
-                        _and_func = operator.and_
-
                         PS_main_btns_handler.handler(data[5], self.update_signal, _and_func)
                         PS_main_arrows_btns_handler.handler(data[5], self.update_signal, _not_xor_func)
                         PS_secondary_btns_handler.handler(data[6], self.update_signal, _and_func)
 
+                    if self.isShanWanGamepad:
+                        ShanWan_main_arrows_btns_handler.handler(data[2], self.update_signal, _not_xor_func)
 
                     # reading triggers factors
                     for n, (index, TRG_DEF) in enumerate({
@@ -387,19 +421,19 @@ def update_board_viewer(MainWindowObj, thread, data):
                             SignalConstants.BUTTON_ARROW_NORTHWEST,
                         ]:
             arrow_direction = ""
-            for attr_name, attr_value in globals().items():
+            for attr_name, attr_value in SignalConstants.__dict__.items():
                 if button == attr_value:
                     arrow_direction = attr_name
                     break
-            # print(arrow_direction)
+            # print(arrow_direction, attr_value)
             MainWindowObj.show_center_label(f'{arrow_direction}')
 
     elif key == SignalConstants.TRIGGER_STATE_DATA:
         trigger = data[1]
         trigger_factor = data[2]
-        if trigger == LEFT_TRIGGER:
+        if trigger == SignalConstants.LEFT_TRIGGER:
             stick_name = 'left'
-        elif trigger == RIGHT_TRIGGER:
+        elif trigger == SignalConstants.RIGHT_TRIGGER:
             stick_name = 'right'
         MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
 
@@ -708,7 +742,7 @@ def main():
                         # byte_descr = f'{byte_value}'
                         byte_descr = f'{data_byte:08b} {data_byte}'
 
-                        if n == 5:
+                        if n == 2:
                             triangle_button = 1 << 7
                             circle_button = 1 << 6
                             cross_button = 1 << 5
@@ -782,14 +816,11 @@ def main():
                             if data_byte & r2_button:
                                 byte_descr += ' r2_button'
 
-                        if n in [8, 9]:
-                            byte_descr += str(data_byte)
-
                         if False:
                             out.append(str(data_byte).zfill(3))
                         else:
 
-                            if n in [5, 6, 8, 9]:
+                            if n in [2, ]:
                                 out.append(byte_descr)
 
 
