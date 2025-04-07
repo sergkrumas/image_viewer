@@ -595,13 +595,13 @@ def main():
 
                             dir_none = 8
                             dir_north = 0
-                            dir_south = 4
-                            dir_west = 6
-                            dir_east = 2
-                            dir_northwest = 7
                             dir_northeast = 1
-                            dir_southwest = 5
+                            dir_east = 2
                             dir_southeast = 3
+                            dir_south = 4
+                            dir_southwest = 5
+                            dir_west = 6
+                            dir_northwest = 7
 
                             if data_byte & triangle_button:
                                 byte_descr += ' t'
@@ -641,16 +641,16 @@ def main():
 
                             share_button = 1 << 4
                             options_button = 1 << 5
-                            left_stick = 1 << 6
-                            right_stick = 1 << 7
+                            left_stick_button = 1 << 6
+                            right_stick_button = 1 << 7
 
                             if data_byte & share_button:
                                 byte_descr += ' share'
                             if data_byte & options_button:
                                 byte_descr += ' options'
-                            if data_byte & left_stick:
+                            if data_byte & left_stick_button:
                                 byte_descr += ' left stick'
-                            if data_byte & right_stick:
+                            if data_byte & right_stick_button:
                                 byte_descr += ' right stick'
                             if data_byte & l1_button:
                                 byte_descr += ' l1_button'
