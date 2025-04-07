@@ -167,8 +167,6 @@ class ListenThread(QThread):
                 }
             )
 
-            before_triangle_pressed = False
-
 
             while True:
                 data = read_gamepad(self.gamepad)
