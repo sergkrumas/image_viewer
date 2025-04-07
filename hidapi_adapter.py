@@ -80,6 +80,26 @@ class ButtonsStatesHandler():
             self.before_states[i] = state
 
 
+
+class PS4DualShockGamepadData():
+
+    START_BYTE_LEFT_STICK = 1
+    START_BYTE_RIGHT_STICK = 3
+
+    LEFT_TRIGGER_BYTE_INDEX = 8
+    RIGHT_TRIGGER_BYTE_INDEX = 9
+
+
+
+class ShanWanGamepadData():
+
+    START_BYTE_LEFT_STICK = 3
+    START_BYTE_RIGHT_STICK = 5
+
+    # !!!! not set !!! 
+    LEFT_TRIGGER_BYTE_INDEX = 8
+    RIGHT_TRIGGER_BYTE_INDEX = 9
+
 class ListenThread(QThread):
     update_signal = pyqtSignal(object)
 
@@ -96,20 +116,23 @@ class ListenThread(QThread):
         manufacturer_string = gamepad_device['manufacturer_string']
 
         if manufacturer_string.startswith('ShanWan'):
-            self.start_byte_left_stick = 3
-            self.start_byte_right_stick = 5
+            self.start_byte_left_stick = ShanWanGamepadData.START_BYTE_LEFT_STICK
+            self.start_byte_right_stick = ShanWanGamepadData.START_BYTE_RIGHT_STICK
+            self.left_trigger_byte_index = ShanWanGamepadData.LEFT_TRIGGER_BYTE_INDEX
+            self.right_trigger_byte_index = ShanWanGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
         elif manufacturer_string.startswith('Sony Interactive Entertainment'):
-            self.start_byte_left_stick = 1
-            self.start_byte_right_stick = 3
-            self.left_trigger_byte_index = 8
-            self.right_trigger_byte_index = 9
+            self.start_byte_left_stick = PS4DualShockGamepadData.START_BYTE_LEFT_STICK
+            self.start_byte_right_stick = PS4DualShockGamepadData.START_BYTE_RIGHT_STICK
+            self.left_trigger_byte_index = PS4DualShockGamepadData.LEFT_TRIGGER_BYTE_INDEX
+            self.right_trigger_byte_index = PS4DualShockGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
+        self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
 
         self.byte_indexes_swapped = False
 
-        self.triggers_factors = defaultdict(float)
+        self._triggers_factors = defaultdict(float)
 
     def swap_read_byte_indexes(self):
         # меняем роли стиков местами
@@ -126,15 +149,14 @@ class ListenThread(QThread):
         self.easeInExpo = min(4.0, max(1.0, eie))
 
     def to_pass_or_not_to_pass(self, value, index):
-        before_value = self.triggers_factors[index]
-        self.triggers_factors[index] = value
+        before_value = self._triggers_factors[index]
+        self._triggers_factors[index] = value
         # мы должны пропустить в очередь сообщений первое нулевое значение, 
         # а последующие нулевые значения отбрасывать пока поток снова не сменится на ненулевые значения
         if before_value == .0 and value == .0:
             return False
         else:
             return True
-
 
     def doEaseInExpo(self, value):
         exp = self.easeInExpo
