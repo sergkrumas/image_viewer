@@ -7,6 +7,7 @@
 
 import hid
 import time
+import operator
 from _utils import *
 from functools import partial
 from collections import defaultdict
@@ -60,9 +61,9 @@ class ButtonsStatesHandler():
             prepared_data.append(data_item)
         return prepared_data
 
-    def handler(self, input_byte, update_signal):
+    def handler(self, input_byte, update_signal, byte_operator):
         for i, flag in enumerate(self.buttons_bit_flags):
-            self.states[i] = bool(input_byte & flag)
+            self.states[i] = bool(byte_operator(input_byte, flag))
 
         for i in range(self.buttons_count):
             BUTTON_INT = self.BUTTONS_INTS[i]
@@ -102,15 +103,15 @@ class PS4DualShockGamepadData():
     SQUARE_WEST_BUTTON = 1 << 4
 
     # byte operation: NOT (XOR (X, Y))
-    DIR_NOTHING_BUTTON = 8  
-    DIR_NORTH_BUTTON = 0
-    DIR_NORTHEAST_BUTTON = 1
-    DIR_EAST_BUTTON = 2
-    DIR_SOUTHEAST_BUTTON = 3
-    DIR_SOUTH_BUTTON = 4
-    DIR_SOUTHWEST_BUTTON = 5
-    DIR_WEST_BUTTON = 6
-    DIR_NORTHWEST_BUTTON = 7
+    ARROW_NOTHING_BUTTON = 8  
+    ARROW_NORTH_BUTTON = 0
+    ARROW_NORTHEAST_BUTTON = 1
+    ARROW_EAST_BUTTON = 2
+    ARROW_SOUTHEAST_BUTTON = 3
+    ARROW_SOUTH_BUTTON = 4
+    ARROW_SOUTHWEST_BUTTON = 5
+    ARROW_WEST_BUTTON = 6
+    ARROW_NORTHWEST_BUTTON = 7
 
 
     # byte index: 6
@@ -209,7 +210,20 @@ class ListenThread(QThread):
 
 
 
-            options_share_btns_handler = ButtonsStatesHandler(
+
+            main_btns_handler = ButtonsStatesHandler(
+                {
+                    GamepadData.TRIANGLE_NORTH_BUTTON: BUTTON_TRIANGLE,
+                    GamepadData.CIRCLE_EAST_BUTTON: BUTTON_CIRCLE,
+                    GamepadData.CROSS_SOUTH_BUTTON: BUTTON_CROSS,
+                    GamepadData.SQUARE_WEST_BUTTON: BUTTON_SQUARE,
+                },
+                {
+                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_sticks_byte_indexes],
+                }
+            )
+
+            secondary_btns_handler = ButtonsStatesHandler(
                 {
                     GamepadData.OPTIONS_BUTTON: BUTTON_OPTIONS,
                     GamepadData.SHARE_BUTTON: BUTTON_SHARE,
@@ -227,17 +241,6 @@ class ListenThread(QThread):
                 }
             )
 
-            right_btns_handler = ButtonsStatesHandler(
-                {
-                    GamepadData.TRIANGLE_NORTH_BUTTON: BUTTON_TRIANGLE,
-                    GamepadData.CIRCLE_EAST_BUTTON: BUTTON_CIRCLE,
-                    GamepadData.CROSS_SOUTH_BUTTON: BUTTON_CROSS,
-                    GamepadData.SQUARE_WEST_BUTTON: BUTTON_SQUARE,
-                },
-                {
-                    (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_sticks_byte_indexes],
-                }
-            )
 
 
             while True:
@@ -263,8 +266,11 @@ class ListenThread(QThread):
 
                     if self.isPlayStation4DualShockGamepad:
 
-                        right_btns_handler.handler(data[5], self.update_signal)
-                        options_share_btns_handler.handler(data[6], self.update_signal)
+                        _not_xor_func = lambda x, y: operator.not_(operator.xor(x, y))
+                        _and_func = operator.and_
+
+                        main_btns_handler.handler(data[5], self.update_signal, _and_func)
+                        secondary_btns_handler.handler(data[6], self.update_signal, _and_func)
 
 
                     # reading triggers factors
