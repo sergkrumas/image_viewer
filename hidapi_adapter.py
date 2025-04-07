@@ -9,6 +9,7 @@ import hid
 import time
 from _utils import *
 from functools import partial
+from collections import defaultdict
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
@@ -16,7 +17,7 @@ LISTENING_STOP = 0
 BOARD_SCALE_DATA = 1
 BOARD_OFFSET_DATA = 2
 BUTTON_STATE_DATA = 3
-
+TRIGGER_STATE_DATA = 4
 
 BUTTON_PRESSED = 10
 BUTTON_AUTOREPEAT = 11
@@ -33,6 +34,9 @@ BUTTON_R1 = 25
 
 BUTTON_OPTIONS = 50
 BUTTON_SHARE = 51
+
+LEFT_TRIGGER = 26
+RIGHT_TRIGGER = 27
 
 
 class ButtonsStatesHandler():
@@ -94,16 +98,18 @@ class ListenThread(QThread):
         if manufacturer_string.startswith('ShanWan'):
             self.start_byte_left_stick = 3
             self.start_byte_right_stick = 5
-            # self.dead_zone_radius = 0.0
 
         elif manufacturer_string.startswith('Sony Interactive Entertainment'):
             self.start_byte_left_stick = 1
             self.start_byte_right_stick = 3
-            # self.dead_zone_radius = 0.1
+            self.left_trigger_byte_index = 8
+            self.right_trigger_byte_index = 9
 
         self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
 
         self.byte_indexes_swapped = False
+
+        self.triggers_factors = defaultdict(float)
 
     def swap_read_byte_indexes(self):
         # меняем роли стиков местами
@@ -118,6 +124,17 @@ class ListenThread(QThread):
         eie += direction
         eie /= 10.0
         self.easeInExpo = min(4.0, max(1.0, eie))
+
+    def to_pass_or_not_to_pass(self, value, index):
+        before_value = self.triggers_factors[index]
+        self.triggers_factors[index] = value
+        # мы должны пропустить в очередь сообщений первое нулевое значение, 
+        # а последующие нулевые значения отбрасывать пока поток снова не сменится на ненулевые значения
+        if before_value == .0 and value == .0:
+            return False
+        else:
+            return True
+
 
     def doEaseInExpo(self, value):
         exp = self.easeInExpo
@@ -188,12 +205,20 @@ class ListenThread(QThread):
                     elif self.pass_deadzone_values:
                         self.update_signal.emit((BOARD_SCALE_DATA, 0.0, rx2, ry2))
 
+
                     if self.isPlayStation4DualShockGamepad:
 
                         right_btns_handler.handler(data[5], self.update_signal)
                         options_share_btns_handler.handler(data[6], self.update_signal)
 
 
+                    # reading triggers factors
+                    for n, (index, TRG_DEF) in enumerate({
+                                            self.left_trigger_byte_index: LEFT_TRIGGER,
+                                            self.right_trigger_byte_index: RIGHT_TRIGGER}.items()):
+                        trigger_factor = read_trigger_data(data, index)
+                        if self.to_pass_or_not_to_pass(trigger_factor, n):
+                            self.update_signal.emit((TRIGGER_STATE_DATA, TRG_DEF, trigger_factor))
 
 
                 # Если sleep здесь не использовать, то поток будет грузить проц (Intel i5-4670) до 37-43%
@@ -248,6 +273,14 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
+    elif key == TRIGGER_STATE_DATA:
+        trigger = data[1]
+        trigger_factor = data[2]
+        if trigger == LEFT_TRIGGER:
+            stick_name = 'left'
+        elif trigger == RIGHT_TRIGGER:
+            stick_name = 'right'
+        MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
 
     MainWindowObj.update()
 
@@ -518,6 +551,9 @@ def read_stick_data(data, start_byte_index=3, dead_zone=0.0):
 
     return x_axis, y_axis, input_x_axis, input_y_axis
 
+def read_trigger_data(data, trigger_byte_index):
+    return fit(data[trigger_byte_index], 0, 255, 0.0, 1.0)
+
 def read_right_stick(data, start_byte_index=5, dead_zone=0.0):
     x_axis = fit(data[start_byte_index], 0, 256, -1.0, 1.0)
     y_axis = fit(data[start_byte_index+1], 0, 256, -1.0, 1.0)
@@ -585,12 +621,14 @@ def main():
                                 byte_descr += ' l1_button'
                             if data_byte & r1_button:
                                 byte_descr += ' r1_button'
+                        if n in [8, 9]:
+                            byte_descr += str(data_byte)
 
                         if False:
                             out.append(str(data_byte).zfill(3))
                         else:
 
-                            if n in [5, 6]:
+                            if n in [5, 6, 8, 9]:
                                 out.append(byte_descr)
 
 
