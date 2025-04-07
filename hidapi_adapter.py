@@ -201,24 +201,17 @@ class ListenThread(QThread):
     def run(self):
         try:
 
-            PS_triangle_button_bit = 1 << 7
-            PS_circle_button_bit = 1 << 6
-            PS_cross_button_bit = 1 << 5
-            PS_square_button_bit = 1 << 4
+            GamepadData = PS4DualShockGamepadData
 
-            PS_options_button = 1 << 5
-            PS_share_button = 1 << 4
 
-            PS_l1_button = 1 << 0
-            PS_r1_button = 1 << 1
 
             options_share_btns_handler = ButtonsStatesHandler(
                 {
-                    PS_options_button: BUTTON_OPTIONS,
-                    PS_share_button: BUTTON_SHARE,
+                    GamepadData.OPTIONS_BUTTON: BUTTON_OPTIONS,
+                    GamepadData.SHARE_BUTTON: BUTTON_SHARE,
 
-                    PS_l1_button: BUTTON_L1,
-                    PS_r1_button: BUTTON_R1,
+                    GamepadData.L1_BUTTON: BUTTON_L1,
+                    GamepadData.R1_BUTTON: BUTTON_R1,
                 },
                 {
                     (BUTTON_RELEASED, BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
@@ -228,10 +221,10 @@ class ListenThread(QThread):
 
             right_btns_handler = ButtonsStatesHandler(
                 {
-                    PS_triangle_button_bit: BUTTON_TRIANGLE,
-                    PS_circle_button_bit: BUTTON_CIRCLE,
-                    PS_cross_button_bit: BUTTON_CROSS,
-                    PS_square_button_bit: BUTTON_SQUARE,
+                    GamepadData.TRIANGLE_NORTH_BUTTON: BUTTON_TRIANGLE,
+                    GamepadData.CIRCLE_EAST_BUTTON: BUTTON_CIRCLE,
+                    GamepadData.CROSS_SOUTH_BUTTON: BUTTON_CROSS,
+                    GamepadData.SQUARE_WEST_BUTTON: BUTTON_SQUARE,
                 },
                 {
                     (BUTTON_RELEASED, BUTTON_CROSS): [self.swap_read_byte_indexes],
