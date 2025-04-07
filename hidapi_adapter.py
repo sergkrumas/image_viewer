@@ -162,20 +162,20 @@ class ListenThread(QThread):
 
         manufacturer_string = gamepad_device['manufacturer_string']
 
-        if manufacturer_string.startswith('ShanWan'):
+        self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
+        self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
+
+        if self.isShanWanGamepad:
             self.start_byte_left_stick = ShanWanGamepadData.START_BYTE_LEFT_STICK
             self.start_byte_right_stick = ShanWanGamepadData.START_BYTE_RIGHT_STICK
             self.left_trigger_byte_index = ShanWanGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = ShanWanGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
-        elif manufacturer_string.startswith('Sony Interactive Entertainment'):
+        elif self.isPlayStation4DualShockGamepad:
             self.start_byte_left_stick = PS4DualShockGamepadData.START_BYTE_LEFT_STICK
             self.start_byte_right_stick = PS4DualShockGamepadData.START_BYTE_RIGHT_STICK
             self.left_trigger_byte_index = PS4DualShockGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = PS4DualShockGamepadData.RIGHT_TRIGGER_BYTE_INDEX
-
-        self.isPlayStation4DualShockGamepad = manufacturer_string.startswith('Sony Interactive Entertainment')
-        self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
 
         self.is_sticks_roles_swapped = False
 
