@@ -38,6 +38,9 @@ BUTTON_SHARE = 51
 LEFT_TRIGGER = 26
 RIGHT_TRIGGER = 27
 
+BUTTON_LEFT_TRIGGER = 28
+BUTTON_RIGHT_TRIGGER = 29
+
 
 class ButtonsStatesHandler():
 
@@ -212,6 +215,10 @@ class ListenThread(QThread):
 
                     GamepadData.L1_BUTTON: BUTTON_L1,
                     GamepadData.R1_BUTTON: BUTTON_R1,
+
+                    GamepadData.LEFT_STICK_BUTTON: BUTTON_LEFT_TRIGGER,
+                    GamepadData.RIGHT_STICK_BUTTON: BUTTON_RIGHT_TRIGGER,
+
                 },
                 {
                     (BUTTON_RELEASED, BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
@@ -308,10 +315,10 @@ def update_board_viewer(MainWindowObj, thread, data):
                 else:
                     status = _("The left and right sticks exchange back")
                 MainWindowObj.show_center_label(f'{status}')
-            elif button == BUTTON_SHARE:
+            elif button == BUTTON_LEFT_TRIGGER:
                 MainWindowObj.board_viewport_reset(scale=False)
                 MainWindowObj.show_center_label('viewport position is reset!')
-            elif button == BUTTON_OPTIONS:
+            elif button == BUTTON_RIGHT_TRIGGER:
                 MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                 MainWindowObj.show_center_label('viewport scale is reset!')
             elif button in [BUTTON_L1, BUTTON_R1]:
