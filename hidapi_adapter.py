@@ -58,6 +58,8 @@ class SignalConstants():
     BUTTON_LEFT_STICK = 52
     BUTTON_RIGHT_STICK = 53
 
+    BUTTON_HOME = 54
+
 class ButtonsStatesHandler():
 
     def __init__(self, convert_dict, tag_data_dict):
@@ -150,6 +152,14 @@ class ShanWanGamepadData():
     RIGHT_TRIGGER_BYTE_INDEX = 18
 
 
+    # byte index: 0
+    # byte operation: AND
+    TRIANGLE_NORTH_BUTTON = 1 << 0      #Y
+    CIRCLE_EAST_BUTTON = 1 << 1         #B
+    CROSS_SOUTH_BUTTON = 1 << 2         #A
+    SQUARE_WEST_BUTTON = 1 << 3         #X
+
+
     # byte index: 2
     # byte operation: NOT (XOR (X, Y))
     ARROW_NOTHING_BUTTON = 8
@@ -162,6 +172,23 @@ class ShanWanGamepadData():
     ARROW_WEST_BUTTON = 6
     ARROW_NORTHWEST_BUTTON = 7
 
+
+    # byte index: 0
+    # byte operation: AND
+    L1_BUTTON = 1 << 4
+    R1_BUTTON = 1 << 5
+    L2_BUTTON = 1 << 6 #left trigger as button
+    R2_BUTTON = 1 << 7 #right trigger as button
+
+
+    # byte index: 1
+    # byte operation: AND
+    SHARE_BUTTON = 1 << 0               #SELECT
+    OPTIONS_BUTTON = 1 << 1             #START
+    LEFT_STICK_BUTTON = 1 << 2
+    RIGHT_STICK_BUTTON = 1 << 3
+
+    HOME_BUTTON = 1 << 4
 
 
 class ListenThread(QThread):
@@ -243,7 +270,6 @@ class ListenThread(QThread):
                 (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_CROSS): [self.swap_sticks_byte_indexes],
             }
         )
-
         PS_main_arrows_btns_handler = ButtonsStatesHandler(
             {
                 PS4DualShockGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
@@ -260,7 +286,6 @@ class ListenThread(QThread):
             }
 
         )
-
         PS_secondary_btns_handler = ButtonsStatesHandler(
             {
                 PS4DualShockGamepadData.OPTIONS_BUTTON:         SignalConstants.BUTTON_OPTIONS,
@@ -279,9 +304,25 @@ class ListenThread(QThread):
             }
         )
 
+        ShanWan_zero_byte_btns_handler = ButtonsStatesHandler(
+            {
+                ShanWanGamepadData.TRIANGLE_NORTH_BUTTON:  SignalConstants.BUTTON_TRIANGLE,
+                ShanWanGamepadData.CIRCLE_EAST_BUTTON:     SignalConstants.BUTTON_CIRCLE,
+                ShanWanGamepadData.CROSS_SOUTH_BUTTON:     SignalConstants.BUTTON_CROSS,
+                ShanWanGamepadData.SQUARE_WEST_BUTTON:     SignalConstants.BUTTON_SQUARE,
 
+                ShanWanGamepadData.L1_BUTTON:              SignalConstants.BUTTON_L1,
+                ShanWanGamepadData.R1_BUTTON:              SignalConstants.BUTTON_R1,
+                ShanWanGamepadData.L2_BUTTON:              SignalConstants.BUTTON_LEFT_TRIGGER,
+                ShanWanGamepadData.R2_BUTTON:              SignalConstants.BUTTON_RIGHT_TRIGGER,
 
-
+            },
+            {
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_CROSS): [self.swap_sticks_byte_indexes],
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_L1): [lambda: self.change_easeInExpo(-1)],
+                (SignalConstants.BUTTON_RELEASED, SignalConstants.BUTTON_R1): [lambda: self.change_easeInExpo(1)],
+            }
+        )
         ShanWan_main_arrows_btns_handler = ButtonsStatesHandler(
             {
                 ShanWanGamepadData.ARROW_NORTH_BUTTON:         SignalConstants.BUTTON_ARROW_NORTH,
@@ -298,7 +339,19 @@ class ListenThread(QThread):
             }
 
         )
+        ShanWan_zero_plus_one_byte_btns_handler = ButtonsStatesHandler(
+            {
+                ShanWanGamepadData.SHARE_BUTTON:                SignalConstants.BUTTON_SHARE,
+                ShanWanGamepadData.OPTIONS_BUTTON:              SignalConstants.BUTTON_OPTIONS,
+                ShanWanGamepadData.LEFT_STICK_BUTTON:           SignalConstants.BUTTON_LEFT_STICK,
+                ShanWanGamepadData.RIGHT_STICK_BUTTON:          SignalConstants.BUTTON_RIGHT_STICK,
 
+                ShanWanGamepadData.HOME_BUTTON:                 SignalConstants.BUTTON_HOME,
+            },
+            {
+
+            }
+        )
 
 
         try:
@@ -333,6 +386,8 @@ class ListenThread(QThread):
 
                     if self.isShanWanGamepad:
                         ShanWan_main_arrows_btns_handler.handler(data[2], self.update_signal, _not_xor_func)
+                        ShanWan_zero_byte_btns_handler.handler(data[0], self.update_signal, _and_func)
+                        ShanWan_zero_plus_one_byte_btns_handler.handler(data[1], self.update_signal, _and_func)
 
                     # reading triggers factors
                     for n, (index, TRG_DEF) in enumerate({
@@ -410,32 +465,26 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
 
-        if button in [
-                            SignalConstants.BUTTON_ARROW_NORTH,
-                            SignalConstants.BUTTON_ARROW_NORTHEAST,
-                            SignalConstants.BUTTON_ARROW_EAST,
-                            SignalConstants.BUTTON_ARROW_SOUTHEAST,
-                            SignalConstants.BUTTON_ARROW_SOUTH,
-                            SignalConstants.BUTTON_ARROW_SOUTHWEST,
-                            SignalConstants.BUTTON_ARROW_WEST,
-                            SignalConstants.BUTTON_ARROW_NORTHWEST,
-                        ]:
-            arrow_direction = ""
+
+        # for debug purposes only
+        if False:
+            BUTTON_NAME = ""
             for attr_name, attr_value in SignalConstants.__dict__.items():
                 if button == attr_value:
-                    arrow_direction = attr_name
+                    BUTTON_NAME = attr_name
                     break
-            # print(arrow_direction, attr_value)
-            MainWindowObj.show_center_label(f'{arrow_direction}')
+            # print(BUTTON_NAME, attr_value)
+            MainWindowObj.show_center_label(f'{BUTTON_NAME}')
 
     elif key == SignalConstants.TRIGGER_STATE_DATA:
-        trigger = data[1]
-        trigger_factor = data[2]
-        if trigger == SignalConstants.LEFT_TRIGGER:
-            stick_name = 'left'
-        elif trigger == SignalConstants.RIGHT_TRIGGER:
-            stick_name = 'right'
-        MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
+        if True:
+            trigger = data[1]
+            trigger_factor = data[2]
+            if trigger == SignalConstants.LEFT_TRIGGER:
+                stick_name = 'left'
+            elif trigger == SignalConstants.RIGHT_TRIGGER:
+                stick_name = 'right'
+            MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
 
     MainWindowObj.update()
 
@@ -816,7 +865,7 @@ def main():
                             if data_byte & r2_button:
                                 byte_descr += ' r2_button'
 
-                        if False:
+                        if True:
                             out.append(str(data_byte).zfill(3))
                         else:
 
