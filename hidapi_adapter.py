@@ -104,8 +104,8 @@ class ButtonsStatesHandler():
 
 class PS4DualShockGamepadData():
 
-    LEFT_STICK_START_BYTE_INDEX = 1
-    RIGHT_STICK_START_BYTE_INDEX = 3
+    LEFT_STICK_FIRST_BYTE_INDEX = 1
+    RIGHT_STICK_FIRST_BYTE_INDEX = 3
 
     LEFT_TRIGGER_BYTE_INDEX = 8
     RIGHT_TRIGGER_BYTE_INDEX = 9
@@ -145,8 +145,8 @@ class PS4DualShockGamepadData():
 
 class ShanWanGamepadData():
 
-    LEFT_STICK_START_BYTE_INDEX = 3
-    RIGHT_STICK_START_BYTE_INDEX = 5
+    LEFT_STICK_FIRST_BYTE_INDEX = 3
+    RIGHT_STICK_FIRST_BYTE_INDEX = 5
 
     LEFT_TRIGGER_BYTE_INDEX = 17
     RIGHT_TRIGGER_BYTE_INDEX = 18
@@ -210,14 +210,14 @@ class ListenThread(QThread):
         self.isShanWanGamepad = manufacturer_string.startswith('ShanWan')
 
         if self.isShanWanGamepad:
-            self.start_byte_left_stick = ShanWanGamepadData.LEFT_STICK_START_BYTE_INDEX
-            self.start_byte_right_stick = ShanWanGamepadData.RIGHT_STICK_START_BYTE_INDEX
+            self.left_stick_first_byte = ShanWanGamepadData.LEFT_STICK_FIRST_BYTE_INDEX
+            self.right_stick_start_byte = ShanWanGamepadData.RIGHT_STICK_FIRST_BYTE_INDEX
             self.left_trigger_byte_index = ShanWanGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = ShanWanGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
         elif self.isPlayStation4DualShockGamepad:
-            self.start_byte_left_stick = PS4DualShockGamepadData.LEFT_STICK_START_BYTE_INDEX
-            self.start_byte_right_stick = PS4DualShockGamepadData.RIGHT_STICK_START_BYTE_INDEX
+            self.left_stick_first_byte = PS4DualShockGamepadData.LEFT_STICK_FIRST_BYTE_INDEX
+            self.right_stick_start_byte = PS4DualShockGamepadData.RIGHT_STICK_FIRST_BYTE_INDEX
             self.left_trigger_byte_index = PS4DualShockGamepadData.LEFT_TRIGGER_BYTE_INDEX
             self.right_trigger_byte_index = PS4DualShockGamepadData.RIGHT_TRIGGER_BYTE_INDEX
 
@@ -227,7 +227,7 @@ class ListenThread(QThread):
 
     def swap_sticks_byte_indexes(self):
         # меняем роли стиков местами
-        self.start_byte_left_stick, self.start_byte_right_stick = self.start_byte_right_stick, self.start_byte_left_stick
+        self.left_stick_first_byte, self.right_stick_start_byte = self.right_stick_start_byte, self.left_stick_first_byte
         self.is_sticks_roles_swapped = not self.is_sticks_roles_swapped
         return self.is_sticks_roles_swapped
 
@@ -360,7 +360,7 @@ class ListenThread(QThread):
                 data = read_gamepad(self.gamepad)
                 if data:
 
-                    x_axis, y_axis, rx1, ry1 = read_stick_data(data, start_byte_index=self.start_byte_left_stick, dead_zone=self.dead_zone_radius)
+                    x_axis, y_axis, rx1, ry1 = read_stick_data(data, start_byte_index=self.left_stick_first_byte, dead_zone=self.dead_zone_radius)
                     x_axis, y_axis = self.doEaseInExpo(x_axis), self.doEaseInExpo(y_axis)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
@@ -368,7 +368,7 @@ class ListenThread(QThread):
                     elif self.pass_deadzone_values:
                         self.update_signal.emit((SignalConstants.BOARD_OFFSET_DATA, QPointF(0, 0), rx1, ry1))
 
-                    x_axis, y_axis, rx2, ry2 = read_stick_data(data, start_byte_index=self.start_byte_right_stick, dead_zone=self.dead_zone_radius)
+                    x_axis, y_axis, rx2, ry2 = read_stick_data(data, start_byte_index=self.right_stick_start_byte, dead_zone=self.dead_zone_radius)
                     offset = QPointF(x_axis, y_axis)
                     if offset:
                         scroll_value = offset.y()
