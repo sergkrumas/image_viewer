@@ -385,9 +385,9 @@ class ListenThread(QThread):
                         PS_secondary_btns_handler.handler(data[6], self.update_signal, _and_func)
 
                     if self.isShanWanGamepad:
-                        ShanWan_main_arrows_btns_handler.handler(data[2], self.update_signal, _not_xor_func)
                         ShanWan_zero_byte_btns_handler.handler(data[0], self.update_signal, _and_func)
                         ShanWan_zero_plus_one_byte_btns_handler.handler(data[1], self.update_signal, _and_func)
+                        ShanWan_main_arrows_btns_handler.handler(data[2], self.update_signal, _not_xor_func)
 
                     # reading triggers factors
                     for n, (index, TRG_DEF) in enumerate({
@@ -685,7 +685,10 @@ def activate_gamepad(obj):
             obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj, obj.gamepad_thread_instance))
             obj.gamepad_thread_instance.start()
 
-            obj.show_center_label(_('Gamepad control activated!'))
+            dev = gamepad_device
+            info_str = _('Gamepad control activated!')
+            info_str = f'{info_str}\n{dev["product_string"]} ({dev["manufacturer_string"].strip()})'
+            obj.show_center_label(info_str)
         else:
             obj.gamepad = None
             # obj.timer = None
