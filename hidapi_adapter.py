@@ -443,7 +443,7 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.show_center_label(f'{status}')
             elif button in [SignalConstants.BUTTON_LEFT_STICK, SignalConstants.BUTTON_RIGHT_STICK]:
                 def reset_position():
-                    MainWindowObj.board_viewport_reset(scale=False)
+                    MainWindowObj.board_viewport_reset(scale=False, to_item=True)
                     MainWindowObj.show_center_label('viewport position is reset!')
                 def reset_scale():
                     MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
@@ -474,7 +474,7 @@ def update_board_viewer(MainWindowObj, thread, data):
             stick_name = 'right'
         MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
 
-    if MainWindowObj.globals.DEBUG:
+    if MainWindowObj.globals.DEBUG and False:
         if key == SignalConstants.BUTTON_STATE_DATA:
             state = data[1]
             button = data[2]

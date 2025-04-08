@@ -346,14 +346,30 @@ class BoardMixin(BoardTextEditItemMixin):
     # для поддержки миксинов
     BoardItem = BoardItem
 
-    def board_viewport_reset(self, scale=True, position=True, scale_inplace=False):
+    def board_viewport_reset_position_to_item(self):
+        cf = self.LibraryData().current_folder()
+        items_list = self.get_original_items_order(cf.board.items_list)
+        if len(items_list) > 0:
+            min_index_item = items_list[0]
+            content_pos = QPointF(min_index_item.position.x()*self.canvas_scale_x, min_index_item.position.y()*self.canvas_scale_y) 
+            viewport_center_pos = self.get_center_position()
+            self.canvas_origin = - content_pos + viewport_center_pos
+            # self.show_center_label('placed at first item!')
+        else: 
+            self.canvas_origin = self.get_center_position()
+            # self.show_center_label('placed at board origin')
+
+    def board_viewport_reset(self, scale=True, position=True, scale_inplace=False, to_item=False):
         if scale:
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
         if scale_inplace:
             self.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
         if position:
-            self.canvas_origin = self.get_center_position()
+            if to_item:
+                self.board_viewport_reset_position_to_item()
+            else: 
+                self.canvas_origin = self.get_center_position()
 
     def board_init(self):
         self.board_viewport_reset()
