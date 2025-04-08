@@ -475,13 +475,17 @@ def update_board_viewer(MainWindowObj, thread, data):
         MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
 
     if MainWindowObj.globals.DEBUG:
-        BUTTON_NAME = ""
-        for attr_name, attr_value in SignalConstants.__dict__.items():
-            if button == attr_value:
-                BUTTON_NAME = attr_name
-                break
-        # print(BUTTON_NAME, attr_value)
-        MainWindowObj.show_center_label(f'{BUTTON_NAME}')
+        if key == SignalConstants.BUTTON_STATE_DATA:
+            state = data[1]
+            button = data[2]
+
+            BUTTON_NAME = ""
+            for attr_name, attr_value in SignalConstants.__dict__.items():
+                if button == attr_value:
+                    BUTTON_NAME = attr_name
+                    break
+            # print(BUTTON_NAME, attr_value)
+            MainWindowObj.show_center_label(f'{BUTTON_NAME}')
 
     MainWindowObj.update()
 
