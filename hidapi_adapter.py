@@ -465,26 +465,23 @@ def update_board_viewer(MainWindowObj, thread, data):
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
 
-
-        # for debug purposes only
-        if False:
-            BUTTON_NAME = ""
-            for attr_name, attr_value in SignalConstants.__dict__.items():
-                if button == attr_value:
-                    BUTTON_NAME = attr_name
-                    break
-            # print(BUTTON_NAME, attr_value)
-            MainWindowObj.show_center_label(f'{BUTTON_NAME}')
-
     elif key == SignalConstants.TRIGGER_STATE_DATA:
-        if True:
-            trigger = data[1]
-            trigger_factor = data[2]
-            if trigger == SignalConstants.LEFT_TRIGGER:
-                stick_name = 'left'
-            elif trigger == SignalConstants.RIGHT_TRIGGER:
-                stick_name = 'right'
-            MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
+        trigger = data[1]
+        trigger_factor = data[2]
+        if trigger == SignalConstants.LEFT_TRIGGER:
+            stick_name = 'left'
+        elif trigger == SignalConstants.RIGHT_TRIGGER:
+            stick_name = 'right'
+        MainWindowObj.show_center_label(f'{stick_name} trigger factor: {trigger_factor:.02}')
+
+    if MainWindowObj.globals.DEBUG:
+        BUTTON_NAME = ""
+        for attr_name, attr_value in SignalConstants.__dict__.items():
+            if button == attr_value:
+                BUTTON_NAME = attr_name
+                break
+        # print(BUTTON_NAME, attr_value)
+        MainWindowObj.show_center_label(f'{BUTTON_NAME}')
 
     MainWindowObj.update()
 
@@ -655,6 +652,7 @@ def find_gamepad():
         product_string = device['product_string']
 
         # print(manufacturer_string, product_string)
+        # print(device)
 
         if manufacturer_string.startswith('ShanWan') and product_string == 'PC/PS3/Android Gamepad':
             gamepad_device = device
