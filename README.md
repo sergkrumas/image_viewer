@@ -6,7 +6,7 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 The first release is planned for the summer 2025, so there's no full user guide at the moment.
 
-## [README.md на Русском / README.md in Russian](README_ru.md)
+## [README.md на Русском / in Russian](README_ru.md)
 
 ![](docs/screenshot.png)
 
@@ -24,6 +24,8 @@ Viewer Page Presentation on Youtube:
 Board Page Presentation on Youtube:
 
 [![Comment](https://img.youtube.com/vi/cWVgUz3I5Po/0.jpg)](https://www.youtube.com/watch?v=cWVgUz3I5Po "Board Page Presentation — Watch on Youtube")
+
+![](docs/boards.png)
 
 You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
 
