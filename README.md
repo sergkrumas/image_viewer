@@ -12,24 +12,27 @@ The first release is planned for the summer 2025, so there's no full user guide 
 
 ![](docs/screenshot.png)
 
+
+Viewer Page Presentation on Youtube:
+
+[![Comment](https://img.youtube.com/vi/hlu9MMdf4-A/0.jpg)](https://www.youtube.com/watch?v=hlu9MMdf4-A "Viewer Page Presentation — Watch on Youtube")
+
 ## Start page
 
 Start page shows up when the app is run directly i.e. without request from Windows Explorer. You can select UI language at the bottom. The picture on the background is desktop wallpaper.
 
 ![](docs/startpage.png)
 
-Viewer Page Presentation on Youtube:
-
-[![Comment](https://img.youtube.com/vi/hlu9MMdf4-A/0.jpg)](https://www.youtube.com/watch?v=hlu9MMdf4-A "Viewer Page Presentation — Watch on Youtube")
 
 ## Board page (PureRef Clone)
+
+![](docs/boards.png)
 
 
 Board Page Presentation on Youtube:
 
 [![Comment](https://img.youtube.com/vi/cWVgUz3I5Po/0.jpg)](https://www.youtube.com/watch?v=cWVgUz3I5Po "Board Page Presentation — Watch on Youtube")
 
-![](docs/boards.png)
 
 You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
 
