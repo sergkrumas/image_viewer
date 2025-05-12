@@ -8,7 +8,11 @@ The first release is planned for the summer 2025, so there's no full user guide 
 
 ## [README.md на Русском / in Russian](README_ru.md)
 
+## Viewer page (Google Picasa Photo Viewer Clone)
+
 ![](docs/screenshot.png)
+
+## Start page
 
 Start page shows up when the app is run directly i.e. without request from Windows Explorer. You can select UI language at the bottom. The picture on the background is desktop wallpaper.
 
