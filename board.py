@@ -4191,6 +4191,25 @@ class BoardMixin(BoardTextEditItemMixin):
         for view in dialog.findChildren((QListView, QTreeView)):
             if isinstance(view.model(), QFileSystemModel):
                 view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+
+        combo = dialog.findChild(QComboBox, "lookInCombo", Qt.FindDirectChildrenOnly)
+        combo.setEditable(True)
+        edit = combo.lineEdit()
+        def returnPressed():
+            newPath = edit.text()
+            # check if the newPath is valid path
+            if os.path.exists(newPath) and os.path.isdir(newPath):
+                dialog.setDirectory(newPath)
+            return False
+        # edit.returnPressed.connect(returnPressed) # при нажатии Return одновременно срабатывает и кнопка диалога, пока не знаю как это исправить, поэтому поставил обработчик на любое изменение текста, а вставка пути к папке и есть изменение
+        edit.textChanged.connect(returnPressed)
+        button_box = dialog.findChild(QDialogButtonBox, "buttonBox", Qt.FindDirectChildrenOnly)
+        # for ch in button_box.children():
+        #     if isinstance(ch, QPushButton):
+        #         ch.setDefault(False)
+        #         ch.setAutoDefault(False)
+        #     print(ch.objectName(), type(ch))
+
         if dialog.exec_() == QDialog.Accepted:
             selected_folders = dialog.selectedFiles()
         dialog.deleteLater()
