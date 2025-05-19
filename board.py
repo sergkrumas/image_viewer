@@ -4232,6 +4232,10 @@ class BoardMixin(BoardTextEditItemMixin):
         for image_data in cf.images_list:
             image_data.folder_data = cf
 
+        if not cf.images_list:
+            self.show_center_label(_("No images found in selected folders!"), error=True)
+            return
+
         # needed for board_place_items_in_column
         self.LibraryData().make_folder_current(cf, write_view_history=False)
 
