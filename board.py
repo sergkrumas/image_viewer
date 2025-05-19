@@ -4196,7 +4196,7 @@ class BoardMixin(BoardTextEditItemMixin):
         combo.setEditable(True)
         edit = combo.lineEdit()
         def returnPressed():
-            newPath = edit.text()
+            newPath = edit.text().strip()
             # check if the newPath is valid path
             if os.path.exists(newPath) and os.path.isdir(newPath):
                 dialog.setDirectory(newPath)
