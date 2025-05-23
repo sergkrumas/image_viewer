@@ -26,6 +26,10 @@ from on_windows_startup import (is_app_in_startup, add_to_startup, remove_from_s
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 class CustomSlider(QWidget):
+
+    TYPE_SCALAR = 0
+    TYPE_COLOR = 1
+
     colorGrads = QLinearGradient(0, 0, 1, 0)
     colorGrads.setCoordinateMode(colorGrads.ObjectBoundingMode)
     xRatio = 1. / 6
@@ -37,6 +41,7 @@ class CustomSlider(QWidget):
     colorGrads.setColorAt(xRatio * 4, Qt.green)
     colorGrads.setColorAt(xRatio * 5, Qt.yellow)
     colorGrads.setColorAt(1, Qt.red)
+
     value_changed = pyqtSignal()
     def __init__(self, type, width, default_value):
         super().__init__()
@@ -52,7 +57,7 @@ class CustomSlider(QWidget):
         self.b = 1.0
 
     def resizeEvent(self, event):
-        if self.type == "COLOR":
+        if self.type == self.TYPE_COLOR:
             self._inner_rect = self.rect()
             pixmap = QPixmap(self.rect().size())
             qp = QPainter(pixmap)
@@ -106,7 +111,7 @@ class CustomSlider(QWidget):
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         # painter.fillRect(self.rect(), QColor("#303940"))
         if self.isEnabled():
-            if self.type == "SCALAR":
+            if self.type == self.TYPE_SCALAR:
                 painter.setClipping(True)
                 self.mask(painter, "b")
                 self.draw_bar(painter, QColor("#1d2328"))
@@ -123,7 +128,7 @@ class CustomSlider(QWidget):
                 value = self.get_value()
                 text = f"{value:.02f}"
                 painter.drawText(self.rect(), Qt.AlignBottom, text)
-            elif self.type == "COLOR":
+            elif self.type == self.TYPE_COLOR:
                 # gradient
                 gradient_path = QPainterPath()
                 rect = self.get_AB_rect()
@@ -167,11 +172,11 @@ class CustomSlider(QWidget):
             painter.drawEllipse(r2)
             painter.setPen(QPen(QColor(100, 100, 150), 1))
             painter.drawEllipse(r.adjusted(1,1,-1,-1))
-            if self.type == "SCALAR":
+            if self.type == self.TYPE_SCALAR:
                 color = QColor(220, 220, 220)
                 painter.setBrush(color)
                 painter.drawEllipse(r2)
-            elif self.type == "COLOR":
+            elif self.type == self.TYPE_COLOR:
                 color = self.get_color()
                 painter.setBrush(color)
                 # r2.moveTop(r2.top()+10)
@@ -769,7 +774,7 @@ class SettingsWindow(QWidget):
                 range_ = params[1]
                 a, b = range_
                 val = (current_val-a)/(b-a)
-                sb = CustomSlider("SCALAR", 400, val)
+                sb = CustomSlider(CustomSlider.TYPE_SCALAR, 400, val)
                 sb.setFixedHeight(50)
                 sb.setRange(*range_)
                 self.values_widgets[id] = sb
