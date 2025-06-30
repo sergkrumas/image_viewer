@@ -83,13 +83,9 @@ if not USE_PYQT_VERSION:
             pass
 
         def mapFromItem(self, item, x, y):
-            # !!!!!!!!!!!!!!!!
-            # return QPointF(random.random(), random.random())
             return item.pos() - self.pos()
 
         def mapToItem(self, item, x, y):
-            # !!!!!!!!!!!!!!!!
-            # return QPointF(random.random(), random.random())
             return self.pos() - item.pos()
 
         def prepareGeometryChange(self):
@@ -115,9 +111,9 @@ if not USE_PYQT_VERSION:
 
     class QGraphicsView(QObject):
 
-        CacheBackground = QGraphicsView.CacheBackground
-        BoundingRectViewportUpdate = QGraphicsView.BoundingRectViewportUpdate
-        AnchorUnderMouse = QGraphicsView.AnchorUnderMouse
+        CacheBackground = _QGraphicsView.CacheBackground
+        BoundingRectViewportUpdate = _QGraphicsView.BoundingRectViewportUpdate
+        AnchorUnderMouse = _QGraphicsView.AnchorUnderMouse
 
         def __init__(self, parent):
             super().__init__()
@@ -165,7 +161,7 @@ if not USE_PYQT_VERSION:
     class QGraphicsScene(QObject):
 
         NoIndex = _QGraphicsScene.NoIndex
-        BackgroundLayer = QGraphicsScene.BackgroundLayer
+        BackgroundLayer = _QGraphicsScene.BackgroundLayer
 
         def __init__(self, widget):
             super().__init__()
@@ -193,8 +189,6 @@ if not USE_PYQT_VERSION:
             return Globals.drag_node
 
         def invalidate(self, rect, type):
-            # !!!!
-            # redraw call for background
             board_widget.update()
             self.widget.itemMoved()
 
@@ -833,7 +827,7 @@ def preparePluginBoard(self, plugin_info):
 
 def register(board_obj, plugin_info):
 
-    plugin_info.name = 'ELASTIQUE NODES PLUGIN'
+    plugin_info.name = 'ELASTIQUES NODES PLUGIN'
 
     # plugin_info.add_to_menu = False
 
