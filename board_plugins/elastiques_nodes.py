@@ -18,7 +18,7 @@ import _utils
 
 
 
-USE_PYQT_VERSION = False
+RUN_AS_STANDALONE_PYQT_APP = False
 
 # - исходники https://github.com/Infernno/qt5-examples/tree/master/widgets/graphicsview
 # - описание исходников https://doc.qt.io/qt-5/qtwidgets-graphicsview-elasticnodes-example.html
@@ -35,7 +35,7 @@ INTERVAL = int(1000 / 40)
 
 
 
-if not USE_PYQT_VERSION:
+if not RUN_AS_STANDALONE_PYQT_APP:
     _QGraphicsItem = QGraphicsItem
     _QGraphicsView = QGraphicsView
     _QGraphicsScene = QGraphicsScene
@@ -392,7 +392,7 @@ class Node(QGraphicsItem):
             self.newPos = self.pos()
         else:
             self.newPos = self.pos() + QPointF(xvel, yvel)
-            if USE_PYQT_VERSION:
+            if RUN_AS_STANDALONE_PYQT_APP:
                 sceneRect = self.scene().sceneRect()
             else:
                 sceneRect = self.scene()._scene_rect
@@ -874,7 +874,7 @@ def main():
     app.exec()
 
 if __name__ == '__main__':
-    if USE_PYQT_VERSION:
+    if RUN_AS_STANDALONE_PYQT_APP:
         # PyQt Version
         main()
     else:
