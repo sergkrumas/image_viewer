@@ -568,7 +568,7 @@ class GraphWidget(QGraphicsView):
 
         if not itemsMoved:
             self.killTimer(self.timerId)
-            print('killed', time.time())
+            # print('killed', time.time())
             self.timerId = 0
 
         self.parent().setWindowTitle(str(time.time()))
@@ -706,7 +706,7 @@ def paintEvent(self, painter, event):
     painter.restore()
 
 def get_pixels_in_radius_unit(self):
-    CONST = 20
+    CONST = 10
     return CONST*max(self.canvas_scale_x, self.canvas_scale_y)
     # return CONST
 
@@ -714,29 +714,27 @@ def build_rect_from_point(self, point, r=1.0):
     offset = QPointF(get_pixels_in_radius_unit(self)*r, get_pixels_in_radius_unit(self)*r)
     return QRectF(point-offset, point+offset)
 
-def mousePressEvent(self, event):
+def find_node_under_mouse(self, event):
     cursor_pos = event.pos()
-    breaked = False
-
     for item in widget.scene.items():
         if isinstance(item, Node):
             point = item.scenePos()
             rect = build_rect_from_point(self, point)
             if rect.contains(cursor_pos):
-                Globals.drag_node = item
-                Globals.start_pos = event.pos()
-                Globals.oldpos = QPointF(item.pos())
-                breaked = True
-                break
-            else:
-                Globals.drag_node = None
+                return item
+    return None
 
-    if not breaked:
+def mousePressEvent(self, event):
+    Globals.drag_node = node = find_node_under_mouse(self, event)
+    if node is not None:
+        Globals.start_pos = event.pos()
+        Globals.oldpos = QPointF(node.pos())
+
+    if not Globals.drag_node:
         self.board_mousePressEventDefault(event)
     self.update()
 
 def mouseMoveEvent(self, event):
-
     if Globals.drag_node is not None:
         delta = QPointF(Globals.start_pos - event.pos())
         delta.setX(delta.x()/self.canvas_scale_x)
@@ -745,11 +743,12 @@ def mouseMoveEvent(self, event):
 
     else:
         self.board_mouseMoveEventDefault(event)
-    # if not self.corner_buttons_cursor_glitch_fixer():
-    #     if _data.center_under_cursor is not None:
-    #         self.setCursor(Qt.PointingHandCursor)
-    #     else:
-    #         self.setCursor(Qt.ArrowCursor)
+    if not self.corner_buttons_cursor_glitch_fixer():
+        is_over_node = find_node_under_mouse(self, event) or  Globals.drag_node is not None
+        if is_over_node:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
     self.update()
 
 def mouseReleaseEvent(self, event):
