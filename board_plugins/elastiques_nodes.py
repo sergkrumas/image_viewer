@@ -302,6 +302,8 @@ class Node(QGraphicsItem):
 
         self.edgeList = []
 
+        self.activated = True
+
         self.newPos = QPointF()
         self.graph = graphWidget
 
@@ -324,7 +326,7 @@ class Node(QGraphicsItem):
         edge.adjust()
 
     def calculateForces(self):
-        if not self.scene():
+        if not self.scene() or not self.activated:
             return
 
         # Sum up all forces pushing this item away
@@ -339,6 +341,8 @@ class Node(QGraphicsItem):
 
         for item in self.scene().items():
             if not isinstance(item, Node):
+                continue
+            if not item.activated:
                 continue
 
             vec = self.mapToItem(item, 0, 0)
@@ -563,7 +567,7 @@ class GraphWidget(QGraphicsView):
 
         itemsMoved = False
         for node in nodes:
-            if node.advancePosition():
+            if node.activated and node.advancePosition():
                 itemsMoved = True
 
         if not itemsMoved:
@@ -663,6 +667,102 @@ class GraphWidget(QGraphicsView):
 class Globals():
     drag_node = None
 
+    over_mouse_node = None
+    magazin = []
+
+    @classmethod
+    def mouse_global_pos(cls):
+        return board_widget.board_MapToBoard(board_widget.mapFromGlobal(QCursor().pos()))
+
+
+class PluginNodeEditor():
+
+    TYPE_NODE = 1
+    TYPE_EDGE = 2
+    OPERATION_ADD = 3
+    OPERATION_REMOVE = 4
+    OPERATION_VIEW = 5
+
+    type_state = TYPE_NODE
+    op_state = OPERATION_VIEW
+
+    @classmethod
+    def change_editing_state(cls, key, board_widget):
+
+        global widget
+
+        if False:
+            pass
+        elif key == Qt.Key_V:
+
+            if cls.type_state != cls.TYPE_NODE:
+                cls.type_state = cls.TYPE_NODE
+                board_widget.show_center_label('nodes')
+            else:
+
+                if cls.op_state == cls.OPERATION_VIEW:
+                    pass
+
+                elif cls.op_state == cls.OPERATION_ADD:
+
+                    node = Node(widget)
+                    node.setPos(Globals.mouse_global_pos())
+                    node.activated = True
+                    widget.scene.addItem(node)
+
+                elif cls.op_state == cls.OPERATION_REMOVE:
+
+                    pass
+
+
+
+        elif key == Qt.Key_E:
+
+            if cls.type_state != cls.TYPE_EDGE:
+                cls.type_state = cls.TYPE_EDGE
+                board_widget.show_center_label('edges')
+            else:
+
+                if cls.op_state == cls.OPERATION_VIEW:
+                    pass
+
+                elif cls.op_state == cls.OPERATION_ADD:
+
+                    nearest_node = find_nearest_node(board_widget)
+                    if nearest_node is not None:
+                        Globals.magazin.append(nearest_node)
+                    else:
+                        board_widget.show_center_label('empty')
+
+                    if len(Globals.magazin) > 1:
+                        node1, node2 = Globals.magazin
+                        if node1 is not node2:
+                            widget.scene.addItem(Edge(node1, node2))
+                        else:
+                            board_widget.show_center_label('the same node added twice')
+                            print(node1, node2)
+
+                        Globals.magazin.clear()
+
+                elif cls.op_state == cls.OPERATION_REMOVE:
+
+                    pass
+
+
+        elif key == Qt.Key_T:
+            if cls.op_state == cls.OPERATION_ADD:
+                cls.op_state = cls.OPERATION_REMOVE
+                st = 'removing mode'
+            elif cls.op_state == cls.OPERATION_REMOVE:
+                cls.op_state = cls.OPERATION_VIEW
+                st = 'viewing mode'
+            elif cls.op_state == cls.OPERATION_VIEW:
+                cls.op_state = cls.OPERATION_ADD
+                st = 'adding mode'
+            board_widget.show_center_label(st)
+
+
+
 
 
 
@@ -685,14 +785,22 @@ def paintEvent(self, painter, event):
     widget.drawBackground(painter, rect)
 
 
-    painter.setBrush(QBrush(Qt.red))
     for item in widget.scene.items():
         if isinstance(item, Node):
+            if Globals.over_mouse_node is item:
+                painter.setBrush(QBrush(Qt.green))
+            else:
+                painter.setBrush(QBrush(Qt.red))
             rect = QRectF(0, 0, 20, 20)
             rect.moveCenter(item.scenePos())
             painter.drawEllipse(rect)
 
-        elif isinstance(item, Edge):
+
+
+
+
+    for item in widget.scene.items():
+        if isinstance(item, Edge):
             item.adjust()
             # print(item.destPoint, item.sourcePoint)
             item._sourcePoint = item.sourcePoint
@@ -713,6 +821,18 @@ def get_pixels_in_radius_unit(self):
 def build_rect_from_point(self, point, r=1.0):
     offset = QPointF(get_pixels_in_radius_unit(self)*r, get_pixels_in_radius_unit(self)*r)
     return QRectF(point-offset, point+offset)
+
+def find_nearest_node(self):
+    cursor_pos = self.mapFromGlobal(QCursor.pos())
+    nodes = []
+    for item in widget.scene.items():
+        if isinstance(item, Node):
+            nodes.append(item)
+    if not nodes:
+        return None
+    def min_dist(x):
+        return QVector2D(x.scenePos() - cursor_pos).length()
+    return min(nodes, key=min_dist)
 
 def find_node_under_mouse(self, event):
     cursor_pos = event.pos()
@@ -743,6 +863,8 @@ def mouseMoveEvent(self, event):
 
     else:
         self.board_mouseMoveEventDefault(event)
+        Globals.over_mouse_node = find_nearest_node(board_widget)
+
     if not self.corner_buttons_cursor_glitch_fixer():
         is_over_node = find_node_under_mouse(self, event) or  Globals.drag_node is not None
         if is_over_node:
@@ -760,26 +882,6 @@ def mouseReleaseEvent(self, event):
     Globals.drag_node = None
     self.update()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def mouseDoubleClickEvent(self, event):
     self.board_mouseDoubleClickEventDefault(event)
 
@@ -790,10 +892,23 @@ def contextMenu(self, event, contextMenu, checkboxes):
     self.board_contextMenuDefault(event, contextMenu, checkboxes)
 
 def keyPressEvent(self, event):
-    widget.keyPressEvent(event)
+    key = event.key()
+    if False:
+        pass
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T]:
+        if not event.isAutoRepeat():
+            PluginNodeEditor.change_editing_state(key, self)
+    else:
+        widget.keyPressEvent(event)
 
 def keyReleaseEvent(self, event):
-    self.board_keyReleaseEventDefault(event)
+    key = event.key()
+    if False:
+        pass
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T]:
+        pass
+    else:
+        self.board_keyReleaseEventDefault(event)
 
 def dragEnterEvent(self, event):
     self.board_dragEnterEventDefault(event)
