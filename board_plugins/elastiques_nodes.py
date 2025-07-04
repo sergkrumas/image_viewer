@@ -662,16 +662,21 @@ class GraphWidget(QGraphicsView):
 
             a = -item.pulling_vec
             b = item.pushing_vec
-            draw_vector(item, a, Qt.red)
-            draw_vector(item, b, Qt.green)
+            if Globals.show_pullling_sum:
+                draw_vector(item, a, Qt.red)
+            if Globals.show_pushing_sum:
+                draw_vector(item, b, Qt.green)
 
-            sum_vector = a + b
-            draw_vector(item, sum_vector, Qt.black)
+            if Globals.show_all_sum:
+                sum_vector = a + b
+                draw_vector(item, sum_vector, Qt.black)
 
-            for v in item.pushing_list:
-                draw_vector(item, v, Qt.blue, 100.0)
-            for v in item.pulling_list:
-                draw_vector(item, -v, Qt.cyan)
+            if Globals.show_pushing_list:
+                for v in item.pushing_list:
+                    draw_vector(item, v, Qt.blue, 100.0)
+            if Globals.show_pulling_list:
+                for v in item.pulling_list:
+                    draw_vector(item, -v, Qt.cyan)
 
 
 
@@ -682,6 +687,12 @@ class Globals():
     over_mouse_node = None
     over_mouse_edge = None
     magazin = []
+
+    show_pullling_sum = True
+    show_pushing_sum = True
+    show_pulling_list = True
+    show_pushing_list = True
+    show_all_sum = True
 
     @classmethod
     def mouse_global_pos(cls):
@@ -777,6 +788,25 @@ class PluginNodeEditor():
             nearest_node = find_nearest_node(board_widget)
             if nearest_node is not None:
                 nearest_node.activated = not nearest_node.activated
+
+
+        elif key in [Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
+
+
+            keys = [Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]
+            attrs = [
+                'show_pullling_sum',
+                'show_pushing_sum',
+                'show_pulling_list',
+                'show_pushing_list',
+                'show_all_sum',
+            ]
+            # toggle corresponding attribute
+            for _key, attr_name in zip(keys, attrs):
+                if _key == key: 
+                    setattr(Globals, attr_name, not getattr(Globals, attr_name))
+
+
 
     @classmethod
     def status(cls):
@@ -956,7 +986,7 @@ def keyPressEvent(self, event):
     key = event.key()
     if False:
         pass
-    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A]:
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
         if not event.isAutoRepeat():
             PluginNodeEditor.change_editing_state(key, self)
     else:
@@ -966,7 +996,7 @@ def keyReleaseEvent(self, event):
     key = event.key()
     if False:
         pass
-    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A]:
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
         pass
     else:
         self.board_keyReleaseEventDefault(event)
