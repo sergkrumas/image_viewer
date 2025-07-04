@@ -712,60 +712,55 @@ class PluginNodeEditor():
 
             if cls.type_state != cls.TYPE_NODE:
                 cls.type_state = cls.TYPE_NODE
-                # board_widget.show_center_label('nodes')
-            # else:
-            if True:
-                if cls.op_state == cls.OPERATION_VIEW:
-                    pass
 
-                elif cls.op_state == cls.OPERATION_ADD:
+            if cls.op_state == cls.OPERATION_VIEW:
+                pass
 
-                    node = Node(widget)
-                    node.setPos(Globals.mouse_global_pos())
-                    node.activated = True
-                    widget.scene.addItem(node)
+            elif cls.op_state == cls.OPERATION_ADD:
 
-                elif cls.op_state == cls.OPERATION_REMOVE:
+                node = Node(widget)
+                node.setPos(Globals.mouse_global_pos())
+                node.activated = True
+                widget.scene.addItem(node)
 
-                    nearest_node = find_nearest_node(board_widget)
-                    if nearest_node is not None:
-                        widget.scene.removeItem(nearest_node)
+            elif cls.op_state == cls.OPERATION_REMOVE:
+
+                nearest_node = find_nearest_node(board_widget)
+                if nearest_node is not None:
+                    widget.scene.removeItem(nearest_node)
 
 
         elif key == Qt.Key_E:
 
             if cls.type_state != cls.TYPE_EDGE:
                 cls.type_state = cls.TYPE_EDGE
-            #     board_widget.show_center_label('edges')
-            # else:
 
-            if True:
-                if cls.op_state == cls.OPERATION_VIEW:
-                    pass
+            if cls.op_state == cls.OPERATION_VIEW:
+                pass
 
-                elif cls.op_state == cls.OPERATION_ADD:
+            elif cls.op_state == cls.OPERATION_ADD:
 
-                    nearest_node = find_nearest_node(board_widget)
-                    if nearest_node is not None:
-                        Globals.magazin.append(nearest_node)
+                nearest_node = find_nearest_node(board_widget)
+                if nearest_node is not None:
+                    Globals.magazin.append(nearest_node)
+                else:
+                    board_widget.show_center_label('empty')
+
+                if len(Globals.magazin) > 1:
+                    node1, node2 = Globals.magazin
+                    if node1 is not node2:
+                        widget.scene.addItem(Edge(node1, node2))
                     else:
-                        board_widget.show_center_label('empty')
+                        board_widget.show_center_label('the same node added twice')
+                        print(node1, node2)
 
-                    if len(Globals.magazin) > 1:
-                        node1, node2 = Globals.magazin
-                        if node1 is not node2:
-                            widget.scene.addItem(Edge(node1, node2))
-                        else:
-                            board_widget.show_center_label('the same node added twice')
-                            print(node1, node2)
+                    Globals.magazin.clear()
 
-                        Globals.magazin.clear()
+            elif cls.op_state == cls.OPERATION_REMOVE:
 
-                elif cls.op_state == cls.OPERATION_REMOVE:
-
-                    nearest_edge = find_nearest_edge(board_widget)
-                    if nearest_edge is not None:
-                        widget.scene.removeItem(nearest_edge)
+                nearest_edge = find_nearest_edge(board_widget)
+                if nearest_edge is not None:
+                    widget.scene.removeItem(nearest_edge)
 
 
 
