@@ -749,7 +749,7 @@ class PluginNodeEditor():
 
             elif cls.op_state == cls.OPERATION_ADD:
 
-                nearest_node = find_nearest_node(board_widget)
+                nearest_node = find_nearest_node(board_widget, edge_op=True)
                 if nearest_node is not None:
                     Globals.magazin.append(nearest_node)
                 else:
@@ -804,8 +804,13 @@ class PluginNodeEditor():
             # toggle corresponding attribute
             for _key, attr_name in zip(keys, attrs):
                 if _key == key: 
-                    setattr(Globals, attr_name, not getattr(Globals, attr_name))
-
+                    value = not getattr(Globals, attr_name)
+                    setattr(Globals, attr_name, value)
+                    status = 'on' if value else 'off'
+                    content = attr_name[len('show_'):].replace('_', ' ')
+                    s = f'{content} {status}'
+                    board_widget.show_center_label(s)
+                    break
 
 
     @classmethod
@@ -843,6 +848,14 @@ def paintEvent(self, painter, event):
     rect = QRectF(self.rect())
     painter.save()
     widget.drawBackground(painter, rect)
+    painter.restore()
+
+    painter.save()
+    painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
+    if len(Globals.magazin) == 1:
+        curpos = self.mapFromGlobal(QCursor().pos())
+        _node = Globals.magazin[0]
+        painter.drawLine(curpos, _node.scenePos())
     painter.restore()
 
     for item in widget.scene.items():
@@ -897,12 +910,15 @@ def build_rect_from_point(self, point, r=1.0):
     offset = QPointF(get_pixels_in_radius_unit(self)*r, get_pixels_in_radius_unit(self)*r)
     return QRectF(point-offset, point+offset)
 
-def find_nearest_node(self):
+def find_nearest_node(self, edge_op=False):
     cursor_pos = self.mapFromGlobal(QCursor.pos())
     nodes = []
     for item in widget.scene.items():
         if isinstance(item, Node):
-            nodes.append(item)
+            if edge_op and Globals.magazin and item is Globals.magazin[0]:
+                pass
+            else:
+                nodes.append(item)
     if not nodes:
         return None
     def min_dist(x):
@@ -965,7 +981,6 @@ def mouseMoveEvent(self, event):
     self.update()
 
 def mouseReleaseEvent(self, event):
-
     if False:
         pass
     else:
@@ -1080,10 +1095,10 @@ def main():
 
 if __name__ == '__main__':
     if RUN_AS_STANDALONE_PYQT_APP:
-        # PyQt Version
+        # Standalone PyQt Version
         main()
     else:
-        # Plugin Version
+        # Boards Plugin Version
         subprocess.Popen([sys.executable, "-u", "./../_viewer.pyw", "-board", os.path.basename(__file__)])
         sys.exit()
 
