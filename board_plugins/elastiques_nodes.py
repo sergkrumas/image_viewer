@@ -312,6 +312,7 @@ class Node(QGraphicsItem):
         self.edgeList = []
 
         self.activated = True
+        self.excluded = False
 
         self.newPos = QPointF()
         self.graph = graphWidget
@@ -707,7 +708,7 @@ class PluginNodeEditor():
     show_all_sum = True
 
     @staticmethod
-    def mouse_global_pos(cls):
+    def mouse_global_pos():
         return board_widget.board_MapToBoard(board_widget.mapFromGlobal(QCursor().pos()))
 
     @classmethod
@@ -752,17 +753,18 @@ class PluginNodeEditor():
                 nearest_node = PluginNodeEditor.find_nearest_node(edge_op=True)
                 if nearest_node is not None:
                     PluginNodeEditor.magazin.append(nearest_node)
+                    nearest_node.excluded = True
                 else:
                     board_widget.show_center_label('empty')
 
                 if len(PluginNodeEditor.magazin) > 1:
                     node1, node2 = PluginNodeEditor.magazin
+                    node1.excluded = False
+                    node2.excluded = False
                     if node1 is not node2:
                         widget.scene.addItem(Edge(node1, node2))
                     else:
                         board_widget.show_center_label('the same node added twice')
-                        print(node1, node2)
-
                     PluginNodeEditor.magazin.clear()
 
             elif cls.op_state == cls.OPERATION_REMOVE:
@@ -835,7 +837,7 @@ class PluginNodeEditor():
         cursor_pos = board_widget.mapFromGlobal(QCursor.pos())
         nodes = []
         for item in widget.scene.items():
-            if isinstance(item, Node):
+            if isinstance(item, Node) and not item.excluded:
                 if edge_op and PluginNodeEditor.magazin and item is PluginNodeEditor.magazin[0]:
                     pass
                 else:
