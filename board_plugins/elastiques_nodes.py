@@ -899,8 +899,9 @@ def paintEvent(self, painter, event):
     painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
     if len(PluginNodeEditor.magazin) == 1:
         curpos = self.mapFromGlobal(QCursor().pos())
-        _node = PluginNodeEditor.magazin[0]
-        painter.drawLine(curpos, _node.scenePos())
+        m1_node = PluginNodeEditor.magazin[0]
+        _node = PluginNodeEditor.find_nearest_node()
+        painter.drawLine(_node.scenePos(), m1_node.scenePos())
     painter.restore()
 
     for item in widget.scene.items():
