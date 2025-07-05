@@ -750,7 +750,7 @@ class PluginNodeEditor():
 
             elif cls.op_state == cls.OPERATION_ADD:
 
-                nearest_node = PluginNodeEditor.find_nearest_node(edge_op=True)
+                nearest_node = PluginNodeEditor.find_nearest_node()
                 if nearest_node is not None:
                     PluginNodeEditor.magazin.append(nearest_node)
                     nearest_node.excluded = True
@@ -833,15 +833,12 @@ class PluginNodeEditor():
 
 
     @staticmethod
-    def find_nearest_node(edge_op=False):
+    def find_nearest_node():
         cursor_pos = board_widget.mapFromGlobal(QCursor.pos())
         nodes = []
         for item in widget.scene.items():
             if isinstance(item, Node) and not item.excluded:
-                if edge_op and PluginNodeEditor.magazin and item is PluginNodeEditor.magazin[0]:
-                    pass
-                else:
-                    nodes.append(item)
+                nodes.append(item)
         if not nodes:
             return None
         def min_dist(x):
