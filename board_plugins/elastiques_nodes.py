@@ -195,7 +195,7 @@ if not RUN_AS_STANDALONE_PYQT_APP:
             return self._items
 
         def mouseGrabberItem(self):
-            return Globals.drag_node
+            return PluginNodeEditor.drag_node
 
         def invalidate(self, rect, type):
             board_widget.update()
@@ -662,41 +662,23 @@ class GraphWidget(QGraphicsView):
 
             a = -item.pulling_vec
             b = item.pushing_vec
-            if Globals.show_pullling_sum:
+            if PluginNodeEditor.show_pullling_sum:
                 draw_vector(item, a, Qt.red)
-            if Globals.show_pushing_sum:
+            if PluginNodeEditor.show_pushing_sum:
                 draw_vector(item, b, Qt.green)
 
-            if Globals.show_all_sum:
+            if PluginNodeEditor.show_all_sum:
                 sum_vector = a + b
                 draw_vector(item, sum_vector, Qt.black)
 
-            if Globals.show_pushing_list:
+            if PluginNodeEditor.show_pushing_list:
                 for v in item.pushing_list:
                     draw_vector(item, v, Qt.blue, 100.0)
-            if Globals.show_pulling_list:
+            if PluginNodeEditor.show_pulling_list:
                 for v in item.pulling_list:
                     draw_vector(item, -v, Qt.cyan)
 
 
-
-
-class Globals():
-    drag_node = None
-
-    over_mouse_node = None
-    over_mouse_edge = None
-    magazin = []
-
-    show_pullling_sum = True
-    show_pushing_sum = True
-    show_pulling_list = True
-    show_pushing_list = True
-    show_all_sum = True
-
-    @classmethod
-    def mouse_global_pos(cls):
-        return board_widget.board_MapToBoard(board_widget.mapFromGlobal(QCursor().pos()))
 
 
 class PluginNodeEditor():
@@ -709,6 +691,24 @@ class PluginNodeEditor():
 
     type_state = TYPE_NODE
     op_state = OPERATION_VIEW
+    
+    ############################
+
+    drag_node = None
+
+    near_mouse_node = None
+    near_mouse_edge = None
+    magazin = []
+
+    show_pullling_sum = True
+    show_pushing_sum = True
+    show_pulling_list = True
+    show_pushing_list = True
+    show_all_sum = True
+
+    @staticmethod
+    def mouse_global_pos(cls):
+        return board_widget.board_MapToBoard(board_widget.mapFromGlobal(QCursor().pos()))
 
     @classmethod
     def change_editing_state(cls, key, board_widget):
@@ -729,13 +729,13 @@ class PluginNodeEditor():
             elif cls.op_state == cls.OPERATION_ADD:
 
                 node = Node(widget)
-                node.setPos(Globals.mouse_global_pos())
+                node.setPos(PluginNodeEditor.mouse_global_pos())
                 node.activated = True
                 widget.scene.addItem(node)
 
             elif cls.op_state == cls.OPERATION_REMOVE:
 
-                nearest_node = find_nearest_node(board_widget)
+                nearest_node = PluginNodeEditor.find_nearest_node()
                 if nearest_node is not None:
                     widget.scene.removeItem(nearest_node)
 
@@ -749,25 +749,25 @@ class PluginNodeEditor():
 
             elif cls.op_state == cls.OPERATION_ADD:
 
-                nearest_node = find_nearest_node(board_widget, edge_op=True)
+                nearest_node = PluginNodeEditor.find_nearest_node(edge_op=True)
                 if nearest_node is not None:
-                    Globals.magazin.append(nearest_node)
+                    PluginNodeEditor.magazin.append(nearest_node)
                 else:
                     board_widget.show_center_label('empty')
 
-                if len(Globals.magazin) > 1:
-                    node1, node2 = Globals.magazin
+                if len(PluginNodeEditor.magazin) > 1:
+                    node1, node2 = PluginNodeEditor.magazin
                     if node1 is not node2:
                         widget.scene.addItem(Edge(node1, node2))
                     else:
                         board_widget.show_center_label('the same node added twice')
                         print(node1, node2)
 
-                    Globals.magazin.clear()
+                    PluginNodeEditor.magazin.clear()
 
             elif cls.op_state == cls.OPERATION_REMOVE:
 
-                nearest_edge = find_nearest_edge(board_widget)
+                nearest_edge = PluginNodeEditor.find_nearest_edge()
                 if nearest_edge is not None:
                     widget.scene.removeItem(nearest_edge)
 
@@ -785,7 +785,7 @@ class PluginNodeEditor():
 
         elif key == Qt.Key_A:
 
-            nearest_node = find_nearest_node(board_widget)
+            nearest_node = PluginNodeEditor.find_nearest_node()
             if nearest_node is not None:
                 nearest_node.activated = not nearest_node.activated
 
@@ -804,8 +804,8 @@ class PluginNodeEditor():
             # toggle corresponding attribute
             for _key, attr_name in zip(keys, attrs):
                 if _key == key: 
-                    value = not getattr(Globals, attr_name)
-                    setattr(Globals, attr_name, value)
+                    value = not getattr(PluginNodeEditor, attr_name)
+                    setattr(PluginNodeEditor, attr_name, value)
                     status = 'on' if value else 'off'
                     content = attr_name[len('show_'):].replace('_', ' ')
                     s = f'{content} {status}'
@@ -830,6 +830,52 @@ class PluginNodeEditor():
         return st
 
 
+    @staticmethod
+    def find_nearest_node(edge_op=False):
+        cursor_pos = board_widget.mapFromGlobal(QCursor.pos())
+        nodes = []
+        for item in widget.scene.items():
+            if isinstance(item, Node):
+                if edge_op and PluginNodeEditor.magazin and item is PluginNodeEditor.magazin[0]:
+                    pass
+                else:
+                    nodes.append(item)
+        if not nodes:
+            return None
+        def min_dist(x):
+            return QVector2D(x.scenePos() - cursor_pos).length()
+        return min(nodes, key=min_dist)
+
+    @staticmethod
+    def find_nearest_edge():
+        cursor_pos = board_widget.mapFromGlobal(QCursor.pos())
+        edges = []
+        for item in widget.scene.items():
+            if isinstance(item, Edge):
+                edges.append(item)
+        if not edges:
+            return None
+        def min_dist(x):
+            a = board_widget.board_MapToViewport(x.sourcePoint)
+            b = board_widget.board_MapToViewport(x.destPoint)
+            c = (a + b)/2.0
+            return QVector2D(c - cursor_pos).length()
+        return min(edges, key=min_dist)
+
+    @staticmethod
+    def find_node_under_mouse(event):
+        cursor_pos = event.pos()
+        for item in widget.scene.items():
+            if isinstance(item, Node):
+                point = item.scenePos()
+                rect = build_rect_from_point(board_widget, point)
+                if rect.contains(cursor_pos):
+                    return item
+        return None
+
+
+
+
 def board_MapRectToViewport(self, rect):
     return QRectF(
         self.board_MapToViewport(rect.topLeft()),
@@ -852,15 +898,15 @@ def paintEvent(self, painter, event):
 
     painter.save()
     painter.setPen(QPen(Qt.black, 1, Qt.DashLine))
-    if len(Globals.magazin) == 1:
+    if len(PluginNodeEditor.magazin) == 1:
         curpos = self.mapFromGlobal(QCursor().pos())
-        _node = Globals.magazin[0]
+        _node = PluginNodeEditor.magazin[0]
         painter.drawLine(curpos, _node.scenePos())
     painter.restore()
 
     for item in widget.scene.items():
         if isinstance(item, Node):
-            if Globals.over_mouse_node is item:
+            if PluginNodeEditor.near_mouse_node is item:
                 painter.setBrush(QBrush(Qt.green))
             elif item.activated:
                 painter.setBrush(QBrush(Qt.red))
@@ -883,7 +929,7 @@ def paintEvent(self, painter, event):
             item.sourcePoint = item._sourcePoint
             item.destPoint = item._destPoint
 
-            if Globals.over_mouse_edge is item:
+            if PluginNodeEditor.near_mouse_edge is item:
                 a = self.board_MapToViewport(item.destPoint)
                 b = self.board_MapToViewport(item.sourcePoint)
                 pos = (a + b) / 2.0
@@ -910,70 +956,30 @@ def build_rect_from_point(self, point, r=1.0):
     offset = QPointF(get_pixels_in_radius_unit(self)*r, get_pixels_in_radius_unit(self)*r)
     return QRectF(point-offset, point+offset)
 
-def find_nearest_node(self, edge_op=False):
-    cursor_pos = self.mapFromGlobal(QCursor.pos())
-    nodes = []
-    for item in widget.scene.items():
-        if isinstance(item, Node):
-            if edge_op and Globals.magazin and item is Globals.magazin[0]:
-                pass
-            else:
-                nodes.append(item)
-    if not nodes:
-        return None
-    def min_dist(x):
-        return QVector2D(x.scenePos() - cursor_pos).length()
-    return min(nodes, key=min_dist)
-
-def find_nearest_edge(self):
-    cursor_pos = self.mapFromGlobal(QCursor.pos())
-    edges = []
-    for item in widget.scene.items():
-        if isinstance(item, Edge):
-            edges.append(item)
-    if not edges:
-        return None
-    def min_dist(x):
-        a = self.board_MapToViewport(x.sourcePoint)
-        b = self.board_MapToViewport(x.destPoint)
-        c = (a + b)/2.0
-        return QVector2D(c - cursor_pos).length()
-    return min(edges, key=min_dist)
-
-def find_node_under_mouse(self, event):
-    cursor_pos = event.pos()
-    for item in widget.scene.items():
-        if isinstance(item, Node):
-            point = item.scenePos()
-            rect = build_rect_from_point(self, point)
-            if rect.contains(cursor_pos):
-                return item
-    return None
-
 def mousePressEvent(self, event):
-    Globals.drag_node = node = find_node_under_mouse(self, event)
+    PluginNodeEditor.drag_node = node = PluginNodeEditor.find_node_under_mouse(event)
     if node is not None:
-        Globals.start_pos = event.pos()
-        Globals.oldpos = QPointF(node.pos())
+        PluginNodeEditor.start_pos = event.pos()
+        PluginNodeEditor.oldpos = QPointF(node.pos())
 
-    if not Globals.drag_node:
+    if not PluginNodeEditor.drag_node:
         self.board_mousePressEventDefault(event)
     self.update()
 
 def mouseMoveEvent(self, event):
-    if Globals.drag_node is not None:
-        delta = QPointF(Globals.start_pos - event.pos())
+    if PluginNodeEditor.drag_node is not None:
+        delta = QPointF(PluginNodeEditor.start_pos - event.pos())
         delta.setX(delta.x()/self.canvas_scale_x)
         delta.setY(delta.y()/self.canvas_scale_y)
-        Globals.drag_node.setPos(Globals.oldpos - delta)
+        PluginNodeEditor.drag_node.setPos(PluginNodeEditor.oldpos - delta)
 
     else:
         self.board_mouseMoveEventDefault(event)
-        Globals.over_mouse_node = find_nearest_node(board_widget)
-        Globals.over_mouse_edge = find_nearest_edge(board_widget)
+        PluginNodeEditor.near_mouse_node = PluginNodeEditor.find_nearest_node()
+        PluginNodeEditor.near_mouse_edge = PluginNodeEditor.find_nearest_edge()
 
     if not self.corner_buttons_cursor_glitch_fixer():
-        is_over_node = find_node_under_mouse(self, event) or  Globals.drag_node is not None
+        is_over_node = PluginNodeEditor.find_node_under_mouse(event) or PluginNodeEditor.drag_node is not None
         if is_over_node:
             self.setCursor(Qt.PointingHandCursor)
         else:
@@ -985,7 +991,7 @@ def mouseReleaseEvent(self, event):
         pass
     else:
         self.board_mouseReleaseEventDefault(event)
-    Globals.drag_node = None
+    PluginNodeEditor.drag_node = None
     self.update()
 
 def mouseDoubleClickEvent(self, event):
