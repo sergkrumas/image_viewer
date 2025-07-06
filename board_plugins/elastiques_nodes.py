@@ -792,10 +792,10 @@ class PluginNodeEditor():
                 nearest_node.activated = not nearest_node.activated
 
 
-        elif key in [Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
+        elif key in [Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_J, Qt.Key_K]:
 
 
-            keys = [Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]
+            keys = [Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_J, Qt.Key_K]
             attrs = [
                 'show_pullling_sum',
                 'show_pushing_sum',
@@ -1007,7 +1007,7 @@ def keyPressEvent(self, event):
     key = event.key()
     if False:
         pass
-    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_J, Qt.Key_K]:
         if not event.isAutoRepeat():
             PluginNodeEditor.change_editing_state(key, self)
     else:
@@ -1017,7 +1017,7 @@ def keyReleaseEvent(self, event):
     key = event.key()
     if False:
         pass
-    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_S, Qt.Key_D, Qt.Key_F, Qt.Key_G, Qt.Key_H]:
+    elif key in [Qt.Key_V, Qt.Key_E, Qt.Key_T, Qt.Key_A, Qt.Key_F, Qt.Key_G, Qt.Key_H, Qt.Key_J, Qt.Key_K]:
         pass
     else:
         self.board_keyReleaseEventDefault(event)
