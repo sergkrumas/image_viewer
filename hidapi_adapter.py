@@ -68,7 +68,7 @@ class ButtonsStatesHandler():
         self.BUTTONS_INTS = list(convert_dict.values())
         self.buttons_count = len(self.buttons_bit_flags)
         self.states = [False] * self.buttons_count
-        self.before_states = [False] * self.buttons_count
+        self.before_states = [False] * self.buttons_count # for buffered input
 
     def prepare_data(self, data):
         prepared_data = []
