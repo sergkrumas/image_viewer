@@ -36,7 +36,7 @@ Viewer Page Presentation on Youtube:
 ### Viewing animated images (GIFs, Animated PNGs)
 - Spacebar key - pauses/resumes playback
 - Rolling the mouse wheel while holding left mouse button - changes current animation frame
-- Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (from 10% to 200%)
+- Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (with range from 10% to 200%)
 - «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file 
 
 ## Board page (PureRef Clone)
