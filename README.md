@@ -4,9 +4,16 @@ Krumassan Image Viewer is being developed to replace Google Picasa Photo Viewer,
 
 In addition, the program has some PureRef features if you switch to BOARD page (top left corner menu).
 
-The first release is planned for the summer 2025, so there's no full user guide at the moment.
 
-## [README.md на Русском / in Russian](README_ru.md)
+~~The first release is planned for the summer 2025, so there's no full user guide at the moment~~
+
+**(sergkrumas, 30 August 2025): with the translating project (to German, French, Spanish and Italian) falling behind schedule and Qt5 losts support in May of 2025 (but PyQt5 is still available), this postponed the first release to the summer 2026.**
+
+**Feel free to test the viewer, report issues and use it further! Thank you for your attention!**
+
+
+
+## [Гайд для русскоязычных / in Russian](README_ru.md)
 
 
 ## Start page
