@@ -1842,11 +1842,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.firstCall_showMaximized = False
             else:
                 pos = self.geometry().center()
+            geometry = None
             for n, screen in enumerate(screens):
                 screen_geometry = screen.geometry()
                 if screen_geometry.contains(pos):
                     geometry = screen_geometry
                     break
+            if geometry is None:
+                # Если в настройках выбран автозапуск при старте Windows, 
+                # то приложение может начать работу до входа в систему ещё во время оторбажения экрана ввода пароля.
+                # В таком случае, geometry будет None
+                # эта проверка нужна, чтобы апликуха не крашилась при автозапуске при использовании переменной geometry
+                geometry = screen_geometry
             if not self.fullscreen_mode:
                 ag = desktop.availableGeometry()
                 geometry.setHeight(ag.height())
