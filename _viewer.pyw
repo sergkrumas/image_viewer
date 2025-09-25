@@ -954,7 +954,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             relative_offset_x = -THUMBNAIL_WIDTH*new_index
             folder_data.relative_thumbnails_row_offset_x = relative_offset_x
 
-    def region_zoom_in_init(self, full=True):
+    def region_zoom_in_init(self, full=True, cancel=False):
         self.input_rect = None
         self.projected_rect = None
         self.orig_scale = None
@@ -962,10 +962,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.zoom_region_defined = False
         self.zoom_level = 1.0
         self.region_zoom_in_input_started = False
-        self.input_rect_animated = None
-        self.zoom_region_stage_factor = 0.0
+        if not cancel:
+            self.region_zoom_ui_fx = False
+            self.input_rect_animated = None
+            self.zoom_region_stage_factor = 0.0
+            self.is_out_animation_ongoing = False
         if full:
             self.region_zoom_break_activated = False
+
+    def region_zoom_finish(self):
+        self.region_zoom_ui_fx = False
+        self.input_rect_animated = None
 
     def region_zoom_in_cancel(self):
         if self.input_rect:
@@ -979,12 +986,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     ],
                     anim_id="region_zoom_out",
                     duration=0.4,
-                    easing=QEasingCurve.InOutCubic
+                    easing=QEasingCurve.InOutCubic,
+                    callback_on_finish=self.region_zoom_finish,
                 )
             else:
                 self.image_scale = self.orig_scale
                 self.image_center_position = self.orig_pos
-            self.region_zoom_in_init()
+                self.zoom_region_stage_factor = 0.0
+            self.region_zoom_in_init(cancel=True)
             self.update()
             self.show_center_label(self.label_type.SCALE)
             # self.setCursor(Qt.ArrowCursor)
@@ -1016,19 +1025,22 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             factor = self.projected_rect.width()/self.input_rect.width()
             scale, center_pos = self.do_scale_image(1.0, override_factor=factor, clamping=False)
 
+            self.region_zoom_ui_fx = True
+
             if self.isAnimationEffectsAllowed():
                 self.animate_properties(
                     [
                         (self, "image_center_position", before_pos, center_pos, self.update),
                         (self, "image_scale", self.image_scale, scale, self.update),
                         (self, "input_rect_animated", self.input_rect_animated, self.projected_rect, self.update),
-                        # (self, "zoom_region_stage_factor", 0.0, 1.0, self.update),
+                        (self, "zoom_region_stage_factor", 0.0, 1.0, self.update),
                     ],
                     anim_id="region_zoom_in",
                     duration=0.8,
                     easing=QEasingCurve.InOutCubic
                 )
             else:
+                self.zoom_region_stage_factor = 1.0
                 self.image_center_position = center_pos
                 self.image_scale = scale
             self.show_center_label(self.label_type.SCALE)
@@ -1079,8 +1091,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.region_zoom_in_init()
 
     def region_zoom_in_draw(self, painter):
-        is_out_animation_ongoing = self.zoom_region_stage_factor > 0.0
-        if self.input_rect or is_out_animation_ongoing:
+        if self.input_rect:
             painter.setBrush(Qt.NoBrush)
             input_rect = self.input_rect
             projected_rect = self.projected_rect
@@ -1089,19 +1100,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             #     painter.drawRect(input_rect)
             painter.setPen(QPen(Qt.white, 1))
             if not self.zoom_region_defined or self.input_rect_animated:
-                if not is_out_animation_ongoing:
-                    if True:
-                        painter.drawLine(self.input_rect_animated.topLeft(),
-                                                                            projected_rect.topLeft())
-                        painter.drawLine(self.input_rect_animated.topRight(),
-                                                                            projected_rect.topRight())
-                        painter.drawLine(self.input_rect_animated.bottomLeft(),
-                                                                        projected_rect.bottomLeft())
-                        painter.drawLine(self.input_rect_animated.bottomRight(),
-                                                                        projected_rect.bottomRight())
-                    else:
-                        painter.drawLine(projected_rect.topLeft(), projected_rect.bottomRight())
-                        painter.drawLine(projected_rect.bottomLeft(), projected_rect.topRight())
+                if True:
+                    painter.drawLine(self.input_rect_animated.topLeft(),
+                                                                        projected_rect.topLeft())
+                    painter.drawLine(self.input_rect_animated.topRight(),
+                                                                        projected_rect.topRight())
+                    painter.drawLine(self.input_rect_animated.bottomLeft(),
+                                                                    projected_rect.bottomLeft())
+                    painter.drawLine(self.input_rect_animated.bottomRight(),
+                                                                    projected_rect.bottomRight())
+                else:
+                    painter.drawLine(projected_rect.topLeft(), projected_rect.bottomRight())
+                    painter.drawLine(projected_rect.bottomLeft(), projected_rect.topRight())
             if not self.zoom_region_defined:
                 value = math.ceil(self.zoom_level*100)
                 text = f"{value:,}%".replace(',', ' ')
@@ -1110,21 +1120,24 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.setFont(font)
                 painter.drawText(self.rect(), Qt.AlignCenter, text)
             if self.input_rect_animated:
-                painter.drawRect(self.input_rect_animated)
-                if not is_out_animation_ongoing:
-                    painter.drawRect(projected_rect)
-            if self.zoom_region_defined:
-                painter.setOpacity(0.8)
-                painter.setClipping(True)
-                r = QPainterPath()
-                r.addRect(QRectF(self.rect()))
-                r.addRect(QRectF(projected_rect))
-                painter.setClipPath(r)
-                painter.setPen(Qt.NoPen)
-                painter.setBrush(QBrush(Qt.black))
-                painter.drawRect(self.rect())
-                painter.setClipping(False)
-                painter.setOpacity(1.0)
+                painter.drawRect(projected_rect)
+
+        if self.input_rect_animated:
+            painter.setPen(QPen(Qt.white, 1))
+            painter.drawRect(self.input_rect_animated)
+
+        if self.region_zoom_ui_fx:
+            painter.setOpacity(0.8*self.zoom_region_stage_factor)
+            painter.setClipping(True)
+            r = QPainterPath()
+            r.addRect(QRectF(self.rect()))
+            r.addRect(QRectF(self.input_rect_animated))
+            painter.setClipPath(r)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QBrush(Qt.black))
+            painter.drawRect(self.rect())
+            painter.setClipping(False)
+            painter.setOpacity(1.0)
 
     def update_for_center_label_fade_effect(self):
         delta = time.time() - self.center_label_time
