@@ -1011,7 +1011,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # 2. увеличить относительно центра окна на factor с помощью функции
             # которая умеет увеличивать масштаб
             factor = self.projected_rect.width()/self.input_rect.width()
-            scale, center_pos = self.do_scale_image(1.0, override_factor=factor)
+            scale, center_pos = self.do_scale_image(1.0, override_factor=factor, clamping=False)
 
             if self.isAnimationEffectsAllowed():
                 self.animate_properties(
@@ -2043,7 +2043,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.image_scale = 1.0
         self.update()
 
-    def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None, slow=False):
+    def do_scale_image(self, scroll_value, cursor_pivot=True, override_factor=None, slow=False, clamping=True):
 
         if not self.transformations_allowed:
             return
@@ -2105,12 +2105,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         scale = self.image_scale
 
         new_scale = scale * factor
-        if (before_scale < 1.0 and new_scale > 1.0) or (before_scale > 1.0 and new_scale < 1.0):
-            factor = 1.0/scale
-            # print("scale is clamped to 100%")
+        if clamping:
+            # claming scale to 100%
+            if (before_scale < 1.0 and new_scale > 1.0) or (before_scale > 1.0 and new_scale < 1.0):
+                factor = 1.0/scale
 
-        if new_scale > self.UPPER_SCALE_LIMIT:
-            factor = self.UPPER_SCALE_LIMIT/scale
+            if new_scale > self.UPPER_SCALE_LIMIT:
+                factor = self.UPPER_SCALE_LIMIT/scale
 
         center_position -= pivot
         center_position = QPointF(center_position.x()*factor, center_position.y()*factor)
