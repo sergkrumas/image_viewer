@@ -987,7 +987,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # self.setCursor(Qt.ArrowCursor)
 
     def region_zoom_build_input_rect(self):
-        if self.INPUT_POINT1 and self.INPUT_POINT2:
+        if self.region_zoom_in_input_started and self.INPUT_POINT1 and self.INPUT_POINT2:
             self.input_rect = build_valid_rect(self.INPUT_POINT1, self.INPUT_POINT2)
             self.projected_rect = fit_rect_into_rect(self.input_rect, self.rect())
             w = self.input_rect.width() or self.projected_rect.width()
