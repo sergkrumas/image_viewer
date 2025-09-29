@@ -39,6 +39,23 @@ Viewer Page Presentation on Youtube:
 - Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (with range from 10% to 200%)
 - «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file 
 
+## Library Page
+
+In the list on the left side displays all opened folders with the current one selected dark-yellow. On the right you could mouse scroll the content of the current folder.
+You could choose current folder from here. The content of the current folder is displayed in the Viewer and Board pages.
+
+Library Page when the app running in the lite mode:
+![](docs/library_page_single_folder.png)
+
+Library Page when the app running in the advanced mode or after more than one folder was opened via Start Page:
+![](docs/library_page_folders_list.png)
+
+Library Page thumbnails is bigger than the ones on the Viewer Page. 
+Hovering over thumbnail on the right side shows its original on the left side with maximum scale, but animated files showing as static frame:
+![](docs/library_page_hovering.png)
+
+
+
 ## Board page (PureRef Clone)
 
 ![](docs/boards.png)
@@ -52,6 +69,7 @@ Board Page Presentation on Youtube:
 You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
 
 ![](docs/supported_gamepads_march_2025.png)
+
 
 ## Supported formats
 - .webp (static & animated)
