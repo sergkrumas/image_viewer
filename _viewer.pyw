@@ -2892,17 +2892,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # 2. DRAW CHECKERBOARD
             checkerboard_br = QBrush()
             pixmap = QPixmap(40, 40)
-            painter_ = QPainter()
-            painter_.begin(pixmap)
-            painter_.fillRect(QRect(0, 0, 40, 40), QBrush(Qt.white))
-            painter_.setPen(Qt.NoPen)
-            painter_.setBrush(QBrush(Qt.gray))
-            painter_.drawRect(QRect(0, 0, 20, 20))
-            painter_.drawRect(QRect(20, 20, 20, 20))
-            painter_.end()
+            _p_ = QPainter()
+            _p_.begin(pixmap)
+            white_c = QColor(Qt.gray)
+            black_c = QColor(Qt.black)
+
+            if True:
+                # making it darker for aesthetic
+                white_c = white_c.darker(600)
+
+            _p_.fillRect(QRect(0, 0, 40, 40), QBrush(white_c))
+            _p_.setPen(Qt.NoPen)
+            _p_.setBrush(QBrush(black_c))
+            _p_.drawRect(QRect(0, 0, 20, 20))
+            _p_.drawRect(QRect(20, 20, 20, 20))
+            _p_.end()
             checkerboard_br.setTexture(pixmap)
             painter.setBrush(checkerboard_br)
+            painter.save()
+            painter.setOpacity(0.5)
             painter.drawRect(im_rect)
+            painter.restore()
             painter.setBrush(Qt.NoBrush)
 
             # 3. DRAW IMAGE
