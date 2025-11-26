@@ -3498,7 +3498,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return rootpath
         return None
 
-    def save_image_as(self, _format):
+    def save_image_as(self, format_ext):
         content_filepath = self.image_filepath
         if self.pixmap:
             if self.copied_from_clipboard:
@@ -3509,12 +3509,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             pixmap = self.get_rotated_pixmap()
         image = pixmap.toImage()
         path, ext = os.path.splitext(content_filepath)
-        content_filepath = f"{path}.{_format}"
+        if self.animated:
+            frame_num = self.movie.currentFrameNumber()+1
+            frame_num = f'{frame_num:05}'
+            content_filepath = f"{path}_{frame_num}.{format_ext}"
+        else:
+            content_filepath = f"{path}.{format_ext}"
         filepath = QFileDialog.getSaveFileName(
             None, _("Save file"),
             content_filepath, None
         )
-        image.save(filepath[0], _format)
+        image.save(filepath[0], format_ext)
 
     def do_toggle_two_monitors_wide(self):
         if self.two_monitors_wide:
