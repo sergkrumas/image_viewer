@@ -81,11 +81,11 @@ msgstr ""
 
 #: _viewer.pyw:2385
 msgid "DRAG AND DROP A FILE OR A FOLDER"
-msgstr ""
+msgstr "GLISSEZ-DÉPOSEZ ICI UNE IMAGE OU UN DOSSIER"
 
 #: _viewer.pyw:2389
 msgid "or left mouse click to open Explorer dialog."
-msgstr ""
+msgstr "ou cliquez pour commencer."
 
 #: _viewer.pyw:2390
 msgid ""
@@ -93,6 +93,9 @@ msgid ""
 "\n"
 "Right mouse click to open settings window."
 msgstr ""
+"\n"
+"\n"
+"Clic droit pour ouvrir la fenêtre des paramètres."
 
 #: _viewer.pyw:2393
 msgid ""
@@ -970,27 +973,27 @@ msgstr ""
 
 #: _viewer.pyw:2440 settings_handling.py:377
 msgid "English"
-msgstr ""
+msgstr "Anglais"
 
 #: _viewer.pyw:2438 settings_handling.py:378
 msgid "Russian"
-msgstr ""
+msgstr "Russe"
 
 #: _viewer.pyw:2444
 msgid "German"
-msgstr ""
+msgstr "Allemand"
 
 #: _viewer.pyw:2442
 msgid "French"
-msgstr ""
+msgstr "Français"
 
 #: _viewer.pyw:2448
 msgid "Italian"
-msgstr ""
+msgstr "Italien"
 
 #: _viewer.pyw:2446
 msgid "Spanish"
-msgstr ""
+msgstr "Espagnol"
 
 #: settings_handling.py:472
 msgid "General"

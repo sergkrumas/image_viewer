@@ -398,11 +398,11 @@ class SettingsWindow(QWidget):
         allowed_langs = [ # according to /locales folder
             'en',
             'ru',
-            # not translated yet
-                # 'de',
-                # 'fr',
-                # 'it',
-                # 'es',
+
+            'de',
+            'fr',
+            'it',
+            'es',
         ]
         if lang not in allowed_langs:
             lang = 'en'
