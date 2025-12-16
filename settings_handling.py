@@ -381,16 +381,12 @@ class SettingsWindow(QWidget):
         return {
             'en': _('English'),
             'ru': _('Russian'),
-            # not translated yet
-                # 'de': _('German'),
-                # 'fr': _('French'),
-                # 'it': _('Italian'),
-                # 'es': _('Spanish'),
-        }
 
-    @classmethod
-    def langs_list(cls, lang_id):
-        return cls.langs().get(lang_id)
+            'de': _('German'),
+            'fr': _('French'),
+            'it': _('Italian'),
+            'es': _('Spanish'),
+        }
 
     @classmethod
     def set_ui_language(cls):
@@ -414,6 +410,10 @@ class SettingsWindow(QWidget):
             el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
             el.install() # copies el.gettext as _ to builtins for all app modules
             # SettingsWindow.actualize_matrix_keys_and_descriptions()
+
+    @classmethod
+    def langs_list(cls, lang_id):
+        return cls.langs().get(lang_id)
 
     @classmethod
     def load_from_disk(cls):
