@@ -779,16 +779,18 @@ class ControlPanel(QWidget, UtilsMixin):
         folder_data = self.LibraryData().current_folder()
         main_window = self.globals.main_window
 
-        if self.fullscreen_flag:
-            painter.fillRect(self.rect(), QBrush(QColor(10, 10, 10)))
-        elif main_window.STNG_draw_control_panel_backplate or self.group_selecting:
-            painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
+        if not main_window.is_start_page_active():
 
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+            if self.fullscreen_flag:
+                painter.fillRect(self.rect(), QBrush(QColor(10, 10, 10)))
+            elif main_window.STNG_draw_control_panel_backplate or self.group_selecting:
+                painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
 
-        self.thumbnails_drawing(painter, folder_data)
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+            self.thumbnails_drawing(painter, folder_data)
         painter.end()
 
     def selection_MousePressEvent(self, event, override=False):
