@@ -441,6 +441,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self._expo_save_timer = None
 
+        self._autoscroll_timer = None
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1820,6 +1822,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_minimap(painter)
 
         self.board_draw_long_process_label(painter)
+
+        self.board_autoscroll_draw(painter)
 
     def board_draw_board_info(self, painter, current_folder):
         before_font = painter.font()
@@ -3255,6 +3259,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
+            self.moving_while_middle_button_pressed = False
             if self.transformations_allowed:
                 self.board_camera_translation_ongoing = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
@@ -3305,6 +3310,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
 
         elif event.buttons() == Qt.MiddleButton:
+            self.moving_while_middle_button_pressed = True
             if self.transformations_allowed and self.board_camera_translation_ongoing:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
                 start_value = self.canvas_origin
@@ -3370,13 +3376,82 @@ class BoardMixin(BoardTextEditItemMixin):
             if no_mod:
                 if self.transformations_allowed:
                     self.board_camera_translation_ongoing = False
+                    if not self.moving_while_middle_button_pressed:
+                        self.board_autoscroll_toggle()
+                        self.moving_while_middle_button_pressed = False
                     self.update()
+
             elif alt:
                 if self.transformations_allowed:
                     self.set_default_boardviewport_scale(keep_position=True)
 
-
         self.prevent_item_deselection = False
+
+    def board_autoscroll_toggle(self):
+        if self._autoscroll_timer is None:
+            self._autoscroll_timer = QTimer()
+            self._autoscroll_timer.setInterval(10)
+            self._autoscroll_timer.timeout.connect(self.board_autoscroll_timer)
+
+        self._autoscroll_inside_activation_zone = False
+
+        if self._autoscroll_timer.isActive():
+            self._autoscroll_timer.stop()
+        else:
+            self._autoscroll_timer.start()
+            self._autoscroll_startpos = QPointF(self.start_cursor_pos)
+
+    def board_autoscroll_draw(self, painter):
+        if self._autoscroll_timer is not None and self._autoscroll_timer.isActive():
+            if not self._autoscroll_inside_activation_zone:
+                painter.save()
+
+                painter.setPen(Qt.black)
+                painter.setBrush(QBrush(Qt.white))
+                el_rect = QRectF(0, 0, 6, 6)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                o = self._autoscroll_startpos
+                if int(time.time()*4) % 2 == 0:
+                    f = 18
+                else:
+                    f = 32
+
+                points = [
+                    QPointF(0, f),
+                    QPointF(-10, f-10),
+                    QPointF(10, f-10),
+                ]
+                painter.drawPolygon([p + o for p in points])
+                painter.drawPolygon([QPointF(p.x(), -p.y()) + o for p in points])
+                painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
+                painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
+
+                painter.setPen(QPen(Qt.white, 1))
+                painter.setBrush(Qt.NoBrush)
+                el_rect = QRectF(0, 0, 40, 40)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                painter.restore()
+
+    def board_autoscroll_timer(self):
+        OUTER_ZONE_ACTIVATION_RADIUS = 30.0
+        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
+        diff_l = QVector2D(cursor_offset).length()
+        if diff_l > OUTER_ZONE_ACTIVATION_RADIUS:
+            self._autoscroll_inside_activation_zone = True
+            # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
+            diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
+            vec = QVector2D(cursor_offset).normalized()*diff_l
+            velocity_vec = vec.toPointF()
+            velocity_vec /= 25.0
+            self.canvas_origin -= velocity_vec
+            self.update()
+        else:
+            self._autoscroll_inside_activation_zone = False
+            self.update()
 
     def board_go_to_note(self, event):
         for sel_item in self.selected_items:
