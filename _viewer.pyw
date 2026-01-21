@@ -141,19 +141,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         @classmethod
         def all(cls):
             return [
-                cls.START_PAGE,
-                cls.VIEWER_PAGE,
-                cls.BOARD_PAGE,
-                cls.LIBRARY_PAGE
+                  cls.START_PAGE
+                , cls.VIEWER_PAGE
+                , cls.BOARD_PAGE
+                , cls.LIBRARY_PAGE
             ]
 
         @classmethod
         def name(cls, page_id):
             return {
-                cls.START_PAGE: _('START'),
-                cls.VIEWER_PAGE: _('VIEWER'),
-                cls.BOARD_PAGE: _('BOARD'),
-                cls.LIBRARY_PAGE: _('LIBRARY'),
+                  cls.START_PAGE: _('START')
+                , cls.VIEWER_PAGE: _('VIEWER')
+                , cls.BOARD_PAGE: _('BOARD')
+                , cls.LIBRARY_PAGE: _('LIBRARY')
             }.get(page_id)
 
     pages.count = len(pages.all())
