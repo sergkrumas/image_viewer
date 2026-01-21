@@ -166,9 +166,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         @classmethod
         def all(cls):
             return [
-                cls.FRAME_NUMBER,
-                cls.PLAYSPEED,
-                cls.SCALE,
+                  cls.FRAME_NUMBER
+                , cls.PLAYSPEED
+                , cls.SCALE
             ]
 
     def dragEnterEvent(self, event):
