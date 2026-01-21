@@ -156,6 +156,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 cls.LIBRARY_PAGE: _('LIBRARY'),
             }.get(page_id)
 
+    pages.count = len(pages.all())
+
     class label_type():
         FRAME_NUMBER = 'FRAMENUMBER'
         PLAYSPEED = 'PLAYSPEED'
@@ -337,14 +339,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         points = []
         r = self.CORNER_BUTTON_RADIUS*3
-        for i in range(3):
-            degree90 = math.pi/2
-            step = degree90*1/3
-            angle = step*i
-            add = step/2
-            # add = step/4
-            x = r*math.cos(angle+add)
-            y = r*math.sin(angle+add)
+        PAGES_COUNT_M_ONE = self.pages.count - 1
+        deg90 = math.pi/2.0
+        offset = deg90/9
+        for i in range(PAGES_COUNT_M_ONE):
+            angle = deg90*i/4 + offset
+            x = r*math.cos(angle)
+            y = r*math.sin(angle)
             point = QPointF(x, y).toPoint()
             points.append(point)
 
