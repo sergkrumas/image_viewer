@@ -595,6 +595,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.left_stick_vec = QPointF(0, 0)
         self.right_stick_vec = QPointF(0, 0)
 
+        self.fps_iterator = None
+        self.fps_counter = 0
+        self.fps_indicator = 0
+        self.show_fps_indicator = Globals.DEBUG
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -2281,6 +2286,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.restore()
 
+    def draw_FPS_indicator(self, painter):
+        time_value = time.time()
+        iterator_value = time_value % 1.0
+        if self.fps_iterator is not None:
+            if iterator_value < self.fps_iterator:
+                self.fps_indicator = self.fps_counter
+                self.fps_counter = 0
+            else:
+                self.fps_counter += 1
+        self.fps_iterator = iterator_value        
+        painter.save()
+        text_to_show = f'{self.fps_indicator} {time_value-math.trunc(time_value):.03}'
+        r = self.rect()
+        r.moveTopLeft(QPoint(210, 0))
+        painter.drawText(r, Qt.AlignLeft, text_to_show)
+        painter.restore()
+
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
@@ -2305,6 +2327,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # if event.rect().height() < 500:
             #     painter.setPen(Qt.green)
             #     painter.drawLine(self.rect().bottomLeft(), self.rect().topRight())
+        if self.show_fps_indicator:
+            self.draw_FPS_indicator(painter)
         painter.end()
 
     def _paintEvent(self, event, painter):
@@ -3654,6 +3678,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         checkboxes = [
             (_("DEBUG"), Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
+            (_("Show FPS"), Globals.DEBUG, partial(toggle_boolean_var_generic, self, 'show_fps_indicator')),
             (_("Antialiasing and pixmap smoothing"), Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
             (_("Use pixmap-proxy for text items"), Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')),
         ]
