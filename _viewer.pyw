@@ -2299,8 +2299,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 self.fps_counter += 1
         self.fps_iterator = iterator_value        
+        fps_indicator_extrapolated = int(1.0/(time_value - self.fps_timestamp))
+        self.fps_timestamp = time_value
         painter.save()
-        text_to_show = f'{self.fps_indicator} {time_value-math.trunc(time_value):.03}'
+        text_to_show = f'FACTUAL FPS: {self.fps_indicator}, EXTRAPOLATED FPS: {fps_indicator_extrapolated} (BASED ON LAST FRAME CALCULATION TIME)' \
+            f'\nTHE VALUE TO THE RIGHT CHANGES WHEN THE WINDOW DRAWING HAPPENS {time_value-math.trunc(time_value):.03}' \
+            f'\nIf it is not updated in real time, it means new frames are not generated. Usually frames generation caused by the animation timer or mouse moving\\mouse buttons\\keyboard keys'
         r = self.rect()
         r.moveTopLeft(QPoint(210, 0))
         painter.drawText(r, Qt.AlignLeft, text_to_show)
