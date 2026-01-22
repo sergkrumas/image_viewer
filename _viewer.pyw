@@ -371,18 +371,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             cursor_pos = self.mapFromGlobal(QCursor().pos())
             page_name = self.pages.name(page_id)
+            text_align = Qt.AlignVCenter | Qt.AlignLeft
             if r.contains(cursor_pos):
                 painter.setOpacity(1.0)
-                label_rect = QRect(r.topLeft(), r.bottomRight() + QPoint())
-                label_rect.setWidth(200)
                 text = page_name
+                label_rect = QRect(r.topLeft(), r.bottomRight())
+                br = painter.boundingRect(QRect(), text_align, text)
+                label_rect.setWidth(br.width())
                 text_rect = label_rect
             else:
                 painter.setOpacity(.8)
                 text = page_name[0]
                 text_rect = r
             # painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, text)
-            painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, text)
+            painter.drawText(text_rect, text_align, text)
 
         painter.setFont(oldfont)
 
