@@ -70,6 +70,7 @@ You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android g
 
 ![](docs/supported_gamepads_march_2025.png)
 
+If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by the app at the moment), for a better experience press the middle mouse button to toggle auto-scroll. Auto-scroll works the same way as in most desktop web browsers.
 
 ## Supported formats
 - .webp (static & animated)
