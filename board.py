@@ -3414,7 +3414,8 @@ class BoardMixin(BoardTextEditItemMixin):
             if self._autoscroll_inside_activation_zone:
                 painter.save()
 
-                painter.setPen(Qt.black)
+                gray = QColor(100, 100, 100)
+                painter.setPen(gray)
                 painter.setBrush(QBrush(Qt.white))
                 el_rect = QRectF(0, 0, 6, 6)
                 el_rect.moveCenter(self._autoscroll_startpos)
@@ -3436,9 +3437,15 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
                 painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
 
-                painter.setPen(QPen(Qt.white, 1))
                 painter.setBrush(Qt.NoBrush)
-                el_rect = QRectF(0, 0, 40, 40)
+
+                painter.setPen(QPen(gray, 2))
+                el_rect = QRectF(0, 0, 39, 39)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                painter.setPen(QPen(Qt.white, 1))
+                el_rect = QRectF(0, 0, 38, 38)
                 el_rect.moveCenter(self._autoscroll_startpos)
                 painter.drawEllipse(el_rect)
 
