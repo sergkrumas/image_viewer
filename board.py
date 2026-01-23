@@ -441,7 +441,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self._expo_save_timer = None
 
-        self.board_autoscroll_init()
+        self.autoscroll_init()
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -1823,7 +1823,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_long_process_label(painter)
 
-        self.board_autoscroll_draw(painter)
+        self.autoscroll_draw(painter)
 
     def board_draw_board_info(self, painter, current_folder):
         before_font = painter.font()
@@ -3386,27 +3386,27 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.prevent_item_deselection = False
 
-    def board_autoscroll_init(self):
+    def autoscroll_init(self):
         self._autoscroll_timer = QTimer()
         self._autoscroll_timer.setInterval(10)
-        self._autoscroll_timer.timeout.connect(self.board_autoscroll_timer)
+        self._autoscroll_timer.timeout.connect(self.autoscroll_timer)
         self._autoscroll_inside_activation_zone = False
 
         self._autoscroll_desactivation_pass = False
 
-    def board_autoscroll_start(self):
+    def autoscroll_start(self):
         self._autoscroll_inside_activation_zone = False
         self._autoscroll_timer.start()
         self._autoscroll_startpos = QPointF(self.start_cursor_pos)
 
-    def board_autoscroll_finish(self):
+    def autoscroll_finish(self):
         self._autoscroll_timer.stop()
 
     def autoscroll_middleMousePressEvent(self):
         self.autoscroll_moving_while_middle_button_pressed = False
         if self._autoscroll_timer.isActive():
             self._autoscroll_desactivation_pass = True
-            self.board_autoscroll_finish()
+            self.autoscroll_finish()
         else:
             self._autoscroll_desactivation_pass = False
 
@@ -3416,10 +3416,10 @@ class BoardMixin(BoardTextEditItemMixin):
     def autoscroll_middleMouseReleaseEvent(self):
         if not self._autoscroll_desactivation_pass:
             if not self.autoscroll_moving_while_middle_button_pressed:
-                self.board_autoscroll_start()
+                self.autoscroll_start()
         self.autoscroll_moving_while_middle_button_pressed = False
 
-    def board_autoscroll_draw(self, painter):
+    def autoscroll_draw(self, painter):
         if self._autoscroll_timer.isActive():
             if self._autoscroll_inside_activation_zone:
                 painter.save()
@@ -3461,7 +3461,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 painter.restore()
 
-    def board_autoscroll_timer(self):
+    def autoscroll_timer(self):
         OUTER_ZONE_ACTIVATION_RADIUS = 30.0
         cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
         diff_l = QVector2D(cursor_offset).length()
