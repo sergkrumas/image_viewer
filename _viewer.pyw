@@ -3904,13 +3904,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self._autoscroll_timer.timeout.connect(self.autoscroll_timer)
         self._autoscroll_inside_activation_zone = False
 
-        self._autoscroll_draw_vertical = True
-        self._autoscroll_draw_horizontal = True
-
         self._autoscroll_desactivation_pass = False
+
+    def autoscroll_set_current_page_indicator(self):
+        self._autoscroll_draw_vertical = False
+        self._autoscroll_draw_horizontal = False
+        if self.is_board_page_active():
+            self._autoscroll_draw_vertical = True
+            self._autoscroll_draw_horizontal = True
+        elif self.is_library_page_active():
+            self._autoscroll_draw_vertical = True
 
     def autoscroll_start(self):
         self._autoscroll_inside_activation_zone = False
+        self.autoscroll_set_current_page_indicator()
         self._autoscroll_timer.start()
         self._autoscroll_startpos = QPointF(self.start_cursor_pos)
 
