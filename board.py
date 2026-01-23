@@ -1823,8 +1823,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_long_process_label(painter)
 
-        self.autoscroll_draw(painter)
-
     def board_draw_board_info(self, painter, current_folder):
         before_font = painter.font()
         before_pen = painter.pen()

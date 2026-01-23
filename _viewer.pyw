@@ -2379,6 +2379,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_board_page_active():
             self.board_draw(painter, event)
 
+        self.autoscroll_draw(painter)
+
         # draw slice pipette tool
         self.SPT_draw_info(painter)
 
