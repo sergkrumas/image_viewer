@@ -602,6 +602,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.fps_counter = 0
         self.fps_indicator = 0
         self.show_fps_indicator = Globals.DEBUG
+        self.fps_timestamp = 0.0
+
+        self.autoscroll_init()
 
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
@@ -3894,6 +3897,104 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def get_user_data_folder(self):
         return os.path.join(os.path.dirname(__file__), "user_data")
+
+    def autoscroll_init(self):
+        self._autoscroll_timer = QTimer()
+        self._autoscroll_timer.setInterval(10)
+        self._autoscroll_timer.timeout.connect(self.autoscroll_timer)
+        self._autoscroll_inside_activation_zone = False
+
+        self._autoscroll_draw_vertical = True
+        self._autoscroll_draw_horizontal = True
+
+        self._autoscroll_desactivation_pass = False
+
+    def autoscroll_start(self):
+        self._autoscroll_inside_activation_zone = False
+        self._autoscroll_timer.start()
+        self._autoscroll_startpos = QPointF(self.start_cursor_pos)
+
+    def autoscroll_finish(self):
+        self._autoscroll_timer.stop()
+
+    def autoscroll_middleMousePressEvent(self):
+        self._autoscroll_is_moved_while_middle_button_pressed = False
+        if self._autoscroll_timer.isActive():
+            self._autoscroll_desactivation_pass = True
+            self.autoscroll_finish()
+        else:
+            self._autoscroll_desactivation_pass = False
+
+    def autoscroll_middleMouseMoveEvent(self):
+        self._autoscroll_is_moved_while_middle_button_pressed = True
+
+    def autoscroll_middleMouseReleaseEvent(self):
+        if not self._autoscroll_desactivation_pass:
+            if not self._autoscroll_is_moved_while_middle_button_pressed:
+                self.autoscroll_start()
+        self._autoscroll_is_moved_while_middle_button_pressed = False
+
+    def autoscroll_draw(self, painter):
+        if self._autoscroll_timer.isActive():
+            if self._autoscroll_inside_activation_zone:
+                painter.save()
+
+                gray = QColor(100, 100, 100)
+                painter.setPen(gray)
+                painter.setBrush(QBrush(Qt.white))
+                el_rect = QRectF(0, 0, 6, 6)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                o = self._autoscroll_startpos
+                if int(time.time()*4) % 2 == 0:
+                    f = 18
+                else:
+                    f = 32
+
+                points = [
+                    QPointF(0, f),
+                    QPointF(-10, f-10),
+                    QPointF(10, f-10),
+                ]
+
+                if self._autoscroll_draw_vertical:
+                    painter.drawPolygon([p + o for p in points])
+                    painter.drawPolygon([QPointF(p.x(), -p.y()) + o for p in points])
+                if self._autoscroll_draw_horizontal:
+                    painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
+                    painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
+
+                painter.setBrush(Qt.NoBrush)
+
+                painter.setPen(QPen(gray, 2))
+                el_rect = QRectF(0, 0, 39, 39)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                painter.setPen(QPen(Qt.white, 1))
+                el_rect = QRectF(0, 0, 38, 38)
+                el_rect.moveCenter(self._autoscroll_startpos)
+                painter.drawEllipse(el_rect)
+
+                painter.restore()
+
+    def autoscroll_timer(self):
+        OUTER_ZONE_ACTIVATION_RADIUS = 30.0
+        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
+        diff_l = QVector2D(cursor_offset).length()
+        self._autoscroll_inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
+        if not self._autoscroll_inside_activation_zone:
+            # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
+            diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
+            vec = QVector2D(cursor_offset).normalized()*diff_l
+            velocity_vec = vec.toPointF()
+            velocity_vec /= 25.0
+            if self.is_board_page_active():
+                self.canvas_origin -= velocity_vec
+            elif self.is_library_page_active():
+                pass
+        self.update()
 
 
 def choose_start_option_callback(do_start_server, path):
