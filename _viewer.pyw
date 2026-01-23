@@ -1880,7 +1880,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     geometry = screen_geometry
                     break
             if geometry is None:
-                # Если в настройках выбран автозапуск при старте Windows, 
+                # Если в настройках выбран автозапуск при старте Windows,
                 # то приложение может начать работу до входа в систему ещё во время оторбажения экрана ввода пароля.
                 # В таком случае, geometry будет None
                 # эта проверка нужна, чтобы апликуха не крашилась при автозапуске при использовании переменной geometry
@@ -2301,7 +2301,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.fps_counter = 0
             else:
                 self.fps_counter += 1
-        self.fps_iterator = iterator_value        
+        self.fps_iterator = iterator_value
         fps_indicator_extrapolated = int(1.0/(time_value - self.fps_timestamp))
         self.fps_timestamp = time_value
         painter.save()
@@ -2464,7 +2464,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         SPAN_WIDTH = 30
         LANG_BTN_WIDTH = 100
         langs_count = len(langs)
-        top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5 
+        top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
         cursor_pos = self.mapFromGlobal(QCursor().pos())
