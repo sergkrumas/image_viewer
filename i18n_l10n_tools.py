@@ -310,16 +310,14 @@ def sync_po_files(this_folder, keep_old_entries=True):
 
 class MenuWindow(QMainWindow):
 
-    def sync_po_files_handler(self):
+    def sync_po_files_handler(self, this_folder):
         sync_po_files(
-            self.this_folder, 
+            this_folder, 
             keep_old_entries=self.keep_old_entries_chb.isChecked()
         )
 
     def __init__(self, this_folder, *args):
         super().__init__(*args)
-
-        self.this_folder = this_folder
 
         self.setStyleSheet("QPushButton{ padding: 10px 20px; font: 11pt; margin: 0 100; }")
 
@@ -343,14 +341,14 @@ class MenuWindow(QMainWindow):
         generate_pot_file_btn.clicked.connect(lambda: generate_pot_file(this_folder))
 
         sync_po_files_btn = QPushButton("Sync .po files\n(see CHANGELOG.md\nfor sync_po_files documentation)")
-        sync_po_files_btn.clicked.connect(lambda: self.sync_po_files_handler)
+        sync_po_files_btn.clicked.connect(self.sync_po_files_handler(this_folder))
         keep_old_entries_chb = QCheckBox('Keep old entries (Sync .po files)')
         keep_old_entries_chb.setChecked(False)
         keep_old_entries_chb.setStyleSheet('font-size: 10pt;')
         self.keep_old_entries_chb = keep_old_entries_chb
 
         generate_mo_files_btn = QPushButton("Generate .mo files\n(create compiled locale files)")
-        generate_mo_files_btn.clicked.connect(lambda: None)
+        generate_mo_files_btn.clicked.connect(generate_mo_file(this_folder))
 
 
         ql = QLabel('<center>Read the source file to find out more!</center>' )
