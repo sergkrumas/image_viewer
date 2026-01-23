@@ -3259,12 +3259,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
-            self.moving_while_middle_button_pressed = False
-            if self._autoscroll_timer.isActive():
-                self._autoscroll_desactivation_pass = True
-                self.board_autoscroll_finish()
-            else:
-                self._autoscroll_desactivation_pass = False
+            self.autoscroll_middleMousePressEvent()
+
             if self.transformations_allowed:
                 self.board_camera_translation_ongoing = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
@@ -3315,7 +3311,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
 
         elif event.buttons() == Qt.MiddleButton:
-            self.moving_while_middle_button_pressed = True
+            self.autoscroll_middleMouseMoveEvent()
             if self.transformations_allowed and self.board_camera_translation_ongoing:
                 end_value =  self.start_origin_pos - (self.start_cursor_pos - self.mapped_cursor_pos())
                 start_value = self.canvas_origin
@@ -3381,10 +3377,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if no_mod:
                 if self.transformations_allowed:
                     self.board_camera_translation_ongoing = False
-                    if not self._autoscroll_desactivation_pass:
-                        if not self.moving_while_middle_button_pressed:
-                            self.board_autoscroll_start()
-                    self.moving_while_middle_button_pressed = False
+                    self.autoscroll_middleMouseReleaseEvent()
                     self.update()
 
             elif alt:
@@ -3408,6 +3401,23 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_autoscroll_finish(self):
         self._autoscroll_timer.stop()
+
+    def autoscroll_middleMousePressEvent(self):
+        self.autoscroll_moving_while_middle_button_pressed = False
+        if self._autoscroll_timer.isActive():
+            self._autoscroll_desactivation_pass = True
+            self.board_autoscroll_finish()
+        else:
+            self._autoscroll_desactivation_pass = False
+
+    def autoscroll_middleMouseMoveEvent(self):
+        self.autoscroll_moving_while_middle_button_pressed = True
+
+    def autoscroll_middleMouseReleaseEvent(self):
+        if not self._autoscroll_desactivation_pass:
+            if not self.autoscroll_moving_while_middle_button_pressed:
+                self.board_autoscroll_start()
+        self.autoscroll_moving_while_middle_button_pressed = False
 
     def board_autoscroll_draw(self, painter):
         if self._autoscroll_timer.isActive():
