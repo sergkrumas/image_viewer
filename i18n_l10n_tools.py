@@ -24,6 +24,13 @@ import subprocess
 import shutil
 import locale
 from collections import defaultdict
+import webbrowser
+
+
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+
 
 # https://phrase.com/blog/posts/translate-python-gnu-gettext/
 # https://docs.python.org/3/library/gettext.html
@@ -297,22 +304,118 @@ def sync_po_files(this_folder, keep_old_entries=True):
 
         print()
 
+
+
+
+
+class MenuWindow(QMainWindow):
+
+    def sync_po_files_handler(self):
+        sync_po_files(
+            self.this_folder, 
+            keep_old_entries=self.keep_old_entries_chb.isChecked()
+        )
+
+    def __init__(self, this_folder, *args):
+        super().__init__(*args)
+
+        self.this_folder = this_folder
+
+        self.setStyleSheet("QPushButton{ padding: 10px 20px; font: 11pt; margin: 0 100; }")
+
+        self.main_label = QLabel("<center>i18n & i10n<br>Tools</center>")
+        self.main_label.setStyleSheet("font-weight:bold; font-size: 30pt; color: gray;")
+
+        self.secondary_label = QLabel("<center>for Krumassan Image Viewer</center>")
+        self.secondary_label.setStyleSheet("font-weight:bold; font-size: 18pt; color: black; font-family: consolas;")
+
+        go_web_btn = QPushButton("Go Web")
+        go_web_btn.clicked.connect(lambda: webbrowser.open('github.com/sergkrumas/image_viewer'))
+
+
+        generate_locales_btn = QPushButton("Generate locales")
+        generate_locales_btn.clicked.connect(lambda: generate_locales(this_folder))
+
+        move_pot_to_po_btn = QPushButton("Move .pot to .po")
+        move_pot_to_po_btn.clicked.connect(lambda: move_pot_to_po(this_folder))
+
+        generate_pot_file_btn = QPushButton("Generate .pot file\n(update main template file)")
+        generate_pot_file_btn.clicked.connect(lambda: generate_pot_file(this_folder))
+
+        sync_po_files_btn = QPushButton("Sync .po files\n(see CHANGELOG.md\nfor sync_po_files documentation)")
+        sync_po_files_btn.clicked.connect(lambda: self.sync_po_files_handler)
+        keep_old_entries_chb = QCheckBox('Keep old entries (Sync .po files)')
+        keep_old_entries_chb.setChecked(False)
+        keep_old_entries_chb.setStyleSheet('font-size: 10pt;')
+        self.keep_old_entries_chb = keep_old_entries_chb
+
+        generate_mo_files_btn = QPushButton("Generate .mo files\n(create compiled locale files)")
+        generate_mo_files_btn.clicked.connect(lambda: None)
+
+
+        ql = QLabel('<center>Read the source file to find out more!</center>' )
+        ql.setStyleSheet("font-weight:bold; font-size: 12pt; color: #aaaaaa; border: 3px dashed #cccccc; padding: 10px 5px; margin: 0 50px; font-family: consolas;")
+
+        self.root_layout = QVBoxLayout()
+        self.child_layout = QVBoxLayout()
+
+        self.child_layout.addWidget(self.main_label)
+        self.child_layout.addWidget(self.secondary_label)
+
+        self.repo_url = QLabel("<center>github.com/sergkrumas/image_viewer</center>" )
+        self.repo_url.setStyleSheet("font: 13pt; font-weight:bold; color: #aaaaaa; font-family: consolas;")
+
+        self.child_layout.addWidget( self.repo_url )
+
+
+        self.child_layout.addSpacing(35)
+        self.child_layout.addWidget(go_web_btn)
+        self.child_layout.addSpacing(30)
+        self.child_layout.addWidget(generate_locales_btn)
+        self.child_layout.addWidget(move_pot_to_po_btn)
+        self.child_layout.addWidget(generate_pot_file_btn)
+        self.child_layout.addWidget(sync_po_files_btn)
+
+        layout = QHBoxLayout()
+        layout.addWidget(keep_old_entries_chb)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+        checkbox_containter = QWidget()
+        checkbox_containter.setLayout(layout)
+        self.child_layout.addWidget(checkbox_containter)
+        self.child_layout.addWidget(generate_mo_files_btn)
+        self.child_layout.addSpacing(30)
+        self.child_layout.addWidget(ql)
+
+        self.root_layout.addSpacing(50)
+        self.root_layout.addLayout(self.child_layout)
+        self.root_layout.addSpacing(50)
+
+        main_widget = QWidget()
+        main_widget.setLayout(self.root_layout)
+
+        self.setWindowTitle('i18n & i10n TOOLS')
+        self.setCentralWidget(main_widget)
+        self.setFont(QFont("Times", 14, QFont.Normal))
+        self.show()
+        self.center_window()
+
+    def center_window(self):
+        desktop_rect = QDesktopWidget().screenGeometry(screen=0)
+        x = (desktop_rect.width() - self.frameSize().width()) // 2
+        y = (desktop_rect.height() - self.frameSize().height()) // 2
+        self.move(x,y)
+
+
+
 def main():
     this_folder = os.path.dirname(__file__)
 
     os.chdir(this_folder)
 
-
-    # generate_locales(this_folder)
-
-    # move_pot_to_po(this_folder)
-
-    # generate_pot_file(this_folder) # updating main template file
-
-    # sync_po_files(this_folder, keep_old_entries=False) # see CHANGELOG.md for sync_po_files documentation 
-
-    generate_mo_file(this_folder) # creating compiled locale files
-
+    app = QApplication(sys.argv)
+    mw = MenuWindow(this_folder)
+    app.exec()
 
 if __name__ == '__main__':
     main()
