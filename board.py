@@ -3403,7 +3403,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self._autoscroll_timer.stop()
 
     def autoscroll_middleMousePressEvent(self):
-        self._autoscroll_moving_while_middle_button_pressed = False
+        self._autoscroll_is_moved_while_middle_button_pressed = False
         if self._autoscroll_timer.isActive():
             self._autoscroll_desactivation_pass = True
             self.autoscroll_finish()
@@ -3411,13 +3411,13 @@ class BoardMixin(BoardTextEditItemMixin):
             self._autoscroll_desactivation_pass = False
 
     def autoscroll_middleMouseMoveEvent(self):
-        self._autoscroll_moving_while_middle_button_pressed = True
+        self._autoscroll_is_moved_while_middle_button_pressed = True
 
     def autoscroll_middleMouseReleaseEvent(self):
         if not self._autoscroll_desactivation_pass:
-            if not self._autoscroll_moving_while_middle_button_pressed:
+            if not self._autoscroll_is_moved_while_middle_button_pressed:
                 self.autoscroll_start()
-        self._autoscroll_moving_while_middle_button_pressed = False
+        self._autoscroll_is_moved_while_middle_button_pressed = False
 
     def autoscroll_draw(self, painter):
         if self._autoscroll_timer.isActive():
