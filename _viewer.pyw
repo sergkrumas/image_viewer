@@ -3946,6 +3946,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self._autoscroll_inside_activation_zone:
                 painter.save()
 
+                painter.setOpacity(0.7)
                 gray = QColor(100, 100, 100)
                 painter.setPen(gray)
                 painter.setBrush(QBrush(Qt.white))
@@ -3961,8 +3962,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 points = [
                     QPointF(0, f),
-                    QPointF(-10, f-10),
-                    QPointF(10, f-10),
+                    QPointF(-7, f-10),
+                    QPointF(7, f-10),
                 ]
 
                 if self._autoscroll_draw_vertical:
