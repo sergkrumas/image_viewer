@@ -3421,7 +3421,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.init_selection_bounding_box_widget(cf)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
-                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=10.0):
+                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.01):
 
         if not precalculate:
             self.board_region_zoom_do_cancel()
@@ -3429,10 +3429,11 @@ class BoardMixin(BoardTextEditItemMixin):
         if pivot is None:
             pivot = self.mapped_cursor_pos()
 
+        inv_speed_fac = 1.0/scale_speed
         if scroll_value > 0:
-            factor = scale_speed/(scale_speed-1)
+            factor = inv_speed_fac/(inv_speed_fac-1)
         else:
-            factor = (scale_speed-1)/scale_speed
+            factor = (inv_speed_fac-1)/inv_speed_fac
 
         if factor_x is None:
             factor_x = factor
