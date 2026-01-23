@@ -351,11 +351,11 @@ class BoardMixin(BoardTextEditItemMixin):
         items_list = self.get_original_items_order(cf.board.items_list)
         if len(items_list) > 0:
             min_index_item = items_list[0]
-            content_pos = QPointF(min_index_item.position.x()*self.canvas_scale_x, min_index_item.position.y()*self.canvas_scale_y) 
+            content_pos = QPointF(min_index_item.position.x()*self.canvas_scale_x, min_index_item.position.y()*self.canvas_scale_y)
             viewport_center_pos = self.get_center_position()
             self.canvas_origin = - content_pos + viewport_center_pos
             # self.show_center_label('placed at first item!')
-        else: 
+        else:
             self.canvas_origin = self.get_center_position()
             # self.show_center_label('placed at board origin')
 
@@ -368,7 +368,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if position:
             if to_item:
                 self.board_viewport_reset_position_to_item()
-            else: 
+            else:
                 self.canvas_origin = self.get_center_position()
 
     def board_init(self):
@@ -440,6 +440,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.expo_values = []
 
         self._expo_save_timer = None
+
+        self.board_autoscroll_zoom_init()
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -3421,7 +3423,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.init_selection_bounding_box_widget(cf)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
-                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.01):
+                pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.1):
 
         if not precalculate:
             self.board_region_zoom_do_cancel()
@@ -3514,6 +3516,25 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.update_corner_info()
         self.update()
 
+    def board_autoscroll_zoom_init(self):
+        self.autoscroll_zoom_timer = QTimer()
+        self.autoscroll_zoom_timer.setInterval(10)
+        self.autoscroll_zoom_timer.timeout.connect(self.board_autoscroll_zoom_timer_handler)
+        self.autoscroll_zoom_timer_dir = 1.0
+        self.az_ticks = 0
+
+    def board_autoscroll_zoom_timer_handler(self):
+        self.do_scale_board(self.autoscroll_zoom_timer_dir, False, False, None, scale_speed=0.025)
+        self.az_ticks += 1
+        if self.az_ticks > 10:
+            self.autoscroll_zoom_timer.stop()
+            self.az_ticks = 0
+
+    def board_autoscroll_wheelEventHandler(self, scroll_value):
+        if not self.autoscroll_zoom_timer.isActive():
+            self.autoscroll_zoom_timer_dir = scroll_value
+            self.autoscroll_zoom_timer.start()
+
     def board_wheelEventDefault(self, event):
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -3524,6 +3545,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if control_panel_undermouse:
             return
         elif self.board_camera_translation_ongoing:
+            return
+        elif self._autoscroll_timer.isActive():
+            self.board_autoscroll_wheelEventHandler(scroll_value)
             return
         elif self.board_item_under_mouse is not None and event.buttons() == Qt.RightButton:
             board_item = self.board_item_under_mouse
