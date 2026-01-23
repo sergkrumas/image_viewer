@@ -3261,10 +3261,10 @@ class BoardMixin(BoardTextEditItemMixin):
         elif event.buttons() == Qt.MiddleButton:
             self.moving_while_middle_button_pressed = False
             if self._autoscroll_timer.isActive():
-                self.desactivation_pass = True
+                self._autoscroll_desactivation_pass = True
                 self.board_autoscroll_finish()
             else:
-                self.desactivation_pass = False
+                self._autoscroll_desactivation_pass = False
             if self.transformations_allowed:
                 self.board_camera_translation_ongoing = True
                 self.start_cursor_pos = self.mapped_cursor_pos()
@@ -3381,7 +3381,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if no_mod:
                 if self.transformations_allowed:
                     self.board_camera_translation_ongoing = False
-                    if not self.desactivation_pass:
+                    if not self._autoscroll_desactivation_pass:
                         if not self.moving_while_middle_button_pressed:
                             self.board_autoscroll_start()
                     self.moving_while_middle_button_pressed = False
@@ -3399,7 +3399,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self._autoscroll_timer.timeout.connect(self.board_autoscroll_timer)
         self._autoscroll_inside_activation_zone = False
 
-        self.desactivation_pass = False
+        self._autoscroll_desactivation_pass = False
 
     def board_autoscroll_start(self):
         self._autoscroll_inside_activation_zone = False
