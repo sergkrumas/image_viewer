@@ -34,7 +34,7 @@
   - отредактировать методы в файле `control_panel.py`
     - `ControlPanel`
       - `__init__`
-        - для определения набора кнопок в панелиу правления для страницы
+        - для определения набора кнопок в панели управления для страницы
       - `paintEvent`
       - `thumbnails_drawing` и `thumbnails_click` написаны так, что зависят друг от друга
       - `wheelEvent`, `mousePressEvent`, `mouseMoveEvent`, `mouseReleaseEvent`
