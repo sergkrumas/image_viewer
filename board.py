@@ -114,6 +114,7 @@ class BoardItem():
         self._selected = False
         self._touched = False
         self._show_file_info_overlay = False
+        self._marked_item = False
 
         self.__label_ui_rect = None
 
@@ -595,6 +596,7 @@ class BoardMixin(BoardTextEditItemMixin):
         key = event.key()
 
         ctrl_mod = bool(event.modifiers() & Qt.ControlModifier)
+        only_shift_mod = bool(event.modifiers() == Qt.ShiftModifier)
         only_ctrl_mode = bool(event.modifiers() == Qt.ControlModifier)
 
         if self.board_TextElementKeyPressEventHandler(event):
@@ -614,6 +616,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif check_scancode_for(event, "I"):
             self.board_toggle_item_info_overlay()
+
+        elif check_scancode_for(event, "O"):
+            if only_shift_mod:
+                self.board_marked_items_filepaths_to_clipboard()
+            else:
+                self.board_toggle_item_mark()
 
         elif check_scancode_for(event, "A") and ctrl_mod:
             self.board_select_all_items()
@@ -1610,7 +1618,10 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
 
-                if image_to_draw:
+                if board_item._marked_item:
+                    pass
+ 
+                elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
                 painter.setOpacity(1.0)
@@ -1632,6 +1643,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 if show_tag_data and case4:
                     self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
 
+                if board_item._marked_item:
+                    painter.save()
+                    painter.setPen(Qt.red)
+                    painter.drawText(selection_area_rect, Qt.AlignVCenter | Qt.AlignHCenter, f'MARKED\n{board_item.info_text()}')
+                    painter.restore()
 
                 if case4:
                     self.board_item_under_mouse = board_item
@@ -3561,6 +3577,26 @@ class BoardMixin(BoardTextEditItemMixin):
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
         elif shift:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
+
+    def board_toggle_item_mark(self):
+        cf = self.LibraryData().current_folder()
+        for bi in cf.board.items_list:
+            item_selection_area = bi.get_selection_area(canvas=self)
+            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+            if is_under_mouse:
+                bi._marked_item = not bi._marked_item
+
+    def board_marked_items_filepaths_to_clipboard(self):
+        cf = self.LibraryData().current_folder()
+        filepaths = [bi.image_data.filepath for bi in cf.board.items_list if bi._marked_item]
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText("\n".join(filepaths), mode=cb.Clipboard)
+        l = len(filepaths)
+        if l > 0:
+            self.show_center_label(f'{l} filepaths has been copied to clipboard!')
+        else:
+            self.show_center_label('Nothing marked!', error=True)
 
     def board_toggle_item_info_overlay(self):
         cf = self.LibraryData().current_folder()
