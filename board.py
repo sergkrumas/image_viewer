@@ -3595,6 +3595,10 @@ class BoardMixin(BoardTextEditItemMixin):
         l = len(filepaths)
         if l > 0:
             self.show_center_label(f'{l} filepaths has been copied to clipboard!')
+            if not hasattr(self, '_marked_items_deleted_from_disk'):
+                self._marked_items_deleted_from_disk = True
+                for fp in filepaths:
+                    delete_to_recyclebin(fp)
         else:
             self.show_center_label('Nothing marked!', error=True)
 
