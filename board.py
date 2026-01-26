@@ -674,6 +674,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 up=key==Qt.Key_Asterisk,
                 down=key==Qt.Key_Slash,
                 toggle_monitor=key==Qt.Key_Minus)
+        elif check_scancode_for(event, ("E", "R")):
+            if check_scancode_for(event, "E"):
+                self.board_do_scale(-1)
+            elif check_scancode_for(event, "R"):
+                self.board_do_scale(1)
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()

@@ -3498,9 +3498,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.board_TextElementIsActiveElement():
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
-                length *= 20.0
+                length *= 100.0
                 if event.modifiers() & Qt.AltModifier:
-                    length *= 5.0
+                    length /= 5.0
             if check_scancode_for(event, "W"):
                 delta =  QPoint(0, 1) * length
             elif check_scancode_for(event, "S"):
