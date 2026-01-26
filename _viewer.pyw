@@ -228,10 +228,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
         self.update()
 
+    class InteractiveCorners():
+        TOPLEFT = 0
+        TOPRIGHT = 1
+
     def get_corner_pos(self, corner_attr):
-        if corner_attr == "topLeft":
+        if corner_attr == self.InteractiveCorners.TOPLEFT:
             return self.rect().topLeft()
-        elif corner_attr == "topRight":
+        elif corner_attr == self.InteractiveCorners.TOPRIGHT:
             return self.rect().topRight()
 
     def get_corner_button_rect(self, corner_attr, big=False):
@@ -278,10 +282,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return self.over_corner_button(corner_attr, big=True)
 
     def is_top_right_menu_visible(self):
-        return self.corner_menu["topRight"]
+        return self.corner_menu[self.InteractiveCorners.TOPRIGHT]
 
     def is_top_left_menu_visible(self):
-        return self.corner_menu["topLeft"]
+        return self.corner_menu[self.InteractiveCorners.TOPLEFT]
 
     def draw_corner_button(self, painter, corner_attr):
         btn_rect = self.get_corner_button_rect(corner_attr)
@@ -342,9 +346,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.setOpacity(.5)        
 
-        if corner_attr == "topLeft":
+        if corner_attr == self.InteractiveCorners.TOPLEFT:
             brush_color = Qt.red
-        elif corner_attr == "topRight":
+        elif corner_attr == self.InteractiveCorners.TOPRIGHT:
             brush_color = QColor(50, 50, 50)
 
         painter.setBrush(QBrush(brush_color, Qt.SolidPattern))
@@ -353,7 +357,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.setOpacity(.8)
 
-        if corner_attr == "topRight":
+        if corner_attr == self.InteractiveCorners.TOPRIGHT:
             r = self.CORNER_BUTTON_RADIUS*2
             painter.setBrush(Qt.white)
             p = btn_rect.center() + QPointF(-r, r) + QPointF(20, -20)
@@ -361,7 +365,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             rect.moveCenter(p.toPoint())
             painter.drawRect(rect)
 
-        if corner_attr == "topLeft":
+        if corner_attr == self.InteractiveCorners.TOPLEFT:
             self.left_corner_menu_items = []
             r = self.CORNER_BUTTON_RADIUS*3
             points = []
@@ -698,6 +702,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def is_board_page_active(self):
         return self.current_page == self.pages.BOARD_PAGE
+
+    def is_waterfall_page_active(self):
+        return self.current_page == self.pages.WATERFALL_PAGE
 
     def cycle_change_page(self):
         pages = self.pages.all()
@@ -1482,19 +1489,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.setCursor(Qt.PointingHandCursor)
             return True
 
-        elif self.over_corner_button("topRight"):
+        elif self.over_corner_button(self.InteractiveCorners.TOPRIGHT):
             self.setCursor(Qt.PointingHandCursor)
             return True
 
-        elif self.over_corner_button("topLeft"):
+        elif self.over_corner_button(self.InteractiveCorners.TOPLEFT):
             self.setCursor(Qt.PointingHandCursor)
             return True
 
-        elif self.over_corner_menu("topLeft"):
+        elif self.over_corner_menu(self.InteractiveCorners.TOPLEFT):
             self.setCursor(Qt.ArrowCursor)
             return True
 
-        elif self.over_corner_menu("topRight"):
+        elif self.over_corner_menu(self.InteractiveCorners.TOPRIGHT):
             # правого меню как такого нет, но эта менюшка работает как одна большая кнопка,
             # отсюда и причина выпендрёжа нижа
             if self.is_top_right_menu_visible():
@@ -1612,13 +1619,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def ui_check_mouse_over_corners(self, event):
         if event.button() == Qt.LeftButton:
-            if self.over_corner_button("topRight"):
+            if self.over_corner_button(self.InteractiveCorners.TOPRIGHT):
                 return self.CornerUIButtons.RIGHT_CORNER
-            elif self.over_corner_button("topLeft"):
+            elif self.over_corner_button(self.InteractiveCorners.TOPLEFT):
                 return self.CornerUIButtons.LEFT_CORNER
-            elif self.over_corner_menu("topLeft"):
+            elif self.over_corner_menu(self.InteractiveCorners.TOPLEFT):
                 return self.CornerUIButtons.LEFT_CORNER_MENU
-            elif self.over_corner_menu("topRight"):
+            elif self.over_corner_menu(self.InteractiveCorners.TOPRIGHT):
                 return self.CornerUIButtons.RIGHT_CORNER_MENU
         return self.CornerUIButtons.NO_BUTTON
 
@@ -2449,13 +2456,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.draw_center_label_main(painter)
 
         # draw minimize button holder as menu
-        self.draw_corner_menu(painter, "topRight")
+        self.draw_corner_menu(painter, self.InteractiveCorners.TOPRIGHT)
         # draw page menu
-        self.draw_corner_menu(painter, "topLeft")
+        self.draw_corner_menu(painter, self.InteractiveCorners.TOPLEFT)
         # draw close button
-        self.draw_corner_button(painter, "topRight")
+        self.draw_corner_button(painter, self.InteractiveCorners.TOPRIGHT)
         # draw page button
-        self.draw_corner_button(painter, "topLeft")
+        self.draw_corner_button(painter, self.InteractiveCorners.TOPLEFT)
 
         # draw thumbnails making progress
         self.draw_threads_info(painter)
