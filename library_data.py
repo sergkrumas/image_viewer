@@ -245,7 +245,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # self.after_current_image_changed()
         MW = self.globals.main_window
         MW.previews_list_active_item = None
-        MW.autoscroll_set_or_reset()
+        MW.library_page_scroll_set_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
         MW.update()
@@ -292,7 +292,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # self.after_current_image_changed()
         MW = self.globals.main_window
         MW.previews_list_active_item = None
-        MW.autoscroll_set_or_reset()
+        MW.library_page_scroll_set_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
         MW.update()
