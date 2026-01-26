@@ -133,10 +133,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     secret_p = None
 
     class pages():
-        START_PAGE = 'STARTPAGE'
-        VIEWER_PAGE = 'VIEWERPAGE'
-        BOARD_PAGE = 'BOARDPAGE'
-        LIBRARY_PAGE = 'LIBRARYPAGE'
+        START_PAGE = 1
+        VIEWER_PAGE = 2
+        BOARD_PAGE = 3
+        LIBRARY_PAGE = 4
 
         @classmethod
         def all(cls):
@@ -327,7 +327,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         font.setWeight(1900)
         painter.setFont(font)
         # код для отрисовки угловой кнопки
-        corner_char = self.current_page[0]
+        corner_char = self.pages.name(self.current_page)[0]
         r = QRect(QPoint(0, 0), btn_rect.bottomRight()-QPoint(20, 20))
         painter.drawText(r, Qt.AlignBottom | Qt.AlignRight, corner_char)
         painter.setFont(oldfont)
