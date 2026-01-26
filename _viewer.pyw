@@ -241,13 +241,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def handle_menu_item_click(self):
         curpos = self.mapFromGlobal(QCursor().pos())
-        for page, rect in self.corner_menu_items:
+        if not self.is_top_left_menu_visible():
+            return False
+        for page, rect in self.left_corner_menu_items:
             if rect.contains(curpos):
                 self.change_page(page)
 
-    def over_corner_menu_item(self, corner_attr="topRight"):
+    def over_left_corner_menu_item(self):
         curpos = self.mapFromGlobal(QCursor().pos())
-        for page, rect in self.corner_menu_items:
+        if not self.is_top_left_menu_visible():
+            return False
+        for page, rect in self.left_corner_menu_items:
             if rect.contains(curpos):
                 return True
         return False
@@ -256,12 +260,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return self.over_corner_button(corner_attr=corner_attr, big=True)
 
     def get_corner_button_rect(self, corner_attr="topRight", big=False):
-        top_right_corner = getattr(self.rect(), corner_attr)()
+        attr_corner = getattr(self.rect(), corner_attr)()
         n = 4 if big else 1
         radius = self.CORNER_BUTTON_RADIUS*n
         btn_rect = QRectF(
-            top_right_corner.x() - radius,
-            top_right_corner.y() - radius,
+            attr_corner.x() - radius,
+            attr_corner.y() - radius,
             radius*2,
             radius*2,
         ).toRect()
@@ -269,8 +273,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_corner_button(self, painter, corner_attr="topRight"):
         btn_rect = self.get_corner_button_rect(corner_attr=corner_attr)
-        top_right_corner = getattr(self.rect(), corner_attr)()
-        diff = top_right_corner - self.mapped_cursor_pos()
+        attr_corner = getattr(self.rect(), corner_attr)()
 
         if self.over_corner_button(corner_attr=corner_attr):
             painter.setOpacity(.6)
@@ -283,7 +286,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # код для отрисовки креста правой кнопки
         _value = self.CORNER_BUTTON_RADIUS/2-5
-        cross_pos = top_right_corner + QPointF(-_value, _value).toPoint()
+        cross_pos = attr_corner + QPointF(-_value, _value).toPoint()
 
         painter.setPen(QPen(Qt.white, 4, Qt.SolidLine))
         painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
@@ -314,79 +317,89 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setFont(oldfont)
 
     def draw_corner_menu(self, painter, corner_attr="topRight"):
-        self.corner_menu_items = []
 
         btn_rect = self.get_corner_button_rect(corner_attr=corner_attr, big=True)
-        top_right_corner = getattr(self.rect(), corner_attr)()
-        diff = top_right_corner - self.mapped_cursor_pos()
 
         if self.over_corner_button(corner_attr=corner_attr):
             self.corner_menu[corner_attr] = True
         elif not self.over_corner_button(corner_attr=corner_attr, big=True):
             self.corner_menu[corner_attr] = False
 
-        if self.corner_menu.get(corner_attr, False):
-            painter.setOpacity(.5)
-        else:
-            # painter.setOpacity(.0)
+        if not self.corner_menu.get(corner_attr, False):
             return
 
-        painter.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+        painter.setOpacity(.5)        
+
+        if corner_attr == "topLeft":
+            brush_color = Qt.red
+        elif corner_attr == "topRight":
+            brush_color = QColor(50, 50, 50)
+
+        painter.setBrush(QBrush(brush_color, Qt.SolidPattern))
         painter.setPen(Qt.NoPen)
         painter.drawEllipse(btn_rect)
 
         painter.setOpacity(.8)
 
-        points = []
-        r = self.CORNER_BUTTON_RADIUS*3
-        PAGES_COUNT_M_ONE = self.pages.count - 1
-        deg90 = math.pi/2.0
-        offset = deg90/9
-        for i in range(PAGES_COUNT_M_ONE):
-            angle = deg90*i/4 + offset
-            x = r*math.cos(angle)
-            y = r*math.sin(angle)
-            point = QPointF(x, y).toPoint()
-            points.append(point)
+        if corner_attr == "topRight":
+            r = self.CORNER_BUTTON_RADIUS*2
+            painter.setBrush(Qt.white)
+            p = btn_rect.center() + QPointF(-r, r) + QPointF(20, -20)
+            rect = QRect(0, 0, 50, 10)
+            rect.moveCenter(p.toPoint())
+            painter.drawRect(rect)
 
-        painter.setPen(QPen(Qt.white, 5))
-        painter.setBrush(Qt.NoBrush)
+        if corner_attr == "topLeft":
+            self.left_corner_menu_items = []
+            r = self.CORNER_BUTTON_RADIUS*3
+            points = []
+            PAGES_COUNT_M_ONE = self.pages.count - 1
+            deg90 = math.pi/2.0
+            offset = deg90/9
+            for i in range(PAGES_COUNT_M_ONE):
+                angle = deg90*i/4 + offset
+                x = r*math.cos(angle)
+                y = r*math.sin(angle)
+                point = QPointF(x, y).toPoint()
+                points.append(point)
 
-        oldfont = painter.font()
-        font = QFont(painter.font())
-        font.setPixelSize(20)
-        font.setWeight(1900)
-        painter.setFont(font)
+            painter.setPen(QPen(Qt.white, 5))
+            painter.setBrush(Qt.NoBrush)
 
-        pages = self.pages.all()
-        pages.remove(self.current_page)
-        points = reversed(points)
+            oldfont = painter.font()
+            font = QFont(painter.font())
+            font.setPixelSize(20)
+            font.setWeight(1900)
+            painter.setFont(font)
 
-        for page_id, point in zip(pages, points):
-            # painter.drawPoint(point)
-            # код для отрисовки угловой кнопки
-            r = QRect(QPoint(0, 0), QPoint(50, 30))
-            r.moveCenter(point)
-            self.corner_menu_items.append((page_id, r))
+            pages = self.pages.all()
+            pages.remove(self.current_page)
+            points = reversed(points)
 
-            cursor_pos = self.mapFromGlobal(QCursor().pos())
-            page_name = self.pages.name(page_id)
-            text_align = Qt.AlignVCenter | Qt.AlignLeft
-            if r.contains(cursor_pos):
-                painter.setOpacity(1.0)
-                text = page_name
-                label_rect = QRect(r.topLeft(), r.bottomRight())
-                br = painter.boundingRect(QRect(), text_align, text)
-                label_rect.setWidth(br.width())
-                text_rect = label_rect
-            else:
-                painter.setOpacity(.8)
-                text = page_name[0]
-                text_rect = r
-            # painter.drawText(text_rect, Qt.AlignCenter | Qt.AlignVCenter, text)
-            painter.drawText(text_rect, text_align, text)
+            for page_id, point in zip(pages, points):
+                # painter.drawPoint(point)
+                # код для отрисовки угловой кнопки
+                r = QRect(QPoint(0, 0), QPoint(50, 30))
+                r.moveCenter(point)
+                self.left_corner_menu_items.append((page_id, r))
 
-        painter.setFont(oldfont)
+                cursor_pos = self.mapFromGlobal(QCursor().pos())
+                page_name = self.pages.name(page_id)
+                text_align = Qt.AlignVCenter | Qt.AlignLeft
+                if r.contains(cursor_pos):
+                    painter.setOpacity(1.0)
+                    text = page_name
+                    label_rect = QRect(r.topLeft(), r.bottomRight())
+                    br = painter.boundingRect(QRect(), text_align, text)
+                    label_rect.setWidth(br.width())
+                    text_rect = label_rect
+                else:
+                    painter.setOpacity(.8)
+                    text = page_name[0]
+                    text_rect = r
+                painter.drawText(text_rect, text_align, text)
+
+            painter.setFont(oldfont)
 
         painter.setOpacity(1.0)
 
@@ -576,7 +589,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.image_rect = QRectF()
 
         self.corner_menu = dict()
-        self.corner_menu_items = []
+        self.left_corner_menu_items = []
 
         self.fullscreen_mode = False
         self.firstCall_showMaximized = True
@@ -588,6 +601,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             LEFT_CORNER = 1
             RIGHT_CORNER = 2
             LEFT_CORNER_MENU = 3
+            RIGHT_CORNER_MENU = 4
 
         self.CornerUIButtons = CornerUIButtons
         self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
@@ -1451,18 +1465,52 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.animated:
             self.tick_animation()
 
+    def is_top_right_menu_visible(self):
+        return self.corner_menu["topRight"]
+
+    def is_top_left_menu_visible(self):
+        return self.corner_menu["topLeft"]
+
+    def cursor_corners_buttons_and_menus(self):
+        if self.over_left_corner_menu_item():
+            self.setCursor(Qt.PointingHandCursor)
+            return True
+
+        elif self.over_corner_button(corner_attr="topRight"):
+            self.setCursor(Qt.PointingHandCursor)
+            return True
+
+        elif self.over_corner_button(corner_attr="topLeft"):
+            self.setCursor(Qt.PointingHandCursor)
+            return True
+
+        elif self.over_corner_menu(corner_attr="topLeft"):
+            self.setCursor(Qt.ArrowCursor)
+            return True
+
+        elif self.over_corner_menu(corner_attr="topRight"):
+            # правого меню как такого нет, но эта менюшка работает как одна большая кнопка,
+            # отсюда и причина выпендрёжа нижа
+            if self.is_top_right_menu_visible():
+                self.setCursor(Qt.PointingHandCursor)
+            else:
+                self.setCursor(Qt.ArrowCursor)
+            return True
+        else:
+            return False
+
     def cursor_setter(self):
         CP = Globals.control_panel
         if self.isActiveWindow():
 
-            if self.SPT_is_spt_tool_activated():
+            if False:
+                pass
+
+            elif self.SPT_is_spt_tool_activated():
                 self.SPT_set_cursor()
 
-            elif self.over_corner_menu_item():
-                self.setCursor(Qt.PointingHandCursor)
-
-            elif self.over_corner_button() or self.over_corner_button(corner_attr="topLeft"):
-                self.setCursor(Qt.PointingHandCursor)
+            elif self.cursor_corners_buttons_and_menus():
+                pass
 
             elif self.is_library_page_active():
                 if self.previews_list_active_item:
@@ -1496,7 +1544,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.setCursor(Qt.ArrowCursor)
 
             elif self.is_board_page_active():
-                # курсор определяется в mouseMoveEvent
+                # курсор определяется в методе mouseMoveEvent файла boards.py
                 pass
             else:
                 self.setCursor(Qt.ArrowCursor)
@@ -1558,12 +1606,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def ui_check_mouse_over_corners(self, event):
         if event.button() == Qt.LeftButton:
-            if self.over_corner_button():
+            if self.over_corner_button(corner_attr="topRight"):
                 return self.CornerUIButtons.RIGHT_CORNER
             elif self.over_corner_button(corner_attr="topLeft"):
                 return self.CornerUIButtons.LEFT_CORNER
             elif self.over_corner_menu(corner_attr="topLeft"):
                 return self.CornerUIButtons.LEFT_CORNER_MENU
+            elif self.over_corner_menu(corner_attr="topRight"):
+                return self.CornerUIButtons.RIGHT_CORNER_MENU
         return self.CornerUIButtons.NO_BUTTON
 
     def ui_handle_corners_click(self, corner_button):
@@ -1573,6 +1623,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.cycle_change_page()
         elif corner_button == self.CornerUIButtons.LEFT_CORNER_MENU:
             self.handle_menu_item_click()
+        elif corner_button == self.CornerUIButtons.RIGHT_CORNER_MENU:
+            if self.is_top_right_menu_visible():
+                self.showMinimized()
 
     def mousePressEvent(self, event):
 
@@ -2389,6 +2442,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # draw center label
         self.draw_center_label_main(painter)
 
+        # draw minimize button holder as menu
+        self.draw_corner_menu(painter, corner_attr="topRight")
         # draw page menu
         self.draw_corner_menu(painter, corner_attr="topLeft")
         # draw close button
