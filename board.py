@@ -647,9 +647,6 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key == Qt.Key_PageUp:
             self.board_move_viewport(_next=True)
 
-        elif key in [Qt.Key_Return, Qt.Key_Enter]:
-            self.board_navigate_camera_via_minimap()
-
         elif key in [Qt.Key_Plus]:
             self.board_fit_selected_items_on_screen()
 
@@ -661,7 +658,10 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_cursor_setter()
 
         if key in [Qt.Key_Return, Qt.Key_Enter]:
-            self.board_dive_inside_board_item()
+            if self.board_show_minimap:
+                self.board_navigate_camera_via_minimap()
+            else:
+                self.board_dive_inside_board_item()
         elif key in [Qt.Key_Backspace]:
             self.board_dive_inside_board_item(back_to_referer=True)
         elif key in [Qt.Key_Delete]:
