@@ -230,8 +230,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def over_corner_button(self, corner_attr, big=False):
         btn_rect = self.get_corner_button_rect(corner_attr, big=big)
-        top_right_corner = getattr(self.rect(), corner_attr)()
-        diff = top_right_corner - self.mapped_cursor_pos()
+        corner_pos = getattr(self.rect(), corner_attr)()
+        diff = corner_pos - self.mapped_cursor_pos()
         distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
         n = 4 if big else 1
@@ -260,12 +260,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return self.over_corner_button(corner_attr, big=True)
 
     def get_corner_button_rect(self, corner_attr, big=False):
-        attr_corner = getattr(self.rect(), corner_attr)()
+        corner_pos = getattr(self.rect(), corner_attr)()
         n = 4 if big else 1
         radius = self.CORNER_BUTTON_RADIUS*n
         btn_rect = QRectF(
-            attr_corner.x() - radius,
-            attr_corner.y() - radius,
+            corner_pos.x() - radius,
+            corner_pos.y() - radius,
             radius*2,
             radius*2,
         ).toRect()
@@ -273,7 +273,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_corner_button(self, painter, corner_attr):
         btn_rect = self.get_corner_button_rect(corner_attr)
-        attr_corner = getattr(self.rect(), corner_attr)()
+        corner_pos = getattr(self.rect(), corner_attr)()
 
         if self.over_corner_button(corner_attr):
             painter.setOpacity(.6)
@@ -286,7 +286,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # код для отрисовки креста правой кнопки
         _value = self.CORNER_BUTTON_RADIUS/2-5
-        cross_pos = attr_corner + QPointF(-_value, _value).toPoint()
+        cross_pos = corner_pos + QPointF(-_value, _value).toPoint()
 
         painter.setPen(QPen(Qt.white, 4, Qt.SolidLine))
         painter.setBrush(QBrush(Qt.white, Qt.SolidPattern))
