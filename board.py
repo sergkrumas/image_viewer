@@ -1645,8 +1645,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 if board_item._marked_item:
                     painter.save()
-                    painter.setPen(Qt.red)
-                    painter.drawText(selection_area_rect, Qt.AlignVCenter | Qt.AlignHCenter, f'MARKED\n{board_item.info_text()}')
+                    self.draw_rounded_frame_label(painter, selection_area_rect.center().toPoint(), f'MARKED AS BETRUG/TRUFFA/ESTAFA/ESCROQUERIE\n{board_item.info_text()}')
                     painter.restore()
 
                 if case4:

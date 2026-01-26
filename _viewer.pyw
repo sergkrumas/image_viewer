@@ -2300,6 +2300,38 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return 1.0
 
+    def draw_rounded_frame_label(self, painter, pos, text, bold=False, color=Qt.red):
+        painter.save()
+
+        font = painter.font()
+        font.setFamily('consolas')
+        if bold:
+            font.setPixelSize(16)
+            font.setWeight(1900)
+        else:
+            font.setPixelSize(15)
+        painter.setFont(font)
+
+        style = Qt.AlignLeft
+        r = painter.boundingRect(QRect(), style, text)
+        r.moveCenter(pos)
+
+        if bold:
+            pen_size = 2
+        else:
+            pen_size = 1
+
+        painter.setPen(QPen(color, pen_size))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawText(r, style, text)
+
+        path = QPainterPath()
+        r.adjust(-3, 0, 3, 0)
+        path.addRoundedRect(QRectF(r), 3, 3)
+        painter.drawPath(path)
+
+        painter.restore()
+
     def draw_center_label(self, painter, text, large=False):
         def set_font(pr):
             font = pr.font()
