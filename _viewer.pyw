@@ -228,9 +228,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
         self.update()
 
+    def get_corner_pos(self, corner_attr):
+        if corner_attr == "topLeft":
+            return self.rect().topLeft()
+        elif corner_attr == "topRight":
+            return self.rect().topRight()
+
     def over_corner_button(self, corner_attr, big=False):
         btn_rect = self.get_corner_button_rect(corner_attr, big=big)
-        corner_pos = getattr(self.rect(), corner_attr)()
+        corner_pos = self.get_corner_pos(corner_attr)
         diff = corner_pos - self.mapped_cursor_pos()
         distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
@@ -260,7 +266,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return self.over_corner_button(corner_attr, big=True)
 
     def get_corner_button_rect(self, corner_attr, big=False):
-        corner_pos = getattr(self.rect(), corner_attr)()
+        corner_pos = self.get_corner_pos(corner_attr)
         n = 4 if big else 1
         radius = self.CORNER_BUTTON_RADIUS*n
         btn_rect = QRectF(
@@ -273,7 +279,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_corner_button(self, painter, corner_attr):
         btn_rect = self.get_corner_button_rect(corner_attr)
-        corner_pos = getattr(self.rect(), corner_attr)()
+        corner_pos = self.get_corner_pos(corner_attr)
 
         if self.over_corner_button(corner_attr):
             painter.setOpacity(.6)
