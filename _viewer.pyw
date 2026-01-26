@@ -336,6 +336,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         btn_rect = self.get_corner_button_rect(corner_attr, big=True)
 
+        # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно. 
         if self.over_corner_button(corner_attr):
             self.corner_menu[corner_attr] = True
         elif not self.over_corner_button(corner_attr, big=True):
