@@ -605,6 +605,12 @@ class BoardMixin(BoardTextEditItemMixin):
         if key == Qt.Key_Space:
             self.board_fly_over(user_call=True)
 
+        elif check_scancode_for(event, "O"):
+            if only_shift_mod:
+                self.board_marked_items_filepaths_to_clipboard()
+            else:
+                self.board_toggle_item_mark()
+
         elif check_scancode_for(event, "O") and only_ctrl_mode:
             self.board_loadBoard()
 
@@ -616,12 +622,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif check_scancode_for(event, "I"):
             self.board_toggle_item_info_overlay()
-
-        elif check_scancode_for(event, "O"):
-            if only_shift_mod:
-                self.board_marked_items_filepaths_to_clipboard()
-            else:
-                self.board_toggle_item_mark()
 
         elif check_scancode_for(event, "A") and ctrl_mod:
             self.board_select_all_items()
