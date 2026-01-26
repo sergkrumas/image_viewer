@@ -234,6 +234,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif corner_attr == "topRight":
             return self.rect().topRight()
 
+    def get_corner_button_rect(self, corner_attr, big=False):
+        corner_pos = self.get_corner_pos(corner_attr)
+        n = 4 if big else 1
+        radius = self.CORNER_BUTTON_RADIUS*n
+        btn_rect = QRectF(
+            corner_pos.x() - radius,
+            corner_pos.y() - radius,
+            radius*2,
+            radius*2,
+        ).toRect()
+        return btn_rect
+
     def over_corner_button(self, corner_attr, big=False):
         btn_rect = self.get_corner_button_rect(corner_attr, big=big)
         corner_pos = self.get_corner_pos(corner_attr)
@@ -265,17 +277,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def over_corner_menu(self, corner_attr):
         return self.over_corner_button(corner_attr, big=True)
 
-    def get_corner_button_rect(self, corner_attr, big=False):
-        corner_pos = self.get_corner_pos(corner_attr)
-        n = 4 if big else 1
-        radius = self.CORNER_BUTTON_RADIUS*n
-        btn_rect = QRectF(
-            corner_pos.x() - radius,
-            corner_pos.y() - radius,
-            radius*2,
-            radius*2,
-        ).toRect()
-        return btn_rect
+    def is_top_right_menu_visible(self):
+        return self.corner_menu["topRight"]
+
+    def is_top_left_menu_visible(self):
+        return self.corner_menu["topLeft"]
 
     def draw_corner_button(self, painter, corner_attr):
         btn_rect = self.get_corner_button_rect(corner_attr)
@@ -1470,12 +1476,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def viewport_image_animation(self):
         if self.animated:
             self.tick_animation()
-
-    def is_top_right_menu_visible(self):
-        return self.corner_menu["topRight"]
-
-    def is_top_left_menu_visible(self):
-        return self.corner_menu["topLeft"]
 
     def cursor_corners_buttons_and_menus(self):
         if self.over_left_corner_menu_item():
