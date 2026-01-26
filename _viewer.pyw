@@ -389,11 +389,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             font.setWeight(1900)
             painter.setFont(font)
 
-            pages = self.pages.all()
-            pages.remove(self.current_page)
             points = reversed(points)
 
-            for page_id, point in zip(pages, points):
+            for page_id, point in zip(self.other_pages_list, points):
                 # painter.drawPoint(point)
                 # код для отрисовки угловой кнопки
                 r = QRect(QPoint(0, 0), QPoint(50, 30))
@@ -530,6 +528,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.set_window_style()
 
         self.current_page = self.pages.START_PAGE
+        self.update_other_pages_list()
 
         self.transformations_allowed = True
         self.animated = False
@@ -788,7 +787,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_control_panel_label_text()
 
         self.current_page = requested_page
+
+        self.update_other_pages_list()
         self.update()
+
+    def update_other_pages_list(self):
+        pages = self.pages.all()
+        pages.remove(self.current_page)
+        self.other_pages_list = pages
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
