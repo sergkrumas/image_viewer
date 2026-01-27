@@ -40,6 +40,8 @@ from ctypes import windll
 import itertools
 from functools import partial
 
+from collections import defaultdict
+
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 try:
@@ -171,6 +173,25 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 , cls.PLAYSPEED
                 , cls.SCALE
             ]
+
+    class vertical_scrollbars():
+        NO_SCROLLBAR = -1
+        LIBRARY_PAGE_FOLDERS_LIST = 0
+        LIBRARY_PAGE_PREVIEWS_LIST = 1
+
+        scrollbar_data = type('scrollbar_data', (), {})
+        data = defaultdict(scrollbar_data)
+        capture_index = NO_SCROLLBAR
+        captured_thumb_rect_at_start = QRect()
+        captured_curpos = QPointF()
+
+        @classmethod
+        def all(cls):
+            return [
+                    cls.LIBRARY_PAGE_FOLDERS_LIST
+                ,   cls.LIBRARY_PAGE_PREVIEWS_LIST
+            ]
+
 
     def dragEnterEvent(self, event):
         if self.is_board_page_active():
@@ -1669,16 +1690,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.update()
 
         elif self.is_library_page_active():
-            if self.folders_list:
-                for item_rect, item_data in self.folders_list:
-                    if item_rect.contains(event.pos()):
-                        # здесь устанавливаем текующую папку
-                        LibraryData().make_folder_current(item_data)
 
-            if self.previews_list:
-                for item_rect, item_data in self.previews_list:
-                    if item_rect.contains(event.pos()):
-                        LibraryData().show_that_imd_on_viewer_page(item_data)
+            if event.button() == Qt.LeftButton:
+
+                if not self.clickable_scrollbars_mousePressEvent(event):
+
+                    if self.folders_list:
+                        for item_rect, item_data in self.folders_list:
+                            if item_rect.contains(event.pos()):
+                                # здесь устанавливаем текующую папку
+                                LibraryData().make_folder_current(item_data)
+                                break
+
+                    if self.previews_list:
+                        for item_rect, item_data in self.previews_list:
+                            if item_rect.contains(event.pos()):
+                                LibraryData().show_that_imd_on_viewer_page(item_data)
+                                break
 
 
         elif self.is_viewer_page_active():
@@ -1789,6 +1817,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         for item_rect, item_data in self.previews_list:
                             if item_rect.contains(event.pos()):
                                 self.previews_list_active_item = (item_rect, item_data)
+            if event.buttons() == Qt.LeftButton:
+                self.clickable_scrollbars_mouseMoveEvent(event)
+
+
+
+
+
         self.update()
         super().mouseMoveEvent(event)
 
@@ -1830,6 +1865,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         anim_task.translation_delta_when_animation_summary += anim_task.translation_delta_when_animation
                         anim_task.translation_delta_when_animation = QPointF(0, 0)
 
+        elif self.is_library_page_active():
+            if event.button() == Qt.LeftButton:
+                self.clickable_scrollbars_mouseReleaseEvent(event)
+
+
+
+
+
         self.update()
         super().mouseReleaseEvent(event)
 
@@ -1868,6 +1911,64 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.board_mouseDoubleClickEvent(event)
                     return True
         return False
+
+    def clickable_scrollbars_mousePressEvent(self, event):
+        vs = self.vertical_scrollbars
+        scrollbar_captured = False
+        for scrollbar_index in vs.all():
+            sb_data = vs.data[scrollbar_index]
+            if sb_data.visible and sb_data.thumb_rect.contains(event.pos()):
+                vs.capture_index = scrollbar_index
+                scrollbar_captured = True
+                vs.captured_thumb_rect_at_start = QRectF(sb_data.thumb_rect)
+                vs.captured_curpos = event.pos()
+                break
+        return scrollbar_captured
+
+    def clickable_scrollbars_mouseMoveEvent(self, event):
+        vs = self.vertical_scrollbars
+        index = vs.capture_index
+        if index != vs.NO_SCROLLBAR:
+            sb_data = vs.data[index]
+
+            cursor_y_delta = event.pos().y() - vs.captured_curpos.y()
+            current_thumb_rect_top_pos = vs.captured_thumb_rect_at_start.top() + cursor_y_delta
+
+            y_pos = current_thumb_rect_top_pos
+            y_pos -= sb_data.track_rect.top()
+
+            thumb_slide_length = sb_data.track_rect.height()-sb_data.thumb_rect.height()
+            if thumb_slide_length == 0.0:
+                factor = 0.0
+            else:
+                factor = y_pos/thumb_slide_length
+
+            viewframe_height = self.rect().height()
+
+            factor = max(0.0, factor)
+            factor = min(1.0, factor)
+
+            # кстати, сами скроллбары (sb_data.thumb_rect) мы тут не перемещаем и не обновляем,
+            # ведь они обновятся сами после изменения переменных 
+            # типа `X_scroll_offset` и последующей отрисовки в paintEvent
+            if index == vs.LIBRARY_PAGE_FOLDERS_LIST:
+                slide_content_height = self.library_page_folders_content_height()-viewframe_height
+                offset = factor*slide_content_height
+                LibraryData().folderslist_scroll_offset = -offset
+
+            elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
+                cf = LibraryData().current_folder()
+                slide_content_height = self.library_page_previews_columns_content_height(cf)-viewframe_height
+                offset = factor*slide_content_height
+                cf.previews_scroll_offset = -offset
+
+            self.update()
+
+    def clickable_scrollbars_mouseReleaseEvent(self, event):
+        vs = self.vertical_scrollbars
+        vs.capture_index = vs.NO_SCROLLBAR
+
+
 
     def toggle_to_frame_mode(self):
         f_geometry = self.frameGeometry()
@@ -2960,6 +3061,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         VERTICAL_OFFSET = 40
         SCROLLBAR_HEIGHT = self.rect().height()-VERTICAL_OFFSET*2
 
+        vs = self.vertical_scrollbars
+        vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible = False
+        vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible = False
+
+        curpos = self.mapped_cursor_pos()
+
         self.draw_vertical_scrollbar(painter,
             left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
             width=SCROLLBAR_WIDTH,
@@ -2973,6 +3080,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 
             ),
             content_offset=LibraryData().folderslist_scroll_offset,
+            index=vs.LIBRARY_PAGE_FOLDERS_LIST,
+            curpos=curpos,
         )
 
         cf = LibraryData().current_folder()
@@ -2989,15 +3098,32 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     SCROLLBAR_HEIGHT,
                 ),
                 content_offset=cf.previews_scroll_offset,
+                index=vs.LIBRARY_PAGE_PREVIEWS_LIST,
+                curpos=curpos,
             )
 
-    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000, viewframe_height=100, track_rect=QRect(), content_offset=0.0):
+    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000,
+                viewframe_height=100, track_rect=QRect(), content_offset=0.0, index=0, curpos=None):
 
+        vs = self.vertical_scrollbars
+        data = vs.data[index]
         if content_height > viewframe_height:
+
             painter.save()
             painter.setOpacity(0.1)
             painter.fillRect(track_rect, Qt.white)
-            painter.setOpacity(0.5)
+
+            highlighted = False
+            if vs.capture_index == vs.NO_SCROLLBAR:
+                if track_rect.contains(curpos):
+                    highlighted = True
+            elif vs.capture_index == index:
+                highlighted = True
+
+            if highlighted:
+                painter.setOpacity(0.8)
+            else:
+                painter.setOpacity(0.5)
 
             # вычисление высоты ползунка с учётом того, что она не должна быть меньше заданного минимума
             viewframe_fac = viewframe_height/content_height
@@ -3015,6 +3141,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             painter.restore()
 
+            data.visible = True
+            data.thumb_rect = thumb_rect
+            data.track_rect = track_rect
+        else:
+            data.visible = False
     def draw_middle_line(self, painter):
         color = Qt.gray
         component_value = 30
@@ -3512,6 +3643,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif key == Qt.Key_4 and not self.active_element:
             self.change_page(self.pages.LIBRARY_PAGE)
+
+        elif key == Qt.Key_5 and not self.active_element:
+            self.change_page(self.pages.WATERFALL_PAGE)
 
         elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.board_TextElementIsActiveElement():
             length = 1.0
