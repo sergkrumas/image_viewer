@@ -3274,7 +3274,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
-            self.autoscroll_middleMousePressEvent()
+            self.autoscroll_middleMousePressEvent(event)
 
             if self.transformations_allowed:
                 self.board_camera_translation_ongoing = True

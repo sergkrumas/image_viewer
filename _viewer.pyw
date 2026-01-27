@@ -3146,6 +3146,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             data.track_rect = track_rect
         else:
             data.visible = False
+
     def draw_middle_line(self, painter):
         color = Qt.gray
         component_value = 30
@@ -4206,18 +4207,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self._autoscroll_inside_activation_zone = False
         self.autoscroll_set_current_page_indicator()
         self._autoscroll_timer.start()
-        self._autoscroll_startpos = QPointF(self.start_cursor_pos)
 
     def autoscroll_finish(self):
         self._autoscroll_timer.stop()
 
-    def autoscroll_middleMousePressEvent(self):
+    def autoscroll_middleMousePressEvent(self, event):
         self._autoscroll_is_moved_while_middle_button_pressed = False
         if self._autoscroll_timer.isActive():
             self._autoscroll_desactivation_pass = True
             self.autoscroll_finish()
         else:
             self._autoscroll_desactivation_pass = False
+            self._autoscroll_startpos = event.pos()
 
     def autoscroll_middleMouseMoveEvent(self):
         self._autoscroll_is_moved_while_middle_button_pressed = True
