@@ -2933,69 +2933,55 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.restore()
 
     def draw_library_scrollbars(self, painter):
-        CXP = self.get_center_x_position()
 
+        CXP = self.get_center_x_position()
         WIDTH = 10
         OFFSET_FROM_CENTER = 5
-        left_scrollbar_rect = QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), 0, WIDTH, self.rect().height())
-        right_scrollbar_rect = QRect(CXP+OFFSET_FROM_CENTER, 0, WIDTH, self.rect().height())
 
-        # рисовать или не рисовать
-        draw_left_scrollbar = False
-        draw_right_scrollbar = False
-        content_height_left = self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders())
-        draw_left_scrollbar = content_height_left > self.rect().height()
+        self.draw_vertical_scrollbar(painter,
+            left=CXP-(WIDTH+OFFSET_FROM_CENTER),
+            width=WIDTH,
+            content_height=self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders()),
+            track_rect=QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), 0, WIDTH, self.rect().height()),
+            offset=LibraryData().folderslist_scroll_offset,
+        )
+
         cf = LibraryData().current_folder()
         if cf.columns:
-            content_height_right = max(col.height for col in cf.columns)
-            draw_right_scrollbar = content_height_right > self.rect().height()
+            self.draw_vertical_scrollbar(painter,
+                left=CXP+OFFSET_FROM_CENTER,
+                width=WIDTH,
+                content_height=max(col.height for col in cf.columns),
+                track_rect=QRect(CXP+OFFSET_FROM_CENTER, 0, WIDTH, self.rect().height()),
+                offset=cf.previews_scroll_offset,
+            )
 
-        painter.setOpacity(0.1)
-        if draw_left_scrollbar:
-            painter.fillRect(left_scrollbar_rect, Qt.white)
-        if draw_right_scrollbar:
-            painter.fillRect(right_scrollbar_rect, Qt.white)
-        painter.setOpacity(0.5)
+    def draw_vertical_scrollbar(self, painter, left=0, width=0, content_height=100, track_rect=QRect(), offset=0.0):
 
-        if draw_left_scrollbar:
-            factor = self.rect().height()/content_height_left
-            left_bar_height = int(factor*self.rect().height())
+        if content_height > self.rect().height():
+            painter.save()
+            painter.setOpacity(0.1)
+            painter.fillRect(track_rect, Qt.white)
+            painter.setOpacity(0.5)
 
-            offset = LibraryData().folderslist_scroll_offset
-            if offset == 0:
-                left_bar_y = 0
+            factor = self.rect().height()/content_height
+            thumb_height = int(factor*self.rect().height())
+
+            if offset == 0.0 and False:
+                thumb_y = 0
             else:
-                y_factor = abs(offset)/(content_height_left-self.rect().height())
+                y_factor = abs(offset)/(content_height-self.rect().height())
                 y_factor = min(1.0, y_factor)
-                left_bar_y = (self.rect().height()-left_bar_height)*y_factor
-                left_bar_y = int(left_bar_y)
+                thumb_y = (self.rect().height()-thumb_height)*y_factor
+                thumb_y = int(thumb_y)
 
-            left_bar_rect = QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), left_bar_y, WIDTH, left_bar_height)
+            thumb_rect = QRect(left, thumb_y, width, thumb_height)
 
             path = QPainterPath()
-            path.addRoundedRect(QRectF(left_bar_rect), 5, 5)
+            path.addRoundedRect(QRectF(thumb_rect), 5, 5)
             painter.fillPath(path, Qt.white)
 
-        if draw_right_scrollbar:
-            factor = self.rect().height()/content_height_right
-            right_bar_height = int(factor*right_scrollbar_rect.height())
-
-            offset = cf.previews_scroll_offset
-            if offset == 0:
-                right_bar_y = 0
-            else:
-                y_factor = abs(offset)/(content_height_right-self.rect().height())
-                y_factor = min(1.0, y_factor)
-                right_bar_y = (self.rect().height()-right_bar_height)*y_factor
-                right_bar_y = int(right_bar_y)
-
-            right_bar_rect = QRect(CXP+OFFSET_FROM_CENTER, right_bar_y, WIDTH, right_bar_height)
-
-            path = QPainterPath()
-            path.addRoundedRect(QRectF(right_bar_rect), 5, 5)
-            painter.fillPath(path, Qt.white)
-
-        painter.setOpacity(1.0)
+            painter.restore()
 
     def draw_middle_line(self, painter):
         color = Qt.gray
