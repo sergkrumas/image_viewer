@@ -773,7 +773,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_columns()
-            self.library_page_scroll_set_or_reset()
+            self.library_page_scroll_autoset_or_reset()
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
             self.previews_list_active_item = None
@@ -2109,7 +2109,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         height += self.LIBRARY_FOLDER_ITEM_HEIGHT
         return height
 
-    def library_page_scroll_set_or_reset(self):
+    def library_page_scroll_autoset_or_reset(self):
         content_height = self.library_page_folders_content_height()
         VIEWPORT_HEIGHT = self.rect().height()
         if content_height > VIEWPORT_HEIGHT:
