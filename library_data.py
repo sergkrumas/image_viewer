@@ -1098,6 +1098,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def scan_for_lost_records(self):
         pass
 
+    @classmethod
+    def add_image_to_folderdata(cls, image_path, folder_data):
+        image_data = ImageData(image_path, folder_data)
+        folder_data.images_list.append(image_data)
+
+
 class BoardNonAutoSerializedData():
     pass
 
@@ -1869,9 +1875,9 @@ class FinderWindow(QWidget):
         fav_folder = LibraryData().get_fav_virtual_folder()
         comms_folder = LibraryData().get_comm_virutal_folder()
 
-        def add_image_to_folder(found_path, folder_data):
-            image_data = ImageData(found_path, folder_data)
-            folder_data.images_list.append(image_data)
+        def add_image_to_folder(image_path, folder_data):
+            LibraryData().add_image_to_folderdata(image_path, folder_data)
+
 
         tag_records_updated_count = 0
 

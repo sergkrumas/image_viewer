@@ -3759,6 +3759,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     text = f"{w}x{h}"
                     self.show_center_label(text)
 
+    def debug_populate_data_to_test_library_page(self):
+        cf = LibraryData().current_folder()
+
+        paths = []
+        app_root = os.path.dirname(__file__)
+        test_folderpath = os.path.join(app_root, 'test')
+
+        for cur_dir, dirs, files in os.walk(test_folderpath):
+            for filename in files:
+                filepath = os.path.join(cur_dir, filename)
+                LibraryData().add_image_to_folderdata(filepath, cf)
+
+        for n in range(3):
+            cf.images_list.extend(cf.images_list)
+
+        LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+
+        for n in range(500):
+            LibraryData().create_empty_virtual_folder()
+            LibraryData().current_folder().folder_path = f'{n}'
+
     def contextMenuEvent(self, event):
 
         if not self.context_menu_allowed:
@@ -3791,6 +3812,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if Globals.CRASH_SIMULATOR:
             crash_simulator = contextMenu.addAction(_("Make program crash intentionally (for dev purposes only)..."))
             crash_simulator.triggered.connect(lambda: 1/0)
+
+        if Globals.DEBUG or True:
+            debug_populate_data_to_test_library_page = contextMenu.addAction('Create virtual folder list')
+            debug_populate_data_to_test_library_page.triggered.connect(self.debug_populate_data_to_test_library_page)
+            contextMenu.addSeparator()
 
         open_settings = contextMenu.addAction(_("Settings..."))
         open_settings.triggered.connect(self.open_settings_window)
