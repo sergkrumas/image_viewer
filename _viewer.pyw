@@ -1943,8 +1943,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 factor = y_pos/thumb_slide_length
 
-            viewframe_height = self.rect().height()
+            VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
 
+            # в этой версии ограничители нормализованы,
+            # поэтому и появились значения 0.0 и 1.0
             factor = max(0.0, factor)
             factor = min(1.0, factor)
 
@@ -1952,13 +1954,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # ведь они обновятся сами после изменения переменных 
             # типа `X_scroll_offset` и последующей отрисовки в paintEvent
             if index == vs.LIBRARY_PAGE_FOLDERS_LIST:
-                slide_content_height = self.library_page_folders_content_height()-viewframe_height
+                slide_content_height = self.library_page_folders_content_height()-VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
                 LibraryData().folderslist_scroll_offset = -offset
 
             elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
                 cf = LibraryData().current_folder()
-                slide_content_height = self.library_page_previews_columns_content_height(cf)-viewframe_height
+                slide_content_height = self.library_page_previews_columns_content_height(cf)-VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
                 cf.previews_scroll_offset = -offset
 
@@ -2109,14 +2111,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         height += self.LIBRARY_FOLDER_ITEM_HEIGHT
         return height
 
+    def library_page_viewframe_height(self):
+        return self.rect().height()
+
     def library_page_scroll_autoset_or_reset(self):
         content_height = self.library_page_folders_content_height()
-        VIEWPORT_HEIGHT = self.rect().height()
-        if content_height > VIEWPORT_HEIGHT:
+        VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+        if content_height > VIEWFRAME_HEIGHT:
             # если контент не помещается в окне,
             # то надо установить сдвиг таким образом,
             # чтобы текущая папка была посередине
-            viewport_capacity = VIEWPORT_HEIGHT/self.LIBRARY_FOLDER_ITEM_HEIGHT
+            viewport_capacity = VIEWFRAME_HEIGHT/self.LIBRARY_FOLDER_ITEM_HEIGHT
             offset_by_center = int(viewport_capacity/2)
             # вычисление сдвига в пикселях, чтобы папка была посередине
             current_folder_index = LibraryData()._index
@@ -2124,7 +2129,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             # применение ограничителей сдвига:
             # если текущая папка в начале или в конце списка,
             # то нет смысла требовать её показа в середине
-            max_offset = content_height - VIEWPORT_HEIGHT
+            max_offset = content_height - VIEWFRAME_HEIGHT
             _offset = max(-max_offset, _offset)
             _offset = min(0, _offset)
             LibraryData().folderslist_scroll_offset = _offset
@@ -2136,11 +2141,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         right_column = QRect(self.rect())
         right_column.setRight(int(self.rect().width()/2))
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
-        VIEWPORT_HEIGHT = self.rect().height()
+        VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
 
         def apply_scroll_and_limits(offset, content_height):
             offset += int(scroll_value*200)
-            max_offset = content_height-VIEWPORT_HEIGHT
+            max_offset = content_height-VIEWFRAME_HEIGHT
             # ограничение при скроле в самом низу списка
             offset = max(-max_offset, offset)
             # ограничение при скроле в самому верху списка
@@ -2149,7 +2154,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if right_column.contains(curpos):
             content_height = self.library_page_folders_content_height()
-            if content_height > VIEWPORT_HEIGHT:
+            if content_height > VIEWFRAME_HEIGHT:
                 LibraryData().folderslist_scroll_offset = apply_scroll_and_limits(
                                                             LibraryData().folderslist_scroll_offset,
                                                             content_height
@@ -2158,7 +2163,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             cf = LibraryData().current_folder()
             if cf.columns:
                 content_height = self.library_page_previews_columns_content_height(cf)
-                if content_height > VIEWPORT_HEIGHT:
+                if content_height > VIEWFRAME_HEIGHT:
                     cf.previews_scroll_offset = apply_scroll_and_limits(
                                                             cf.previews_scroll_offset,
                                                             content_height,
@@ -3067,11 +3072,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         curpos = self.mapped_cursor_pos()
 
+        viewframe_height = self.library_page_viewframe_height()
+
         self.draw_vertical_scrollbar(painter,
             left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
             width=SCROLLBAR_WIDTH,
             content_height=self.library_page_folders_content_height(),
-            viewframe_height=self.rect().height(),
+            viewframe_height=viewframe_height,
             track_rect=QRect(
                 CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
                 VERTICAL_OFFSET,
@@ -3090,7 +3097,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 left=CXP+OFFSET_FROM_CENTER,
                 width=SCROLLBAR_WIDTH,
                 content_height=self.library_page_previews_columns_content_height(cf),
-                viewframe_height=self.rect().height(),
+                viewframe_height=viewframe_height,
                 track_rect=QRect(
                     CXP+OFFSET_FROM_CENTER,
                     VERTICAL_OFFSET,
