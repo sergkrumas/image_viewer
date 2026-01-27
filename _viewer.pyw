@@ -364,7 +364,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif not self.over_corner_button(corner_attr, big=True):
             self.corner_menu[corner_attr] = False
 
-        if not self.corner_menu.get(corner_attr, False):
+        if not self.corner_menu[corner_attr]:
             return
 
         painter.setOpacity(.5)        
@@ -626,7 +626,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.image_rect = QRectF()
 
-        self.corner_menu = dict()
+        self.corner_menu = [False, False]
         self.left_corner_menu_items = []
 
         self.fullscreen_mode = False
