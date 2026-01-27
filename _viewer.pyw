@@ -1996,14 +1996,29 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             self.restore_image_transformations()
 
+    def library_page_folders_content_height(self):
+        height = self.LIBRARY_FOLDER_ITEM_HEIGHT*len(LibraryData().all_folders())
+        # добавляем высоту одного айтема, чтобы оствалось пустое поле внизу списка
+        height += self.LIBRARY_FOLDER_ITEM_HEIGHT
+        return height
+
+    def library_page_previews_columns_content_height(self, folder_data):
+        height = max(col.height for col in folder_data.columns)
+        # сюда тоже добавляем высоту айтема папки, хоть эта часть не про папки, а про превьюшки
+        # в итоге получится пустое поле внизу списка
+        height += self.LIBRARY_FOLDER_ITEM_HEIGHT
+        return height
+
     def library_page_scroll_set_or_reset(self):
-        H = self.LIBRARY_FOLDER_ITEM_HEIGHT
-        content_height = H * len(LibraryData().all_folders())
+        content_height = self.library_page_folders_content_height()
         if content_height > self.rect().height():
+            # если контент не помещается в окне,
+            # то надо установить сдвиг таким образом,
+            # чтобы текущая папка была посередине
             capacity = self.rect().height()/H
             offset_by_center = int(capacity/2)
-            # вычисление сдвига
-            _offset = -H*(LibraryData()._index-offset_by_center)
+            # вычисление сдвига в пикселях
+            _offset = -self.LIBRARY_FOLDER_ITEM_HEIGHT*(LibraryData()._index-offset_by_center)
             # ограничители сдвига
             content_height -= self.rect().height()
             content_height += self.BOTTOM_FIELD_HEIGHT
@@ -2019,7 +2034,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         right_column.setRight(int(self.rect().width()/2))
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         if right_column.contains(curpos):
-            content_height = H * len(LibraryData().all_folders())
+            content_height = self.library_page_folders_content_height()
             _offset = LibraryData().folderslist_scroll_offset
             if content_height > self.rect().height():
                 _offset += int(scroll_value*200)
@@ -2036,7 +2051,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             cf = LibraryData().current_folder()
             if cf.columns:
-                content_height = max(col.height for col in cf.columns)
+                content_height = self.library_page_previews_columns_content_height(cf)
                 if content_height > self.rect().height():
                     cf.previews_scroll_offset += int(scroll_value*200)
                     content_height -= self.rect().height()
@@ -2946,7 +2961,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.draw_vertical_scrollbar(painter,
             left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
             width=SCROLLBAR_WIDTH,
-            content_height=self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders()),
+            content_height=self.library_page_folders_content_height(),
             viewframe_height=self.rect().height(),
             track_rect=QRect(
                 CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
@@ -2963,7 +2978,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.draw_vertical_scrollbar(painter,
                 left=CXP+OFFSET_FROM_CENTER,
                 width=SCROLLBAR_WIDTH,
-                content_height=max(col.height for col in cf.columns),
+                content_height=self.library_page_previews_columns_content_height(cf),
                 viewframe_height=self.rect().height(),
                 track_rect=QRect(
                     CXP+OFFSET_FROM_CENTER,
