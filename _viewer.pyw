@@ -2942,6 +2942,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             left=CXP-(WIDTH+OFFSET_FROM_CENTER),
             width=WIDTH,
             content_height=self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders()),
+            viewframe_height=self.rect().height(),
             track_rect=QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), 0, WIDTH, self.rect().height()),
             offset=LibraryData().folderslist_scroll_offset,
         )
@@ -2952,31 +2953,31 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 left=CXP+OFFSET_FROM_CENTER,
                 width=WIDTH,
                 content_height=max(col.height for col in cf.columns),
+                viewframe_height=self.rect().height(),
                 track_rect=QRect(CXP+OFFSET_FROM_CENTER, 0, WIDTH, self.rect().height()),
                 offset=cf.previews_scroll_offset,
             )
 
-    def draw_vertical_scrollbar(self, painter, left=0, width=0, content_height=100, track_rect=QRect(), offset=0.0):
+    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000, viewframe_height=100, track_rect=QRect(), offset=0.0):
 
-        if content_height > self.rect().height():
+        THUMB_MIN_HEIGHT = 50
+
+        if content_height > viewframe_height:
             painter.save()
             painter.setOpacity(0.1)
             painter.fillRect(track_rect, Qt.white)
             painter.setOpacity(0.5)
 
-            factor = self.rect().height()/content_height
-            thumb_height = int(factor*self.rect().height())
+            # вычисление высоты ползунка с учётом того, что она не должна быть меньше заданного минимума
+            viewframe_fac = viewframe_height/content_height
+            thumb_height = int(track_rect.height()*viewframe_fac)
+            thumb_height = max(THUMB_MIN_HEIGHT, thumb_height)
 
-            if offset == 0.0 and False:
-                thumb_y = 0
-            else:
-                y_factor = abs(offset)/(content_height-self.rect().height())
-                y_factor = min(1.0, y_factor)
-                thumb_y = (self.rect().height()-thumb_height)*y_factor
-                thumb_y = int(thumb_y)
+            #abs здесь оттого, что offset задаётся отрицательным занчением
+            thumb_y_factor = abs(offset)/(content_height-viewframe_height)
+            thumb_y = int(thumb_y_factor*(viewframe_height-thumb_height))
 
             thumb_rect = QRect(left, thumb_y, width, thumb_height)
-
             path = QPainterPath()
             path.addRoundedRect(QRectF(thumb_rect), 5, 5)
             painter.fillPath(path, Qt.white)
