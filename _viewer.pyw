@@ -2010,19 +2010,22 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def library_page_scroll_set_or_reset(self):
         content_height = self.library_page_folders_content_height()
-        if content_height > self.rect().height():
+        VIEWPORT_HEIGHT = self.rect().height()
+        if content_height > VIEWPORT_HEIGHT:
             # если контент не помещается в окне,
             # то надо установить сдвиг таким образом,
             # чтобы текущая папка была посередине
-            capacity = self.rect().height()/H
-            offset_by_center = int(capacity/2)
-            # вычисление сдвига в пикселях
-            _offset = -self.LIBRARY_FOLDER_ITEM_HEIGHT*(LibraryData()._index-offset_by_center)
-            # ограничители сдвига
-            content_height -= self.rect().height()
-            content_height += self.BOTTOM_FIELD_HEIGHT
-            _offset = max(-content_height, _offset)
-            _offset = min(self.TOP_FIELD_HEIGHT, _offset)
+            viewport_capacity = VIEWPORT_HEIGHT/self.LIBRARY_FOLDER_ITEM_HEIGHT
+            offset_by_center = int(viewport_capacity/2)
+            # вычисление сдвига в пикселях, чтобы папка была посередине
+            current_folder_index = LibraryData()._index
+            _offset = -self.LIBRARY_FOLDER_ITEM_HEIGHT*(current_folder_index-offset_by_center)
+            # применение ограничителей сдвига:
+            # если текущая папка в начале или в конце списка,
+            # то нет смысла требовать её показа в середине
+            max_offset = content_height - VIEWPORT_HEIGHT
+            _offset = max(-max_offset, _offset)
+            _offset = min(0, _offset)
             LibraryData().folderslist_scroll_offset = _offset
         else:
             LibraryData().folderslist_scroll_offset = 0
