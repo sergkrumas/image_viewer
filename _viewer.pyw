@@ -179,7 +179,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         LIBRARY_PAGE_FOLDERS_LIST = 0
         LIBRARY_PAGE_PREVIEWS_LIST = 1
 
-        scrollbar_data = type('scrollbar_data', (), {})
+        scrollbar_data = type('scrollbar_data', (), {'visible': False})
         data = defaultdict(scrollbar_data)
         capture_index = NO_SCROLLBAR
         captured_thumb_rect_at_start = QRect()
@@ -1708,6 +1708,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                 LibraryData().show_that_imd_on_viewer_page(item_data)
                                 break
 
+            if event.button() == Qt.MiddleButton:
+                self.autoscroll_middleMousePressEvent(event)
+
 
         elif self.is_viewer_page_active():
             if self.show_tags_overlay:
@@ -1820,6 +1823,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if event.buttons() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseMoveEvent(event)
 
+            if event.buttons() == Qt.MiddleButton:
+                self.autoscroll_middleMouseMoveEvent()
+
+
 
 
 
@@ -1869,6 +1876,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if event.button() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseReleaseEvent(event)
 
+            if event.button() == Qt.MiddleButton:
+                self.autoscroll_middleMouseReleaseEvent()
 
 
 
@@ -2136,40 +2145,45 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             LibraryData().folderslist_scroll_offset = 0
 
-    def library_page_is_inside_right_part(self):
+    def library_page_is_inside_left_part(self):
         curpos = self.mapFromGlobal(QCursor().pos())
-        right_column = QRect(self.rect())
-        right_column.setRight(int(self.rect().width()/2))
-        return right_column.contains(curpos)
+        left_column = QRect(self.rect())
+        left_column.setRight(int(self.rect().width()/2))
+        return left_column.contains(curpos)
+
+    def apply_scroll_and_limits(self, offset, offset_delta, content_height, viewframe_height):
+        offset += offset_delta
+        max_offset = content_height-viewframe_height
+        # ограничение при скроле в самом низу списка
+        offset = max(-max_offset, offset)
+        # ограничение при скроле в самому верху списка
+        offset = min(0, offset)
+        return offset
 
     def wheelEventLibraryMode(self, scroll_value, event):
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+        offset_delta = int(scroll_value*200)
 
-        def apply_scroll_and_limits(offset, content_height):
-            offset += int(scroll_value*200)
-            max_offset = content_height-VIEWFRAME_HEIGHT
-            # ограничение при скроле в самом низу списка
-            offset = max(-max_offset, offset)
-            # ограничение при скроле в самому верху списка
-            offset = min(0, offset)
-            return offset
-
-        if self.library_page_is_inside_right_part():
+        if self.library_page_is_inside_left_part():
             content_height = self.library_page_folders_content_height()
             if content_height > VIEWFRAME_HEIGHT:
-                LibraryData().folderslist_scroll_offset = apply_scroll_and_limits(
+                LibraryData().folderslist_scroll_offset = self.apply_scroll_and_limits(
                                                             LibraryData().folderslist_scroll_offset,
-                                                            content_height
+                                                            offset_delta,
+                                                            content_height,
+                                                            VIEWFRAME_HEIGHT,
                                                         )
         else:
             cf = LibraryData().current_folder()
             if cf.columns:
                 content_height = self.library_page_previews_columns_content_height(cf)
                 if content_height > VIEWFRAME_HEIGHT:
-                    cf.previews_scroll_offset = apply_scroll_and_limits(
+                    cf.previews_scroll_offset = self.apply_scroll_and_limits(
                                                             cf.previews_scroll_offset,
+                                                            offset_delta,
                                                             content_height,
+                                                            VIEWFRAME_HEIGHT,
                                                         )
                     self.reset_previews_active_item_on_scrolling(event)
         self.update()
@@ -4213,12 +4227,97 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_library_page_active():
             self._autoscroll_draw_vertical = True
 
+    def autoscroll_is_scrollbar_available(self):
+        vs = self.vertical_scrollbars
+        if self.library_page_is_inside_left_part():
+            # если видно скроллбар, значит есть что прокручивать!
+            if vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible:
+                return vs.LIBRARY_PAGE_FOLDERS_LIST
+        else:
+            if vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible:
+                return vs.LIBRARY_PAGE_PREVIEWS_LIST
+        return vs.NO_SCROLLBAR
+
+    def autoscroll_timer(self):
+        OUTER_ZONE_ACTIVATION_RADIUS = 30.0
+        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
+        diff_l = QVector2D(cursor_offset).length()
+        self._autoscroll_inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
+        if not self._autoscroll_inside_activation_zone:
+            # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
+            diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
+            vec = QVector2D(cursor_offset).normalized()*diff_l
+            velocity_vec = vec.toPointF()
+            if self.is_board_page_active():
+                self.canvas_origin -= velocity_vec/25.0
+            elif self.is_library_page_active():
+                vs = self.vertical_scrollbars
+                sb_index = self.autoscroll_is_scrollbar_available()
+                if sb_index == vs.NO_SCROLLBAR:
+                    self.autoscroll_finish()
+                else:
+                    self.autoscroll_do_for_library_page_parts(velocity_vec.y())
+        self.update()
+
+    def autoscroll_intro_for_library_page_parts(self, scrollbar_index):
+        vs = self.vertical_scrollbars
+        sb_data = vs.data[scrollbar_index]
+        vs.capture_index = scrollbar_index
+        vs.captured_thumb_rect_at_start = QRectF(sb_data.thumb_rect)
+        if scrollbar_index == vs.LIBRARY_PAGE_FOLDERS_LIST:
+            vs.captured_scroll_offset = LibraryData().folderslist_scroll_offset
+        elif scrollbar_index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
+            cf = LibraryData().current_folder()
+            vs.captured_scroll_offset = cf.previews_scroll_offset
+
+    def autoscroll_do_for_library_page_parts(self, velocity_y):
+        vs = self.vertical_scrollbars
+        index = vs.capture_index
+        VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+        if index != vs.NO_SCROLLBAR:
+            sb_data = vs.data[index]
+
+            if index == vs.LIBRARY_PAGE_FOLDERS_LIST:
+                LibraryData().folderslist_scroll_offset -= velocity_y
+                content_height = self.library_page_folders_content_height()
+                LibraryData().folderslist_scroll_offset = self.apply_scroll_and_limits(
+                                                            LibraryData().folderslist_scroll_offset,
+                                                            0,
+                                                            content_height,
+                                                            VIEWFRAME_HEIGHT,
+                                                        )
+
+            elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
+                cf = LibraryData().current_folder()
+                cf.previews_scroll_offset -= velocity_y
+                content_height = self.library_page_previews_columns_content_height(cf)
+                cf.previews_scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.previews_scroll_offset,
+                                                            0,
+                                                            content_height,
+                                                            VIEWFRAME_HEIGHT,
+                                                        )
+
+            self.update()
+
+    def autoscroll_outro_for_library_page_parts(self):
+        vs = self.vertical_scrollbars
+        vs.capture_index = vs.NO_SCROLLBAR
+
     def autoscroll_start(self):
         self._autoscroll_inside_activation_zone = False
         self.autoscroll_set_current_page_indicator()
-        self._autoscroll_timer.start()
+        if self.is_library_page_active():
+            sb_index = self.autoscroll_is_scrollbar_available()
+            if sb_index != self.vertical_scrollbars.NO_SCROLLBAR:
+                self.autoscroll_intro_for_library_page_parts(sb_index)
+                self._autoscroll_timer.start()
+        else:
+            self._autoscroll_timer.start()
 
     def autoscroll_finish(self):
+        if self.is_library_page_active():
+            self.autoscroll_outro_for_library_page_parts()
         self._autoscroll_timer.stop()
 
     def autoscroll_middleMousePressEvent(self, event):
@@ -4285,22 +4384,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 painter.restore()
 
-    def autoscroll_timer(self):
-        OUTER_ZONE_ACTIVATION_RADIUS = 30.0
-        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
-        diff_l = QVector2D(cursor_offset).length()
-        self._autoscroll_inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
-        if not self._autoscroll_inside_activation_zone:
-            # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
-            diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
-            vec = QVector2D(cursor_offset).normalized()*diff_l
-            velocity_vec = vec.toPointF()
-            velocity_vec /= 25.0
-            if self.is_board_page_active():
-                self.canvas_origin -= velocity_vec
-            elif self.is_library_page_active():
-                pass
-        self.update()
 
 
 def choose_start_option_callback(do_start_server, path):
