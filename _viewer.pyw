@@ -132,6 +132,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     secret_pic = None
     secret_p = None
 
+    SCROLL_THUMB_MIN_HEIGHT = 50
+
     class pages():
         START_PAGE = 1
         VIEWER_PAGE = 2
@@ -2938,12 +2940,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         WIDTH = 10
         OFFSET_FROM_CENTER = 5
 
+        VERTICAL_OFFSET = 40
+
         self.draw_vertical_scrollbar(painter,
             left=CXP-(WIDTH+OFFSET_FROM_CENTER),
             width=WIDTH,
             content_height=self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders()),
             viewframe_height=self.rect().height(),
-            track_rect=QRect(CXP-(WIDTH+OFFSET_FROM_CENTER), 0, WIDTH, self.rect().height()),
+            track_rect=QRect(
+                CXP-(WIDTH+OFFSET_FROM_CENTER),
+                VERTICAL_OFFSET,
+                WIDTH,
+                self.rect().height()-VERTICAL_OFFSET*2
+            ),
             offset=LibraryData().folderslist_scroll_offset,
         )
 
@@ -2954,13 +2963,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 width=WIDTH,
                 content_height=max(col.height for col in cf.columns),
                 viewframe_height=self.rect().height(),
-                track_rect=QRect(CXP+OFFSET_FROM_CENTER, 0, WIDTH, self.rect().height()),
+                track_rect=QRect(
+                    CXP+OFFSET_FROM_CENTER,
+                    VERTICAL_OFFSET,
+                    WIDTH,
+                    self.rect().height()-VERTICAL_OFFSET*2
+                ),
                 offset=cf.previews_scroll_offset,
             )
 
     def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000, viewframe_height=100, track_rect=QRect(), offset=0.0):
-
-        THUMB_MIN_HEIGHT = 50
 
         if content_height > viewframe_height:
             painter.save()
@@ -2970,16 +2982,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             # вычисление высоты ползунка с учётом того, что она не должна быть меньше заданного минимума
             viewframe_fac = viewframe_height/content_height
-            thumb_height = int(track_rect.height()*viewframe_fac)
-            thumb_height = max(THUMB_MIN_HEIGHT, thumb_height)
+            thumb_height = max(self.SCROLL_THUMB_MIN_HEIGHT, track_rect.height()*viewframe_fac)
 
             #abs здесь оттого, что offset задаётся отрицательным занчением
             thumb_y_factor = abs(offset)/(content_height-viewframe_height)
-            thumb_y = int(thumb_y_factor*(viewframe_height-thumb_height))
+            thumb_y = thumb_y_factor*(track_rect.height()-thumb_height)
 
-            thumb_rect = QRect(left, thumb_y, width, thumb_height)
+            thumb_rect = QRectF(left, track_rect.top() + thumb_y, width, thumb_height)
+
             path = QPainterPath()
-            path.addRoundedRect(QRectF(thumb_rect), 5, 5)
+            path.addRoundedRect(thumb_rect, 5, 5)
             painter.fillPath(path, Qt.white)
 
             painter.restore()
