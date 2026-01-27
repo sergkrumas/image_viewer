@@ -2953,7 +2953,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 SCROLLBAR_WIDTH,
                 self.rect().height()-VERTICAL_OFFSET*2
             ),
-            offset=LibraryData().folderslist_scroll_offset,
+            content_offset=LibraryData().folderslist_scroll_offset,
         )
 
         cf = LibraryData().current_folder()
@@ -2969,10 +2969,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     SCROLLBAR_WIDTH,
                     self.rect().height()-VERTICAL_OFFSET*2
                 ),
-                offset=cf.previews_scroll_offset,
+                content_offset=cf.previews_scroll_offset,
             )
 
-    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000, viewframe_height=100, track_rect=QRect(), offset=0.0):
+    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000, viewframe_height=100, track_rect=QRect(), content_offset=0.0):
 
         if content_height > viewframe_height:
             painter.save()
@@ -2984,8 +2984,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             viewframe_fac = viewframe_height/content_height
             thumb_height = max(self.SCROLL_THUMB_MIN_HEIGHT, track_rect.height()*viewframe_fac)
 
-            #abs здесь оттого, что offset задаётся отрицательным занчением
-            thumb_y_factor = abs(offset)/(content_height-viewframe_height)
+            #abs здесь оттого, что content_offset задаётся отрицательным занчением
+            thumb_y_factor = abs(content_offset)/(content_height-viewframe_height)
             thumb_y = thumb_y_factor*(track_rect.height()-thumb_height)
 
             thumb_rect = QRectF(left, track_rect.top() + thumb_y, width, thumb_height)
