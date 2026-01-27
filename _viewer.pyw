@@ -2136,10 +2136,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             LibraryData().folderslist_scroll_offset = 0
 
-    def wheelEventLibraryMode(self, scroll_value, event):
+    def library_page_is_inside_right_part(self):
         curpos = self.mapFromGlobal(QCursor().pos())
         right_column = QRect(self.rect())
         right_column.setRight(int(self.rect().width()/2))
+        return right_column.contains(curpos)
+
+    def wheelEventLibraryMode(self, scroll_value, event):
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
 
@@ -2152,7 +2155,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             offset = min(0, offset)
             return offset
 
-        if right_column.contains(curpos):
+        if self.library_page_is_inside_right_part():
             content_height = self.library_page_folders_content_height()
             if content_height > VIEWFRAME_HEIGHT:
                 LibraryData().folderslist_scroll_offset = apply_scroll_and_limits(
