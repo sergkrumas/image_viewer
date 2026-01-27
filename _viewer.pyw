@@ -2941,6 +2941,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         OFFSET_FROM_CENTER = 5
 
         VERTICAL_OFFSET = 40
+        SCROLLBAR_HEIGHT = self.rect().height()-VERTICAL_OFFSET*2
 
         self.draw_vertical_scrollbar(painter,
             left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
@@ -2951,7 +2952,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
                 VERTICAL_OFFSET,
                 SCROLLBAR_WIDTH,
-                self.rect().height()-VERTICAL_OFFSET*2
+                SCROLLBAR_HEIGHT,
+                
             ),
             content_offset=LibraryData().folderslist_scroll_offset,
         )
@@ -2967,7 +2969,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     CXP+OFFSET_FROM_CENTER,
                     VERTICAL_OFFSET,
                     SCROLLBAR_WIDTH,
-                    self.rect().height()-VERTICAL_OFFSET*2
+                    SCROLLBAR_HEIGHT,
                 ),
                 content_offset=cf.previews_scroll_offset,
             )
