@@ -2937,20 +2937,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def draw_library_scrollbars(self, painter):
 
         CXP = self.get_center_x_position()
-        WIDTH = 10
+        SCROLLBAR_WIDTH = 10
         OFFSET_FROM_CENTER = 5
 
         VERTICAL_OFFSET = 40
 
         self.draw_vertical_scrollbar(painter,
-            left=CXP-(WIDTH+OFFSET_FROM_CENTER),
-            width=WIDTH,
+            left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
+            width=SCROLLBAR_WIDTH,
             content_height=self.LIBRARY_FOLDER_ITEM_HEIGHT * len(LibraryData().all_folders()),
             viewframe_height=self.rect().height(),
             track_rect=QRect(
-                CXP-(WIDTH+OFFSET_FROM_CENTER),
+                CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
                 VERTICAL_OFFSET,
-                WIDTH,
+                SCROLLBAR_WIDTH,
                 self.rect().height()-VERTICAL_OFFSET*2
             ),
             offset=LibraryData().folderslist_scroll_offset,
@@ -2960,13 +2960,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if cf.columns:
             self.draw_vertical_scrollbar(painter,
                 left=CXP+OFFSET_FROM_CENTER,
-                width=WIDTH,
+                width=SCROLLBAR_WIDTH,
                 content_height=max(col.height for col in cf.columns),
                 viewframe_height=self.rect().height(),
                 track_rect=QRect(
                     CXP+OFFSET_FROM_CENTER,
                     VERTICAL_OFFSET,
-                    WIDTH,
+                    SCROLLBAR_WIDTH,
                     self.rect().height()-VERTICAL_OFFSET*2
                 ),
                 offset=cf.previews_scroll_offset,
