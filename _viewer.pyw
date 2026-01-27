@@ -122,7 +122,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     CORNER_BUTTON_RADIUS = 50
 
     LIBRARY_FOLDER_ITEM_HEIGHT = 140
-    TOP_FIELD_HEIGHT = BOTTOM_FIELD_HEIGHT = 0
 
     hint_text = ""
     secret_hints_list = []
@@ -2033,33 +2032,33 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         right_column = QRect(self.rect())
         right_column.setRight(int(self.rect().width()/2))
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
+        VIEWPORT_HEIGHT = self.rect().height()
+
+        def apply_scroll_and_limits(offset, content_height):
+            offset += int(scroll_value*200)
+            max_offset = content_height-VIEWPORT_HEIGHT
+            # ограничение при скроле в самом низу списка
+            offset = max(-max_offset, offset)
+            # ограничение при скроле в самому верху списка
+            offset = min(0, offset)
+            return offset
+
         if right_column.contains(curpos):
             content_height = self.library_page_folders_content_height()
-            _offset = LibraryData().folderslist_scroll_offset
-            if content_height > self.rect().height():
-                _offset += int(scroll_value*200)
-                # вычитаем видимую часть из высоты всего контента
-                content_height -= self.rect().height()
-                # задаём отступ внизу списка
-                content_height += self.BOTTOM_FIELD_HEIGHT
-                # ограничение при скроле в самом низу списка
-                _offset = max(-content_height, _offset)
-                # ограничение при скроле в самому верху списка
-                # и задаём отступ вверху списка
-                _offset = min(self.TOP_FIELD_HEIGHT, _offset)
-                LibraryData().folderslist_scroll_offset = _offset
+            if content_height > VIEWPORT_HEIGHT:
+                LibraryData().folderslist_scroll_offset = apply_scroll_and_limits(
+                                                            LibraryData().folderslist_scroll_offset,
+                                                            content_height
+                                                        )
         else:
             cf = LibraryData().current_folder()
             if cf.columns:
                 content_height = self.library_page_previews_columns_content_height(cf)
-                if content_height > self.rect().height():
-                    cf.previews_scroll_offset += int(scroll_value*200)
-                    content_height -= self.rect().height()
-                    content_height += self.BOTTOM_FIELD_HEIGHT
-                    _offset = cf.previews_scroll_offset
-                    _offset = max(-content_height, _offset)
-                    _offset = min(self.TOP_FIELD_HEIGHT, _offset)
-                    cf.previews_scroll_offset = _offset
+                if content_height > VIEWPORT_HEIGHT:
+                    cf.previews_scroll_offset = apply_scroll_and_limits(
+                                                            cf.previews_scroll_offset,
+                                                            content_height,
+                                                        )
                     self.reset_previews_active_item_on_scrolling(event)
         self.update()
 
