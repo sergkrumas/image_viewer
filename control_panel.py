@@ -1012,7 +1012,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     s_thumb_rect_ = s_thumb_rect
 
                 # если миниатюра помещается в отведённой зоне library_page_rect
-                if library_page_rect.contains(thumb_rect_.center()):
+                if library_page_rect.contains(thumb_rect_.topRight()):
                     highlighted = thumb_rect.contains(cursor_pos)
                     if highlighted and not is_call_from_main_window:
                         self.underMouseImageData = image_data
