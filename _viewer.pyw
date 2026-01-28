@@ -3071,13 +3071,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
-        interactaction_list = self.previews_list = []
+        interaction_list = self.previews_list = []
         columns = cf.columns
         active_item = self.previews_list_active_item
 
         self.draw_previews_as_columns(painter,
                                         columns,
-                                        interactaction_list,
+                                        interaction_list,
                                         active_item, 
                                         right_col_check_rect,
                                         cf.column_width, cf.previews_scroll_offset,
@@ -3116,7 +3116,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.restore()
 
-    def draw_previews_as_columns(self, painter, columns, interactaction_list, active_item, rect, column_width, scroll_offset, any_images):
+    def draw_previews_as_columns(self, painter, columns, interaction_list, active_item, rect, column_width, scroll_offset, any_images):
 
         if columns:
             left = rect.left()
@@ -3133,7 +3133,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     r = QRectF(offset_x, offset_y, w, h)
                     r.adjust(1, 1, -1, -1)
                     painter.drawRect(r) #for images with transparent layer
-                    interactaction_list.append((r, im_data))
+                    interaction_list.append((r, im_data))
                     pixmap = im_data.preview
                     painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
