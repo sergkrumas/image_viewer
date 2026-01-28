@@ -3156,10 +3156,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             painter.setPen(QPen(Qt.white))
             if any_images:
-                text = _("Please wait")
+                self.draw_rounded_framed_progress_label(painter,
+                                            rect.center(),
+                                            _("Please wait"),
+                                            normalized_progress=time.time() % 1.0
+                )
             else:
-                text = _("No images")
-            painter.drawText(rect, Qt.AlignCenter, text)
+                painter.drawText(rect, Qt.AlignCenter, _("No images"))
 
     def draw_library_scrollbars(self, painter):
 
