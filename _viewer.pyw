@@ -301,7 +301,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return False
 
     def over_corner_menu(self, corner_attr):
-        return self.over_corner_button(corner_attr, big=True)
+        return self.over_corner_button(corner_attr, big=True) and self.corner_menu[corner_attr]
 
     def is_top_right_menu_visible(self):
         return self.corner_menu[self.InteractiveCorners.TOPRIGHT]
