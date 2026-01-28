@@ -241,7 +241,7 @@ def mouseMoveEvent(self, event):
 
     else:
         self.board_mouseMoveEventDefault(event)
-    if not self.corner_buttons_cursor_glitch_fixer():
+    if not self.cursor_corners_buttons_and_menus():
         if _data.center_under_cursor is not None:
             self.setCursor(Qt.PointingHandCursor)
         else:

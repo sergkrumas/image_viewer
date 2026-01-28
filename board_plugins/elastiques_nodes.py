@@ -978,7 +978,7 @@ def mouseMoveEvent(self, event):
         PluginNodeEditor.near_mouse_node = PluginNodeEditor.find_nearest_node()
         PluginNodeEditor.near_mouse_edge = PluginNodeEditor.find_nearest_edge()
 
-    if not self.corner_buttons_cursor_glitch_fixer():
+    if not self.cursor_corners_buttons_and_menus():
         is_over_node = PluginNodeEditor.find_node_under_mouse(event) or PluginNodeEditor.drag_node is not None
         if is_over_node:
             self.setCursor(Qt.PointingHandCursor)
