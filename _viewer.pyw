@@ -2442,7 +2442,67 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return 1.0
 
-    def draw_rounded_frame_label(self, painter, pos, text, bold=False, color=Qt.red):
+    def draw_rounded_framed_progress_label(self, event_painter, pos, text, bold=False, color=Qt.red, normalized_progress=0.0):
+
+        font = event_painter.font()
+        font.setFamily('consolas')
+        if bold:
+            font.setPixelSize(16)
+            font.setWeight(1900)
+            pen_size = 2
+        else:
+            font.setPixelSize(15)
+            pen_size = 1
+
+        style = Qt.AlignVCenter | Qt.AlignHCenter 
+        event_painter.setFont(font)
+        text_rect = event_painter.boundingRect(QRect(), Qt.AlignLeft, text)
+
+        h_offset = 5
+        v_offset = 3
+        main_rect = QRect(0, 0, text_rect.width()+h_offset*2, text_rect.height()+v_offset*2)
+
+        pix = QPixmap(main_rect.width()+1, main_rect.height()+1)
+        pix.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(pix)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        painter.setFont(font)
+
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(main_rect.adjusted(2, 2, -2, -2)), 3, 3)
+
+        pen = QPen(color, pen_size)
+        painter.setPen(pen)
+
+        painter.setClipping(True)
+        painter.setClipPath(path)
+
+        rr = QRectF(QPointF(0, 0), QSizeF(pix.size()))
+        rr.setWidth(rr.width()*normalized_progress)
+        painter.setBrush(QBrush(color))
+        painter.setPen(Qt.NoPen)
+        painter.drawRect(rr)
+
+        painter.setClipping(False)
+
+        painter.setPen(pen)
+
+        cm = painter.compositionMode()
+        painter.setCompositionMode(QPainter.CompositionMode_SourceOut)
+        painter.drawText(QRect(QPoint(0, 0), main_rect.size()), style, text)
+        painter.setCompositionMode(cm)
+
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPath(path)
+
+        painter.end()
+
+        event_painter.drawPixmap(pos, pix)
+
+    def draw_rounded_framed_label(self, painter, pos, text, bold=False, color=Qt.red):
         painter.save()
 
         font = painter.font()
