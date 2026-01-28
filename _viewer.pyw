@@ -3126,18 +3126,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             main_offset_y = 20 + scroll_offset
             for n, col in enumerate(columns):
                 offset_x = left + column_width*n
-                offset_x = int(offset_x)
                 offset_y = main_offset_y
-                offset_y = int(offset_y)
                 for im_data in col.images:
                     w = im_data.preview_size.width()
                     h = im_data.preview_size.height()
-                    r = QRect(offset_x, offset_y, w, h)
+                    r = QRectF(offset_x, offset_y, w, h)
                     r.adjust(1, 1, -1, -1)
                     painter.drawRect(r) #for images with transparent layer
                     interactaction_list.append((r, im_data))
                     pixmap = im_data.preview
-                    painter.drawPixmap(r, pixmap)
+                    painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
 
             if active_item:
