@@ -738,6 +738,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.board_TextElementDeactivateEditMode()
         self.change_page(next_page)
 
+    def change_page_to_viewer_page_at_appstart(self):
+        # для того, чтобы после старта программы во время загрузки
+        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница;
+        # вместо вызова MW.change_page(MW.pages.VIEWER_PAGE)
+        # пришлось вытащить из неё же код сюда. Пока я не понял почему change_page не работает как надо
+        self.current_page = self.pages.VIEWER_PAGE
+        self.update_other_pages_list()
+        self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
+        self.viewer_reset() # для показа сообщения о загрузке
+
     def change_page(self, requested_page, force=False):
         # if self.is_viewer_page_active() and page == self.pages.LIBRARY_PAGE:
         #     self.prepare_library_page()
@@ -802,9 +812,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             LibraryData().load_board_data()
 
 
-
-        if self.current_page == self.pages.START_PAGE and requested_page == self.pages.VIEWER_PAGE:
-            self.restore_image_transformations()
+        if self.current_page == self.pages.START_PAGE:
+            if requested_page == self.pages.VIEWER_PAGE:
+                self.restore_image_transformations()
 
         self.update_control_panel_label_text()
 
@@ -4901,13 +4911,7 @@ def _main():
         MW.current_page = MW.pages.START_PAGE
         MW.update()
     else:
-        # для того, чтобы после старта программы во время загрузки
-        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница;
-        # вместо вызова MW.change_page(MW.pages.VIEWER_PAGE)
-        # пришлось вытащить из неё же код сюда
-        MW.current_page = MW.pages.VIEWER_PAGE
-        MW.recreate_control_panel(requested_page=MW.pages.VIEWER_PAGE)
-        MW.viewer_reset() # для показа сообщения о загрузке
+        MW.change_page_to_viewer_page_at_appstart()
         MW.update()
     processAppEvents()
 
