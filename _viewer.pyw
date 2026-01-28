@@ -749,10 +749,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.viewer_reset() # для показа сообщения о загрузке
 
     def change_page(self, requested_page, force=False):
-        # if self.is_viewer_page_active() and page == self.pages.LIBRARY_PAGE:
-        #     self.prepare_library_page()
-        # if self.is_library_page_active() and page == self.pages.VIEWER_PAGE:
-        #     self.prepare_viewer_page()
         CP = Globals.control_panel
 
         def cancel_fullscreen_on_control_panel():
