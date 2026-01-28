@@ -899,7 +899,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     return
 
         folder_data.previews_done = True
-        folder_data.create_library_columns(6, Globals.PREVIEW_WIDTH, thread_instance=thread_instance)
+        folder_data.create_previews_columns(6, Globals.PREVIEW_WIDTH, thread_instance=thread_instance)
 
     @classmethod
     def update_folder_columns(cls, folder_data):
@@ -908,7 +908,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             column_space = Globals.main_window.rect().width()/2
             count = int(column_space/Globals.PREVIEW_WIDTH)
             count = max(count, 1)
-            folder_data.create_library_columns(count, Globals.PREVIEW_WIDTH)
+            folder_data.create_previews_columns(count, Globals.PREVIEW_WIDTH)
 
     @classmethod
     def update_current_folder_columns(cls):
@@ -1463,7 +1463,7 @@ class FolderData():
                 ico.addPixmap(QPixmap(path))
                 return ico.pixmap(QSize(50, 50))
 
-    def create_library_columns(self, columns_count, preview_width, thread_instance=None):
+    def create_previews_columns(self, columns_count, preview_width, thread_instance=None):
         if self.images_list:
             columns = []
             for i in range(columns_count):
