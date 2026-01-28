@@ -1320,6 +1320,9 @@ class FolderData():
         self.viewed_list = []
         self._images_list_selected = list()
 
+        self.previews_scroll_offset = 0
+        self.column_width = 0
+
         self.sort_type = "original"
         self.sort_type_reversed = False
 

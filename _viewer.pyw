@@ -2999,13 +2999,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.save()
         set_font(painter)
 
-        CENTER_OFFSET = 80
+        CENTER_OFFSET = 50
         CENTER_X_POSITION = self.get_center_x_position()
 
-        # left column
         LEFT_COL_WIDTH = CENTER_X_POSITION-CENTER_OFFSET
         left_col_check_rect = QRect(0, 0, LEFT_COL_WIDTH, self.rect().height())
 
+        RIGHT_COLUMN_LEFT = CENTER_X_POSITION+CENTER_OFFSET
+        RIGHT_COLUMN_WIDTH = self.rect().width() - RIGHT_COLUMN_LEFT
+        right_col_check_rect = QRect(RIGHT_COLUMN_LEFT, 0, RIGHT_COLUMN_WIDTH, self.rect().height())
+
+        if Globals.DEBUG:
+            painter.save()
+            painter.setPen(QPen(Qt.white))
+            for r in [left_col_check_rect, right_col_check_rect]:
+                painter.drawLine(r.topLeft(), r.bottomRight())
+                painter.drawLine(r.bottomLeft(), r.topRight())
+            painter.restore()
+
+        cf = LibraryData().current_folder()
+
+        # left column
         scroll_offset = LibraryData().folderslist_scroll_offset
         self.folders_list = []
         for n, folder_data in enumerate(LibraryData().all_folders()):
@@ -3018,7 +3032,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 LEFT_COL_WIDTH, int(thumb_ui_size+20)
             )
             self.folders_list.append((item_rect, folder_data))
-            if LibraryData().current_folder() == folder_data:
+            if cf == folder_data:
                 painter.setOpacity(0.3)
                 painter.setBrush(QBrush(QColor(0xFF, 0xA0, 0x00)))
                 painter.drawRect(item_rect)
@@ -3051,27 +3065,67 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             y = (tw - h)/2
             source_rect = QRectF(QPointF(x, y), QSizeF(thumb_size, thumb_size)).toRect()
             painter.drawPixmap(target, thumb or Globals.NULL_PIXMAP, source_rect)
+        # left column end
 
+        # right column
         painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
-        # right column
-        self.previews_list = []
-        RIGHT_COLUMN_LEFT = CENTER_X_POSITION+CENTER_OFFSET
-        RIGHT_COLUMN_WIDTH = self.rect().width() - RIGHT_COLUMN_LEFT
-        right_col_check_rect = QRect(RIGHT_COLUMN_LEFT, 0, RIGHT_COLUMN_WIDTH,
-                                                                        self.rect().height())
-        cf = LibraryData().current_folder()
+        interactaction_list = self.previews_list = []
         columns = cf.columns
+        active_item = self.previews_list_active_item
+
+        self.draw_previews_as_columns(painter,
+                                        columns,
+                                        interactaction_list,
+                                        active_item, 
+                                        right_col_check_rect,
+                                        cf.column_width, cf.previews_scroll_offset,
+                                        bool(cf.images_list)
+                                    )
+
+        if columns and active_item:
+            item_rect, item_data = active_item
+            if not hasattr(item_data, "library_page_cached_version"):
+                item_data.library_page_cached_version = load_image_respect_orientation(
+                    item_data.filepath,
+                    highres_svg=LibraryData().is_svg_file(item_data.filepath)
+                )
+            cached = item_data.library_page_cached_version
+            if cached:
+                source_rect = cached.rect()
+                main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
+                projected = fit_rect_into_rect(source_rect, main_rect)
+                painter.setOpacity(0.8)
+                painter.drawRect(main_rect)
+                painter.setOpacity(1.0)
+                if cached.width() != 0:
+                    painter.drawPixmap(projected, cached, source_rect)
+                else:
+                    painter.setPen(QPen(Qt.white))
+                    _error_msg = _("Error")
+                    painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{item_data.filename}')
+        # right column end
+
+        self.draw_middle_line(painter)
+
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+
+        self.draw_library_scrollbars(painter)
+
+        painter.restore()
+
+    def draw_previews_as_columns(self, painter, columns, interactaction_list, active_item, rect, column_width, scroll_offset, any_images):
+
         if columns:
-            column_width = cf.column_width
+            left = rect.left()
             painter.setPen(QPen(QColor(Qt.gray)))
-            offset = (self.rect().width()/2 - column_width*len(columns))/2
             painter.setBrush(QBrush(Qt.black))
             painter.setPen(Qt.NoPen)
-            main_offset_y = 20 + cf.previews_scroll_offset
+            main_offset_y = 20 + scroll_offset
             for n, col in enumerate(columns):
-                offset_x = self.rect().width()/2 + column_width*n + offset
+                offset_x = left + column_width*n
                 offset_x = int(offset_x)
                 offset_y = main_offset_y
                 offset_y = int(offset_y)
@@ -3081,13 +3135,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     r = QRect(offset_x, offset_y, w, h)
                     r.adjust(1, 1, -1, -1)
                     painter.drawRect(r) #for images with transparent layer
-                    self.previews_list.append((r, im_data))
+                    interactaction_list.append((r, im_data))
                     pixmap = im_data.preview
                     painter.drawPixmap(r, pixmap)
                     offset_y += h
 
-            if self.previews_list_active_item:
-                item_rect, item_data = self.previews_list_active_item
+            if active_item:
+                item_rect, item_data = active_item
                 item_rect = self.previews_active_item_rect(item_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
                 draw_shadow(
@@ -3099,40 +3153,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 )
                 painter.drawPixmap(item_rect, item_data.preview)
 
-                if not hasattr(item_data, "library_cache_version"):
-                    highres_svg = LibraryData().is_svg_file(item_data.filepath)
-                    item_data.library_cache_version = load_image_respect_orientation(
-                                        item_data.filepath, highres_svg=highres_svg)
-                cached = item_data.library_cache_version
-                if cached:
-                    source_rect = cached.rect()
-                    main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
-                    projected = fit_rect_into_rect(source_rect, main_rect)
-                    painter.setOpacity(0.8)
-                    painter.drawRect(main_rect)
-                    painter.setOpacity(1.0)
-                    if cached.width() != 0:
-                        painter.drawPixmap(projected, cached, source_rect)
-                    else:
-                        painter.setPen(QPen(Qt.white))
-                        _error_msg = _("Error")
-                        painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{item_data.filename}')
         else:
-            painter.setPen(QPen(QColor(Qt.white)))
-            if LibraryData().current_folder().images_list:
+            painter.setPen(QPen(Qt.white))
+            if any_images:
                 text = _("Please wait")
             else:
                 text = _("No images")
-            painter.drawText(right_col_check_rect, Qt.AlignCenter, text)
-
-        self.draw_middle_line(painter)
-
-        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-
-        self.draw_library_scrollbars(painter)
-
-        painter.restore()
+            painter.drawText(rect, Qt.AlignCenter, text)
 
     def draw_library_scrollbars(self, painter):
 
