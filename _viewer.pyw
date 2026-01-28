@@ -4256,7 +4256,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 if sb_index == vs.NO_SCROLLBAR:
                     self.autoscroll_finish()
                 else:
-                    self.autoscroll_do_for_library_page_parts(velocity_vec.y())
+                    self.autoscroll_do_for_library_page_parts(velocity_vec.y()/8.0)
         self.update()
 
     def autoscroll_intro_for_library_page_parts(self, scrollbar_index):
@@ -4333,8 +4333,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self._autoscroll_is_moved_while_middle_button_pressed = True
 
     def autoscroll_middleMouseReleaseEvent(self):
-        if not self._autoscroll_desactivation_pass:
-            if not self._autoscroll_is_moved_while_middle_button_pressed:
+        if self.is_board_page_active():
+            if not self._autoscroll_desactivation_pass:
+                if not self._autoscroll_is_moved_while_middle_button_pressed:
+                    self.autoscroll_start()
+        elif self.is_library_page_active():
+            if not self._autoscroll_desactivation_pass:
                 self.autoscroll_start()
         self._autoscroll_is_moved_while_middle_button_pressed = False
 
