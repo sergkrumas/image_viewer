@@ -260,9 +260,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif corner_attr == self.InteractiveCorners.TOPRIGHT:
             return self.rect().topRight()
 
-    def get_corner_button_rect(self, corner_attr, big=False):
+    def get_corner_button_rect(self, corner_attr, menu_mode=False):
         corner_pos = self.get_corner_pos(corner_attr)
-        n = 4 if big else 1
+        n = 4 if menu_mode else 1
         radius = self.CORNER_BUTTON_RADIUS*n
         btn_rect = QRectF(
             corner_pos.x() - radius,
@@ -272,13 +272,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         ).toRect()
         return btn_rect
 
-    def over_corner_button(self, corner_attr, big=False):
-        btn_rect = self.get_corner_button_rect(corner_attr, big=big)
+    def over_corner_button(self, corner_attr, menu_mode=False):
+        btn_rect = self.get_corner_button_rect(corner_attr, menu_mode=menu_mode)
         corner_pos = self.get_corner_pos(corner_attr)
         diff = corner_pos - self.mapped_cursor_pos()
         distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
-        n = 4 if big else 1
+        n = 4 if menu_mode else 1
         case1 = distance < self.CORNER_BUTTON_RADIUS*n
         case2 = client_area.contains(self.mapped_cursor_pos())
         return case2 and case1
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return False
 
     def over_corner_menu(self, corner_attr):
-        return self.over_corner_button(corner_attr, big=True) and self.corner_menu[corner_attr]
+        return self.over_corner_button(corner_attr, menu_mode=True) and self.corner_menu[corner_attr]
 
     def is_top_right_menu_visible(self):
         return self.corner_menu[self.InteractiveCorners.TOPRIGHT]
@@ -356,12 +356,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_corner_menu(self, painter, corner_attr):
 
-        btn_rect = self.get_corner_button_rect(corner_attr, big=True)
+        btn_rect = self.get_corner_button_rect(corner_attr, menu_mode=True)
 
         # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно. 
         if self.over_corner_button(corner_attr):
             self.corner_menu[corner_attr] = True
-        elif not self.over_corner_button(corner_attr, big=True):
+        elif not self.over_corner_button(corner_attr, menu_mode=True):
             self.corner_menu[corner_attr] = False
 
         if not self.corner_menu[corner_attr]:
