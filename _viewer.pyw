@@ -2662,6 +2662,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # draw darkened translucent background
         if self.frameless_mode:
+            # TODO: это не помешало бы задавать в change_page, а тут только читать значение
             if self.is_library_page_active():
                 painter.setOpacity(self.STNG_library_page_transparency)
             elif self.is_board_page_active():
