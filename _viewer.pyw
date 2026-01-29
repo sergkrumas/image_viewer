@@ -1817,14 +1817,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             cursor_not_over_image = not self.is_cursor_over_image()
             not_ctrl_pressed = not self.isLeftClickAndCtrl(event)
 
-            cases = (
+            conditions = (
                 ready_to_view,
                 cursor_not_over_image,
                 self.frameless_mode,
                 self.STNG_doubleclick_toggle,
                 not self.isLeftClickAndCtrl(event),
             )
-            if all(cases):
+            if all(conditions):
                 self.toggle_to_frame_mode()
 
 
