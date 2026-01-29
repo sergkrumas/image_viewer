@@ -244,7 +244,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         self._current_folder = self.folders[self._index]
         # self.after_current_image_changed()
         MW = self.globals.main_window
-        MW.previews_list_active_item = None
+        MW.library_previews_list_active_item = None
+        MW.waterfall_previews_list_active_item = None
         MW.library_page_scroll_autoset_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
@@ -291,7 +292,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         self._current_folder = self.folders[self._index]
         # self.after_current_image_changed()
         MW = self.globals.main_window
-        MW.previews_list_active_item = None
+        MW.library_previews_list_active_item = None
+        MW.waterfall_previews_list_active_item = None
         MW.library_page_scroll_autoset_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
@@ -900,15 +902,31 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         folder_data.previews_done = True
         folder_data.create_previews_columns(6, Globals.PREVIEW_WIDTH, thread_instance=thread_instance)
+        folder_data.create_previews_columns(12, Globals.PREVIEW_WIDTH, thread_instance=thread_instance, waterfall=True)
 
     @classmethod
     def update_folder_columns(cls, folder_data):
         Globals = LibraryData().globals
-        if folder_data and folder_data.previews_done:
-            column_space = Globals.main_window.rect().width()/2
-            count = int(column_space/Globals.PREVIEW_WIDTH)
+        SCROLLBAR_WIDTH = 10
+        library_width = Globals.main_window.rect().width()
+        # вычитаем место для скроллбаров, чтобы они всегда помещались
+        waterfall_width = Globals.main_window.rect().width() - SCROLLBAR_WIDTH*10
+
+        def get_column_count_based_on_width(columns_space):
+            count = int(columns_space/Globals.PREVIEW_WIDTH)
             count = max(count, 1)
-            folder_data.create_previews_columns(count, Globals.PREVIEW_WIDTH)
+            return count
+
+        if folder_data and folder_data.previews_done:
+            folder_data.create_previews_columns(
+                get_column_count_based_on_width(library_width/2),
+                Globals.PREVIEW_WIDTH,
+            )
+            folder_data.create_previews_columns(
+                get_column_count_based_on_width(waterfall_width),
+                Globals.PREVIEW_WIDTH,
+                waterfall=True,
+            )
 
     @classmethod
     def update_current_folder_columns(cls):
@@ -1320,7 +1338,8 @@ class FolderData():
         self.viewed_list = []
         self._images_list_selected = list()
 
-        self.previews_scroll_offset = 0
+        self.library_previews_scroll_offset = 0
+        self.waterfall_previews_scroll_offset = 0
         self.column_width = 0
 
         self.sort_type = "original"
@@ -1345,7 +1364,8 @@ class FolderData():
                 # raise Exception("Should never happen")
         else:
             self._index = 0
-        self.columns = []
+        self.library_columns = []
+        self.waterfall_columns = []
 
     modifiers_attrs = [
         'deep_scan',
@@ -1463,7 +1483,7 @@ class FolderData():
                 ico.addPixmap(QPixmap(path))
                 return ico.pixmap(QSize(50, 50))
 
-    def create_previews_columns(self, columns_count, preview_width, thread_instance=None):
+    def create_previews_columns(self, columns_count, preview_width, thread_instance=None, waterfall=False):
         if self.images_list:
             columns = []
             for i in range(columns_count):
@@ -1480,9 +1500,14 @@ class FolderData():
                 col = choose_min_height_column()
                 col.add_image(image_data)
 
-            self.columns = columns
-            self.previews_scroll_offset = 0
-            self.columns_count = columns_count
+            if waterfall:
+                self.waterfall_columns = columns
+                self.waterfall_previews_scroll_offset = 0
+                self.waterfall_columns_count = columns_count
+            else:
+                self.library_columns = columns
+                self.library_previews_scroll_offset = 0
+                self.library_columns_count = columns_count
         self.column_width = preview_width
 
         if thread_instance is not None:

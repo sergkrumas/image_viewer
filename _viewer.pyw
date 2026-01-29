@@ -140,6 +140,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         VIEWER_PAGE = 2
         BOARD_PAGE = 3
         LIBRARY_PAGE = 4
+        WATERFALL_PAGE = 5
 
         @classmethod
         def all(cls):
@@ -148,6 +149,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 , cls.VIEWER_PAGE
                 , cls.BOARD_PAGE
                 , cls.LIBRARY_PAGE
+                , cls.WATERFALL_PAGE
             ]
 
         @classmethod
@@ -157,6 +159,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 , cls.VIEWER_PAGE: _('VIEWER')
                 , cls.BOARD_PAGE: _('BOARD')
                 , cls.LIBRARY_PAGE: _('LIBRARY')
+                , cls.WATERFALL_PAGE: _('WATERFALL')
             }.get(page_id)
 
     pages.count = len(pages.all())
@@ -178,6 +181,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         NO_SCROLLBAR = -1
         LIBRARY_PAGE_FOLDERS_LIST = 0
         LIBRARY_PAGE_PREVIEWS_LIST = 1
+        WATERFALL_PAGE_LEFT = 2
+        WATERFALL_PAGE_RIGHT = 3
 
         scrollbar_data = type('scrollbar_data', (), {'visible': False})
         data = defaultdict(scrollbar_data)
@@ -189,7 +194,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         def all(cls):
             return [
                     cls.LIBRARY_PAGE_FOLDERS_LIST
-                ,   cls.LIBRARY_PAGE_PREVIEWS_LIST
+                  , cls.LIBRARY_PAGE_PREVIEWS_LIST
+                  , cls.WATERFALL_PAGE_LEFT
+                  , cls.WATERFALL_PAGE_RIGHT
             ]
 
 
@@ -358,7 +365,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         btn_rect = self.get_corner_button_rect(corner_attr, menu_mode=True)
 
-        # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно. 
+        # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно.
         if self.over_corner_button(corner_attr):
             self.corner_menu[corner_attr] = True
         elif not self.over_corner_button(corner_attr, menu_mode=True):
@@ -367,7 +374,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not self.corner_menu[corner_attr]:
             return
 
-        painter.setOpacity(.5)        
+        painter.setOpacity(.5)
 
         if corner_attr == self.InteractiveCorners.TOPLEFT:
             brush_color = Qt.red
@@ -591,8 +598,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.SettingsWindow = SettingsWindow
         SettingsWindow.settings_init(self)
 
-        self.previews_list_active_item = None
-        self.previews_list = None
+        self.library_previews_list_active_item = None
+        self.library_previews_list = None
+
+        self.waterfall_previews_list_active_item = None
+        self.waterfall_previews_list = None
 
         self.region_zoom_in_init()
 
@@ -776,6 +786,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             cancel_fullscreen_on_control_panel()
             LibraryData().save_board_data()
 
+        elif self.current_page == self.pages.WATERFALL_PAGE:
+            # отключать модальный режим презентации здесь
+            pass
+
         self.cancel_all_anim_tasks()
         self.hide_center_label()
 
@@ -784,7 +798,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.library_page_scroll_autoset_or_reset()
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
-            self.previews_list_active_item = None
+            self.library_previews_list_active_item = None
+            for folder_data in LibraryData().folders:
+                images_data = folder_data.images_list
+                ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
+            self.transformations_allowed = False
+
+        elif requested_page == self.pages.WATERFALL_PAGE:
+            LibraryData().update_current_folder_columns()
+            if Globals.control_panel is not None:
+                Globals.control_panel.setVisible(False)
+            self.waterfall_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
                 ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
@@ -1489,16 +1513,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             (event.oldSize().width() - event.size().width())/2,
             (event.oldSize().height() - event.size().height())/2,
         )
+        self.center_comment_window()
 
-        if self.is_library_page_active() or True:
+        if self.is_library_page_active() or self.is_waterfall_page_active():
             LibraryData().update_current_folder_columns()
 
         SettingsWindow.center_if_on_screen()
-        self.center_comment_window()
 
-        self.update()
         # здесь по возможности ещё должен быть и скейл относительно центра.
-        # self.update()
+        self.update()
 
     def threads_info_watcher(self):
         keys = []
@@ -1563,7 +1586,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 pass
 
             elif self.is_library_page_active():
-                if self.previews_list_active_item:
+                if self.library_previews_list_active_item:
+                    self.setCursor(Qt.PointingHandCursor)
+                else:
+                    self.setCursor(Qt.ArrowCursor)
+
+            elif self.is_waterfall_page_active():
+                if self.waterfall_previews_list_active_item:
                     self.setCursor(Qt.PointingHandCursor)
                 else:
                     self.setCursor(Qt.ArrowCursor)
@@ -1677,6 +1706,46 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.is_top_right_menu_visible():
                 self.showMinimized()
 
+    def previews_list_mousePressEvent(self, event):
+        p_list = None
+        if self.is_library_page_active():
+            p_list = self.library_previews_list
+
+        elif self.is_waterfall_page_active():
+            p_list = self.waterfall_previews_list
+
+        if p_list:
+            for item_rect, item_data in p_list:
+                if item_rect.contains(event.pos()):
+                    LibraryData().show_that_imd_on_viewer_page(item_data)
+                    break
+
+    def previews_list_mouseMoveEvent(self, event):
+        p_list = None
+        if self.is_library_page_active():
+            p_list = self.library_previews_list
+            ai = self.library_previews_list_active_item
+        elif self.is_waterfall_page_active():
+            p_list = self.waterfall_previews_list
+            ai = self.waterfall_previews_list_active_item
+
+        def set_active_item(data):
+            if self.is_library_page_active():
+                self.library_previews_list_active_item = data
+            elif self.is_waterfall_page_active():
+                self.waterfall_previews_list_active_item = data
+
+        if p_list:
+            over_active_item = False
+            if ai:
+                r = self.previews_active_item_rect(ai[0])
+                over_active_item = r.contains(event.pos())
+            if not over_active_item:
+                set_active_item(None)
+                for item_rect, item_data in p_list:
+                    if item_rect.contains(event.pos()):
+                        set_active_item((item_rect, item_data))
+
     def mousePressEvent(self, event):
 
         self.context_menu_allowed = True
@@ -1698,10 +1767,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.update()
 
         elif self.is_library_page_active():
-
             if event.button() == Qt.LeftButton:
-
                 if not self.clickable_scrollbars_mousePressEvent(event):
+                    self.previews_list_mousePressEvent(event)
 
                     if self.folders_list:
                         for item_rect, item_data in self.folders_list:
@@ -1710,11 +1778,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                 LibraryData().make_folder_current(item_data)
                                 break
 
-                    if self.previews_list:
-                        for item_rect, item_data in self.previews_list:
-                            if item_rect.contains(event.pos()):
-                                LibraryData().show_that_imd_on_viewer_page(item_data)
-                                break
+            if event.button() == Qt.MiddleButton:
+                self.autoscroll_middleMousePressEvent(event)
+
+        elif self.is_waterfall_page_active():
+            if event.button() == Qt.LeftButton:
+                if not self.clickable_scrollbars_mousePressEvent(event):
+                    self.previews_list_mousePressEvent(event)
 
             if event.button() == Qt.MiddleButton:
                 self.autoscroll_middleMousePressEvent(event)
@@ -1817,17 +1887,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
-                if self.previews_list:
-                    ai = self.previews_list_active_item
-                    over_active_item = False
-                    if ai:
-                        r = self.previews_active_item_rect(ai[0])
-                        over_active_item = r.contains(event.pos())
-                    if not over_active_item:
-                        self.previews_list_active_item = None
-                        for item_rect, item_data in self.previews_list:
-                            if item_rect.contains(event.pos()):
-                                self.previews_list_active_item = (item_rect, item_data)
+                self.previews_list_mouseMoveEvent(event)
+
             if event.buttons() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseMoveEvent(event)
 
@@ -1835,8 +1896,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.autoscroll_middleMouseMoveEvent()
 
 
+        elif self.is_waterfall_page_active():
+            if event.buttons() == Qt.NoButton:
+                self.previews_list_mouseMoveEvent(event)
 
+            if event.buttons() == Qt.LeftButton:
+                self.clickable_scrollbars_mouseMoveEvent(event)
 
+            if event.buttons() == Qt.MiddleButton:
+                self.autoscroll_middleMouseMoveEvent()
 
 
         self.update()
@@ -1887,6 +1955,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if event.button() == Qt.MiddleButton:
                 self.autoscroll_middleMouseReleaseEvent()
 
+        elif self.is_waterfall_page_active():
+            if event.button() == Qt.LeftButton:
+                self.clickable_scrollbars_mouseReleaseEvent(event)
+
+            if event.button() == Qt.MiddleButton:
+                self.autoscroll_middleMouseReleaseEvent()
 
 
 
@@ -1960,7 +2034,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 factor = y_pos/thumb_slide_length
 
-            VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
 
             # в этой версии ограничители нормализованы,
             # поэтому и появились значения 0.0 и 1.0
@@ -1968,18 +2041,25 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             factor = min(1.0, factor)
 
             # кстати, сами скроллбары (sb_data.thumb_rect) мы тут не перемещаем и не обновляем,
-            # ведь они обновятся сами после изменения переменных 
+            # ведь они обновятся сами после изменения переменных
             # типа `X_scroll_offset` и последующей отрисовки в paintEvent
+            cf = LibraryData().current_folder()
+            LIBRARY_VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+            WATERFALL_VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
             if index == vs.LIBRARY_PAGE_FOLDERS_LIST:
-                slide_content_height = self.library_page_folders_content_height()-VIEWFRAME_HEIGHT
+                slide_content_height = self.library_page_folders_content_height()-LIBRARY_VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
                 LibraryData().folderslist_scroll_offset = -offset
 
             elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
-                cf = LibraryData().current_folder()
-                slide_content_height = self.library_page_previews_columns_content_height(cf)-VIEWFRAME_HEIGHT
+                slide_content_height = self.library_page_previews_columns_content_height(cf)-LIBRARY_VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
-                cf.previews_scroll_offset = -offset
+                cf.library_previews_scroll_offset = -offset
+
+            elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
+                slide_content_height = self.waterfall_page_previews_columns_content_height(cf)-WATERFALL_VIEWFRAME_HEIGHT
+                offset = factor*slide_content_height
+                cf.waterfall_previews_scroll_offset = -offset
 
             self.update()
 
@@ -2122,13 +2202,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return height
 
     def library_page_previews_columns_content_height(self, folder_data):
-        height = max(col.height for col in folder_data.columns)
+        height = max(col.height for col in folder_data.library_columns)
         # сюда тоже добавляем высоту айтема папки, хоть эта часть не про папки, а про превьюшки
         # в итоге получится пустое поле внизу списка
         height += self.LIBRARY_FOLDER_ITEM_HEIGHT
         return height
 
     def library_page_viewframe_height(self):
+        return self.rect().height()
+
+    def waterfall_page_previews_columns_content_height(self, folder_data):
+        height = max(col.height for col in folder_data.waterfall_columns)
+        # сюда тоже добавляем высоту айтема папки, хоть эта часть не про папки, а про превьюшки
+        # в итоге получится пустое поле внизу списка
+        height += self.LIBRARY_FOLDER_ITEM_HEIGHT
+        return height
+
+    def waterfall_page_viewframe_height(self):
         return self.rect().height()
 
     def library_page_scroll_autoset_or_reset(self):
@@ -2168,43 +2258,74 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         offset = min(0, offset)
         return offset
 
-    def wheelEventLibraryMode(self, scroll_value, event):
-        H = self.LIBRARY_FOLDER_ITEM_HEIGHT
-        VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+    def previews_list_folder_list_wheelEvent(self, scroll_value, event):
         offset_delta = int(scroll_value*200)
 
-        if self.library_page_is_inside_left_part():
-            content_height = self.library_page_folders_content_height()
-            if content_height > VIEWFRAME_HEIGHT:
-                LibraryData().folderslist_scroll_offset = self.apply_scroll_and_limits(
-                                                            LibraryData().folderslist_scroll_offset,
-                                                            offset_delta,
-                                                            content_height,
-                                                            VIEWFRAME_HEIGHT,
-                                                        )
-        else:
-            cf = LibraryData().current_folder()
-            if cf.columns:
-                content_height = self.library_page_previews_columns_content_height(cf)
+        if self.is_library_page_active():
+            VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+
+            if self.library_page_is_inside_left_part():
+                content_height = self.library_page_folders_content_height()
                 if content_height > VIEWFRAME_HEIGHT:
-                    cf.previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.previews_scroll_offset,
+                    LibraryData().folderslist_scroll_offset = self.apply_scroll_and_limits(
+                                                                LibraryData().folderslist_scroll_offset,
+                                                                offset_delta,
+                                                                content_height,
+                                                                VIEWFRAME_HEIGHT,
+                                                            )
+            else:
+                cf = LibraryData().current_folder()
+                if cf.library_columns:
+                    content_height = self.library_page_previews_columns_content_height(cf)
+                    if content_height > VIEWFRAME_HEIGHT:
+                        cf.library_previews_scroll_offset = self.apply_scroll_and_limits(
+                                                                cf.library_previews_scroll_offset,
+                                                                offset_delta,
+                                                                content_height,
+                                                                VIEWFRAME_HEIGHT,
+                                                            )
+                        self.reset_previews_active_item_on_scrolling(event)
+
+        elif self.is_waterfall_page_active():
+            VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
+            cf = LibraryData().current_folder()
+            if cf.waterfall_columns:
+                content_height = self.waterfall_page_previews_columns_content_height(cf)
+                if content_height > VIEWFRAME_HEIGHT:
+                    cf.waterfall_previews_scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.waterfall_previews_scroll_offset,
                                                             offset_delta,
                                                             content_height,
                                                             VIEWFRAME_HEIGHT,
                                                         )
                     self.reset_previews_active_item_on_scrolling(event)
+
         self.update()
 
     def reset_previews_active_item_on_scrolling(self, event):
         current_item = None
-        for item_rect, item_data in self.previews_list:
-            if item_rect.contains(event.pos()):
-                current_item = (item_rect, item_data)
-        if current_item != self.previews_list_active_item:
-            # обнуляем выделенную мышкой превьюшку,
-            # если под мышкой уже находится другая превьюшка
-            self.previews_list_active_item = None
+        p_list = None
+        if self.is_library_page_active():
+            p_list = self.library_previews_list
+            active_item = self.library_previews_list_active_item
+        elif self.is_waterfall_page_active():
+            p_list = self.waterfall_previews_list
+            active_item = self.waterfall_previews_list_active_item
+
+        def reset():
+            if self.is_library_page_active():
+                self.library_previews_list_active_item = None
+            elif self.is_waterfall_page_active():
+                self.waterfall_previews_list_active_item = None
+
+        if p_list:
+            for item_rect, item_data in p_list:
+                if item_rect.contains(event.pos()):
+                    current_item = (item_rect, item_data)
+            if current_item != active_item:
+                # обнуляем выделенную мышкой превьюшку,
+                # если под мышкой уже находится другая превьюшка
+                reset()
 
     def is_control_panel_under_mouse(self):
         if Globals.control_panel is not None:
@@ -2232,7 +2353,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         elif self.is_library_page_active():
-            self.wheelEventLibraryMode(scroll_value, event)
+            self.previews_list_folder_list_wheelEvent(scroll_value, event)
+
+        elif self.is_waterfall_page_active():
+            self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
         elif self.is_viewer_page_active():
 
@@ -2462,7 +2586,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             font.setPixelSize(15)
             pen_size = 1
 
-        style = Qt.AlignVCenter | Qt.AlignHCenter 
+        style = Qt.AlignVCenter | Qt.AlignHCenter
         event_painter.setFont(font)
         text_rect = event_painter.boundingRect(QRect(), Qt.AlignLeft, text)
 
@@ -2673,6 +2797,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.setOpacity(self.STNG_viewer_page_transparency)
             elif self.is_start_page_active():
                 painter.setOpacity(self.STNG_start_page_transparency)
+            elif self.is_waterfall_page_active():
+                painter.setOpacity(self.STNG_waterfall_page_transparency)
 
             painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
             painter.drawRect(self.rect())
@@ -2694,6 +2820,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
             self.board_draw(painter, event)
+
+        elif self.is_waterfall_page_active():
+            self.draw_waterfall(painter, event)
 
         self.autoscroll_draw(painter)
 
@@ -2747,6 +2876,40 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.setOpacity(value)
                     painter.drawRect(rect)
             painter.setOpacity(1.0)
+
+    def draw_waterfall(self, painter, event):
+
+        cf = LibraryData().current_folder()
+
+        interaction_list = self.waterfall_previews_list = []
+        columns = cf.waterfall_columns
+        active_item = self.waterfall_previews_list_active_item
+
+        r = content_rect = self.rect()
+
+        if columns:
+            content_width = cf.waterfall_columns_count*cf.column_width
+
+            left_offset = (self.rect().width()-content_width)/2
+            content_rect = QRectF(left_offset, 0, content_width, r.height()).toRect()
+
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+        painter.setRenderHint(QPainter.Antialiasing, False)
+
+        self.draw_previews_as_columns(painter,
+                                        columns,
+                                        interaction_list,
+                                        active_item,
+                                        content_rect,
+                                        cf.column_width, cf.waterfall_previews_scroll_offset,
+                                        bool(cf.images_list)
+                                    )
+
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+
+        if columns:
+            self.draw_waterfall_scrollbars(painter, content_rect)
 
     def draw_startpage(self, painter):
         def set_font_size(size, bold):
@@ -3004,10 +3167,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             font.setWeight(1900)
             font.setFamily("Consolas")
             pr.setFont(font)
-        H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         painter.save()
         set_font(painter)
 
+        H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         CENTER_OFFSET = 50
         CENTER_X_POSITION = self.get_center_x_position()
 
@@ -3080,16 +3243,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
-        interaction_list = self.previews_list = []
-        columns = cf.columns
-        active_item = self.previews_list_active_item
+        interaction_list = self.library_previews_list = []
+        columns = cf.library_columns
+        active_item = self.library_previews_list_active_item
 
         self.draw_previews_as_columns(painter,
                                         columns,
                                         interaction_list,
-                                        active_item, 
+                                        active_item,
                                         right_col_check_rect,
-                                        cf.column_width, cf.previews_scroll_offset,
+                                        cf.column_width, cf.library_previews_scroll_offset,
                                         bool(cf.images_list)
                                     )
 
@@ -3171,26 +3334,70 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 painter.drawText(rect, Qt.AlignCenter, _("No images"))
 
+    def draw_waterfall_scrollbars(self, painter, content_rect):
+
+        SCROLLBAR_WIDTH = 10
+        VERTICAL_OFFSET = 50
+        SCROLLBAR_HEIGHT = self.rect().height()-int(VERTICAL_OFFSET*1.1)
+
+        vs = self.vertical_scrollbars
+        for key, item in vs.data.items():
+            item.visible = False
+
+        curpos = self.mapped_cursor_pos()
+
+        cf = LibraryData().current_folder()
+        viewframe_height = self.waterfall_page_viewframe_height()
+        content_height = self.waterfall_page_previews_columns_content_height(cf)
+
+        offset_times = 4
+        if cf.waterfall_columns:
+            self.draw_vertical_scrollbar(painter,
+                content_height=content_height,
+                viewframe_height=viewframe_height,
+                track_rect=QRect(
+                    content_rect.left()-SCROLLBAR_WIDTH*offset_times,
+                    VERTICAL_OFFSET,
+                    SCROLLBAR_WIDTH,
+                    SCROLLBAR_HEIGHT,
+                ),
+                content_offset=cf.waterfall_previews_scroll_offset,
+                index=vs.WATERFALL_PAGE_LEFT,
+                curpos=curpos,
+            )
+
+            self.draw_vertical_scrollbar(painter,
+                content_height=content_height,
+                viewframe_height=viewframe_height,
+                track_rect=QRect(
+                    content_rect.right()+SCROLLBAR_WIDTH*(offset_times-1),
+                    VERTICAL_OFFSET,
+                    SCROLLBAR_WIDTH,
+                    SCROLLBAR_HEIGHT,
+                ),
+                content_offset=cf.waterfall_previews_scroll_offset,
+                index=vs.WATERFALL_PAGE_RIGHT,
+                curpos=curpos,
+            )
+
     def draw_library_scrollbars(self, painter):
 
         CXP = self.get_center_x_position()
-        SCROLLBAR_WIDTH = 10
         OFFSET_FROM_CENTER = 5
 
+        SCROLLBAR_WIDTH = 10
         VERTICAL_OFFSET = 40
         SCROLLBAR_HEIGHT = self.rect().height()-VERTICAL_OFFSET*2
 
         vs = self.vertical_scrollbars
-        vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible = False
-        vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible = False
+        for key, item in vs.data.items():
+            item.visible = False
 
         curpos = self.mapped_cursor_pos()
 
         viewframe_height = self.library_page_viewframe_height()
 
         self.draw_vertical_scrollbar(painter,
-            left=CXP-(SCROLLBAR_WIDTH+OFFSET_FROM_CENTER),
-            width=SCROLLBAR_WIDTH,
             content_height=self.library_page_folders_content_height(),
             viewframe_height=viewframe_height,
             track_rect=QRect(
@@ -3198,7 +3405,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 VERTICAL_OFFSET,
                 SCROLLBAR_WIDTH,
                 SCROLLBAR_HEIGHT,
-                
+
             ),
             content_offset=LibraryData().folderslist_scroll_offset,
             index=vs.LIBRARY_PAGE_FOLDERS_LIST,
@@ -3206,10 +3413,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         )
 
         cf = LibraryData().current_folder()
-        if cf.columns:
+        if cf.library_columns:
             self.draw_vertical_scrollbar(painter,
-                left=CXP+OFFSET_FROM_CENTER,
-                width=SCROLLBAR_WIDTH,
                 content_height=self.library_page_previews_columns_content_height(cf),
                 viewframe_height=viewframe_height,
                 track_rect=QRect(
@@ -3218,12 +3423,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     SCROLLBAR_WIDTH,
                     SCROLLBAR_HEIGHT,
                 ),
-                content_offset=cf.previews_scroll_offset,
+                content_offset=cf.library_previews_scroll_offset,
                 index=vs.LIBRARY_PAGE_PREVIEWS_LIST,
                 curpos=curpos,
             )
 
-    def draw_vertical_scrollbar(self, painter, left=0, width=10, content_height=1000,
+    def draw_vertical_scrollbar(self, painter, content_height=1000,
                 viewframe_height=100, track_rect=QRect(), content_offset=0.0, index=0, curpos=None):
 
         vs = self.vertical_scrollbars
@@ -3254,7 +3459,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             thumb_y_factor = abs(content_offset)/(content_height-viewframe_height)
             thumb_y = thumb_y_factor*(track_rect.height()-thumb_height)
 
-            thumb_rect = QRectF(left, track_rect.top() + thumb_y, width, thumb_height)
+            thumb_rect = QRectF(track_rect.left(), track_rect.top() + thumb_y, track_rect.width(), thumb_height)
 
             path = QPainterPath()
             path.addRoundedRect(thumb_rect, 5, 5)
@@ -3280,9 +3485,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def previews_active_item_rect(self, rect):
         new_w = rect.width() + 40
-        new_h = int((new_w/rect.width())*rect.height())
-        r = QRect(0, 0, new_w, new_h)
-        r.moveCenter(rect.center())
+        new_h = (new_w/rect.width())*rect.height()
+        r = QRectF(0, 0, new_w, new_h).toRect()
+        r.moveCenter(rect.center().toPoint())
         return r
 
     def draw_content(self, painter):
@@ -3617,6 +3822,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_Down:
                 LibraryData().choose_next_folder()
 
+        elif self.is_waterfall_page_active():
+            pass
+
         elif self.is_board_page_active():
 
             default = True
@@ -3800,6 +4008,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif key == Qt.Key_Delete:
                 LibraryData().delete_current_folder()
             elif check_scancode_for(event, "U"):
+                LibraryData().update_current_folder()
+
+        elif self.is_waterfall_page_active():
+            if check_scancode_for(event, "U"):
                 LibraryData().update_current_folder()
 
         elif self.is_viewer_page_active():
@@ -4323,16 +4535,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self._autoscroll_draw_horizontal = True
         elif self.is_library_page_active():
             self._autoscroll_draw_vertical = True
+        elif self.is_waterfall_page_active():
+            self._autoscroll_draw_vertical = True
 
     def autoscroll_is_scrollbar_available(self):
         vs = self.vertical_scrollbars
-        if self.library_page_is_inside_left_part():
-            # если видно скроллбар, значит есть что прокручивать!
-            if vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible:
-                return vs.LIBRARY_PAGE_FOLDERS_LIST
-        else:
-            if vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible:
-                return vs.LIBRARY_PAGE_PREVIEWS_LIST
+        if self.is_library_page_active():
+            if self.library_page_is_inside_left_part():
+                # если видно скроллбар, значит есть что прокручивать!
+                if vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible:
+                    return vs.LIBRARY_PAGE_FOLDERS_LIST
+            else:
+                if vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible:
+                    return vs.LIBRARY_PAGE_PREVIEWS_LIST
+        elif self.is_waterfall_page_active():
+            # по идее, не важно - левый или правый, но пусть будет левый
+            if vs.data[vs.WATERFALL_PAGE_LEFT].visible:
+                return vs.WATERFALL_PAGE_LEFT
         return vs.NO_SCROLLBAR
 
     def autoscroll_timer(self):
@@ -4347,16 +4566,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             velocity_vec = vec.toPointF()
             if self.is_board_page_active():
                 self.canvas_origin -= velocity_vec/25.0
-            elif self.is_library_page_active():
+            elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars
                 sb_index = self.autoscroll_is_scrollbar_available()
                 if sb_index == vs.NO_SCROLLBAR:
                     self.autoscroll_finish()
                 else:
-                    self.autoscroll_do_for_library_page_parts(velocity_vec.y()/8.0)
+                    self.autoscroll_do_for_LibraryWaterfall_pages(velocity_vec.y()/8.0)
         self.update()
 
-    def autoscroll_intro_for_library_page_parts(self, scrollbar_index):
+    def autoscroll_intro_for_LibraryWaterfall_pages(self, scrollbar_index):
         vs = self.vertical_scrollbars
         sb_data = vs.data[scrollbar_index]
         vs.capture_index = scrollbar_index
@@ -4365,12 +4584,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             vs.captured_scroll_offset = LibraryData().folderslist_scroll_offset
         elif scrollbar_index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
             cf = LibraryData().current_folder()
-            vs.captured_scroll_offset = cf.previews_scroll_offset
+            vs.captured_scroll_offset = cf.library_previews_scroll_offset
 
-    def autoscroll_do_for_library_page_parts(self, velocity_y):
+    def autoscroll_do_for_LibraryWaterfall_pages(self, velocity_y):
         vs = self.vertical_scrollbars
         index = vs.capture_index
-        VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+        LIBRARY_VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+        WATERFALL_VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
         if index != vs.NO_SCROLLBAR:
             sb_data = vs.data[index]
 
@@ -4381,40 +4601,52 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                             LibraryData().folderslist_scroll_offset,
                                                             0,
                                                             content_height,
-                                                            VIEWFRAME_HEIGHT,
+                                                            LIBRARY_VIEWFRAME_HEIGHT,
                                                         )
 
             elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
                 cf = LibraryData().current_folder()
-                cf.previews_scroll_offset -= velocity_y
+                cf.library_previews_scroll_offset -= velocity_y
                 content_height = self.library_page_previews_columns_content_height(cf)
-                cf.previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.previews_scroll_offset,
+                cf.library_previews_scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.library_previews_scroll_offset,
                                                             0,
                                                             content_height,
-                                                            VIEWFRAME_HEIGHT,
+                                                            LIBRARY_VIEWFRAME_HEIGHT,
+                                                        )
+
+
+            elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
+                cf = LibraryData().current_folder()
+                cf.waterfall_previews_scroll_offset -= velocity_y
+                content_height = self.waterfall_page_previews_columns_content_height(cf)
+                cf.waterfall_previews_scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.waterfall_previews_scroll_offset,
+                                                            0,
+                                                            content_height,
+                                                            WATERFALL_VIEWFRAME_HEIGHT,
                                                         )
 
             self.update()
 
-    def autoscroll_outro_for_library_page_parts(self):
+    def autoscroll_outro_for_LibraryWaterfall_pages(self):
         vs = self.vertical_scrollbars
         vs.capture_index = vs.NO_SCROLLBAR
 
     def autoscroll_start(self):
         self._autoscroll_inside_activation_zone = False
         self.autoscroll_set_current_page_indicator()
-        if self.is_library_page_active():
+        if self.is_library_page_active() or self.is_waterfall_page_active():
             sb_index = self.autoscroll_is_scrollbar_available()
             if sb_index != self.vertical_scrollbars.NO_SCROLLBAR:
-                self.autoscroll_intro_for_library_page_parts(sb_index)
+                self.autoscroll_intro_for_LibraryWaterfall_pages(sb_index)
                 self._autoscroll_timer.start()
         else:
             self._autoscroll_timer.start()
 
     def autoscroll_finish(self):
-        if self.is_library_page_active():
-            self.autoscroll_outro_for_library_page_parts()
+        if self.is_library_page_active() or self.is_waterfall_page_active():
+            self.autoscroll_outro_for_LibraryWaterfall_pages()
         self._autoscroll_timer.stop()
 
     def autoscroll_middleMousePressEvent(self, event):
@@ -4434,7 +4666,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if not self._autoscroll_desactivation_pass:
                 if not self._autoscroll_is_moved_while_middle_button_pressed:
                     self.autoscroll_start()
-        elif self.is_library_page_active():
+        elif self.is_library_page_active() or self.is_waterfall_page_active():
             if not self._autoscroll_desactivation_pass:
                 self.autoscroll_start()
         self._autoscroll_is_moved_while_middle_button_pressed = False

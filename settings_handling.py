@@ -524,6 +524,7 @@ class SettingsWindow(QWidget):
             'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
             'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
             'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
+            'waterfall_page_transparency': (0.7, (0.0, 1.0), _('Waterfall page transparent value')),
 
             '---004': _('Slideshow for Viewer page'),
             'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
