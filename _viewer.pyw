@@ -747,6 +747,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_other_pages_list()
         self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
         self.viewer_reset() # для показа сообщения о загрузке
+        # (29 янв 26) может дело в том, что мы принудительно обновляем окно панели управления,
+        # и за это время главное окно успевает появится и отрисоваться со стартовой страницей?
 
     def change_page(self, requested_page, force=False):
         CP = Globals.control_panel
