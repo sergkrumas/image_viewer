@@ -1499,14 +1499,14 @@ class FolderData():
                 ico.addPixmap(QPixmap(path))
                 return ico.pixmap(QSize(50, 50))
 
-    def create_previews_columns(self, columns_count, preview_width, thread_instance=None, waterfall=False):
+    def create_previews_columns(self, number_of_columns, preview_width, thread_instance=None, waterfall=False):
         if self.images_list:
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
-            # columns_count = waterfall_columns_count или columns_count = library_columns_count,
+            # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
             # но при этом содержимое - вполне. Так что no fancy crap, ok.
             columns = []
-            for i in range(columns_count):
+            for i in range(number_of_columns):
                 columns.append(LibraryModeImageColumn())
             def choose_min_height_column():
                 min_height = 100000000000000
@@ -1523,11 +1523,11 @@ class FolderData():
             if waterfall:
                 self.waterfall_columns = columns
                 self.waterfall_previews_scroll_offset = 0
-                self.waterfall_columns_count = columns_count
+                self.waterfall_number_of_columns = number_of_columns
             else:
                 self.library_columns = columns
                 self.library_previews_scroll_offset = 0
-                self.library_columns_count = columns_count
+                self.library_number_of_columns = number_of_columns
         self.column_width = preview_width
 
         if thread_instance is not None:

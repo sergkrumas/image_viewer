@@ -2466,13 +2466,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         setting_value = self.STNG_waterfall_columns_number
         # пока закоментил, потому что не очень интуитивно получается
         # setting_value = self.STNG_waterfall_columns_number
-        if setting_value > cf.waterfall_columns_count:
+        if setting_value > cf.waterfall_number_of_columns:
             value = setting_value
         else:
             if setting_value == 0:
                 value = 0
             else:
-                value = cf.waterfall_columns_count
+                value = cf.waterfall_number_of_columns
         value = int(value)
         value += n
         value = max(min_value, min(max_value, value))
@@ -2491,7 +2491,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             msg = _(f"You've set {value} columns")
         LibraryData().update_current_folder_columns()
-        msg += f"\n\n{cf.waterfall_columns_count} columns are now displayed"
+        msg += f"\n\n{cf.waterfall_number_of_columns} columns are now displayed"
         self.show_center_label(msg)
         self.update()
 
@@ -3080,7 +3080,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         r = content_rect = self.rect()
 
         if columns:
-            content_width = cf.waterfall_columns_count*cf.column_width
+            content_width = cf.waterfall_number_of_columns*cf.column_width
 
             left_offset = (self.rect().width()-content_width)/2
             content_rect = QRectF(left_offset, 0, content_width, r.height()).toRect()
