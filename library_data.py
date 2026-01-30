@@ -373,13 +373,19 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.update()
 
     def show_that_imd_on_viewer_page(self, image_data):
+        self.prepare_image_change(image_data)
+        # change mode to preview
+        MW = self.globals.main_window
+        MW.change_page(MW.pages.VIEWER_PAGE)
+
+    def prepare_image_change(self, image_data):
         fd = image_data.folder_data
         self._index = self.folders.index(fd)
         self._current_folder = self.folders[self._index]
         fd._index = fd.images_list.index(image_data)
-        # change mode to preview
-        MW = self.globals.main_window
-        MW.change_page(MW.pages.VIEWER_PAGE)
+
+    def prepare_modal_viewer_mode(self, image_data):
+        self.prepare_image_change(image_data)
 
     def show_next_image(self):
         MW = self.globals.main_window

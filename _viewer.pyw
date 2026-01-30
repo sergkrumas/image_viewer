@@ -666,6 +666,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.show_fps_indicator = Globals.DEBUG
         self.fps_timestamp = 0.0
 
+        self.viewer_modal = False
+
         self.autoscroll_init()
 
         self.context_menu_stylesheet = """
@@ -1196,6 +1198,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.region_zoom_in_init()
 
     def region_zoom_in_draw(self, painter):
+        painter.save()
         if self.input_rect:
             painter.setBrush(Qt.NoBrush)
             input_rect = self.input_rect
@@ -1229,6 +1232,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.input_rect_animated:
             painter.setPen(QPen(Qt.white, 1))
+            painter.setBrush(Qt.NoBrush)
             painter.drawRect(self.input_rect_animated)
 
         if self.region_zoom_ui_fx:
@@ -1243,6 +1247,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.drawRect(self.rect())
             painter.setClipping(False)
             painter.setOpacity(1.0)
+        painter.restore()
 
     def update_for_center_label_fade_effect(self):
         delta = time.time() - self.center_label_time
@@ -1375,16 +1380,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         self.show_static(filepath)
                 except:
                     self.error_pixmap_and_reset(_("The file is corrupted"), traceback.format_exc())
-        if not self.error:
-            self.read_image_metadata(image_data)
+        if not self.viewer_modal:
+            if not self.error:
+                self.read_image_metadata(image_data)
         self.restore_image_transformations()
-        self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
-        self.set_window_title(self.current_image_details())
-        if self.error:
-            self.tags_list = []
-        else:
-            self.tags_list = LibraryData().get_tags_for_image_data(image_data)
-        self.update_control_panel_label_text()
+        if not self.viewer_modal:
+            self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
+            self.set_window_title(self.current_image_details())
+            if self.error:
+                self.tags_list = []
+            else:
+                self.tags_list = LibraryData().get_tags_for_image_data(image_data)
+            self.update_control_panel_label_text()
         self.update()
 
     def error_pixmap_and_reset(self, title, message, no_background=False):
@@ -1517,6 +1524,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.is_library_page_active() or self.is_waterfall_page_active():
             LibraryData().update_current_folder_columns()
+            self.render_waterfall_backplate()
 
         SettingsWindow.center_if_on_screen()
 
@@ -1592,10 +1600,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.setCursor(Qt.ArrowCursor)
 
             elif self.is_waterfall_page_active():
-                if self.waterfall_previews_list_active_item:
-                    self.setCursor(Qt.PointingHandCursor)
+                if self.viewer_modal:
+                    if self.region_zoom_in_input_started:
+                        self.setCursor(Qt.CrossCursor)
+                    elif self.is_cursor_over_image():
+                        self.setCursor(Qt.SizeAllCursor)
+                    else:
+                        self.setCursor(Qt.ArrowCursor)
                 else:
-                    self.setCursor(Qt.ArrowCursor)
+                    if self.waterfall_previews_list_active_item:
+                        self.setCursor(Qt.PointingHandCursor)
+                    else:
+                        self.setCursor(Qt.ArrowCursor)
 
             elif self.is_viewer_page_active():
                 if self.region_zoom_in_input_started:
@@ -1604,9 +1620,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.setCursor(Qt.PointingHandCursor)
                 elif CP and CP.thumbnails_click(define_cursor_shape=True):
                     self.setCursor(Qt.PointingHandCursor)
-                elif self.is_cursor_over_image() and \
-                        (not self.is_library_page_active()) and \
-                        not (CP and CP.globals.control_panel.underMouse()):
+                elif self.is_cursor_over_image() and not (CP and CP.globals.control_panel.underMouse()):
                     self.setCursor(Qt.SizeAllCursor)
                 else:
                     self.setCursor(Qt.ArrowCursor)
@@ -1645,6 +1659,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_board_page_active():
             self.board_timer_handler()
+
+        elif self.is_waterfall_page_active():
+            if self.viewer_modal:
+                self.viewport_image_animation()
 
         self.animate_noise_cells_effect()
 
@@ -1717,7 +1735,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if p_list:
             for item_rect, item_data in p_list:
                 if item_rect.contains(event.pos()):
-                    LibraryData().show_that_imd_on_viewer_page(item_data)
+                    if self.is_library_page_active():
+                        LibraryData().show_that_imd_on_viewer_page(item_data)
+                    elif self.is_waterfall_page_active():
+                        self.enter_modal_viewer()
                     break
 
     def previews_list_mouseMoveEvent(self, event):
@@ -1745,6 +1766,33 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 for item_rect, item_data in p_list:
                     if item_rect.contains(event.pos()):
                         set_active_item((item_rect, item_data))
+
+    def enter_modal_viewer(self):
+        if self.is_waterfall_page_active():
+            if self.waterfall_previews_list_active_item:
+
+                self.render_waterfall_backplate()
+                item_rect, item_data = self.waterfall_previews_list_active_item
+                LibraryData().prepare_modal_viewer_mode(item_data)
+                self.viewer_reset()
+                LibraryData().after_current_image_changed()
+
+                self.transformations_allowed = True
+
+                self.viewer_modal = True
+
+            else:
+                self.show_center_label(_("No active item!"), error=True)
+        else:
+            self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
+
+
+    def leave_modal_viewer(self):
+        if self.is_waterfall_page_active():
+            self.viewer_modal = False
+            self.waterfall_backplate = None
+        else:
+            self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
 
     def mousePressEvent(self, event):
 
@@ -1782,12 +1830,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.autoscroll_middleMousePressEvent(event)
 
         elif self.is_waterfall_page_active():
-            if event.button() == Qt.LeftButton:
-                if not self.clickable_scrollbars_mousePressEvent(event):
-                    self.previews_list_mousePressEvent(event)
+            if self.viewer_modal:
 
-            if event.button() == Qt.MiddleButton:
-                self.autoscroll_middleMousePressEvent(event)
+                if event.button() == Qt.LeftButton:
+                    self.left_button_pressed = True
+
+                if self.isLeftClickAndCtrl(event):
+                    self.region_zoom_in_mousePressEvent(event)
+
+                if event.button() == Qt.LeftButton:
+                    self.viewer_LeftButton_mousePressEvent(event)
+            else:
+                if event.button() == Qt.LeftButton:
+                    if not self.clickable_scrollbars_mousePressEvent(event):
+                        self.previews_list_mousePressEvent(event)
+
+                if event.button() == Qt.MiddleButton:
+                    self.autoscroll_middleMousePressEvent(event)
 
 
         elif self.is_viewer_page_active():
@@ -1804,14 +1863,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif self.isLeftClickAndCtrlShift(event):
                 self.image_comment_mousePressEvent(event)
 
-            if self.transformations_allowed:
-                self.old_cursor_pos = self.mapped_cursor_pos()
-                for anim_task in self.get_current_animation_tasks_id("zoom"):
-                    anim_task.translation_delta_when_animation = QPointF(0, 0)
-                if self.is_cursor_over_image():
-                    self.image_translating = True
-                    self.old_image_center_position = self.image_center_position
-                    self.update()
+            if event.button() == Qt.LeftButton:
+                self.viewer_LeftButton_mousePressEvent(event)
 
             ready_to_view = self.is_viewer_page_active() and not self.handling_input
             cursor_not_over_image = not self.is_cursor_over_image()
@@ -1832,6 +1885,34 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.update()
         super().mousePressEvent(event)
+
+    def viewer_LeftButton_mousePressEvent(self, event):
+        if self.transformations_allowed:
+            self.old_cursor_pos = self.mapped_cursor_pos()
+            for anim_task in self.get_current_animation_tasks_id("zoom"):
+                anim_task.translation_delta_when_animation = QPointF(0, 0)
+            if self.is_cursor_over_image():
+                self.image_translating = True
+                self.old_image_center_position = self.image_center_position
+                self.update()
+
+    def viewer_LeftButton_mouseMoveEvent(self, event):
+        if self.transformations_allowed and self.image_translating:
+            new =  self.old_image_center_position - (self.old_cursor_pos - self.mapped_cursor_pos())
+            old = self.image_center_position
+            if not self.is_there_any_task_with_anim_id("zoom"):
+                self.image_center_position = new
+            for anim_task in self.get_current_animation_tasks_id("zoom"):
+                anim_task.translation_delta_when_animation = self.mapped_cursor_pos() - self.old_cursor_pos
+
+    def viewer_LeftButton_mouseReleaseEvent(self, event):
+        if self.transformations_allowed:
+            self.image_translating = False
+            self.update()
+
+            for anim_task in self.get_current_animation_tasks_id("zoom"):
+                anim_task.translation_delta_when_animation_summary += anim_task.translation_delta_when_animation
+                anim_task.translation_delta_when_animation = QPointF(0, 0)
 
     def update_control_panel_label_text(self):
         CP = Globals.control_panel
@@ -1877,13 +1958,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif self.isLeftClickAndCtrlShift(event) or self.comment_data:
                 self.image_comment_mouseMoveEvent(event)
             elif event.buttons() == Qt.LeftButton:
-                if self.transformations_allowed and self.image_translating:
-                    new =  self.old_image_center_position - (self.old_cursor_pos - self.mapped_cursor_pos())
-                    old = self.image_center_position
-                    if not self.is_there_any_task_with_anim_id("zoom"):
-                        self.image_center_position = new
-                    for anim_task in self.get_current_animation_tasks_id("zoom"):
-                        anim_task.translation_delta_when_animation = self.mapped_cursor_pos() - self.old_cursor_pos
+                self.viewer_LeftButton_mouseMoveEvent(event)
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
@@ -1897,14 +1972,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
         elif self.is_waterfall_page_active():
-            if event.buttons() == Qt.NoButton:
-                self.previews_list_mouseMoveEvent(event)
+            if self.viewer_modal:
+                if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
+                    self.region_zoom_in_mouseMoveEvent(event)
+                elif event.buttons() == Qt.LeftButton:
+                    self.viewer_LeftButton_mouseMoveEvent(event)
+            else:
+                if event.buttons() == Qt.NoButton:
+                    self.previews_list_mouseMoveEvent(event)
 
-            if event.buttons() == Qt.LeftButton:
-                self.clickable_scrollbars_mouseMoveEvent(event)
+                if event.buttons() == Qt.LeftButton:
+                    self.clickable_scrollbars_mouseMoveEvent(event)
 
-            if event.buttons() == Qt.MiddleButton:
-                self.autoscroll_middleMouseMoveEvent()
+                if event.buttons() == Qt.MiddleButton:
+                    self.autoscroll_middleMouseMoveEvent()
 
 
         self.update()
@@ -1940,13 +2021,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif self.isLeftClickAndCtrlShift(event) or self.comment_data is not None:
                 self.image_comment_mouseReleaseEvent(event)
             elif event.button() == Qt.LeftButton:
-                if self.transformations_allowed:
-                    self.image_translating = False
-                    self.update()
+                self.viewer_LeftButton_mouseReleaseEvent(event)
 
-                    for anim_task in self.get_current_animation_tasks_id("zoom"):
-                        anim_task.translation_delta_when_animation_summary += anim_task.translation_delta_when_animation
-                        anim_task.translation_delta_when_animation = QPointF(0, 0)
 
         elif self.is_library_page_active():
             if event.button() == Qt.LeftButton:
@@ -1956,11 +2032,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.autoscroll_middleMouseReleaseEvent()
 
         elif self.is_waterfall_page_active():
-            if event.button() == Qt.LeftButton:
-                self.clickable_scrollbars_mouseReleaseEvent(event)
+            if self.viewer_modal:
+                if event.button() == Qt.LeftButton:
+                    self.left_button_pressed = False
 
-            if event.button() == Qt.MiddleButton:
-                self.autoscroll_middleMouseReleaseEvent()
+                if self.isLeftClickAndCtrl(event) or self.region_zoom_in_input_started:
+                    self.region_zoom_in_mouseReleaseEvent(event)
+                elif event.button() == Qt.LeftButton:
+                    self.viewer_LeftButton_mouseReleaseEvent(event)
+            else:
+                if event.button() == Qt.LeftButton:
+                    self.clickable_scrollbars_mouseReleaseEvent(event)
+
+                if event.button() == Qt.MiddleButton:
+                    self.autoscroll_middleMouseReleaseEvent()
 
 
 
@@ -1970,6 +2055,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def mouseDoubleClickEvent(self, event):
         if self.is_library_page_active():
             pass
+            # (29 янв 26) TODO: подзабыл, почему прописал обработку
+            # для этой страницы ниже в eventFilter, а не тут;
+            # может, там лучше срабатывает или нет? Надо будет проверить позже
+        if self.is_waterfall_page_active():
+            pass
+            # (29 янв 26) TODO: то же самое, что и выше
         elif self.is_start_page_active():
             return
         elif self.is_viewer_page_active():
@@ -1990,6 +2081,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                             self.update()
                             # break
                             return True
+        elif self.is_waterfall_page_active():
+            if event.type() == QEvent.MouseButtonDblClick:
+                if self.viewer_modal:
+                    self.leave_modal_viewer()
+                    return True
+                else:
+                    pass
         elif self.is_viewer_page_active():
             if event.type() in [QEvent.MouseButtonRelease] and obj is self:
                 # в region_zoom_in_mouseReleaseEvent это не срабатывает,
@@ -2334,6 +2432,22 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     return True
         return False
 
+    def viewer_wheelEvent(self, event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse):
+
+        if self.left_button_pressed and self.animated:
+            self.do_scroll_playbar(scroll_value)
+            self.show_center_label(self.label_type.FRAME_NUMBER)
+            return True
+        if shift and ctrl and self.animated:
+            self.do_scroll_playspeed(scroll_value)
+            self.show_center_label(self.label_type.PLAYSPEED)
+            return True
+        if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
+            self.do_scale_image(scroll_value)
+            return True
+        else:
+            return False
+
     def wheelEvent(self, event):
 
         if self.check_thumbnails_fullscreen():
@@ -2346,6 +2460,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         no_mod = event.modifiers() == Qt.NoModifier
         control_panel_undermouse = self.is_control_panel_under_mouse()
 
+
+
         if self.is_board_page_active():
             self.board_wheelEvent(event)
 
@@ -2356,7 +2472,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
         elif self.is_waterfall_page_active():
-            self.previews_list_folder_list_wheelEvent(scroll_value, event)
+            if self.viewer_modal:
+                self.viewer_wheelEvent(event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse)
+            else:
+                self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
         elif self.is_viewer_page_active():
 
@@ -2366,14 +2485,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
                 self.do_scroll_images_list(scroll_value)
-            if self.left_button_pressed and self.animated:
-                self.do_scroll_playbar(scroll_value)
-                self.show_center_label(self.label_type.FRAME_NUMBER)
-            if shift and ctrl and self.animated:
-                self.do_scroll_playspeed(scroll_value)
-                self.show_center_label(self.label_type.PLAYSPEED)
-            if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
-                self.do_scale_image(scroll_value)
+            if self.viewer_wheelEvent(event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse):
+                pass #обработка внутри функции в условии
             elif no_mod and not self.left_button_pressed:
                 self.do_scroll_images_list(scroll_value)
 
@@ -2815,7 +2928,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.draw_startpage(painter)
 
         elif self.is_viewer_page_active():
-            self.draw_content(painter)
+            self.draw_viewer_content(painter)
             self.region_zoom_in_draw(painter)
 
         elif self.is_board_page_active():
@@ -2878,6 +2991,37 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setOpacity(1.0)
 
     def draw_waterfall(self, painter, event):
+        if self.viewer_modal:
+
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+            painter.setRenderHint(QPainter.Antialiasing, False)
+            painter.drawPixmap(QPoint(0, 0), self.waterfall_backplate)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+            painter.setRenderHint(QPainter.Antialiasing, True)
+
+            self.draw_viewer_modal(painter)
+            self.region_zoom_in_draw(painter)
+
+        else:
+            self.draw_waterfall_content(painter)
+
+    def draw_viewer_modal(self, painter):
+        painter.save()
+        painter.setPen(QPen(Qt.white))
+        self.draw_viewer_content(painter)
+        painter.restore()
+
+    def render_waterfall_backplate(self):
+        wb = self.waterfall_backplate = QPixmap(self.rect().size())
+        wb.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(wb)
+        painter.setOpacity(0.8)
+        self.draw_waterfall_content(painter, render_as_blackplate=True)
+        painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 170)))
+        painter.end()
+
+    def draw_waterfall_content(self, painter, render_as_blackplate=False):
 
         cf = LibraryData().current_folder()
 
@@ -2902,13 +3046,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                         active_item,
                                         content_rect,
                                         cf.column_width, cf.waterfall_previews_scroll_offset,
-                                        bool(cf.images_list)
+                                        bool(cf.images_list),
+                                        render_as_blackplate,
                                     )
 
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         painter.setRenderHint(QPainter.Antialiasing, True)
 
-        if columns:
+        if columns and not render_as_blackplate:
             self.draw_waterfall_scrollbars(painter, content_rect)
 
     def draw_startpage(self, painter):
@@ -3288,7 +3433,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.restore()
 
-    def draw_previews_as_columns(self, painter, columns, interaction_list, active_item, rect, column_width, scroll_offset, any_images):
+    def draw_previews_as_columns(self, painter, columns, interaction_list, active_item, rect, column_width, scroll_offset, any_images, render_as_blackplate=False):
 
         if columns:
             left = rect.left()
@@ -3310,7 +3455,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
 
-            if active_item:
+            if active_item and not render_as_blackplate:
                 item_rect, item_data = active_item
                 item_rect = self.previews_active_item_rect(item_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
@@ -3490,7 +3635,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         r.moveCenter(rect.center().toPoint())
         return r
 
-    def draw_content(self, painter):
+    def draw_viewer_content(self, painter):
 
         # draw image
         if self.pixmap or self.invalid_movie:
@@ -3549,17 +3694,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.drawRect(im_rect)
                 painter.setCompositionMode(cm)
 
-            # draw cyberpunk
-            if self.STNG_show_cyberpunk:
-                draw_cyberpunk_corners(self, painter, im_rect)
-            # draw thirds
-            if self.STNG_show_thirds:
-                draw_thirds(self, painter, im_rect)
-            # draw image center
-            if self.STNG_show_image_center:
-                self.draw_center_point(painter, self.image_center_position)
+            if not self.viewer_modal:
+                # draw cyberpunk
+                if self.STNG_show_cyberpunk:
+                    draw_cyberpunk_corners(self, painter, im_rect)
+                # draw thirds
+                if self.STNG_show_thirds:
+                    draw_thirds(self, painter, im_rect)
+                # draw image center
+                if self.STNG_show_image_center:
+                    self.draw_center_point(painter, self.image_center_position)
 
-            self.draw_secret_hint(painter)
+                self.draw_secret_hint(painter)
 
         elif self.movie:
             pass
@@ -3576,14 +3722,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        self.draw_comments_viewer(painter)
+        if not self.viewer_modal:
+            self.draw_comments_viewer(painter)
 
-        self.draw_view_history_row(painter)
+            self.draw_view_history_row(painter)
 
-        self.draw_image_metadata(painter)
+            self.draw_image_metadata(painter)
 
-        self.draw_tags_sidebar_overlay(painter)
-        self.draw_tags_background(painter)
+            self.draw_tags_sidebar_overlay(painter)
+            self.draw_tags_background(painter)
 
     def draw_center_label_main(self, painter):
         movie = self.movie
@@ -3788,6 +3935,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self._key_pressed = False
             self._key_unreleased = False
 
+        done = False
+        if key == Qt.Key_Right:
+            if event.modifiers() & Qt.ControlModifier:
+                if self.frameless_mode:
+                    self.toggle_monitor('right')
+                    done = True
+        elif key == Qt.Key_Left:
+            if event.modifiers() & Qt.ControlModifier:
+                if self.frameless_mode:
+                    self.toggle_monitor('left')
+                    done = True
+        if done:
+            return
+
         if key == Qt.Key_F11 and not event.isAutoRepeat():
             if self.frameless_mode:
                 self.fullscreen_mode = not self.fullscreen_mode
@@ -3823,69 +3984,67 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 LibraryData().choose_next_folder()
 
         elif self.is_waterfall_page_active():
-            pass
+            
+            if key in [Qt.Key_Enter, Qt.Key_Return] or check_scancode_for(event, 'F'):
+                if self.viewer_modal:
+                    self.leave_modal_viewer()
+                else:
+                    self.enter_modal_viewer()
+
+            if self.viewer_modal:
+                self.viewer_keyReleaseEvent(event)
+            else:
+                pass
 
         elif self.is_board_page_active():
 
-            default = True
-            if key == Qt.Key_Right:
-                if event.modifiers() & Qt.ControlModifier:
-                    if self.frameless_mode:
-                        self.toggle_monitor('right')
-                        default = False
-            elif key == Qt.Key_Left:
-                if event.modifiers() & Qt.ControlModifier:
-                    if self.frameless_mode:
-                        self.toggle_monitor('left')
-                        default = False
-            if default:
-                self.board_keyReleaseEvent(event)
+            self.board_keyReleaseEvent(event)
 
         elif self.is_viewer_page_active():
-
-            if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
-
-                if self.check_scroll_lock():
-
-                    length = 1.0
-                    if event.modifiers() & Qt.ShiftModifier:
-                        length *= 20.0
-                    if key == Qt.Key_Up:
-                        delta =  QPoint(0, 1) * length
-                    elif key == Qt.Key_Down:
-                        delta =  QPoint(0, -1) * length
-                    elif key == Qt.Key_Left:
-                        delta =  QPoint(1, 0) * length
-                    elif key == Qt.Key_Right:
-                        delta =  QPoint(-1, 0) * length
-                    self.image_center_position += delta
-
-                else:
-
-                    if key == Qt.Key_Up:
-                        self.do_scale_image(0.05, cursor_pivot=False, slow=True)
-
-                    elif key == Qt.Key_Down:
-                        self.do_scale_image(-0.05, cursor_pivot=False, slow=True)
-
-                    elif key == Qt.Key_Right:
-                        if event.modifiers() & Qt.AltModifier:
-                            LibraryData().show_viewed_image_next()
-                        elif event.modifiers() & Qt.ControlModifier:
-                            if self.frameless_mode:
-                                self.toggle_monitor('right')
-                        elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                            LibraryData().show_next_image()
-                    elif key == Qt.Key_Left:
-                        if event.modifiers() & Qt.AltModifier:
-                            LibraryData().show_viewed_image_prev()
-                        elif event.modifiers() & Qt.ControlModifier:
-                            if self.frameless_mode:
-                                self.toggle_monitor('left')
-                        elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
-                            LibraryData().show_previous_image()
+            if self.viewer_keyReleaseEvent(event):
+                pass
+            elif key == Qt.Key_Right:
+                if event.modifiers() & Qt.AltModifier:
+                    LibraryData().show_viewed_image_next()
+                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                    LibraryData().show_next_image()
+            elif key == Qt.Key_Left:
+                if event.modifiers() & Qt.AltModifier:
+                    LibraryData().show_viewed_image_prev()
+                elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
+                    LibraryData().show_previous_image()
 
         self.update()
+
+    def viewer_keyReleaseEvent(self, event):
+        res = True
+        key = event.key()
+        if key in [Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right]:
+
+            if self.check_scroll_lock():
+
+                length = 1.0
+                if event.modifiers() & Qt.ShiftModifier:
+                    length *= 20.0
+                if key == Qt.Key_Up:
+                    delta =  QPoint(0, 1) * length
+                elif key == Qt.Key_Down:
+                    delta =  QPoint(0, -1) * length
+                elif key == Qt.Key_Left:
+                    delta =  QPoint(1, 0) * length
+                elif key == Qt.Key_Right:
+                    delta =  QPoint(-1, 0) * length
+                self.image_center_position += delta
+
+            else:
+
+                if key == Qt.Key_Up:
+                    self.do_scale_image(0.05, cursor_pivot=False, slow=True)
+                elif key == Qt.Key_Down:
+                    self.do_scale_image(-0.05, cursor_pivot=False, slow=True)
+                else:
+                    res = False
+        return res
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -4011,8 +4170,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 LibraryData().update_current_folder()
 
         elif self.is_waterfall_page_active():
-            if check_scancode_for(event, "U"):
-                LibraryData().update_current_folder()
+            if self.viewer_modal:
+                if key == Qt.Key_Space:
+                    self.toggle_animation_playback()
+                elif check_scancode_for(event, "I"):
+                    self.invert_image = not self.invert_image
+                elif check_scancode_for(event, "R"):
+                    self.start_inframed_image_saving(event)
+                elif check_scancode_for(event, "M"):
+                    self.mirror_current_image(ctrl_mod)
+            else:
+                if check_scancode_for(event, "U"):
+                    LibraryData().update_current_folder()
 
         elif self.is_viewer_page_active():
 
