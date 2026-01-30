@@ -4735,6 +4735,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             velocity_vec = vec.toPointF()
             if self.is_board_page_active():
                 self.canvas_origin -= velocity_vec/25.0
+                self.update_selection_bouding_box()
             elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars
                 sb_index = self.autoscroll_is_scrollbar_available()
