@@ -822,7 +822,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
                 ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
-            self.transformations_allowed = False
+            if self.viewer_modal:
+                self.transformations_allowed = True
+            else:
+                self.transformations_allowed = False
+
 
         elif requested_page == self.pages.VIEWER_PAGE:
             self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
