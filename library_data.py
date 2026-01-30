@@ -1059,22 +1059,23 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             # ui prepare
             MW = Globals.main_window
 
-            if not MW.is_viewer_page_active():
+            if MW.is_library_page_active():
                 # выходим из страницы библиотеки для показа картинки
                 MW.change_page(MW.pages.VIEWER_PAGE, force=True)
 
-            MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
+            if MW.is_viewer_page_active():
+                MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
 
-            fd.current_image().update_fav_button_state()
-            if MW.isAnimationEffectsAllowed():
-                MW.animate_properties(
-                    [(MW, "image_scale", 0.01, MW.image_scale, MW.update)],
-                    anim_id = "image_transform_start"
-                )
-            MW.update()
-            MW.activateWindow()
+                fd.current_image().update_fav_button_state()
+                if MW.isAnimationEffectsAllowed():
+                    MW.animate_properties(
+                        [(MW, "image_scale", 0.01, MW.image_scale, MW.update)],
+                        anim_id = "image_transform_start"
+                    )
+                MW.update()
+                MW.activateWindow()
 
-            LibraryData().add_current_image_to_view_history()
+                LibraryData().add_current_image_to_view_history()
             # print('store session file from handle_input_data')
             LibraryData().store_session_file()
 

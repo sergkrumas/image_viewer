@@ -750,17 +750,25 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.board_TextElementDeactivateEditMode()
         self.change_page(next_page)
 
-    def change_page_to_viewer_page_at_appstart(self):
+    def change_page_at_appstart(self, page_type):
         # для того, чтобы после старта программы во время загрузки
-        # отобразилась надпись ЗАГРУЗКА, а не висела стартовая страница;
+        # отобразилась надпись ЗАГРУЗКА, а не висела/мелькала стартовая страница;
         # вместо вызова MW.change_page(MW.pages.VIEWER_PAGE)
         # пришлось вытащить из неё же код сюда. Пока я не понял почему change_page не работает как надо
-        self.current_page = self.pages.VIEWER_PAGE
-        self.update_other_pages_list()
-        self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
-        self.viewer_reset() # для показа сообщения о загрузке
         # (29 янв 26) может дело в том, что мы принудительно обновляем окно панели управления,
         # и за это время главное окно успевает появится и отрисоваться со стартовой страницей?
+        # self.change_page(page_type)
+        # (30 янв 26) код change_page для задания страницы на старте приложения использовать нельзя,
+        # поздей будет рефакторинг по этому поводу
+        self.current_page = page_type
+        self.update_other_pages_list()
+        self.recreate_control_panel(requested_page=page_type)
+
+        if page_type == self.pages.WATERFALL_PAGE:
+            if Globals.control_panel is not None:
+                Globals.control_panel.setVisible(False)
+        if page_type == self.pages.VIEWER_PAGE:
+            self.viewer_reset() # для показа сообщения о загрузке
 
     def change_page(self, requested_page, force=False):
         CP = Globals.control_panel
@@ -5307,17 +5315,25 @@ def _main():
     # CP = MW.recreate_control_panel()
 
     # Нужно для того, чтобы иконка показалась в таскбаре.
-    # И нужно это делать до того как будет показана панель миниатюр.
+    # И нужно это делать до того как будет показана панель управления.
     if not os.path.exists(path):
-        MW.current_page = MW.pages.START_PAGE
-        MW.update()
+        pass
+        # если путь не задан, то по дефолту
+        # будет отображена стартовая страница,
+        # и поэтому тут даже задавать ничего
+        # не надо, ибо стартовая страница задаётся
+        # в методе __init__ объекта главного окна
     else:
-        MW.change_page_to_viewer_page_at_appstart()
+        waterfall_page_needed = SettingsWindow.get_setting_value("open_app_on_waterfall_page")
+        if waterfall_page_needed:
+            MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
+        else:
+            MW.change_page_at_appstart(MW.pages.VIEWER_PAGE)
         MW.update()
     processAppEvents()
 
     # обработка входящих данных
-    default_branch = True
+    legacy_viewer_page_branch = True
     if args.board:
         LibraryData().create_empty_virtual_folder()
         MW.change_page(MW.pages.BOARD_PAGE)
@@ -5328,9 +5344,9 @@ def _main():
             MW.board_loadPluginBoard(path)
         else:
             raise Exception(f'Unable to handle board argument {path}')
-        default_branch = False
+        legacy_viewer_page_branch = False
 
-    if default_branch:
+    if legacy_viewer_page_branch:
         if path:
             LibraryData().handle_input_data(path, check_windows_explorer_window=True)
         else:
