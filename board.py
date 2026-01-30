@@ -1625,7 +1625,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 if board_item._marked_item:
                     pass
- 
+
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 

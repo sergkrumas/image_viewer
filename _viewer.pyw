@@ -3992,7 +3992,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 LibraryData().choose_next_folder()
 
         elif self.is_waterfall_page_active():
-            
+
             if key in [Qt.Key_Enter, Qt.Key_Return] or check_scancode_for(event, 'F'):
                 if self.viewer_modal:
                     self.leave_modal_viewer()
