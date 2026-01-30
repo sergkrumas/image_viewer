@@ -92,12 +92,18 @@ def retrieve_pages_help_text():
     not set
 """)
 
+    INFO_WATERFALL_PAGE = _("""
+➜ WATERFALL PAGE
+    not set
+""")
+
     _vars = [
         "INFO_ALL_PAGES",
         "INFO_VIEWER_PAGE",
         "INFO_LIBRARY_PAGE",
         "INFO_BOARD_PAGE",
         "INFO_START_PAGE",
+        "INFO_WATERFALL_PAGE",
     ]
     for var in _vars:
         globals()[var] = locals()[var]
@@ -256,22 +262,24 @@ class HelpWidget(QWidget):
         text_browser.setStyleSheet(tb_style)
 
 
-        # сортировка частей документации по порядку:
+        # сортировка частей справки по порядку:
         # сначала идёт страница для всех
         # потом идёт текущая страница
         # потом все остальные
-        def page_type_to_info(page):
+        def map_page_type_to_page_info(page):
+            pages = parent.pages
             return {
-                'STARTPAGE': INFO_START_PAGE,
-                'VIEWERPAGE': INFO_VIEWER_PAGE,
-                'BOARDPAGE': INFO_BOARD_PAGE,
-                'LIBRARYPAGE': INFO_LIBRARY_PAGE,
+                pages.START_PAGE: INFO_START_PAGE,
+                pages.VIEWER_PAGE: INFO_VIEWER_PAGE,
+                pages.BOARD_PAGE: INFO_BOARD_PAGE,
+                pages.LIBRARY_PAGE: INFO_LIBRARY_PAGE,
+                pages.WATERFALL_PAGE: INFO_WATERFALL_PAGE,
             }[page]
         all_pages = parent.pages.all()
         pages_to_render = all_pages[:]
-        cur_page = pages_to_render.pop(pages_to_render.index(parent.current_page))
-        pages_to_render.insert(0, cur_page)
-        pages_to_render = [page_type_to_info(page) for page in pages_to_render]
+        pages_to_render.remove(parent.current_page)
+        pages_to_render.insert(0, parent.current_page)
+        pages_to_render = [map_page_type_to_page_info(page) for page in pages_to_render]
         pages_to_render.insert(0, INFO_ALL_PAGES)
 
         help_info = "\n\n".join(pages_to_render)
