@@ -2456,6 +2456,45 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return False
 
+    def waterfall_change_number_of_columns(self, event, scroll_value):
+        min_value, max_value = SettingsWindow.get_setting_span('waterfall_columns_number')
+        if scroll_value > 0:
+            n = 1
+        else:
+            n = -1
+        cf = LibraryData().current_folder()
+        setting_value = self.STNG_waterfall_columns_number
+        # пока закоментил, потому что не очень интуитивно получается
+        # setting_value = self.STNG_waterfall_columns_number
+        if setting_value > cf.waterfall_columns_count:
+            value = setting_value
+        else:
+            if setting_value == 0:
+                value = 0
+            else:
+                value = cf.waterfall_columns_count
+        value = int(value)
+        value += n
+        value = max(min_value, min(max_value, value))
+        # TODO: вообще тут лучше бы всё переписать, ибо я думал, что изменяя переменную настройки 
+        # на главном окне, у меня должно изменяться и значение на матрице настроек,
+        # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
+        # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
+        # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск 
+        self.STNG_waterfall_columns_number = float(value)
+        SettingsWindow.set_setting_value('waterfall_columns_number', float(value))
+        value = int(value)
+        if value == 0:
+            msg = _(f"You've set 0 columns, so the number of columns depends only on the window width.")
+        elif value == max_value:
+            msg = _(f"You've set {value} columns. This is the maximum!")
+        else:
+            msg = _(f"You've set {value} columns")
+        LibraryData().update_current_folder_columns()
+        msg += f"\n\n{cf.waterfall_columns_count} columns are now displayed"
+        self.show_center_label(msg)
+        self.update()
+
     def wheelEvent(self, event):
 
         if self.check_thumbnails_fullscreen():
@@ -2467,8 +2506,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         control_panel_undermouse = self.is_control_panel_under_mouse()
-
-
 
         if self.is_board_page_active():
             self.board_wheelEvent(event)
@@ -2483,7 +2520,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.viewer_modal:
                 self.viewer_wheelEvent(event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse)
             else:
-                self.previews_list_folder_list_wheelEvent(scroll_value, event)
+                if ctrl and (not shift):
+                    self.waterfall_change_number_of_columns(event, scroll_value)
+                else:
+                    self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
         elif self.is_viewer_page_active():
 

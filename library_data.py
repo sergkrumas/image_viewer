@@ -907,8 +907,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     return
 
         folder_data.previews_done = True
-        folder_data.create_previews_columns(6, Globals.PREVIEW_WIDTH, thread_instance=thread_instance)
-        folder_data.create_previews_columns(12, Globals.PREVIEW_WIDTH, thread_instance=thread_instance, waterfall=True)
+        Globals = LibraryData().globals
+        if Globals.main_window:
+            LibraryData().update_folder_columns(folder_data)
 
     @classmethod
     def update_folder_columns(cls, folder_data):
@@ -918,18 +919,25 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # вычитаем место для скроллбаров, чтобы они всегда помещались
         waterfall_width = Globals.main_window.rect().width() - SCROLLBAR_WIDTH*10
 
-        def get_column_count_based_on_width(columns_space):
+        def get_columns_number_based_on_width(columns_space):
             count = int(columns_space/Globals.PREVIEW_WIDTH)
             count = max(count, 1)
             return count
 
         if folder_data and folder_data.previews_done:
             folder_data.create_previews_columns(
-                get_column_count_based_on_width(library_width/2),
+                get_columns_number_based_on_width(library_width/2),
                 Globals.PREVIEW_WIDTH,
             )
+
+            desired_number = int(Globals.main_window.STNG_waterfall_columns_number)
+            calc_number = get_columns_number_based_on_width(waterfall_width)
+            if desired_number == 0:
+                number = calc_number
+            else:
+                number = min(desired_number, calc_number)
             folder_data.create_previews_columns(
-                get_column_count_based_on_width(waterfall_width),
+                number,
                 Globals.PREVIEW_WIDTH,
                 waterfall=True,
             )
@@ -1076,6 +1084,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 MW.activateWindow()
 
                 LibraryData().add_current_image_to_view_history()
+
             # print('store session file from handle_input_data')
             LibraryData().store_session_file()
 
@@ -1492,6 +1501,10 @@ class FolderData():
 
     def create_previews_columns(self, columns_count, preview_width, thread_instance=None, waterfall=False):
         if self.images_list:
+            # (30 янв 26) тут я хотел досрочно выходить из функции, если
+            # columns_count = waterfall_columns_count или columns_count = library_columns_count,
+            # но потом пришла мысль, что кол-во картинок может не изменится,
+            # но при этом содержимое - вполне. Так что no fancy crap, ok.
             columns = []
             for i in range(columns_count):
                 columns.append(LibraryModeImageColumn())

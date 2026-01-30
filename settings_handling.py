@@ -510,6 +510,9 @@ class SettingsWindow(QWidget):
             'browse_images_only': (False, _('Allow browsing image filetypes only')),
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
+            '---007': _('Waterfall'),
+            'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
+
             '---006': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
             'board_draw_canvas_origin': (False, _('Show board origin')),
@@ -546,6 +549,16 @@ class SettingsWindow(QWidget):
         'ImageViewerLauncher',
         os.path.join(os.path.dirname(__file__), "viewer.pyw")
     )
+
+    @classmethod
+    def get_setting_span(cls, setting_id):
+        data = cls.matrix[setting_id]
+        value = data[0]
+        if isinstance(value, (int, float)):
+            span = data[1]
+            return span
+        else:
+            return None
 
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
