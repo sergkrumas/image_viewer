@@ -90,6 +90,15 @@ If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by th
 
 
 
+### Board page plugins (accessible via context submenu)
+
+Many plugins are being developed for the Board page, and you can access them from the board’s context menu. Each plugin introduces its own board type and items. This isn’t documented yet, but it has great potential for my work.
+![](docs/board_plugins_context_menu.png)
+
+#### Tangents Chain (board page plugin)
+
+Move your cursor to inner circles, roll the mouse wheel while over them, move them around by holding left mouse button or hold CTRL while creating new circles via left mouse button and have fun! (AI-generated Rapunzel — my desktop background, not the plugin feature)
+![](docs/board_plugin_tangents_chain.png)
 
 
 ## Waterfall page
