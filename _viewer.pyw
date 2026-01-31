@@ -262,14 +262,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         TOPLEFT = 0
         TOPRIGHT = 1
 
-    def get_corner_pos(self, corner_attr):
-        if corner_attr == self.InteractiveCorners.TOPLEFT:
+    def get_corner_pos(self, window_corner_id):
+        if window_corner_id == self.InteractiveCorners.TOPLEFT:
             return self.rect().topLeft()
-        elif corner_attr == self.InteractiveCorners.TOPRIGHT:
+        elif window_corner_id == self.InteractiveCorners.TOPRIGHT:
             return self.rect().topRight()
 
-    def get_corner_button_rect(self, corner_attr, menu_mode=False):
-        corner_pos = self.get_corner_pos(corner_attr)
+    def get_corner_button_rect(self, window_corner_id, menu_mode=False):
+        corner_pos = self.get_corner_pos(window_corner_id)
         n = 4 if menu_mode else 1
         radius = self.CORNER_BUTTON_RADIUS*n
         btn_rect = QRectF(
@@ -280,9 +280,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         ).toRect()
         return btn_rect
 
-    def over_corner_button(self, corner_attr, menu_mode=False):
-        btn_rect = self.get_corner_button_rect(corner_attr, menu_mode=menu_mode)
-        corner_pos = self.get_corner_pos(corner_attr)
+    def over_corner_button(self, window_corner_id, menu_mode=False):
+        btn_rect = self.get_corner_button_rect(window_corner_id, menu_mode=menu_mode)
+        corner_pos = self.get_corner_pos(window_corner_id)
         diff = corner_pos - self.mapped_cursor_pos()
         distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
@@ -308,8 +308,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 return True
         return False
 
-    def over_corner_menu(self, corner_attr):
-        return self.over_corner_button(corner_attr, menu_mode=True) and self.corner_menu_visibility[corner_attr]
+    def over_corner_menu(self, window_corner_id):
+        return self.over_corner_button(window_corner_id, menu_mode=True) and self.corner_menu_visibility[window_corner_id]
 
     def is_top_right_menu_visible(self):
         return self.corner_menu_visibility[self.InteractiveCorners.TOPRIGHT]
@@ -317,11 +317,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def is_top_left_menu_visible(self):
         return self.corner_menu_visibility[self.InteractiveCorners.TOPLEFT]
 
-    def draw_corner_button(self, painter, corner_attr):
-        btn_rect = self.get_corner_button_rect(corner_attr)
-        corner_pos = self.get_corner_pos(corner_attr)
+    def draw_corner_button(self, painter, window_corner_id):
+        btn_rect = self.get_corner_button_rect(window_corner_id)
+        corner_pos = self.get_corner_pos(window_corner_id)
 
-        if self.over_corner_button(corner_attr):
+        if self.over_corner_button(window_corner_id):
             painter.setOpacity(.6)
         else:
             painter.setOpacity(.3)
@@ -362,24 +362,24 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.drawText(r, Qt.AlignBottom | Qt.AlignRight, corner_char)
         painter.setFont(oldfont)
 
-    def draw_corner_menu(self, painter, corner_attr):
+    def draw_corner_menu(self, painter, window_corner_id):
 
-        btn_rect = self.get_corner_button_rect(corner_attr, menu_mode=True)
+        btn_rect = self.get_corner_button_rect(window_corner_id, menu_mode=True)
 
         # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно.
-        if self.over_corner_button(corner_attr):
-            self.corner_menu_visibility[corner_attr] = True
-        elif not self.over_corner_button(corner_attr, menu_mode=True):
-            self.corner_menu_visibility[corner_attr] = False
+        if self.over_corner_button(window_corner_id):
+            self.corner_menu_visibility[window_corner_id] = True
+        elif not self.over_corner_button(window_corner_id, menu_mode=True):
+            self.corner_menu_visibility[window_corner_id] = False
 
-        if not self.corner_menu_visibility[corner_attr]:
+        if not self.corner_menu_visibility[window_corner_id]:
             return
 
         painter.setOpacity(.5)
 
-        if corner_attr == self.InteractiveCorners.TOPLEFT:
+        if window_corner_id == self.InteractiveCorners.TOPLEFT:
             brush_color = Qt.red
-        elif corner_attr == self.InteractiveCorners.TOPRIGHT:
+        elif window_corner_id == self.InteractiveCorners.TOPRIGHT:
             brush_color = QColor(50, 50, 50)
 
         painter.setBrush(QBrush(brush_color, Qt.SolidPattern))
@@ -388,7 +388,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.setOpacity(.8)
 
-        if corner_attr == self.InteractiveCorners.TOPRIGHT:
+        if window_corner_id == self.InteractiveCorners.TOPRIGHT:
             r = self.CORNER_BUTTON_RADIUS*2
             painter.setBrush(Qt.white)
             p = btn_rect.center() + QPointF(-r, r) + QPointF(20, -20)
@@ -396,7 +396,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             rect.moveCenter(p.toPoint())
             painter.drawRect(rect)
 
-        if corner_attr == self.InteractiveCorners.TOPLEFT:
+        if window_corner_id == self.InteractiveCorners.TOPLEFT:
             self.left_corner_menu_items = []
             r = self.CORNER_BUTTON_RADIUS*3
             points = []
