@@ -103,7 +103,15 @@ Move your cursor to inner circles, roll the mouse wheel while over them, move th
 
 ## Waterfall page
 
+If you browse pictures on Pinterest, you’ll like this masonry layout.
+
 ![](docs/waterfall_page.png)
+
+Left-click to open the modal viewer, double-click to close it. Use Ctrl + Mouse Wheel to change the number of columns.
+
+You can set the app to open on the Waterfall page in the settings.
+
+For static and animated files in the modal viewer, the keyboard and mouse controls work the same as on the Viewer page.
 ![](docs/waterfall_page_modal_viewer.png)
 
 
