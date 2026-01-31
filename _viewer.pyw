@@ -3045,7 +3045,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_waterfall(self, painter, event):
         if self.viewer_modal:
-
             painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
             painter.setRenderHint(QPainter.Antialiasing, False)
             painter.drawPixmap(QPoint(0, 0), self.waterfall_backplate)
@@ -3054,9 +3053,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.draw_viewer_modal(painter)
             self.region_zoom_in_draw(painter)
-
         else:
+            painter.save()
+            self.set_font_for_library_and_waterfall_pages(painter)
             self.draw_waterfall_content(painter)
+            painter.restore()
 
     def draw_viewer_modal(self, painter):
         painter.save()
@@ -3358,15 +3359,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def get_center_x_position(self):
         return int(self.rect().width()/2)
 
+    def set_font_for_library_and_waterfall_pages(self, painter):
+        font = painter.font()
+        font.setPixelSize(20)
+        font.setWeight(1900)
+        font.setFamily("Consolas")
+        painter.setFont(font)
+
     def draw_library(self, painter):
-        def set_font(pr):
-            font = pr.font()
-            font.setPixelSize(20)
-            font.setWeight(1900)
-            font.setFamily("Consolas")
-            pr.setFont(font)
         painter.save()
-        set_font(painter)
+        self.set_font_for_library_and_waterfall_pages(painter)
 
         H = self.LIBRARY_FOLDER_ITEM_HEIGHT
         CENTER_OFFSET = 50
