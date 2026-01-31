@@ -2798,7 +2798,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.end()
 
-        event_painter.drawPixmap(pos, pix)
+        show_pos_rect = QRect(QPoint(0,0), pix.size())
+        show_pos_rect.moveCenter(pos)
+        event_painter.drawPixmap(show_pos_rect, pix)
 
     def draw_rounded_framed_label(self, painter, pos, text, bold=False, color=Qt.red):
         painter.save()
