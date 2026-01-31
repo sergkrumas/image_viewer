@@ -15,6 +15,15 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 ## [Гайд для русскоязычных / in Russian](README_ru.md)
 
+## Pages corner menu
+
+The app is built around pages, with each page delivering a distinct image-viewing experience. You can change pages using the radial corner menu in the top-left corner or by pressing `TAB` key.
+
+![](docs/radial_corner_menu.png)
+
+
+
+
 
 ## Start page
 
