@@ -752,8 +752,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         for page, next_page in itertools.cycle(zip(pages, pages_shifted)):
             if page == self.current_page:
                 break
-        # TODO: так, это что хуйня, board_TextElementDeactivateEditMode должен быть внутри self.change_page  
-        self.board_TextElementDeactivateEditMode()
         self.change_page(next_page)
 
     def change_page_at_appstart(self, page_type):
@@ -798,6 +796,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             cancel_fullscreen_on_control_panel()
 
         elif self.current_page == self.pages.BOARD_PAGE:
+            self.board_TextElementDeactivateEditMode()
             self.board_region_zoom_do_cancel()
             cancel_fullscreen_on_control_panel()
             LibraryData().save_board_data()
