@@ -72,7 +72,6 @@ You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android g
 
 If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by the app at the moment), for a better experience press the middle mouse button to toggle auto-scroll. Auto-scroll works the same way as in most desktop web browsers. *To match a gamepad experience, smooth scaling via the mouse wheel is available during auto-scrolling.*
 
-## [Architecture.md in Russian (use web translator for English)](ARCHITECTURE.md)
 
 
 ## Supported formats
@@ -152,4 +151,7 @@ There are cases, when the program behaves unexpectedly and crashes. Once the sit
 Once the program won't start after double-clicking on file `viewer.pyw` or after double clicking on image in Explorer, then it will be wise to check the content of the file `crash.log` in the app folder. Without embarrassment send that crash information to be analyzed by developer to Issues section https://github.com/sergkrumas/image_viewer/issues.
 
 You get this app for free, so you could help to improve it that way or participate in manual testing. Thank you in advance.
+
+## Forks
+[Architecture.md in Russian (use web translator for English)](ARCHITECTURE.md)
 
