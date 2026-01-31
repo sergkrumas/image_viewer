@@ -2433,7 +2433,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             for item_rect, item_data in p_list:
                 if item_rect.contains(event.pos()):
                     current_item = (item_rect, item_data)
-            if current_item != active_item:
+            if current_item != active_item or not any(self.corner_menu):
                 # обнуляем выделенную мышкой превьюшку,
                 # если под мышкой уже находится другая превьюшка
                 reset()
@@ -3508,7 +3508,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
 
-            if active_item and not render_as_blackplate:
+            if active_item and (not render_as_blackplate) and (not any(self.corner_menu)):
                 item_rect, item_data = active_item
                 item_rect = self.previews_active_item_rect(item_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
