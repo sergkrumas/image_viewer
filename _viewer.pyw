@@ -309,13 +309,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return False
 
     def over_corner_menu(self, corner_attr):
-        return self.over_corner_button(corner_attr, menu_mode=True) and self.corner_menu[corner_attr]
+        return self.over_corner_button(corner_attr, menu_mode=True) and self.corner_menu_visibility[corner_attr]
 
     def is_top_right_menu_visible(self):
-        return self.corner_menu[self.InteractiveCorners.TOPRIGHT]
+        return self.corner_menu_visibility[self.InteractiveCorners.TOPRIGHT]
 
     def is_top_left_menu_visible(self):
-        return self.corner_menu[self.InteractiveCorners.TOPLEFT]
+        return self.corner_menu_visibility[self.InteractiveCorners.TOPLEFT]
 
     def draw_corner_button(self, painter, corner_attr):
         btn_rect = self.get_corner_button_rect(corner_attr)
@@ -368,11 +368,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # TODO: этот код управляет видимостью меню, а факт видимости записывается и используются вне этой функции. И если делать по-хорошему, то такого тут быть не должно.
         if self.over_corner_button(corner_attr):
-            self.corner_menu[corner_attr] = True
+            self.corner_menu_visibility[corner_attr] = True
         elif not self.over_corner_button(corner_attr, menu_mode=True):
-            self.corner_menu[corner_attr] = False
+            self.corner_menu_visibility[corner_attr] = False
 
-        if not self.corner_menu[corner_attr]:
+        if not self.corner_menu_visibility[corner_attr]:
             return
 
         painter.setOpacity(.5)
@@ -637,7 +637,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.image_rect = QRectF()
 
-        self.corner_menu = [False, False]
+        self.corner_menu_visibility = [False, False]
         self.left_corner_menu_items = []
 
         self.fullscreen_mode = False
@@ -2433,7 +2433,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             for item_rect, item_data in p_list:
                 if item_rect.contains(event.pos()):
                     current_item = (item_rect, item_data)
-            if current_item != active_item or not any(self.corner_menu):
+            if current_item != active_item or not any(self.corner_menu_visibility):
                 # обнуляем выделенную мышкой превьюшку,
                 # если под мышкой уже находится другая превьюшка
                 reset()
@@ -3508,7 +3508,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
 
-            if active_item and (not render_as_blackplate) and (not any(self.corner_menu)):
+            if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
                 item_rect, item_data = active_item
                 item_rect = self.previews_active_item_rect(item_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
