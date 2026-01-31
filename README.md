@@ -74,8 +74,9 @@ Hovering over thumbnail on the right side shows its original on the left side at
 
 ## Board page (PureRef Clone)
 
-![](docs/boards.png)
+The Board Page has been in development since mid 2023 and was originally inspired by PureRef, and is now moving toward becoming an offline alternative to Miro. However, unlike the Viewer Page, I’m building the Board Page primarily for myself rather than for the community. It’s simply more convenient for me to have everything in one app.
 
+![](docs/boards.png)
 
 Board Page Presentation on Youtube:
 
