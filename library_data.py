@@ -914,8 +914,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     @classmethod
     def update_folder_columns(cls, folder_data):
         Globals = LibraryData().globals
-        SCROLLBAR_WIDTH = 10
         library_width = Globals.main_window.rect().width()
+        SCROLLBAR_WIDTH = Globals.main_window.SCROLLBAR_WIDTH
         # вычитаем место для скроллбаров, чтобы они всегда помещались
         waterfall_width = Globals.main_window.rect().width() - SCROLLBAR_WIDTH*10
 

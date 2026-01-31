@@ -125,6 +125,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     LIBRARY_FOLDER_ITEM_HEIGHT = 140
 
+    SCROLLBAR_WIDTH = 10
+    SCROLL_THUMB_MIN_HEIGHT = 50
+
     hint_text = ""
     secret_hints_list = []
 
@@ -132,8 +135,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     secret_pic = None
     secret_p = None
-
-    SCROLL_THUMB_MIN_HEIGHT = 50
 
     class pages():
         START_PAGE = 1
@@ -3533,7 +3534,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_waterfall_scrollbars(self, painter, content_rect):
 
-        SCROLLBAR_WIDTH = 10
+        SCROLLBAR_WIDTH = self.SCROLLBAR_WIDTH
         VERTICAL_OFFSET = 50
         SCROLLBAR_HEIGHT = self.rect().height()-int(VERTICAL_OFFSET*1.1)
 
@@ -3582,7 +3583,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         CXP = self.get_center_x_position()
         OFFSET_FROM_CENTER = 5
 
-        SCROLLBAR_WIDTH = 10
+        SCROLLBAR_WIDTH = self.SCROLLBAR_WIDTH
         VERTICAL_OFFSET = 40
         SCROLLBAR_HEIGHT = self.rect().height()-VERTICAL_OFFSET*2
 
