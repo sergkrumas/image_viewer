@@ -92,6 +92,15 @@ If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by th
 
 
 
+## Waterfall page
+
+![](docs/waterfall_page.png)
+![](docs/waterfall_page_modal_viewer.png)
+
+
+
+
+
 ## Supported formats
 - .webp (static & animated)
 - .gif
