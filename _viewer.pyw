@@ -743,11 +743,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def cycle_change_page(self):
         pages = self.pages.all()
-        pages_shifted = self.pages.all()
+        if self.current_page != self.pages.START_PAGE:
+            # удаляем ненужную здесь стартовую страницу, но делать это нужно,
+            # когда она не выбрана, иначе получим бесконечный цикл ниже и краш приложения
+            pages.remove(self.pages.START_PAGE)
+        pages_shifted = pages[:]
         pages_shifted.append(pages_shifted.pop(0))
         for page, next_page in itertools.cycle(zip(pages, pages_shifted)):
             if page == self.current_page:
                 break
+        # TODO: так, это что хуйня, board_TextElementDeactivateEditMode должен быть внутри self.change_page  
         self.board_TextElementDeactivateEditMode()
         self.change_page(next_page)
 
