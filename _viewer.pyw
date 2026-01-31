@@ -1117,6 +1117,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.image_scale = self.orig_scale
                 self.image_center_position = self.orig_pos
                 self.zoom_region_stage_factor = 0.0
+                self.input_rect_animated = self.input_rect
+                self.region_zoom_finish()
             self.region_zoom_in_init(cancel=True)
             self.update()
             self.show_center_label(self.label_type.SCALE)
@@ -1167,6 +1169,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.zoom_region_stage_factor = 1.0
                 self.image_center_position = center_pos
                 self.image_scale = scale
+                self.input_rect_animated = self.projected_rect
             self.show_center_label(self.label_type.SCALE)
 
     def region_zoom_in_mousePressEvent(self, event):
