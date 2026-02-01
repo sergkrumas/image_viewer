@@ -3543,17 +3543,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 painter.drawText(rect, Qt.AlignCenter, _("No images"))
 
+    def reset_scrollbars_visibility(self):
+        vs = self.vertical_scrollbars
+        for key, item in vs.data.items():
+            item.visible = False
+
     def draw_waterfall_scrollbars(self, painter, content_rect):
 
         SCROLLBAR_WIDTH = self.SCROLLBAR_WIDTH
         VERTICAL_OFFSET = 50
         SCROLLBAR_HEIGHT = self.rect().height()-int(VERTICAL_OFFSET*1.1)
 
-        vs = self.vertical_scrollbars
-        for key, item in vs.data.items():
-            item.visible = False
-
         curpos = self.mapped_cursor_pos()
+        vs = self.vertical_scrollbars
+        self.reset_scrollbars_visibility()
 
         cf = LibraryData().current_folder()
         viewframe_height = self.waterfall_page_viewframe_height()
@@ -3598,11 +3601,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         VERTICAL_OFFSET = 40
         SCROLLBAR_HEIGHT = self.rect().height()-VERTICAL_OFFSET*2
 
-        vs = self.vertical_scrollbars
-        for key, item in vs.data.items():
-            item.visible = False
-
         curpos = self.mapped_cursor_pos()
+        vs = self.vertical_scrollbars
+        self.reset_scrollbars_visibility()
 
         viewframe_height = self.library_page_viewframe_height()
 
