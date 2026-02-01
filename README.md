@@ -11,12 +11,15 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 **Feel free to test the viewer, report issues and use it further! Thank you for your attention!**
 
-
-
 ## [Гайд для русскоязычных / in Russian](README_ru.md)
 
-## Pages corner menu
 
+
+
+
+
+
+## Pages corner menu
 The app is built around pages, with each page delivering a distinct image-viewing experience. You can change pages using the radial corner menu in the top-left corner or by pressing `TAB` key.
 
 ![](docs/radial_corner_menu.png)
@@ -26,7 +29,6 @@ The app is built around pages, with each page delivering a distinct image-viewin
 
 
 ## Start page
-
 Start page shows up when the app is run directly i.e. without request from Windows Explorer. You can select UI language at the bottom. The picture on the background is desktop wallpaper.
 
 ![](docs/startpage.png)
@@ -36,7 +38,7 @@ Start page shows up when the app is run directly i.e. without request from Windo
 
 
 ## Viewer page (Google Picasa Photo Viewer Clone)
-
+Default page. It shows up on the application startup if not set otherwise in the settings.
 ![](docs/screenshot.png)
 
 Viewer Page Presentation on Youtube:
@@ -54,10 +56,12 @@ Hold `Ctrl` and drag with the left mouse button to activate the rectangular magn
 If "Animated effects" is enabled in the settings, zoom-in and zoom-out animations will play.
 
 
-## Library Page
 
+
+
+## Library Page
 In the list on the left side displays all opened folders with the current one selected dark-yellow. On the right you could mouse scroll the content of the current folder.
-You could choose current folder from here. The content of the current folder is displayed in the Viewer and Board pages.
+You could choose current folder from here. The content of the current folder is displayed in the Viewer, Waterfall and Board pages.
 
 Library Page when the app running in the lite mode:
 ![](docs/library_page_single_folder.png)
@@ -74,7 +78,6 @@ Hovering over thumbnail on the right side shows its original on the left side at
 
 
 ## Board page (PureRef Clone)
-
 The Board Page has been in development since mid 2023 and was originally inspired by PureRef, and is now moving toward becoming an offline alternative to Miro. However, unlike the Viewer Page, I’m building the Board Page primarily for myself rather than for the community. It’s simply more convenient for me to have everything in one app.
 
 ![](docs/boards.png)
@@ -93,18 +96,18 @@ If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by th
 
 
 ### Board page plugins (accessible via context submenu)
-
 Many plugins are being developed for the Board page, and you can access them from the board’s context menu. Each plugin introduces its own board type and items. This isn’t documented yet, but it has great potential for my work.
 ![](docs/board_plugins_context_menu.png)
 
 #### Tangents Chain (board page plugin)
-
 Move your cursor to inner circles, roll the mouse wheel while over them, move them around by holding left mouse button or hold CTRL while creating new circles via left mouse button and have fun! (AI-generated Rapunzel — my desktop background, not the plugin feature)
 ![](docs/board_plugin_tangents_chain.png)
 
 
-## Waterfall page
 
+
+
+## Waterfall page
 If you browse pictures on Pinterest, you’ll like this masonry layout.
 
 ![](docs/waterfall_page.png)
@@ -144,7 +147,6 @@ For static and animated files in the modal viewer, the keyboard and mouse contro
 - Install all Python-dependencies on your own by executing **install_dependencies.bat**
 
 ## Installation
-
 First things first, you need to download 64-bit version of Python [from here](https://www.python.org/downloads/) and intall it.
 
 IMPORTANT: As installation wizard showed up, you need to activate checkbox "Add Python 3.XX to PATH", otherwise there will be problems with dependencies installation and it'll take you knowledge and command line skills to tackle and cope with that on your own.
@@ -198,6 +200,8 @@ Once the program won't start after double-clicking on file `viewer.pyw` or after
 
 You get this app for free, so you could help to improve it that way or participate in manual testing. Thank you in advance.
 
-## Forks
-[Architecture.md in Russian (use web translator for English)](ARCHITECTURE.md)
+## Forks & release routine
+Use web translator for English
 
+[Architecture.md in Russian](ARCHITECTURE.md)
+[Manual testing & refactoring](MANUAL_TESTING.md)
