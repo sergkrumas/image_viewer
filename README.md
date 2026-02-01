@@ -49,8 +49,9 @@ Viewer Page Presentation on Youtube:
 - Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (with range from 10% to 200%)
 - «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file 
 
-
-
+## Rectangle selection magnifier
+Hold `Ctrl` and drag with the left mouse button to activate the rectangular magnifier. Press `Esc` to exit.
+If "Animated effects" is enabled in the settings, zoom-in and zoom-out animations will play.
 
 
 ## Library Page
