@@ -55,6 +55,8 @@ Viewer Page Presentation on Youtube:
 Hold `Ctrl` and drag with the left mouse button to activate the rectangular magnifier. Press `Esc` to exit.
 If "Animated effects" is enabled in the settings, zoom-in and zoom-out animations will play.
 
+![](docs/rectangle_selection_magnifier.png)
+
 
 
 
@@ -99,7 +101,7 @@ If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by th
 Many plugins are being developed for the Board page, and you can access them from the board’s context menu. Each plugin introduces its own board type and items. This isn’t documented yet, but it has great potential for my work.
 ![](docs/board_plugins_context_menu.png)
 
-#### Tangents Chain (board page plugin)
+#### Tangents Chain (board page plugin example)
 Move your cursor to inner circles, roll the mouse wheel while over them, move them around by holding left mouse button or hold CTRL while creating new circles via left mouse button and have fun! (AI-generated Rapunzel — my desktop background, not the plugin feature)
 ![](docs/board_plugin_tangents_chain.png)
 
