@@ -549,24 +549,24 @@ def draw_shadow(self, painter, rect, shadow_size, color1_hex, color2_hex):
     # rectangle sides
     gradient_pxm = generate_gradient("top", shadow_size, color1_hex, color2_hex)
     top_left = sr.topLeft() + QPoint(0, -shadow_size)
-    bottom_right = sr.topRight() + QPoint(0, 0)
+    bottom_right = sr.topRight()
     target = QRectF(top_left, bottom_right)
     painter.drawPixmap(target, gradient_pxm, QRectF(gradient_pxm.rect()))
 
     gradient_pxm = generate_gradient("bottom", shadow_size, color1_hex, color2_hex)
-    top_left = sr.bottomLeft() + QPoint(0, 0)
+    top_left = sr.bottomLeft()
     bottom_right = sr.bottomRight() + QPoint(-0, -shadow_size)
     target = QRectF(top_left, bottom_right)
     painter.drawPixmap(target, gradient_pxm, QRectF(gradient_pxm.rect()))
 
     gradient_pxm = generate_gradient("left", shadow_size, color1_hex, color2_hex)
     top_left = sr.topLeft() + QPoint(-shadow_size, 0)
-    bottom_right = sr.bottomLeft() + QPoint(0, 0)
+    bottom_right = sr.bottomLeft()
     target = QRectF(top_left, bottom_right)
     painter.drawPixmap(target, gradient_pxm, QRectF(gradient_pxm.rect()))
 
     gradient_pxm = generate_gradient("right", shadow_size, color1_hex, color2_hex)
-    top_left = sr.topRight() + QPoint(0, 0)
+    top_left = sr.topRight()
     bottom_right = sr.bottomRight() + QPoint(shadow_size, -0)
     target = QRectF(top_left, bottom_right)
     painter.drawPixmap(target, gradient_pxm, QRectF(gradient_pxm.rect()))
