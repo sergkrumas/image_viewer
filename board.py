@@ -1524,6 +1524,14 @@ class BoardMixin(BoardTextEditItemMixin):
         ]
         return QPolygonF(points)
 
+    def is_rect_insersects_rect(self, rect1, rect2):
+        return any(rect1.contains(p) for p in [
+            rect2.topLeft(),
+            rect2.topRight(),
+            rect2.bottomRight(),
+            rect2.bottomLeft(),
+        ])
+
     def board_draw_item(self, painter, board_item):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
             FRAME_PADDING = BoardItem.FRAME_PADDING
@@ -1579,11 +1587,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
             selection_area = board_item.get_selection_area(canvas=self)
 
-            if selection_area.intersected(self.get_monitor_area()).boundingRect().isNull():
+            sbr_ = selection_area.boundingRect()
+
+            if not self.is_rect_insersects_rect(self.rect(), selection_area.boundingRect().toRect()):
                 if self.STNG_board_unloading:
                     self.trigger_board_item_pixmap_unloading(board_item)
 
             else:
+
                 self.images_drawn += 1
                 transform = board_item.get_transform_obj(canvas=self)
 
