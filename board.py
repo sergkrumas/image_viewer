@@ -1524,13 +1524,20 @@ class BoardMixin(BoardTextEditItemMixin):
         ]
         return QPolygonF(points)
 
-    def is_rect_insersects_rect(self, rect1, rect2):
-        return any(rect1.contains(p) for p in [
-            rect2.topLeft(),
-            rect2.topRight(),
-            rect2.bottomRight(),
-            rect2.bottomLeft(),
+    def rectrect_intersect_asim_check_pass(self, r1, r2):
+        return any(r1.contains(p) for p in [
+            r2.topLeft(),
+            r2.topRight(),
+            r2.bottomRight(),
+            r2.bottomLeft(),
+            r2.center(),
         ])
+
+    def is_rect_insersects_rect(self, r1, r2):
+        return any((
+            self.rectrect_intersect_asim_check_pass(r1, r2),
+            self.rectrect_intersect_asim_check_pass(r2, r1),
+        ))
 
     def board_draw_item(self, painter, board_item):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
