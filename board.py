@@ -4055,6 +4055,17 @@ class BoardMixin(BoardTextEditItemMixin):
                 anim_id="flying",
                 duration=1.5,
                 easing=QEasingCurve.InOutSine,
+                callback_on_finish=animate_pause,
+            )
+
+        def animate_pause():
+
+            self.animate_properties(
+                [
+                    (self, "_anim_pause", 0.0, 1.0, lambda: None),
+                ],
+                anim_id="flying",
+                duration=0.5,
                 callback_on_finish=self.board_fly_over,
             )
 
@@ -4078,7 +4089,7 @@ class BoardMixin(BoardTextEditItemMixin):
             ],
             anim_id="flying",
             duration=2.0,
-            # easing=QEasingCurve.InOutSine,
+            easing=QEasingCurve.InOutSine,
             callback_on_finish=animate_scale,
             # callback_on_finish=self.board_fly_over
         )
