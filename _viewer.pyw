@@ -269,10 +269,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif window_corner_id == self.InteractiveCorners.TOPRIGHT:
             return self.rect().topRight()
 
+    def get_corner_radius_factor(self, menu_mode):
+        return 4 if menu_mode else 1
+
     def get_corner_button_rect(self, window_corner_id, menu_mode=False):
         corner_pos = self.get_corner_pos(window_corner_id)
-        n = 4 if menu_mode else 1
-        radius = self.CORNER_BUTTON_RADIUS*n
+        radius = self.CORNER_BUTTON_RADIUS*self.get_corner_radius_factor(menu_mode)
         btn_rect = QRectF(
             corner_pos.x() - radius,
             corner_pos.y() - radius,
@@ -287,8 +289,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         diff = corner_pos - self.mapped_cursor_pos()
         distance = QVector2D(diff).length()
         client_area = self.rect().intersected(btn_rect)
-        n = 4 if menu_mode else 1
-        case1 = distance < self.CORNER_BUTTON_RADIUS*n
+        case1 = distance < self.CORNER_BUTTON_RADIUS*self.get_corner_radius_factor(menu_mode)
         case2 = client_area.contains(self.mapped_cursor_pos())
         return case2 and case1
 
