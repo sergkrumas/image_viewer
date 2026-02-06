@@ -559,6 +559,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.set_window_style()
 
         self.current_page = self.pages.START_PAGE
+        self.current_page_draw_callback = self.startpage_draw_callback
+        self.current_page_transparency_value = 0.9
         self.update_other_pages_list()
 
         self.transformations_allowed = True
@@ -773,6 +775,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update_other_pages_list()
         self.recreate_control_panel(requested_page=page_type)
 
+        self.set_page_transparency_and_draw_callback(page_type)
+
         if page_type == self.pages.WATERFALL_PAGE:
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
@@ -812,6 +816,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.cancel_all_anim_tasks()
         self.hide_center_label()
+
+        self.set_page_transparency_and_draw_callback(requested_page)
 
         if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_columns()
@@ -2987,6 +2993,43 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.draw_FPS_indicator(painter)
         painter.end()
 
+    def startpage_draw_callback(self, painter, event):
+        self.draw_startpage(painter)
+
+    def viewerpage_draw_callback(self, painter, event):
+        self.draw_viewer_content(painter)
+        self.region_zoom_in_draw(painter)
+
+    def librarypage_draw_callback(self, painter, event):
+        self.draw_library(painter)
+
+    def boardpage_draw_callback(self, painter, event):
+        self.board_draw(painter, event)
+
+    def waterfallpage_draw_callback(self, painter, event):
+        self.draw_waterfall(painter, event)
+
+    def set_page_transparency_and_draw_callback(self, page_type):
+        if page_type == self.pages.START_PAGE:
+            self.current_page_transparency_value = self.STNG_start_page_transparency
+            self.current_page_draw_callback = self.startpage_draw_callback
+
+        elif page_type == self.pages.VIEWER_PAGE:
+            self.current_page_transparency_value = self.STNG_viewer_page_transparency
+            self.current_page_draw_callback = self.viewerpage_draw_callback
+
+        elif page_type == self.pages.LIBRARY_PAGE:
+            self.current_page_transparency_value = self.STNG_library_page_transparency
+            self.current_page_draw_callback = self.librarypage_draw_callback
+
+        elif page_type == self.pages.BOARD_PAGE:
+            self.current_page_transparency_value = self.STNG_board_page_transparency
+            self.current_page_draw_callback = self.boardpage_draw_callback
+
+        elif page_type == self.pages.WATERFALL_PAGE:
+            self.current_page_transparency_value = self.STNG_waterfall_page_transparency
+            self.current_page_draw_callback = self.waterfallpage_draw_callback
+
     def _paintEvent(self, event, painter):
         if Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM:
             painter.setRenderHint(QPainter.Antialiasing, True)
@@ -2995,17 +3038,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # draw darkened translucent background
         if self.frameless_mode:
-            # TODO: это не помешало бы задавать в change_page, а тут только читать значение
-            if self.is_library_page_active():
-                painter.setOpacity(self.STNG_library_page_transparency)
-            elif self.is_board_page_active():
-                painter.setOpacity(self.STNG_board_page_transparency)
-            elif self.is_viewer_page_active():
-                painter.setOpacity(self.STNG_viewer_page_transparency)
-            elif self.is_start_page_active():
-                painter.setOpacity(self.STNG_start_page_transparency)
-            elif self.is_waterfall_page_active():
-                painter.setOpacity(self.STNG_waterfall_page_transparency)
+            painter.setOpacity(self.current_page_transparency_value)
 
             painter.setBrush(QBrush(Qt.black, Qt.SolidPattern))
             painter.drawRect(self.rect())
@@ -3015,31 +3048,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.drawRect(self.rect())
 
         # draw current page
-        if self.is_library_page_active():
-            self.draw_library(painter)
+        self.current_page_draw_callback(painter, event)
 
-        elif self.is_start_page_active():
-            self.draw_startpage(painter)
 
-        elif self.is_viewer_page_active():
-            self.draw_viewer_content(painter)
-            self.region_zoom_in_draw(painter)
-
-        elif self.is_board_page_active():
-            self.board_draw(painter, event)
-
-        elif self.is_waterfall_page_active():
-            self.draw_waterfall(painter, event)
-
+        # autosroll animated activation zone
         self.autoscroll_draw(painter)
+
 
         # draw slice pipette tool
         self.SPT_draw_info(painter)
 
 
-
         # draw center label
         self.draw_center_label_main(painter)
+
 
         # draw minimize button holder as menu
         self.draw_corner_menu(painter, self.InteractiveCorners.TOPRIGHT)
@@ -5429,38 +5451,39 @@ def _main():
     ControlPanel.SettingsWindow = SettingsWindow
     # CP = MW.recreate_control_panel()
 
+    legacy_viewer_page_branch = True
     # Нужно для того, чтобы иконка показалась в таскбаре.
     # И нужно это делать до того как будет показана панель управления.
     if not os.path.exists(path):
-        pass
         # если путь не задан, то по дефолту
-        # будет отображена стартовая страница,
-        # и поэтому тут даже задавать ничего
-        # не надо, ибо стартовая страница задаётся
-        # в методе __init__ объекта главного окна
+        # будет отображена стартовая страница
+
+        if args.board:
+            LibraryData().create_empty_virtual_folder()
+            MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
+            processAppEvents()
+            MW.change_page(MW.pages.BOARD_PAGE)
+            if path.lower().endswith('.board'):
+                MW.board_loadBoard(path)
+            elif path.lower().endswith('.py'):
+                MW.board_loadPluginBoard(path)
+            else:
+                raise Exception(f'Unable to handle board argument {path}')
+            legacy_viewer_page_branch = False
+
     else:
         waterfall_page_needed = SettingsWindow.get_setting_value("open_app_on_waterfall_page")
         if waterfall_page_needed:
             MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
+
         else:
             MW.change_page_at_appstart(MW.pages.VIEWER_PAGE)
+
         MW.update()
+
     processAppEvents()
 
     # обработка входящих данных
-    legacy_viewer_page_branch = True
-    if args.board:
-        LibraryData().create_empty_virtual_folder()
-        MW.change_page(MW.pages.BOARD_PAGE)
-        processAppEvents()
-        if path.lower().endswith('.board'):
-            MW.board_loadBoard(path)
-        elif path.lower().endswith('.py'):
-            MW.board_loadPluginBoard(path)
-        else:
-            raise Exception(f'Unable to handle board argument {path}')
-        legacy_viewer_page_branch = False
-
     if legacy_viewer_page_branch:
         if path:
             LibraryData().handle_input_data(path, check_windows_explorer_window=True)
