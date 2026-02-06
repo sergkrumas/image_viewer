@@ -156,7 +156,95 @@ def generate_pixmaps(Globals, SettingsWindow):
 
 
 
-    
+
+    MINIMIZE_ICON = QPixmap(100, 100)
+    MINIMIZE_ICON.fill(Qt.transparent)
+    painter = QPainter()
+    painter.begin(MINIMIZE_ICON)
+
+    r = QRect(QPoint(0, 0), MINIMIZE_ICON.size())
+    painter.setBrush(Qt.NoBrush)
+
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+    painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+
+    OFFSET = 5
+    RADIUS = 30
+    r = r.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
+
+    painter.setPen(QPen(QColor(150, 150, 150, 127), 8))
+
+    pen = painter.pen()
+    pen.setCapStyle(Qt.RoundCap)
+    painter.setPen(pen)
+
+    path = QPainterPath()
+    path.addRoundedRect(QRectF(r), 20, 20)
+
+
+    use_cubic = False
+    path = QPainterPath()
+    p = r.center()
+    p.setX(r.left())
+    path.moveTo(p)
+    p.setY(r.top()+RADIUS)
+    path.lineTo(p)
+    p = r.topLeft()
+    p += QPointF(RADIUS, 0)
+    c = r.topLeft()
+    if use_cubic:
+        path.cubeTo(c, c, p)
+    else:
+        path.quadTo(c, p)
+    p = r.topRight()
+    p -= QPointF(RADIUS, 0)
+    path.lineTo(p)
+    c = r.topRight()
+    p = r.topRight() + QPointF(0, RADIUS)
+    if use_cubic:
+        path.cubeTo(c, c, p)
+    else:
+        path.quadTo(c, p)
+    p = r.bottomRight() - QPointF(0, RADIUS)
+    path.lineTo(p)
+    c = r.bottomRight()
+    p = r.bottomRight() - QPointF(RADIUS, 0)
+    if use_cubic:
+        path.cubeTo(c, c, p)
+    else:
+        path.quadTo(c, p)
+    p = r.center()
+    p.setY(r.bottomLeft().y())
+    path.lineTo(p)
+    painter.drawPath(path)
+
+
+    path2 = QPainterPath()
+    c = r.center()
+    HS = MINIMIZE_ICON.size().width()/2
+    r2 = QRectF(c+QPointF(-HS, 0), c+QPointF(0, HS))
+    r2.adjust(OFFSET, OFFSET*2, -OFFSET*2, -OFFSET)
+    path2.addRoundedRect(r2, 10, 10)
+    painter.drawPath(path2)
+
+
+    path3 = QPainterPath()
+    c = r.center()
+    HR = RADIUS/2
+    HR23 = RADIUS*2/3
+    path3.moveTo(c - QPointF(0, HR))
+    path3.lineTo(c)
+    path3.lineTo(c + QPointF(HR, 0))
+    path3.moveTo(c + QPointF(3, -3))
+    path3.lineTo(c + QPointF(HR23, -HR23))
+
+    painter.drawPath(path3)
+
+    painter.end()
+    Globals.MINIMIZE_ICON = MINIMIZE_ICON
+
 
     print('finish generating pixmaps')
 
