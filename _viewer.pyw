@@ -81,6 +81,7 @@ class Globals():
     VIEW_HISTORY_SIZE = 20
     MULTIROW_THUMBNAILS_PADDING = 30
     PREVIEW_WIDTH = 200
+    PREVIEW_CORNER_RADIUS = 20
 
     DISABLE_ITEM_DISTORTION_FIXER = True
 
@@ -670,6 +671,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.viewer_modal = False
 
         self.autoscroll_init()
+
+        self.rounded_previews = True
 
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
@@ -3499,7 +3502,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def draw_previews_as_columns(self, painter, columns, interaction_list, active_item, rect, column_width, scroll_offset, any_images, render_as_blackplate=False):
 
+        PREVIEW_CORNER_RADIUS = Globals.PREVIEW_CORNER_RADIUS
+        rounded_previews = self.rounded_previews
+
         if columns:
+            if rounded_previews:
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setClipping(True)
+
             left = rect.left()
             painter.setPen(QPen(QColor(Qt.gray)))
             painter.setBrush(QBrush(Qt.black))
@@ -3513,11 +3524,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     h = im_data.preview_size.height()
                     r = QRectF(offset_x, offset_y, w, h)
                     r.adjust(1, 1, -1, -1)
-                    painter.drawRect(r) #for images with transparent layer
                     interaction_list.append((r, im_data))
                     pixmap = im_data.preview
-                    painter.drawPixmap(r.toRect(), pixmap)
+                    if rounded_previews:
+                        path = QPainterPath()
+                        path.addRoundedRect(r, PREVIEW_CORNER_RADIUS, PREVIEW_CORNER_RADIUS)
+                        painter.setClipPath(path)
+                        painter.drawRect(r) #for images with transparent layer
+                        painter.drawPixmap(r.toRect(), pixmap)
+
+                    else:
+                        painter.drawPixmap(r.toRect(), pixmap)
                     offset_y += h
+
+            if rounded_previews:
+                painter.setClipping(False)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+                painter.setRenderHint(QPainter.Antialiasing, False)
 
             if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
                 item_rect, item_data = active_item
@@ -4537,11 +4560,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.toggle_boolean_var_generic = toggle_boolean_var_generic
 
         checkboxes = [
-            (_("DEBUG"), Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG')),
-            (_("Show FPS"), Globals.DEBUG, partial(toggle_boolean_var_generic, self, 'show_fps_indicator')),
-            (_("Antialiasing and pixmap smoothing"), Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')),
-            (_("Use pixmap-proxy for text items"), Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')),
+            (_("DEBUG"), Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG'))
+            , (_("Show FPS"), self.show_fps_indicator, partial(toggle_boolean_var_generic, self, 'show_fps_indicator'))
+            , (_("Antialiasing and pixmap smoothing"), Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM'))
+            , (_("Use pixmap-proxy for text items"), Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS'))
         ]
+
+        if self.is_waterfall_page_active():
+            checkboxes.append(
+                        (_("Rounded previews"), self.rounded_previews, partial(toggle_boolean_var_generic, self, 'rounded_previews'))
+            )
+
 
         if Globals.CRASH_SIMULATOR:
             crash_simulator = contextMenu.addAction(_("Make program crash intentionally (for dev purposes only)..."))
