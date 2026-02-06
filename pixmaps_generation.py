@@ -174,9 +174,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     RADIUS = 30
     r = r.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
 
-    painter.setPen(QPen(QColor(150, 150, 150, 127), 8))
-
-    pen = painter.pen()
+    pen = QPen(QColor(255, 255, 255, 200), 8)
     pen.setCapStyle(Qt.RoundCap)
     painter.setPen(pen)
 
