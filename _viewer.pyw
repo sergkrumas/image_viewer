@@ -783,7 +783,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if page_type == self.pages.VIEWER_PAGE:
             self.viewer_reset() # для показа сообщения о загрузке
 
-    def change_page(self, requested_page, force=False):
+    def change_page(self, requested_page, force=False, init_force=False):
         CP = Globals.control_panel
 
         def cancel_fullscreen_on_control_panel():
@@ -792,7 +792,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     CP.do_toggle_fullscreen()
 
 
-        if self.current_page == requested_page:
+        if self.current_page == requested_page and not init_force:
             return
 
         if self.handling_input and not force:
@@ -5460,9 +5460,12 @@ def _main():
 
         if args.board:
             LibraryData().create_empty_virtual_folder()
+            # тут хороший приём применён:
+            # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
+            # а потом уже меняем полностью через change_page
             MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
-            processAppEvents()
-            MW.change_page(MW.pages.BOARD_PAGE)
+            # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
+            MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
             if path.lower().endswith('.board'):
                 MW.board_loadBoard(path)
             elif path.lower().endswith('.py'):
