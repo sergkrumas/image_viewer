@@ -674,6 +674,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.rounded_previews = True
 
+        self.board_CP_cursor_handled = False
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -1603,8 +1605,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return False
 
+    def cursor_control_panel(self):
+        CP = Globals.control_panel
+        if CP and any(btn.underMouse() for btn in CP.buttons_list):
+            self.setCursor(Qt.PointingHandCursor)
+            return True
+
+        elif CP and CP.thumbnails_click(define_cursor_shape=True):
+            # TODO: (6 фев 26) тут ведь интересно отметить, 
+            # что миниатюры всем своим массивом создают единый прямоугольник,
+            # его-то и надо проверять, а не полностью каждую видимую миниатюру
+            self.setCursor(Qt.PointingHandCursor)
+            return True
+
+        else:
+            return False
+
     def cursor_setter(self):
         CP = Globals.control_panel
+        self.board_CP_cursor_handled = False
+
+        # код отсюда вызывается из mouseMove панели управления
         if self.isActiveWindow():
 
             if False:
@@ -1639,11 +1660,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif self.is_viewer_page_active():
                 if self.region_zoom_in_input_started:
                     self.setCursor(Qt.CrossCursor)
-                elif CP and any(btn.underMouse() for btn in CP.buttons_list):
-                    self.setCursor(Qt.PointingHandCursor)
-                elif CP and CP.thumbnails_click(define_cursor_shape=True):
-                    self.setCursor(Qt.PointingHandCursor)
-                elif self.is_cursor_over_image() and not (CP and CP.globals.control_panel.underMouse()):
+                elif self.cursor_control_panel():
+                    pass
+                elif self.is_cursor_over_image() and not (CP and CP.underMouse()):
                     self.setCursor(Qt.SizeAllCursor)
                 else:
                     self.setCursor(Qt.ArrowCursor)
@@ -1660,8 +1679,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.setCursor(Qt.ArrowCursor)
 
             elif self.is_board_page_active():
-                # курсор определяется в методе mouseMoveEvent файла boards.py
-                pass
+                # cursor_control_panel надо прописать здесь явно,
+                # потому что задание курсора вызывается из окна панели управления.
+                # Если этого не сделать, то задание курсора над панелью работать не будет.
+                if self.cursor_control_panel():
+                    # ввожу эту переменную скорей для наглядного понимания того
+                    # как система работает, а не для фикса бага или подобного
+                    self.board_CP_cursor_handled = True
+                else:
+                    # тут ничего не пишем, потому что
+                    # курсор определяется в методе board_cursor_setter
+                    # миксина главного окна в файле boards.py
+                    pass
             else:
                 self.setCursor(Qt.ArrowCursor)
         else:

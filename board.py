@@ -2150,6 +2150,9 @@ class BoardMixin(BoardTextEditItemMixin):
         elif self.cursor_corners_buttons_and_menus():
             pass
 
+        elif self.board_CP_cursor_handled:
+            pass 
+
         elif self.scaling_ongoing:
             if self.scale_rastr_source is not None:
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
