@@ -3582,7 +3582,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         path = QPainterPath()
                         path.addRoundedRect(r, PREVIEW_CORNER_RADIUS, PREVIEW_CORNER_RADIUS)
                         painter.setClipPath(path)
-                        painter.drawRect(r) #for images with transparent layer
+                        # painter.drawRect(r) #for images with transparent layer
                         painter.drawPixmap(r.toRect(), pixmap)
 
                     else:
