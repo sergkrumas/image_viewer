@@ -391,11 +391,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setOpacity(.8)
 
         if window_corner_id == self.InteractiveCorners.TOPRIGHT:
-            rad_fac = self.get_corner_radius_factor(window_corner_id)-1
+            rad_fac = self.get_corner_radius_factor(window_corner_id)-1.5
             rad = rad_fac*self.CORNER_BUTTON_RADIUS
             rad -= 10
-            p = self.rect().topRight() + QPointF(-rad, rad) + QPointF(0, -100)
-            painter.drawPixmap(p, Globals.MINIMIZE_ICON)
+            pixmap = Globals.MINIMIZE_ICON
+            p = self.rect().topRight() + QPointF(-rad, rad) + QPointF(0, -pixmap.width())
+            painter.drawPixmap(p, pixmap)
 
         if window_corner_id == self.InteractiveCorners.TOPLEFT:
             self.left_corner_menu_items = []

@@ -243,7 +243,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.drawPath(path3)
 
     painter.end()
-    Globals.MINIMIZE_ICON = MINIMIZE_ICON
+    Globals.MINIMIZE_ICON = MINIMIZE_ICON.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
 
     print('finish generating pixmaps')
