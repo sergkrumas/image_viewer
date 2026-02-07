@@ -3637,6 +3637,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         viewframe_height = self.waterfall_page_viewframe_height()
         content_height = self.waterfall_page_previews_columns_content_height(cf)
 
+        # скроллбар реагирует на мышку, если над ним показывается меню,
+        # а так быть не должно, поэтому вырубаем этот эффект здесь
+        ha = not any(self.corner_menu_visibility)
+
         offset_times = 4
         if cf.waterfall_columns:
             self.draw_vertical_scrollbar(painter,
@@ -3651,6 +3655,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 content_offset=cf.waterfall_previews_scroll_offset,
                 index=vs.WATERFALL_PAGE_LEFT,
                 curpos=curpos,
+                highlighting_allowed=ha,
             )
 
             self.draw_vertical_scrollbar(painter,
@@ -3665,6 +3670,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 content_offset=cf.waterfall_previews_scroll_offset,
                 index=vs.WATERFALL_PAGE_RIGHT,
                 curpos=curpos,
+                highlighting_allowed=ha,
             )
 
     def draw_library_scrollbars(self, painter):
@@ -3714,7 +3720,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             )
 
     def draw_vertical_scrollbar(self, painter, content_height=1000,
-                viewframe_height=100, track_rect=QRect(), content_offset=0.0, index=0, curpos=None):
+                viewframe_height=100, track_rect=QRect(), content_offset=0.0, index=0, curpos=None,
+                highlighting_allowed=True):
 
         vs = self.vertical_scrollbars
         data = vs.data[index]
@@ -3731,7 +3738,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif vs.capture_index == index:
                 highlighted = True
 
-            if highlighted:
+            if highlighted and highlighting_allowed:
                 painter.setOpacity(0.8)
             else:
                 painter.setOpacity(0.5)
