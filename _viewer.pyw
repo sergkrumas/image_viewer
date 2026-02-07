@@ -2786,7 +2786,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return 1.0
 
-    def draw_rounded_framed_progress_label(self, event_painter, pos, text, bold=False, color=Qt.red, normalized_progress=0.0):
+    def draw_rounded_frame_progress_label(self, event_painter, pos, text, bold=False,
+                    color=Qt.red, normalized_progress=0.0, from_center_to_sides=False):
 
         font = event_painter.font()
         font.setFamily('consolas')
@@ -2824,7 +2825,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setClipping(True)
         painter.setClipPath(path)
 
-        rr = QRectF(QPointF(0, 0), QSizeF(pix.size()))
+        if from_center_to_sides:
+            rr = QRectF(QPointF(pix.width()/2*(1.0-normalized_progress), 0), QSizeF(pix.size()))
+        else:
+            rr = QRectF(QPointF(0, 0), QSizeF(pix.size()))
         rr.setWidth(rr.width()*normalized_progress)
         painter.setBrush(QBrush(color))
         painter.setPen(Qt.NoPen)
@@ -2848,7 +2852,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         show_pos_rect.moveCenter(pos)
         event_painter.drawPixmap(show_pos_rect, pix)
 
-    def draw_rounded_framed_label(self, painter, pos, text, bold=False, color=Qt.red):
+    def draw_rounded_frame_label(self, painter, pos, text, bold=False, color=Qt.red):
         painter.save()
 
         font = painter.font()
@@ -3610,10 +3614,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             painter.setPen(QPen(Qt.white))
             if any_images:
-                self.draw_rounded_framed_progress_label(painter,
+                self.draw_rounded_frame_progress_label(painter,
                                             rect.center(),
                                             _("Please wait"),
-                                            normalized_progress=time.time() % 1.0
+                                            normalized_progress=time.time() % 1.0,
+                                            from_center_to_sides=True,
                 )
             else:
                 painter.drawText(rect, Qt.AlignCenter, _("No images"))

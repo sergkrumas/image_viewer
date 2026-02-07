@@ -1667,7 +1667,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
 
                 if board_item._marked_item:
-                    self.draw_rounded_framed_label(painter, selection_area_rect.center().toPoint(), f'MARKED AS BETRUG/TRUFFA/ESTAFA/ESCROQUERIE\n{board_item.info_text()}')
+                    self.draw_rounded_frame_label(painter, selection_area_rect.center().toPoint(), f'MARKED AS BETRUG/TRUFFA/ESTAFA/ESCROQUERIE\n{board_item.info_text()}')
 
                 if case4:
                     self.board_item_under_mouse = board_item
