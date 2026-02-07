@@ -642,10 +642,10 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_viewport_show_last_item()
 
         elif key == Qt.Key_PageDown:
-            self.board_move_viewport(_previous=True)
+            self.board_move_viewport(_next=True)
 
         elif key == Qt.Key_PageUp:
-            self.board_move_viewport(_next=True)
+            self.board_move_viewport(_previous=True)
 
         elif key in [Qt.Key_Plus]:
             self.board_fit_selected_items_on_screen()
