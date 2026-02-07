@@ -3575,7 +3575,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             for n, col in enumerate(columns):
                 offset_x = left + column_width*n
                 offset_y = main_offset_y
-                for im_data in col.images:
+                for im_data in col.images_data:
                     w = im_data.preview_size.width()
                     h = im_data.preview_size.height()
                     r = QRectF(offset_x, offset_y, w, h)

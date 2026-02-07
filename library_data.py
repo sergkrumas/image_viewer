@@ -65,11 +65,11 @@ class ThumbnailsThread(QThread):
 
 class LibraryModeImageColumn():
     def __init__(self):
-        self.images = []
+        self.images_data = []
         self.height = 0
 
     def add_image(self, image_data):
-        self.images.append(image_data)
+        self.images_data.append(image_data)
         self.height += image_data.preview_size.height()
 
 class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
@@ -1505,19 +1505,9 @@ class FolderData():
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
             # но при этом содержимое - вполне. Так что no fancy crap, ok.
-            columns = []
-            for i in range(number_of_columns):
-                columns.append(LibraryModeImageColumn())
-            def choose_min_height_column():
-                min_height = 100000000000000
-                min_col = None
-                for col in columns:
-                    if min_height > col.height:
-                        min_height = col.height
-                        min_col = col
-                return min_col
+            columns = [LibraryModeImageColumn() for i in range(number_of_columns)]
             for n, image_data in enumerate(self.images_list):
-                col = choose_min_height_column()
+                col = min(columns, key=lambda c: c.height)
                 col.add_image(image_data)
 
             if waterfall:
