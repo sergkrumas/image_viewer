@@ -333,6 +333,12 @@ class SettingsWindow(QWidget):
             elif isinstance(current_val, str):
                 pass
 
+        # page_transparency
+        # свойство прозрачности задаётся теперь при смене страницы,
+        # а не читается при отрисовке напрямую,
+        # поэтому приходится принудительно обновить
+        MW.set_page_transparency_and_draw_callback(MW.current_page)
+
         self.load_settings_to_globals()
         MW.update_thumbnails_row_relative_offset(None, only_set=True)
         MW.update()
@@ -528,7 +534,7 @@ class SettingsWindow(QWidget):
             'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
             'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
             'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
-            'waterfall_page_transparency': (0.7, (0.0, 1.0), _('Waterfall page transparent value')),
+            'waterfall_page_transparency': (0.9, (0.0, 1.0), _('Waterfall page transparent value')),
 
             '---004': _('Slideshow for Viewer page'),
             'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
