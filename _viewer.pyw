@@ -1625,6 +1625,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.setCursor(Qt.PointingHandCursor)
             return True
 
+        elif CP.underMouse():
+            self.setCursor(Qt.ArrowCursor)
+            return True
+
         else:
             return False
 
