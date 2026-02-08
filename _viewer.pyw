@@ -3014,6 +3014,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def waterfallpage_draw_callback(self, painter, event):
         self.draw_waterfall(painter, event)
 
+    def update_current_page_transparency_value(self):
+        # свойство прозрачности задаётся теперь при смене страницы,
+        # а не читается при отрисовке напрямую,
+        # поэтому приходится принудительно обновить
+        self.set_page_transparency_and_draw_callback(self.current_page)
+
     def set_page_transparency_and_draw_callback(self, page_type):
         if page_type == self.pages.START_PAGE:
             self.current_page_transparency_value = self.STNG_start_page_transparency

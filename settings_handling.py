@@ -334,10 +334,7 @@ class SettingsWindow(QWidget):
                 pass
 
         # page_transparency
-        # свойство прозрачности задаётся теперь при смене страницы,
-        # а не читается при отрисовке напрямую,
-        # поэтому приходится принудительно обновить
-        MW.set_page_transparency_and_draw_callback(MW.current_page)
+        MW.update_current_page_transparency_value()
 
         self.load_settings_to_globals()
         MW.update_thumbnails_row_relative_offset(None, only_set=True)
