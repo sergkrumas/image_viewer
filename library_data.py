@@ -68,9 +68,11 @@ class LibraryModeImageColumn():
         self.images_data = []
         self.height = 0
 
-    def add_image(self, image_data):
+    def add_image(self, image_data, gap_height):
+        if not self.images_data:
+            gap_height = 0
         self.images_data.append(image_data)
-        self.height += image_data.preview_size.height()
+        self.height += image_data.preview_size.height() + gap_height
 
 class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
     def __new__(cls, _globals=None):
@@ -1512,9 +1514,11 @@ class FolderData():
             # но потом пришла мысль, что кол-во картинок может не изменится,
             # но при этом содержимое - вполне. Так что no fancy crap, ok.
             columns = [LibraryModeImageColumn() for i in range(number_of_columns)]
+            MW = LibraryData().globals.main_window
+            gap_height = MW.waterfall_grid_get_vertical_spacing() if waterfall else 0.0
             for n, image_data in enumerate(self.images_list):
                 col = min(columns, key=lambda c: c.height)
-                col.add_image(image_data)
+                col.add_image(image_data, gap_height)
 
             if waterfall:
                 self.waterfall_columns = columns

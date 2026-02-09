@@ -2383,7 +2383,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         # добавляем высоту контента и вертикальных отступов
         max_height_col = max(folder_data.waterfall_columns, key=lambda c: c.height)
         height += max_height_col.height
-        height += self.waterfall_grid_get_vertical_spacing()*(len(max_height_col.images_data)-1)
         # добавляем пустое поле внизу списка
         height += self.PREVIEWS_AREA_SCROLL_SPACING
         return height
