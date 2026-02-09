@@ -3797,20 +3797,21 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if content_height > viewframe_height:
 
             painter.save()
-            painter.setOpacity(0.1)
-            painter.fillRect(track_rect, Qt.white)
 
             highlighted = False
+            captured = False
             if vs.capture_index == vs.NO_SCROLLBAR:
                 if track_rect.contains(curpos):
                     highlighted = True
             elif vs.capture_index == index:
                 highlighted = True
+                captured = True
 
             if highlighted and highlighting_allowed:
-                painter.setOpacity(0.8)
+                painter.setOpacity(0.3)
             else:
-                painter.setOpacity(0.5)
+                painter.setOpacity(0.1)
+            painter.fillRect(track_rect, Qt.white)
 
             # вычисление высоты ползунка с учётом того, что она не должна быть меньше заданного минимума
             viewframe_fac = viewframe_height/content_height
@@ -3822,9 +3823,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             thumb_rect = QRectF(track_rect.left(), track_rect.top() + thumb_y, track_rect.width(), thumb_height)
 
+            if captured or (highlighted and highlighting_allowed and thumb_rect.contains(curpos)):
+                painter.setOpacity(1.0)
+                thumb_color = QColor(200, 200, 200)
+            else:
+                painter.setOpacity(0.5)
+                thumb_color = Qt.white
+
             path = QPainterPath()
             path.addRoundedRect(thumb_rect, 5, 5)
-            painter.fillPath(path, Qt.white)
+            painter.fillPath(path, thumb_color)
 
             painter.restore()
 
