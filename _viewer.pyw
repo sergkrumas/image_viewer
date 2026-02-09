@@ -2380,7 +2380,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         height = 0.0
         # добавляем пустое поле вверху списка
         height += self.PREVIEWS_AREA_SCROLL_SPACING
-        # добавляем высоту контента и вертикальных отступов
+        # добавляем высоту контента и вертикальных отступов между картинками
+        # WARNING: т.к. высота каждой превьюшки разнится,
+        # обязательно надо учитывать совокупную высоту по отступам
+        # (здесь она уже учтена в c.height)
         max_height_col = max(folder_data.waterfall_columns, key=lambda c: c.height)
         height += max_height_col.height
         # добавляем пустое поле внизу списка
