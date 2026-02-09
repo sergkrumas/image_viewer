@@ -1623,7 +1623,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return True
 
         elif CP and CP.thumbnails_click(define_cursor_shape=True):
-            # TODO: (6 фев 26) тут ведь интересно отметить, 
+            # TODO: (6 фев 26) тут ведь интересно отметить,
             # что миниатюры всем своим массивом создают единый прямоугольник,
             # его-то и надо проверять, а не полностью каждую видимую миниатюру
             self.setCursor(Qt.PointingHandCursor)
@@ -2642,11 +2642,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         value = int(value)
         value += n
         value = self.apply_min_max_clamping(value, min_value, max_value)
-        # TODO: вообще тут лучше бы всё переписать, ибо я думал, что изменяя переменную настройки 
+        # TODO: вообще тут лучше бы всё переписать, ибо я думал, что изменяя переменную настройки
         # на главном окне, у меня должно изменяться и значение на матрице настроек,
         # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
-        # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск 
+        # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
         self.STNG_waterfall_columns_number = float(value)
         SettingsWindow.set_setting_value('waterfall_columns_number', float(value))
         value = int(value)
