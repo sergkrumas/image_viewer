@@ -125,6 +125,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     CORNER_BUTTON_RADIUS = 50
 
     LIBRARY_FOLDER_ITEM_HEIGHT = 140
+    PREVIEWS_AREA_SCROLL_SPACING = 70
 
     SCROLLBAR_WIDTH = 10
     SCROLL_THUMB_MIN_HEIGHT = 50
@@ -2363,21 +2364,28 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return height
 
     def library_page_previews_columns_content_height(self, folder_data):
-        height = max(col.height for col in folder_data.library_columns)
-        # сюда тоже добавляем половину высоты айтема папки, хоть эта часть не про папки, а про превьюшки
-        # в итоге получится пустое поле внизу списка
-        height += self.LIBRARY_FOLDER_ITEM_HEIGHT/2
+        height = 0.0
+        # добавляем пустое поле вверху списка
+        height += self.PREVIEWS_AREA_SCROLL_SPACING
+        # добавляем высоту контента
+        height += max(col.height for col in folder_data.library_columns)
+        # добавляем пустое поле внизу списка
+        height += self.PREVIEWS_AREA_SCROLL_SPACING
         return height
 
     def library_page_viewframe_height(self):
         return self.rect().height()
 
     def waterfall_page_previews_columns_content_height(self, folder_data):
-        height = max(col.height for col in folder_data.waterfall_columns)
-        height += self.waterfall_grid_get_vertical_spacing()*(len(folder_data.waterfall_columns)-1)
-        # сюда тоже добавляем половину высоты айтема папки, хоть эта часть не про папки, а про превьюшки
-        # в итоге получится пустое поле внизу списка
-        height += self.LIBRARY_FOLDER_ITEM_HEIGHT/2
+        height = 0.0
+        # добавляем пустое поле вверху списка
+        height += self.PREVIEWS_AREA_SCROLL_SPACING
+        # добавляем высоту контента и вертикальных отступов
+        max_height_col = max(folder_data.waterfall_columns, key=lambda c: c.height)
+        height += max_height_col.height
+        height += self.waterfall_grid_get_vertical_spacing()*(len(max_height_col.images_data)-1)
+        # добавляем пустое поле внизу списка
+        height += self.PREVIEWS_AREA_SCROLL_SPACING
         return height
 
     def waterfall_page_viewframe_height(self):
@@ -3621,7 +3629,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(QPen(QColor(Qt.gray)))
             painter.setBrush(QBrush(Qt.black))
             painter.setPen(Qt.NoPen)
-            main_offset_y = 20 + scroll_offset
+            main_offset_y = 20 + self.PREVIEWS_AREA_SCROLL_SPACING + scroll_offset
             for n, col in enumerate(columns):
                 offset_x = left + (column_width+hor_gap)*n
                 offset_y = main_offset_y
