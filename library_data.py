@@ -71,6 +71,7 @@ class LibraryModeImageColumn():
     def add_image(self, image_data, gap_height):
         if not self.images_data:
             gap_height = 0
+        image_data._waterfall_preview_column_absolute_offset = int(self.height)
         self.images_data.append(image_data)
         self.height += image_data.preview_size.height() + gap_height
 
@@ -949,6 +950,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 Globals.PREVIEW_WIDTH,
                 waterfall=True,
             )
+            if MW.waterfall_appstart:
+                MW.waterfall_appstart = False
+                MW.waterfall_update_waterfall_on_app_start()
 
     @classmethod
     def update_current_folder_columns(cls):
@@ -1092,6 +1096,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 MW.activateWindow()
 
                 LibraryData().add_current_image_to_view_history()
+
+            if MW.is_waterfall_page_active() and MW.waterfall_modal_on_app_start():
+                MW.waterfall_enter_modal_viewer_on_app_start()
 
             # print('store session file from handle_input_data')
             LibraryData().store_session_file()
@@ -1584,6 +1591,8 @@ class ImageData():
             self.md5, self.md5_tuple = "", ()
             self.image_metadata = dict()
             self.disk_size = 0
+
+        self._waterfall_preview_column_absolute_offset = 0
 
         self.board_item = None
 

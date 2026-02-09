@@ -680,6 +680,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.board_CP_cursor_handled = False
 
+        self.waterfall_appstart = False
+        self.waterfall_block_active_item = False
+
         self.context_menu_stylesheet = """
         QMenu, QCheckBox{
             padding: 0px;
@@ -1818,12 +1821,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.is_library_page_active():
                 self.library_previews_list_active_item = data
             elif self.is_waterfall_page_active():
-                self.waterfall_previews_list_active_item = data
+                if not self.waterfall_block_active_item:
+                    self.waterfall_previews_list_active_item = data
 
         if p_list:
             over_active_item = False
             if ai:
-                r = self.previews_active_item_rect(ai[0])
+                r = self.previews_enlarge_active_item_rect(ai[0])
                 over_active_item = r.contains(event.pos())
             if not over_active_item:
                 set_active_item(None)
@@ -1831,7 +1835,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     if item_rect.contains(event.pos()):
                         set_active_item((item_rect, item_data))
 
-    def enter_modal_viewer(self):
+    def enter_modal_viewer(self, app_start_item=None):
+        if app_start_item:
+            self.waterfall_previews_list_active_item = (QRect(), app_start_item)
         if self.is_waterfall_page_active():
             if self.waterfall_previews_list_active_item:
 
@@ -1845,18 +1851,80 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 self.viewer_modal = True
 
+                if app_start_item:
+                    # Здесь я не могу задать активный айтем
+                    # потому что в этой точке всё ещё могут генериться превьюшки
+                    # и создаваться столбцы для них.
+                    # Вообще, я бы мог это сделать, но я ещё не рефакторил превьюшки
+                    # по модели MVC, так что делать тут нечего совсем.
+                    self.waterfall_previews_list_active_item = None
+
+                    self.waterfall_block_active_item = True
+
             else:
                 self.show_center_label(_("No active item!"), error=True)
         else:
             self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
 
-
     def leave_modal_viewer(self):
         if self.is_waterfall_page_active():
             self.viewer_modal = False
             self.waterfall_backplate = None
+            if self.waterfall_block_active_item:
+                cf = LibraryData().current_folder()
+                image_data = cf.current_image()
+                if image_data and hasattr(image_data, 'preview_ui_rect'):
+                    self.waterfall_previews_list_active_item = (image_data.preview_ui_rect, image_data)
+                    Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
+                else:
+                    self.waterfall_unblock_active_item()
         else:
             self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
+
+    def waterfall_unblock_active_item(self):
+        self.waterfall_block_active_item = False
+        self.waterfall_previews_list_active_item = None
+        self.update()
+
+    def waterfall_update_waterfall_on_app_start(self):
+        self.waterfall_set_content_offset_to_current_image()
+        self.render_waterfall_backplate()
+
+    def waterfall_set_content_offset_to_current_image(self):
+        cf = LibraryData().current_folder()
+        ci = cf.current_image()
+
+        offset = 0
+        # добавляем отступ верхней границы превьюшки
+        offset -= ci._waterfall_preview_column_absolute_offset
+        # добавляем половину высоты от превьюшки
+        offset -= ci.preview.height()/2
+        # добавляем отступ шапки
+        offset -= self.PREVIEWS_AREA_SCROLL_SPACING
+        # отнимаем половину высоты вьюфрейма для центирования
+        offset += self.waterfall_page_viewframe_height()/2
+
+        # клампим для валидности
+        VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
+        if cf.waterfall_columns:
+            content_height = self.waterfall_page_previews_columns_content_height(cf)
+            if content_height > VIEWFRAME_HEIGHT:
+                offset = self.apply_scroll_and_limits(offset, 0, content_height, VIEWFRAME_HEIGHT)
+            else:
+                offset = 0
+        else:
+            offset = 0
+
+        cf.waterfall_previews_scroll_offset = offset
+
+    def waterfall_modal_on_app_start(self):
+        return self.STNG_open_app_on_waterfall_page and self.STNG_enter_modal_viewer_mode_on_app_start
+
+    def waterfall_enter_modal_viewer_on_app_start(self):
+        self.waterfall_appstart = True
+        cf = LibraryData().current_folder()
+        ci = cf.current_image()
+        self.enter_modal_viewer(app_start_item=ci)
 
     def mousePressEvent(self, event):
 
@@ -2499,7 +2567,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.is_library_page_active():
                 self.library_previews_list_active_item = None
             elif self.is_waterfall_page_active():
-                self.waterfall_previews_list_active_item = None
+                if not self.waterfall_block_active_item:
+                    self.waterfall_previews_list_active_item = None
 
         if p_list:
             for item_rect, item_data in p_list:
@@ -3645,6 +3714,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     h = im_data.preview_size.height()
                     r = QRectF(offset_x, offset_y, w, h)
                     r.adjust(1, 1, -1, -1)
+                    im_data.preview_ui_rect = QRectF(r)
                     interaction_list.append((r, im_data))
                     pixmap = im_data.preview
                     if rounded_previews:
@@ -3664,7 +3734,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
                 item_rect, item_data = active_item
-                item_rect = self.previews_active_item_rect(item_rect)
+                item_rect = self.previews_enlarge_active_item_rect(item_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
                 draw_shadow(
                     self,
@@ -3852,7 +3922,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
           QPointF(self.rect().width()/2, self.rect().height()).toPoint()
         )
 
-    def previews_active_item_rect(self, rect):
+    def previews_enlarge_active_item_rect(self, rect):
         new_w = rect.width() + 40
         new_h = (new_w/rect.width())*rect.height()
         r = QRectF(0, 0, new_w, new_h).toRect()
