@@ -914,14 +914,20 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     @classmethod
     def update_folder_columns(cls, folder_data):
         Globals = LibraryData().globals
-        library_width = Globals.main_window.rect().width()
-        SCROLLBAR_WIDTH = Globals.main_window.SCROLLBAR_WIDTH
+        MW = Globals.main_window
+        library_width = MW.rect().width()
+        SCROLLBAR_WIDTH = MW.SCROLLBAR_WIDTH
         # вычитаем место для скроллбаров, чтобы они всегда помещались
-        waterfall_width = Globals.main_window.rect().width() - SCROLLBAR_WIDTH*10
+        waterfall_width = MW.rect().width() - SCROLLBAR_WIDTH*10
 
-        def get_columns_number_based_on_width(columns_space):
+        def get_columns_number_based_on_width(columns_space, waterfall=False):
             count = int(columns_space/Globals.PREVIEW_WIDTH)
             count = max(count, 1)
+            if waterfall and count > 1:
+                gap = MW.waterfall_grid_get_horizontal_spacing()
+                # gap добавляется и к columns_space, чтобы не возиться с лишними ветвлениями
+                count = int((columns_space+gap)/(Globals.PREVIEW_WIDTH+gap))
+                count = max(count, 1)
             return count
 
         if folder_data and folder_data.previews_done:
@@ -930,8 +936,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 Globals.PREVIEW_WIDTH,
             )
 
-            desired_number = int(Globals.main_window.STNG_waterfall_columns_number)
-            calc_number = get_columns_number_based_on_width(waterfall_width)
+            desired_number = int(MW.STNG_waterfall_columns_number)
+            calc_number = get_columns_number_based_on_width(waterfall_width, waterfall=True)
             if desired_number == 0:
                 number = calc_number
             else:

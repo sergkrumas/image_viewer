@@ -515,6 +515,7 @@ class SettingsWindow(QWidget):
 
             '---007': _('Waterfall'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
+            'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
 
             '---006': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),

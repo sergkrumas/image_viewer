@@ -2364,9 +2364,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def library_page_previews_columns_content_height(self, folder_data):
         height = max(col.height for col in folder_data.library_columns)
-        # сюда тоже добавляем высоту айтема папки, хоть эта часть не про папки, а про превьюшки
+        # сюда тоже добавляем половину высоты айтема папки, хоть эта часть не про папки, а про превьюшки
         # в итоге получится пустое поле внизу списка
-        height += self.LIBRARY_FOLDER_ITEM_HEIGHT
+        height += self.LIBRARY_FOLDER_ITEM_HEIGHT/2
         return height
 
     def library_page_viewframe_height(self):
@@ -2374,13 +2374,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def waterfall_page_previews_columns_content_height(self, folder_data):
         height = max(col.height for col in folder_data.waterfall_columns)
-        # сюда тоже добавляем высоту айтема папки, хоть эта часть не про папки, а про превьюшки
+        height += self.waterfall_grid_get_vertical_spacing()*(len(folder_data.waterfall_columns)-1)
+        # сюда тоже добавляем половину высоты айтема папки, хоть эта часть не про папки, а про превьюшки
         # в итоге получится пустое поле внизу списка
-        height += self.LIBRARY_FOLDER_ITEM_HEIGHT
+        height += self.LIBRARY_FOLDER_ITEM_HEIGHT/2
         return height
 
     def waterfall_page_viewframe_height(self):
         return self.rect().height()
+
+    def waterfall_grid_get_vertical_spacing(self):
+        return self.STNG_waterfall_grid_spacing
+
+    def waterfall_grid_get_horizontal_spacing(self):
+        return self.STNG_waterfall_grid_spacing
 
     def library_page_scroll_autoset_or_reset(self):
         content_height = self.library_page_folders_content_height()
@@ -2511,6 +2518,26 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return False
 
+    def waterfall_change_grid_gap(self, event, scroll_value):
+        if scroll_value > 0:
+            n = 1
+        else:
+            n = -1
+        value = self.STNG_waterfall_grid_spacing + n
+        value = self.apply_min_max_clamping(
+            value,
+            *SettingsWindow.get_setting_span('waterfall_grid_spacing')
+        )
+        self.STNG_waterfall_grid_spacing = float(value)
+        SettingsWindow.set_setting_value('waterfall_grid_spacing', float(value))
+        cf = LibraryData().current_folder()
+        if cf:
+            LibraryData().update_current_folder_columns()
+        self.update()
+
+    def apply_min_max_clamping(self, value, min_value, max_value):
+        return max(min_value, min(max_value, value))
+
     def waterfall_change_number_of_columns(self, event, scroll_value):
         min_value, max_value = SettingsWindow.get_setting_span('waterfall_columns_number')
         if scroll_value > 0:
@@ -2530,7 +2557,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 value = cf.waterfall_number_of_columns
         value = int(value)
         value += n
-        value = max(min_value, min(max_value, value))
+        value = self.apply_min_max_clamping(value, min_value, max_value)
         # TODO: вообще тут лучше бы всё переписать, ибо я думал, что изменяя переменную настройки 
         # на главном окне, у меня должно изменяться и значение на матрице настроек,
         # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
@@ -2577,6 +2604,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 if ctrl and (not shift):
                     self.waterfall_change_number_of_columns(event, scroll_value)
+                elif ctrl and shift:
+                    self.waterfall_change_grid_gap(event, scroll_value)
                 else:
                     self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
@@ -3164,7 +3193,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         r = content_rect = self.rect()
 
         if columns:
-            content_width = cf.waterfall_number_of_columns*cf.column_width
+            number_of_cols = cf.waterfall_number_of_columns
+            content_width = number_of_cols*cf.column_width
+            content_width += (number_of_cols-1)*self.waterfall_grid_get_horizontal_spacing()
 
             left_offset = (self.rect().width()-content_width)/2
             content_rect = QRectF(left_offset, 0, content_width, r.height()).toRect()
@@ -3180,6 +3211,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                         cf.column_width, cf.waterfall_previews_scroll_offset,
                                         bool(cf.images_list),
                                         render_as_blackplate,
+                                        hor_gap=self.waterfall_grid_get_horizontal_spacing(),
+                                        ver_gap=self.waterfall_grid_get_vertical_spacing(),
                                     )
 
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
@@ -3566,7 +3599,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.restore()
 
-    def draw_previews_as_columns(self, painter, columns, interaction_list, active_item, rect, column_width, scroll_offset, any_images, render_as_blackplate=False):
+    def draw_previews_as_columns(self, painter, columns, interaction_list,
+                                                                    active_item,
+                                                                    area_rect,
+                                                                    column_width, scroll_offset,
+                                                                    any_images,
+                                                                    render_as_blackplate=False,
+                                                                    hor_gap=.0,
+                                                                    ver_gap=.0):
 
         PREVIEW_CORNER_RADIUS = Globals.PREVIEW_CORNER_RADIUS
         rounded_previews = self.rounded_previews
@@ -3577,13 +3617,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.setRenderHint(QPainter.Antialiasing, True)
                 painter.setClipping(True)
 
-            left = rect.left()
+            left = area_rect.left()
             painter.setPen(QPen(QColor(Qt.gray)))
             painter.setBrush(QBrush(Qt.black))
             painter.setPen(Qt.NoPen)
             main_offset_y = 20 + scroll_offset
             for n, col in enumerate(columns):
-                offset_x = left + column_width*n
+                offset_x = left + (column_width+hor_gap)*n
                 offset_y = main_offset_y
                 for im_data in col.images_data:
                     w = im_data.preview_size.width()
@@ -3598,10 +3638,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         painter.setClipPath(path)
                         # painter.drawRect(r) #for images with transparent layer
                         painter.drawPixmap(r.toRect(), pixmap)
-
                     else:
                         painter.drawPixmap(r.toRect(), pixmap)
-                    offset_y += h
+                    offset_y += (h + ver_gap)
 
             if rounded_previews:
                 painter.setClipping(False)
@@ -3625,13 +3664,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(QPen(Qt.white))
             if any_images:
                 self.draw_rounded_frame_progress_label(painter,
-                                            rect.center(),
+                                            area_rect.center(),
                                             _("Please wait"),
                                             normalized_progress=time.time() % 1.0,
                                             from_center_to_sides=True,
                 )
             else:
-                painter.drawText(rect, Qt.AlignCenter, _("No images"))
+                painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
 
     def reset_scrollbars_visibility(self):
         vs = self.vertical_scrollbars
