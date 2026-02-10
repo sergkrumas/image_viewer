@@ -3596,6 +3596,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         # left column
         scroll_offset = LibraryData().folderslist_scroll_offset
+        scroll_offset += 70
         self.folders_list = []
         for n, folder_data in enumerate(LibraryData().all_folders()):
             thumb = folder_data.get_current_thumbnail()
