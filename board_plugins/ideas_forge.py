@@ -21,7 +21,7 @@ def preparePluginBoard(self, plugin_info):
 
 
 def register(board_obj, plugin_info):
-    plugin_info.name = 'IDEAS DEV'
+    plugin_info.name = 'IDEAS FORGE'
     plugin_info.preparePluginBoard = preparePluginBoard
 
 
