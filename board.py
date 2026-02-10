@@ -3897,21 +3897,16 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_get_nearest_item(self, folder_data, by_window_center=False):
-        min_distance = 9999999999999999
-        min_distance_board_item = None
-        if by_window_center:
-            cursor_pos = self.get_center_position()
+        cursor_pos = self.get_center_position() if by_window_center else self.mapped_cursor_pos()
+        items = folder_data.board.items_list
+        def min_key_function(board_item):
+            item_pos = board_item.calculate_absolute_position(canvas=self)
+            distance = QVector2D(item_pos - cursor_pos).length()
+            return distance
+        if items:
+            return min(items, key=min_key_function)
         else:
-            cursor_pos = self.mapped_cursor_pos()
-        for board_item in folder_data.board.items_list:
-
-            pos = board_item.calculate_absolute_position(canvas=self)
-            distance = QVector2D(pos - cursor_pos).length()
-            if distance < min_distance:
-                min_distance = distance
-                min_distance_board_item = board_item
-
-        return min_distance_board_item
+            return None
 
     def board_move_viewport(self, _previous=False, _next=False):
         self.board_unselect_all_items()
