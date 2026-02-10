@@ -2722,10 +2722,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def find_min_area_item(self, folder_data, pos):
         found_items = self.find_all_items_under_this_pos(folder_data, pos)
-        found_items = list(sorted(found_items, key=lambda x: x.calc_area))
         if found_items:
-            return found_items[0]
-        return None
+            return min(found_items, key=lambda x: x.calc_area)
+        else:
+            return None
 
     def find_all_items_under_this_pos(self, folder_data, pos):
         undermouse_items = []
