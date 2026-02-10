@@ -4002,13 +4002,16 @@ class BoardMixin(BoardTextEditItemMixin):
         pair = None
 
         current_pos = self.board_MapToBoard(self.get_center_position())
+        
+        LocData = namedtuple("LocationData", "pos scale_x scale_y board_item")
+
 
         if not self.fly_pairs:
-            _list = []
+            locations_data_list = []
 
             if cf.board.user_points:
                 for point, bx, by in cf.board.user_points:
-                    _list.append([point, bx, by])
+                    locations_data_list.append(LocData(point, bx, by, None))
             else:
                 nearest_item = self.board_get_nearest_item(cf)
                 items_list = self.get_original_items_order(cf.board.items_list)
@@ -4018,30 +4021,32 @@ class BoardMixin(BoardTextEditItemMixin):
                     sorted_list = items_list
                 for board_item in sorted_list:
                     point = board_item.position
-                    _list.append([point, None, board_item])
+                    locations_data_list.append(LocData(point, None, None, board_item))
 
-            self.fly_pairs = get_cycled_pairs(_list)
+            self.fly_pairs = get_cycled_pairs(locations_data_list)
             pair = [
-                [current_pos, self.canvas_scale_x, self.canvas_scale_y],
-                [_list[0][0], _list[0][1], _list[0][2], ]
+                LocData(current_pos, self.canvas_scale_x, self.canvas_scale_y, None),
+                locations_data_list[0]
             ]
 
+        # pair будет None только когда анимация уже пошла
         if pair is None:
             pair = next(self.fly_pairs)
 
         def animate_scale():
-            bx = pair[1][1]
-            by = pair[1][2]
+            loc_data = pair[1]
 
-            if bx is None:
-                board_item = by
+            if loc_data.board_item:
                 canvas_scale_x = self.canvas_scale_x
                 canvas_scale_y = self.canvas_scale_y
 
-                item_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
+                item_rect = loc_data.board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
                 by = fitted_rect.height()/item_rect.height()
+            else:
+                bx = loc_data.scale_x
+                by = loc_data.scale_y
 
             self.animate_properties(
                 [
@@ -4072,16 +4077,16 @@ class BoardMixin(BoardTextEditItemMixin):
         current_pos_ = self.board_MapToBoard(self.get_center_position())
 
         pair = [
-            [current_pos_, self.canvas_scale_x, self.canvas_scale_y],
+            LocData(current_pos_, self.canvas_scale_x, self.canvas_scale_y, None),
             pair[1],
         ]
 
-        pos1 = QPointF(pair[0][0].x()*self.canvas_scale_x, pair[0][0].y()*self.canvas_scale_y)
-        pos2 = QPointF(pair[1][0].x()*self.canvas_scale_x, pair[1][0].y()*self.canvas_scale_y)
+        pos_from = QPointF(pair[0].pos.x()*self.canvas_scale_x, pair[0].pos.y()*self.canvas_scale_y)
+        pos_to = QPointF(pair[1].pos.x()*self.canvas_scale_x, pair[1].pos.y()*self.canvas_scale_y)
 
         self.animate_properties(
             [
-                (self, "pr_viewport", pos1, pos2, update_viewport_position),
+                (self, "pr_viewport", pos_from, pos_to, update_viewport_position),
             ],
             anim_id="flying",
             duration=2.0,
