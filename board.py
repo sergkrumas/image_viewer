@@ -1514,30 +1514,27 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawPolygon(board_item.get_selection_area(canvas=self))
         painter.restore()
 
-    def get_monitor_area(self):
-        r = self.rect()
-        points = [
-            QPointF(r.topLeft()),
-            QPointF(r.topRight()),
-            QPointF(r.bottomRight()),
-            QPointF(r.bottomLeft()),
-        ]
-        return QPolygonF(points)
+    # TODO: (10 фев 26) удалить перед релизом
+    # def rectrect_intersect_asim_check_pass(self, r1, r2):
+    #     return any(r1.contains(p) for p in [
+    #         r2.topLeft(),
+    #         r2.topRight(),
+    #         r2.bottomRight(),
+    #         r2.bottomLeft(),
+    #         r2.center(),
+    #     ])
+    # def is_rect_insersects_rect(self, r1, r2):
+    #     return any((
+    #         self.rectrect_intersect_asim_check_pass(r1, r2),
+    #         self.rectrect_intersect_asim_check_pass(r2, r1),
+    #     ))
 
-    def rectrect_intersect_asim_check_pass(self, r1, r2):
-        return any(r1.contains(p) for p in [
-            r2.topLeft(),
-            r2.topRight(),
-            r2.bottomRight(),
-            r2.bottomLeft(),
-            r2.center(),
-        ])
-
-    def is_rect_insersects_rect(self, r1, r2):
-        return any((
-            self.rectrect_intersect_asim_check_pass(r1, r2),
-            self.rectrect_intersect_asim_check_pass(r2, r1),
-        ))
+    def boards_resolve_rects_intersection(self, rect1, rect2):
+        # WARNING: (10 фев 26) пересечение прямоугольников надо проверять через пересечение проекций на обе оси,
+        # а функция self.is_rect_insersects_rect даёт сбой, когда картинка, например, сильно вытянута по вертикали, и тогда
+        # при просмотре её верхушки или низины она пропадает с экрана. 
+        # Я затупил тогда, и сейчас исправляю свой затуп. К счастью, реализовывать сравнение проекций не нужно, всё уже реализовано в Qt.
+        return rect1.intersects(rect2)
 
     def board_draw_item(self, painter, board_item):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
@@ -1596,7 +1593,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
             sbr_ = selection_area.boundingRect()
 
-            if not self.is_rect_insersects_rect(self.rect(), selection_area.boundingRect().toRect()):
+            if not self.boards_resolve_rects_intersection(
+                                                            self.rect(),
+                                                            selection_area.boundingRect().toRect()
+                                                                                                ):
+
                 if self.STNG_board_unloading:
                     self.trigger_board_item_pixmap_unloading(board_item)
 
