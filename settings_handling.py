@@ -449,19 +449,33 @@ class SettingsWindow(QWidget):
     def actualize_matrix_data(cls):
         actual_settings_matrix = cls.generate_localized_matrix()
         # удаляем старые неактуальные ключи настроек
-        for key in list(cls.matrix.keys()):
-            if key not in actual_settings_matrix.keys():
-                cls.matrix.pop(key)
+        for setting_key in list(cls.matrix.keys()):
+            if setting_key not in actual_settings_matrix.keys():
+                cls.matrix.pop(setting_key)
         # копирем актуальные переводы описаний настроек
-        for key in cls.matrix.keys():
-            if key in actual_settings_matrix.keys():
-                if key.startswith('---'):
-                    cls.matrix[key] = actual_settings_matrix[key]
+        for setting_key in cls.matrix.keys():
+            if setting_key in actual_settings_matrix.keys():
+                if setting_key.startswith('---'):
+                    cls.matrix[setting_key] = actual_settings_matrix[setting_key]
                 else:
-                    description = actual_settings_matrix[key][-1]
-                    data = cls.matrix[key]
+                    description = actual_settings_matrix[setting_key][-1]
+                    data = cls.matrix[setting_key]
                     data[-1] = description
-                    cls.matrix[key] = data
+                    cls.matrix[setting_key] = data
+        # обновляем минимально и максимально допустимые значения настроек типа float
+        for setting_key, setting_data in cls.matrix.items():
+            if setting_key in actual_settings_matrix.keys():
+                default_value = setting_data[0]
+                if isinstance(default_value, float):
+                    stored_matrix_span = setting_data[1]
+                    actual_matrix_span = list(actual_settings_matrix[setting_key][1])
+                    if stored_matrix_span != actual_matrix_span:
+
+                        s_data = cls.matrix[setting_key]
+                        s_data[1] = actual_matrix_span
+                        cls.matrix[setting_key] = s_data
+                        msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
+                        print(msg)
 
     @classmethod
     def store_to_disk(cls):
