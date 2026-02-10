@@ -4076,6 +4076,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         current_pos_ = self.board_MapToBoard(self.get_center_position())
 
+        # подменяем первую позицию на текущие данные, чтобы избежать перескоков и прочего неприятного,
+        # мало ли, нет блокировки, и из-за этого позиция или масштаб были изменены пользователем
         pair = [
             LocData(current_pos_, self.canvas_scale_x, self.canvas_scale_y, None),
             pair[1],
