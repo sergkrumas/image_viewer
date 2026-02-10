@@ -329,7 +329,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             painter.setOpacity(.3)
 
-        painter.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+        if self.STNG_desaturated_corner_buttons_and_corner_menus:
+            brush_color = QColor(50, 50, 50)
+        else:
+            brush_color = Qt.red
+
+        painter.setBrush(QBrush(brush_color, Qt.SolidPattern))
         painter.setPen(Qt.NoPen)
         painter.drawEllipse(btn_rect)
 
@@ -381,7 +386,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setOpacity(.5)
 
         if window_corner_id == self.InteractiveCorners.TOPLEFT:
-            brush_color = Qt.red
+            if self.STNG_desaturated_corner_buttons_and_corner_menus:
+                brush_color = QColor(50, 50, 50)
+            else:
+                brush_color = Qt.red
         elif window_corner_id == self.InteractiveCorners.TOPRIGHT:
             brush_color = QColor(50, 50, 50)
 

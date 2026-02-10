@@ -479,6 +479,7 @@ class SettingsWindow(QWidget):
         matrix = {
             '---001': _('General'),
             'ui_lang': ('en', _('UI language')),
+            'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
             'enter_modal_viewer_mode_on_app_start': (True, 'Enter modal viewer mode on application start'),
