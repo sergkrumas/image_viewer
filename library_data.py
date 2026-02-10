@@ -1523,7 +1523,10 @@ class FolderData():
             columns = [LibraryModeImageColumn() for i in range(number_of_columns)]
             MW = LibraryData().globals.main_window
             gap_height = MW.waterfall_grid_get_vertical_spacing() if waterfall else 0.0
-            for n, image_data in enumerate(self.images_list):
+            # для waterfall больше не показываем неподдерживаемые файлы отображаемые превьюшкой «?!» 
+            images_list = filter(lambda imd: not imd.preview_error, self.images_list) if waterfall else self.images_list
+
+            for n, image_data in enumerate(images_list):
                 col = min(columns, key=lambda c: c.height)
                 col.add_image(image_data, gap_height)
 
