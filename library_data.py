@@ -1580,6 +1580,8 @@ class ImageData():
         self.source_width = 0
         self.source_height = 0
 
+        self.preview_ui_rect = QRect()
+
         self._preview = None
         if self.filepath and not LibraryData().globals.lite_mode:
             if LibraryData.is_interest_file(self.filepath):

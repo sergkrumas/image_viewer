@@ -1817,10 +1817,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     break
 
     def previews_list_mouseMoveEvent(self, event):
+        self.previews_list_set_active_item(event.pos())
+
+    def previews_list_set_active_item(self, curpos):
         p_list = None
+
         if self.is_library_page_active():
             p_list = self.library_previews_list
             ai = self.library_previews_list_active_item
+
         elif self.is_waterfall_page_active():
             p_list = self.waterfall_previews_list
             ai = self.waterfall_previews_list_active_item
@@ -1828,20 +1833,29 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         def set_active_item(data):
             if self.is_library_page_active():
                 self.library_previews_list_active_item = data
+
             elif self.is_waterfall_page_active():
                 if not self.waterfall_block_active_item:
                     self.waterfall_previews_list_active_item = data
 
+
         if p_list:
-            over_active_item = False
-            if ai:
-                r = self.previews_enlarge_active_item_rect(ai[0])
-                over_active_item = r.contains(event.pos())
-            if not over_active_item:
+            cursor_over_preview = None
+            for item_rect, item_data in p_list:
+                if item_rect.contains(curpos):
+                    cursor_over_preview = (item_rect, item_data)
+                    break
+                c1 = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect).contains(curpos)
+                c2 = not item_data.preview_ui_rect.isNull()
+                if c1 and c2 and ai:
+                    itd = ai[1]
+                    if itd is item_data:
+                        cursor_over_preview = (item_rect, item_data)
+                        break
+            if cursor_over_preview:
+                set_active_item(cursor_over_preview)
+            else:
                 set_active_item(None)
-                for item_rect, item_data in p_list:
-                    if item_rect.contains(event.pos()):
-                        set_active_item((item_rect, item_data))
 
     def enter_modal_viewer(self, app_start_item=None):
         if app_start_item:
@@ -1881,7 +1895,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.waterfall_block_active_item:
                 cf = LibraryData().current_folder()
                 image_data = cf.current_image()
-                if image_data and hasattr(image_data, 'preview_ui_rect'):
+                if image_data and not image_data.preview_ui_rect.isNull():
                     self.waterfall_previews_list_active_item = (image_data.preview_ui_rect, image_data)
                     Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
                 else:
@@ -2543,7 +2557,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                                 content_height,
                                                                 VIEWFRAME_HEIGHT,
                                                             )
-                        self.reset_previews_active_item_on_scrolling(event)
+                        self.previews_list_set_active_item(event.pos())
 
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
@@ -2557,35 +2571,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                             content_height,
                                                             VIEWFRAME_HEIGHT,
                                                         )
-                    self.reset_previews_active_item_on_scrolling(event)
-
+                    self.previews_list_set_active_item(event.pos())
         self.update()
-
-    def reset_previews_active_item_on_scrolling(self, event):
-        current_item = None
-        p_list = None
-        if self.is_library_page_active():
-            p_list = self.library_previews_list
-            active_item = self.library_previews_list_active_item
-        elif self.is_waterfall_page_active():
-            p_list = self.waterfall_previews_list
-            active_item = self.waterfall_previews_list_active_item
-
-        def reset():
-            if self.is_library_page_active():
-                self.library_previews_list_active_item = None
-            elif self.is_waterfall_page_active():
-                if not self.waterfall_block_active_item:
-                    self.waterfall_previews_list_active_item = None
-
-        if p_list:
-            for item_rect, item_data in p_list:
-                if item_rect.contains(event.pos()):
-                    current_item = (item_rect, item_data)
-            if current_item != active_item or not any(self.corner_menu_visibility):
-                # обнуляем выделенную мышкой превьюшку,
-                # если под мышкой уже находится другая превьюшка
-                reset()
 
     def is_control_panel_under_mouse(self):
         if Globals.control_panel is not None:
@@ -3742,8 +3729,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.setRenderHint(QPainter.Antialiasing, False)
 
             if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
-                item_rect, item_data = active_item
-                item_rect = self.previews_enlarge_active_item_rect(item_rect)
+                item_data = active_item[1]
+                item_rect = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
                 draw_shadow(
                     self,
