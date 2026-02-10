@@ -3746,7 +3746,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if any_images:
                 self.draw_rounded_frame_progress_label(painter,
                                             area_rect.center(),
-                                            _("Please wait"),
+                                            _("Please wait").upper(),
                                             normalized_progress=time.time() % 1.0,
                                             from_center_to_sides=True,
                 )
