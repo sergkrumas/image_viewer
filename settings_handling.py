@@ -412,7 +412,7 @@ class SettingsWindow(QWidget):
         else:
             el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
             el.install() # copies el.gettext as _ to builtins for all app modules
-            # SettingsWindow.actualize_matrix_keys_and_descriptions()
+            # SettingsWindow.actualize_matrix_data()
 
     @classmethod
     def langs_list(cls, lang_id):
@@ -440,19 +440,19 @@ class SettingsWindow(QWidget):
                 else:
                     cls.matrix[key] = list(cls.matrix[key])
 
-            SettingsWindow.actualize_matrix_keys_and_descriptions()
+            SettingsWindow.actualize_matrix_data()
 
             # apply settings to global variables
             cls.load_settings_to_globals()
 
     @classmethod
-    def actualize_matrix_keys_and_descriptions(cls):
+    def actualize_matrix_data(cls):
         actual_settings_matrix = cls.generate_localized_matrix()
         # удаляем старые неактуальные ключи настроек
         for key in list(cls.matrix.keys()):
             if key not in actual_settings_matrix.keys():
                 cls.matrix.pop(key)
-        # copy actual descriptions from localized object
+        # копирем актуальные переводы описаний настроек
         for key in cls.matrix.keys():
             if key in actual_settings_matrix.keys():
                 if key.startswith('---'):
@@ -497,7 +497,6 @@ class SettingsWindow(QWidget):
             'gamepad_move_stick_speed': (20.0, (1.0, 50.0), _('Gamepad move stick speed')),
 
 
-
             '---002': _('Viewer page'),
             'animated_zoom': (False, _('Animated zoom')),
             'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
@@ -515,9 +514,11 @@ class SettingsWindow(QWidget):
             'browse_images_only': (False, _('Allow browsing image filetypes only')),
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
+
             '---007': _('Waterfall'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
             'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
+
 
             '---006': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
@@ -529,6 +530,7 @@ class SettingsWindow(QWidget):
             'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
             'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
 
+
             '---003': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
             'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
@@ -536,9 +538,11 @@ class SettingsWindow(QWidget):
             'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
             'waterfall_page_transparency': (0.9, (0.0, 1.0), _('Waterfall page transparent value')),
 
+
             '---004': _('Slideshow for Viewer page'),
             'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
             'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
+
 
             '---005': _('Paths'),
             'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
@@ -601,7 +605,7 @@ class SettingsWindow(QWidget):
         # задаём выбранную локаль по всему приложению
         cls.set_ui_language()
         # обновляем описания настроек в соответствии с языком
-        cls.actualize_matrix_keys_and_descriptions()
+        cls.actualize_matrix_data()
         cls.store_to_disk()
 
         # пересоздаём элементы панели управления, чтобы подсказки обновились
