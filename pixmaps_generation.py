@@ -20,12 +20,10 @@
 
 from _utils import *
 
-def generate_pixmaps(Globals, SettingsWindow):
-    print('start generating pixmaps')
+
+def default_thumbnail(Globals, SettingsWindow):
+
     THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
-
-    Globals.NULL_PIXMAP = QPixmap()
-
     DEFAULT_THUMBNAIL = QPixmap(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
     DEFAULT_THUMBNAIL.fill(Qt.transparent)
     painter = QPainter()
@@ -35,11 +33,13 @@ def generate_pixmaps(Globals, SettingsWindow):
     font.setPixelSize(THUMBNAIL_WIDTH)
     painter.setFont(font)
     painter.setBrush(Qt.NoBrush)
-    painter.drawText(QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH), Qt.AlignCenter, "⧖")
+    painter.drawText(QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH), Qt.AlignCenter, "⧖") #hourglass
     painter.end()
 
     if SettingsWindow.get_setting_value('draw_default_thumbnail'):
         Globals.DEFAULT_THUMBNAIL = DEFAULT_THUMBNAIL
+
+def error_preview_pixmap(Globals):
 
     ERROR_PREVIEW_PIXMAP = QPixmap(200, 200)
     ERROR_PREVIEW_PIXMAP.fill(Qt.black)
@@ -51,6 +51,8 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.drawLine(r.bottomLeft(), r.topRight())
     painter.end()
     Globals.ERROR_PREVIEW_PIXMAP = ERROR_PREVIEW_PIXMAP
+
+def not_supported_pixmap(Globals):
 
     NOT_SUPPORTED_PIXMAP = QPixmap(200, 200)
     NOT_SUPPORTED_PIXMAP.fill(Qt.black)
@@ -67,6 +69,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.NOT_SUPPORTED_PIXMAP = NOT_SUPPORTED_PIXMAP
 
+def fav_big_icon(Globals):
 
     WIDTH = 50
     FAV_BIG_ICON = QPixmap(WIDTH, WIDTH)
@@ -91,6 +94,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.FAV_BIG_ICON = FAV_BIG_ICON
 
+def tag_big_icon(Globals):
 
     WIDTH = 50
     TAG_BIG_ICON = QPixmap(WIDTH, WIDTH)
@@ -107,6 +111,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.TAG_BIG_ICON = TAG_BIG_ICON
 
+def comments_big_icon(Globals):
 
     WIDTH = 50
     COMMENTS_BIG_ICON = QPixmap(WIDTH, WIDTH)
@@ -154,8 +159,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.COMMENTS_BIG_ICON = COMMENTS_BIG_ICON
 
-
-
+def minimize_icon(Globals):
 
     MINIMIZE_ICON = QPixmap(100, 100)
     MINIMIZE_ICON.fill(Qt.transparent)
@@ -169,7 +173,6 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
     painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
-
     OFFSET = 5
     RADIUS = 30
     r = r.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
@@ -180,7 +183,6 @@ def generate_pixmaps(Globals, SettingsWindow):
 
     path = QPainterPath()
     path.addRoundedRect(QRectF(r), 20, 20)
-
 
     use_cubic = False
     path = QPainterPath()
@@ -243,8 +245,21 @@ def generate_pixmaps(Globals, SettingsWindow):
     painter.end()
     Globals.MINIMIZE_ICON = MINIMIZE_ICON.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
+def null_pixmap(Globals):
+
+    Globals.NULL_PIXMAP = QPixmap()
+
+def generate_pixmaps(Globals, SettingsWindow):
+
+    print('start generating pixmaps')
+
+    null_pixmap(Globals)
+    default_thumbnail(Globals, SettingsWindow)
+    error_preview_pixmap(Globals)
+    not_supported_pixmap(Globals)
+    fav_big_icon(Globals)
+    tag_big_icon(Globals)
+    comments_big_icon(Globals)
+    minimize_icon(Globals)
 
     print('finish generating pixmaps')
-
-
-
