@@ -355,29 +355,19 @@ def fit_rect_into_rect(source_rect, input_rect, float_mode=False):
         return result.toRect()
 
 def build_valid_rect(p1, p2):
-    MAX = sys.maxsize
-    left = MAX
-    right = -MAX
-    top = MAX
-    bottom = -MAX
-    for p in [p1, p2]:
-        left = min(p.x(), left)
-        right = max(p.x(), right)
-        top = min(p.y(), top)
-        bottom = max(p.y(), bottom)
+    points = (p1, p2)
+    left = min(p.x() for p in points)
+    right = max(p.x() for p in points)
+    top = min(p.y() for p in points)
+    bottom = max(p.y() for p in points)
     return QRect(QPoint(int(left), int(top)), QPoint(int(right), int(bottom)))
 
 def build_valid_rectF(p1, p2):
-    MAX = sys.maxsize
-    left = MAX
-    right = -MAX
-    top = MAX
-    bottom = -MAX
-    for p in [p1, p2]:
-        left = min(p.x(), left)
-        right = max(p.x(), right)
-        top = min(p.y(), top)
-        bottom = max(p.y(), bottom)
+    points = (p1, p2)
+    left = min(p.x() for p in points)
+    right = max(p.x() for p in points)
+    top = min(p.y() for p in points)
+    bottom = max(p.y() for p in points)
     return QRectF(QPointF(left, top), QPointF(right, bottom))
 
 def is_apng_file_animated(filepath):
@@ -690,18 +680,12 @@ class UtilsMixin:
         return r.contains(self.mapped_cursor_pos())
 
 def get_bounding_points(points):
-    MAX = sys.maxsize
-    left = MAX
-    right = -MAX
-    top = MAX
-    bottom = -MAX
     if not points:
         raise Exception("Empty list!")
-    for p in points:
-        left = min(int(p.x()), left)
-        right = max(int(p.x()), right)
-        top = min(int(p.y()), top)
-        bottom = max(int(p.y()), bottom)
+    left = min(p.x() for p in points)
+    right = max(p.x() for p in points)
+    top = min(p.y() for p in points)
+    bottom = max(p.y() for p in points)
     return QPointF(left, top), QPointF(right, bottom)
 
 def shift_list_to_became_first(_list, should_be_the_first_in_list, reverse=False):
