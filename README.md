@@ -25,7 +25,7 @@ The app is built around pages, with each page delivering a distinct image-viewin
 ![](docs/radial_corner_menu.png)
 
 
-
+If you don't like the red color, you can desaturate it in the app settings.
 
 
 ## Start page
