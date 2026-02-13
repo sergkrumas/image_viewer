@@ -22,7 +22,7 @@ from _utils import *
 
 
 from library_data import (LibraryData, FolderData, ImageData, BoardData, BoardNonAutoSerializedData,
-                                                         LibraryModeImageColumn, ThumbnailsThread)
+                                                         LibraryModeImageColumn, ThumbnailsPreviewsThread)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
@@ -840,7 +840,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.library_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
-                ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
+                ThumbnailsPreviewsThread(folder_data, Globals, run_from_library=True).start()
             self.transformations_allowed = False
 
         elif requested_page == self.pages.WATERFALL_PAGE:
@@ -850,7 +850,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.waterfall_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
-                ThumbnailsThread(folder_data, Globals, run_from_library=True).start()
+                ThumbnailsPreviewsThread(folder_data, Globals, run_from_library=True).start()
             if self.viewer_modal:
                 self.transformations_allowed = True
             else:
@@ -863,7 +863,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             LibraryData().after_current_image_changed()
             LibraryData().add_current_image_to_view_history()
             cf = LibraryData().current_folder()
-            ThumbnailsThread(cf, Globals).start()
+            ThumbnailsPreviewsThread(cf, Globals).start()
             self.transformations_allowed = True
 
         elif requested_page == self.pages.START_PAGE:
@@ -1583,9 +1583,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 keys.append(item[0])
         for key in keys:
             self.threads_info.pop(key)
-        for thread in ThumbnailsThread.threads_pool:
+        for thread in ThumbnailsPreviewsThread.threads_pool:
             if thread.isFinished():
-                ThumbnailsThread.threads_pool.remove(thread)
+                ThumbnailsPreviewsThread.threads_pool.remove(thread)
 
     def animate_noise_cells_effect(self):
         if self.STNG_show_noise_cells and noise:
@@ -5352,7 +5352,7 @@ def _restart_app(aftercrash=False):
 
 def exit_threads():
     # принудительно глушим все потоки, что ещё работают
-    for thread in ThumbnailsThread.threads_pool:
+    for thread in ThumbnailsPreviewsThread.threads_pool:
         thread.terminate()
         # нужно вызывать terminate вместо exit
 

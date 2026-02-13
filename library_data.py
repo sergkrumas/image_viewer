@@ -34,7 +34,7 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
 
-class ThumbnailsThread(QThread):
+class ThumbnailsPreviewsThread(QThread):
     update_signal = pyqtSignal(object)
     threads_pool = []
     def __init__(self, folder_data, _globals, run_from_library=False):
@@ -92,7 +92,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.last_apng_check_result = False
             i.fav_folder = ...
             i.comments_folder = ...
-            i.ThumbnailsThread = ThumbnailsThread
+            i.ThumbnailsPreviewsThread = ThumbnailsPreviewsThread
 
             if not i.globals.lite_mode:
                 i.load_fav_list()
@@ -315,7 +315,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         self._current_folder = self.folders[self._index]
         self.after_current_image_changed()
         self.load_board_data()
-        ThumbnailsThread(self._current_folder, self.globals).start()
+        ThumbnailsPreviewsThread(self._current_folder, self.globals).start()
         MW = self.globals.main_window
         MW.update_control_panel_label_text()
         MW.update()
@@ -573,7 +573,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if not is_set:
                 cf._index = 0
             cf.previews_done = False
-            ThumbnailsThread(cf, self.globals).start()
+            ThumbnailsPreviewsThread(cf, self.globals).start()
         else:
             cf._index = 0
         self.globals.main_window.update()
@@ -1107,7 +1107,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 LibraryData().write_history_file(input_path)
 
             # make thumbnails
-            ThumbnailsThread(fd, Globals).start()
+            ThumbnailsPreviewsThread(fd, Globals).start()
             # old make thumbnials
             # LibraryData().make_thumbnails_and_previews(fd, None)
 
