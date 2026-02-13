@@ -61,7 +61,7 @@ class ThumbnailsThread(QThread):
 
     def run(self):
         if self.needed_thread:
-            LibraryData().make_viewer_thumbnails_and_library_previews(self.folder_data, self)
+            LibraryData().make_thumbnails_and_previews(self.folder_data, self)
 
 class LibraryModeImageColumn():
     def __init__(self):
@@ -831,7 +831,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepaths
 
     @staticmethod
-    def make_viewer_thumbnails_and_library_previews(folder_data, thread_instance, from_board_items=False):
+    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
@@ -1109,7 +1109,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             # make thumbnails
             ThumbnailsThread(fd, Globals).start()
             # old make thumbnials
-            # LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
+            # LibraryData().make_thumbnails_and_previews(fd, None)
 
         elif fd and pre_load and content_hash:
             for n, image_data in enumerate(fd.images_list):
@@ -1966,7 +1966,7 @@ class FinderWindow(QWidget):
                         for folder_data in LibraryData().folders:
                             if folder_data.is_tag_folder() and folder_data.tag_data == tag:
                                 add_image_to_folder(found_path, folder_data)
-                                LibraryData().make_viewer_thumbnails_and_library_previews(folder_data, None)
+                                LibraryData().make_thumbnails_and_previews(folder_data, None)
                                 LibraryData().store_tag_to_disk(tag)
                                 break
 
@@ -1975,12 +1975,12 @@ class FinderWindow(QWidget):
         self.to_output(f'\n')
 
         if self.records_comments:
-            LibraryData().make_viewer_thumbnails_and_library_previews(comms_folder, None)
+            LibraryData().make_thumbnails_and_previews(comms_folder, None)
             LibraryData().store_comments_list()
             self.to_output(_('Comments database updated!'))
 
         if self.records_favs:
-            LibraryData().make_viewer_thumbnails_and_library_previews(fav_folder, None)
+            LibraryData().make_thumbnails_and_previews(fav_folder, None)
             LibraryData().store_fav_list()
             self.to_output(_('Favorites database updated!'))
 

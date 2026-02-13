@@ -915,7 +915,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         fd.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
-        self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None)
+        self.LibraryData().make_thumbnails_and_previews(fd, None)
         fd.board.ready = True
         self.LibraryData().load_board_data() #callbacks are set here
         found_pi = self.board_FindPlugin(fd.board.plugin_filename)
@@ -983,7 +983,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         folder_path = attr_data
                         files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                         item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-                        self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
+                        self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
                         obj.item_folder_data = item_folder_data
                     elif obj.type == self.BoardItem.types.ITEM_GROUP:
                         board_dict = attr_data
@@ -991,7 +991,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         obj.item_folder_data = _folder_data
                         _folder_data.board.root_folder = fd
                         _folder_data.board.root_item = obj
-                        self.LibraryData().make_viewer_thumbnails_and_library_previews(_folder_data, None)
+                        self.LibraryData().make_thumbnails_and_previews(_folder_data, None)
                         _folder_data.board.ready = True
                 continue
 
@@ -1300,7 +1300,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                     fd_bi.position = offset + QPointF(pixmap.width(), pixmap.height())/2
                     offset += QPointF(pixmap.width(), 0)
-                self.LibraryData().make_viewer_thumbnails_and_library_previews(fd, None, from_board_items=True)
+                self.LibraryData().make_thumbnails_and_previews(fd, None, from_board_items=True)
 
 
                 self.build_board_bounding_rect(fd)
@@ -2486,7 +2486,7 @@ class BoardMixin(BoardTextEditItemMixin):
             with self.show_longtime_process_ongoing(self, _("Loading folder to the board")):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                 item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-                self.LibraryData().make_viewer_thumbnails_and_library_previews(item_folder_data, None)
+                self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
                 fi.board_index = self.retrieve_new_board_item_index()
@@ -3739,7 +3739,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
         current_folder.images_list.append(image_data)
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(current_folder, None)
+            self.LibraryData().make_thumbnails_and_previews(current_folder, None)
         return board_item
 
     def board_thumbnails_click_handler(self, image_data):
@@ -4345,7 +4345,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         with self.show_longtime_process_ongoing(self, _("Loading images to the board")):
 
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+            self.LibraryData().make_thumbnails_and_previews(cf, None)
 
             cf.board.ready = False
 

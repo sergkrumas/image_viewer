@@ -4733,7 +4733,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         for n in range(3):
             cf.images_list.extend(cf.images_list)
 
-        LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+        LibraryData().make_thumbnails_and_previews(cf, None)
 
         for n in range(500):
             LibraryData().create_empty_virtual_folder()

@@ -89,7 +89,7 @@ def preparePluginBoard(self, plugin_info):
                     items = list(sorted(items, key=lambda x: x.image_data.creation_date, reverse=True))
 
                     # вызов нужен, чтобы bi.get_size_rect вернул актуальные значения
-                    self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+                    self.LibraryData().make_thumbnails_and_previews(cf, None)
 
                     for bi in items:
                         max_width = max(max_width, bi.get_size_rect(scaled=True).width())
@@ -101,7 +101,7 @@ def preparePluginBoard(self, plugin_info):
 
                 offset_point += QPointF(max_width, 0)
         else:
-            self.LibraryData().make_viewer_thumbnails_and_library_previews(cf, None)
+            self.LibraryData().make_thumbnails_and_previews(cf, None)
             ni = append_note_item(self, cf, "Список папок пуст!", warning=True)
             size_rect = ni.get_size_rect(scaled=True)
             size_rect.moveCenter(self.rect().center())
