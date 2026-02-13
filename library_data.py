@@ -1108,8 +1108,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             # make thumbnails
             ThumbnailsPreviewsThread(fd, Globals).start()
-            # old make thumbnials
-            # LibraryData().make_thumbnails_and_previews(fd, None)
 
         elif fd and pre_load and content_hash:
             for n, image_data in enumerate(fd.images_list):
