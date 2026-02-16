@@ -853,6 +853,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if from_board_items:
                 source = image_data.board_item.pixmap
                 image_data.preview_error = False
+            elif not image_data.is_supported_filetype:
+                source = Globals.NOT_SUPPORTED_PIXMAP
+                image_data.preview_error = True
             else:
                 try:
                     # try only for .avif-files
@@ -865,9 +868,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if source.isNull():
                 source = Globals.ERROR_PREVIEW_PIXMAP
                 image_data.preview_error = True
-            if not image_data.is_supported_filetype:
-                source = Globals.NOT_SUPPORTED_PIXMAP
-                image_data.preview_error = True
+
             # thumbnail
             THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
             thumbnail = source.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH,
