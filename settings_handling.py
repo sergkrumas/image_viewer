@@ -669,11 +669,17 @@ class SettingsWindow(QWidget):
                 color: white;
                 font-weight: normal;
             }
+            QCheckBox::indicator {
+                width: 40px;
+                height: 20px;
+            }
             QCheckBox::indicator:unchecked {
-                background: gray;
+                /*background: gray;*/
+                image: url(resources/switch_off.png);
             }
             QCheckBox::indicator:checked {
-                background: green;
+                /*background: green;*/
+                image: url(resources/switch_on.png);
             }
             QCheckBox:checked {
                 background-color: rgba(150, 150, 150, 50);
