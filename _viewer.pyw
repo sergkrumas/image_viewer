@@ -4907,10 +4907,34 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     go_to_folder = contextMenu.addAction(action_title)
                     go_to_folder.triggered.connect(LibraryData().go_to_folder_of_current_image)
 
+        TOGGLE_CHECKBOX = """
+            QCheckBox {
+                font-family: 'Consolas';
+                color: white;
+                font-weight: normal;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(resources/switch_off_narrow.png);
+            }
+            QCheckBox::indicator:checked {
+                image: url(resources/switch_on_narrow.png);
+            }
+            QCheckBox:checked {
+                color: rgb(100, 255, 100);
+            }
+            QCheckBox:unchecked {
+                color: rgb(220, 220, 220);
+            }
+        """
+
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
             chb = QCheckBox(title)
-            chb.setStyleSheet(self.context_menu_stylesheet)
+            chb.setStyleSheet(TOGGLE_CHECKBOX + self.context_menu_stylesheet)
             chb.setChecked(value)
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)
