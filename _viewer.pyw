@@ -5573,7 +5573,7 @@ def _main():
         path = get_predefined_path_if_started_from_sublimeText()
 
     if Globals.SUPER_LITE:
-        # нужно здесь для того, чтобы не тратить время на долгий вызов server_or_client_via_sockets
+        # нужно здесь для того, чтобы не тратить время на долгий вызов ServerOrClient.ipc_via_sockets
         # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
         Globals.lite_mode = True
 
@@ -5596,7 +5596,7 @@ def _main():
     ServerOrClient.globals = Globals
 
     if not Globals.lite_mode:
-        path = ServerOrClient.server_or_client_via_sockets(path, open_request,
+        path = ServerOrClient.ipc_via_sockets(path, open_request,
                                                                     choose_start_option_callback)
     Globals.is_path_exists = os.path.exists(path)
 

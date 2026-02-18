@@ -30,14 +30,14 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 class ServerOrClient():
 
     @classmethod
-    def server_or_client_via_sockets(
+    def ipc_via_sockets(
             cls,
             path,
             open_request_callback,
             choose_start_option_callback,
         ):
 
-        print("begin of server_or_client_via_sockets")
+        print("begin of ServerOrClient.ipc_via_sockets")
 
         SERVER_NAME = "krumasimageviewer"
         SERVER_STARTED = False
@@ -157,7 +157,7 @@ class ServerOrClient():
         while not SERVER_STARTED:
             processAppEvents(update_only=False)
 
-        print("end of server_or_client_via_sockets")
+        print("end of ServerOrClient.ipc_via_sockets")
         return path
 
 
