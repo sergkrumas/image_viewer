@@ -4930,10 +4930,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 color: rgb(220, 220, 220);
             }
         """
+        max_title_chars = max(len(title) for title, _, _ in checkboxes)
 
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
-            chb = QCheckBox(title)
+            chb = QCheckBox(title.ljust(max_title_chars))
             chb.setStyleSheet(TOGGLE_CHECKBOX + self.context_menu_stylesheet)
             chb.setChecked(value)
             chb.stateChanged.connect(callback)
