@@ -1098,8 +1098,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
                 LibraryData().add_current_image_to_view_history()
 
-            if MW.is_waterfall_page_active() and MW.waterfall_modal_on_app_start():
-                MW.waterfall_enter_modal_viewer_on_app_start()
+            if MW.is_waterfall_page_active():
+                ci = fd.current_image()
+                if is_file and ci and ci.is_supported_filetype:
+                    MW.waterfall_enter_modal_viewer_on_app_start()
 
             # print('store session file from handle_input_data')
             LibraryData().store_session_file()

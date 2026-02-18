@@ -496,7 +496,6 @@ class SettingsWindow(QWidget):
             'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
-            'enter_modal_viewer_mode_on_app_start': (True, 'Enter modal viewer mode on application start'),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
             'show_fullscreen': (True, _('Full-screen mode on application start')),
             'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
@@ -823,12 +822,12 @@ class SettingsWindow(QWidget):
                 if id == 'show_gamepad_monitor':
                     chb.stateChanged.connect(lambda state, x=chb: self.handle_show_gamepad_monitor_chbox(state, x))
 
-                if id == 'open_app_on_waterfall_page':
-                    chb.stateChanged.connect(lambda state, x=chb: self.handle_child_checkboxes(state, x))
+                # if id == 'open_app_on_waterfall_page':
+                #     chb.stateChanged.connect(lambda state, x=chb: self.handle_child_checkboxes(state, x))
 
-                if id == 'enter_modal_viewer_mode_on_app_start':
-                    # на старте надо определится с видом чекбокса в зависимости от значения радителя
-                    self.handle_child_checkboxes(None, self.checkboxes_widgets['open_app_on_waterfall_page'])
+                # if id == 'enter_modal_viewer_mode_on_app_start':
+                #     # на старте надо определится с видом чекбокса в зависимости от значения радителя
+                #     self.handle_child_checkboxes(None, self.checkboxes_widgets['open_app_on_waterfall_page'])
 
 
             elif isinstance(current_val, float):

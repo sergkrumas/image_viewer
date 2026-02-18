@@ -1946,9 +1946,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         cf.waterfall_previews_scroll_offset = offset
 
-    def waterfall_modal_on_app_start(self):
-        return self.STNG_open_app_on_waterfall_page and self.STNG_enter_modal_viewer_mode_on_app_start
-
     def waterfall_enter_modal_viewer_on_app_start(self):
         self.waterfall_appstart = True
         cf = LibraryData().current_folder()
