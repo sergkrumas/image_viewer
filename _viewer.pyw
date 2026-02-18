@@ -1813,6 +1813,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     if self.is_library_page_active():
                         LibraryData().show_that_imd_on_viewer_page(item_data)
                     elif self.is_waterfall_page_active():
+                        if self.waterfall_block_active_item:
+                            # если ещё стоит блокировка, то прерываем его и выбираем активный элемент по координатам курсора
+                            self.waterfall_unblock_active_item()
+                            self.previews_list_set_active_item(event.pos())
                         self.enter_modal_viewer()
                     break
 
@@ -1906,6 +1910,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def waterfall_unblock_active_item(self):
         self.waterfall_block_active_item = False
         self.waterfall_previews_list_active_item = None
+        if Globals._timer:
+            if Globals._timer.isActive():
+                Globals._timer.stop()
         self.update()
 
     def waterfall_update_waterfall_on_app_start(self):
