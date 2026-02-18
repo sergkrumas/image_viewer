@@ -529,7 +529,7 @@ class SettingsWindow(QWidget):
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
 
-            '---007': _('Waterfall'),
+            '---007': _('Waterfall page'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
             'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
 
