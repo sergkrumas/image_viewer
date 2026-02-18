@@ -537,6 +537,7 @@ class SettingsWindow(QWidget):
             '---006': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
             'board_draw_canvas_origin': (False, _('Show board origin')),
+            'board_vertical_items_layout': (False, _('Vertical items layout')),
             'board_draw_grid': (False, _('Show board grid')),
             'board_unloading': (False, _('Do unloading for images not shown in the viewer at the momoment')),
             'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),

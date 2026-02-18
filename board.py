@@ -1441,7 +1441,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 folder_data.board.items_list.append(board_item)
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
-                offset += QPointF(image_data.source_width, 0)
+                if self.STNG_board_vertical_items_layout:
+                    offset += QPointF(0, image_data.source_height)
+                else:
+                    offset += QPointF(image_data.source_width, 0)
                 if not self.Globals.lite_mode:
                     board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
                     board_item._comments = self.LibraryData().get_comments_for_image(image_data)
