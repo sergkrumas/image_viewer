@@ -491,7 +491,7 @@ class SettingsWindow(QWidget):
     def generate_localized_matrix():
 
         matrix = {
-            '---001': _('General'),
+            '---general': _('General'),
             'ui_lang': ('en', _('UI language')),
             'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
@@ -511,7 +511,7 @@ class SettingsWindow(QWidget):
             'gamepad_move_stick_speed': (20.0, (1.0, 50.0), _('Gamepad move stick speed')),
 
 
-            '---002': _('Viewer page'),
+            '---viewerpage': _('Viewer page'),
             'animated_zoom': (False, _('Animated zoom')),
             'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
             'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
@@ -529,12 +529,12 @@ class SettingsWindow(QWidget):
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
 
-            '---007': _('Waterfall page'),
+            '---waterfallpage': _('Waterfall page'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
             'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
 
 
-            '---006': _('Board page'),
+            '---boardpage': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
             'board_draw_canvas_origin': (False, _('Show board origin')),
             'board_vertical_items_layout': (False, _('Vertical items layout')),
@@ -546,7 +546,7 @@ class SettingsWindow(QWidget):
             'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
 
 
-            '---003': _('Pages transparent setting for full-screen mode'),
+            '---pagestransparent': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
             'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
             'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
@@ -554,12 +554,12 @@ class SettingsWindow(QWidget):
             'waterfall_page_transparency': (0.9, (0.0, 1.0), _('Waterfall page transparent value')),
 
 
-            '---004': _('Slideshow for Viewer page'),
+            '---viewerpageslideshow': _('Slideshow for Viewer page'),
             'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
             'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
 
 
-            '---005': _('Paths'),
+            '---paths': _('Paths'),
             'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
         }
         return matrix
