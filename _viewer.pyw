@@ -1872,14 +1872,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             cursor_over_preview = None
             for item_rect, item_data in p_list:
                 if item_rect.contains(curpos):
-                    cursor_over_preview = (item_rect, item_data)
+                    cursor_over_preview = item_data
                     break
                 c1 = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect).contains(curpos)
                 c2 = not item_data.preview_ui_rect.isNull()
-                if c1 and c2 and ai:
-                    itd = ai[1]
-                    if itd is item_data:
-                        cursor_over_preview = (item_rect, item_data)
+                if c1 and c2 and ai: 
+                    if ai is item_data:
+                        cursor_over_preview = item_data
                         break
             if cursor_over_preview:
                 set_active_item(cursor_over_preview)
@@ -1888,12 +1887,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def enter_modal_viewer(self, app_start_item=None):
         if app_start_item:
-            self.waterfall_previews_list_active_item = (QRect(), app_start_item)
+            self.waterfall_previews_list_active_item = app_start_item
         if self.is_waterfall_page_active():
             if self.waterfall_previews_list_active_item:
 
                 self.render_waterfall_backplate()
-                item_rect, item_data = self.waterfall_previews_list_active_item
+                item_data = self.waterfall_previews_list_active_item
                 LibraryData().prepare_modal_viewer_mode(item_data)
                 self.viewer_reset()
                 LibraryData().after_current_image_changed()
@@ -1925,7 +1924,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 cf = LibraryData().current_folder()
                 image_data = cf.current_image()
                 if image_data and not image_data.preview_ui_rect.isNull():
-                    self.waterfall_previews_list_active_item = (image_data.preview_ui_rect, image_data)
+                    self.waterfall_previews_list_active_item = image_data
                     Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
                 else:
                     self.waterfall_unblock_active_item()
@@ -3677,13 +3676,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                     )
 
         if columns and active_item:
-            item_rect, item_data = active_item
-            if not hasattr(item_data, "library_page_cached_version"):
-                item_data.library_page_cached_version = load_image_respect_orientation(
-                    item_data.filepath,
-                    highres_svg=LibraryData().is_svg_file(item_data.filepath)
+            if not hasattr(active_item, "library_page_cached_version"):
+                active_item.library_page_cached_version = load_image_respect_orientation(
+                    active_item.filepath,
+                    highres_svg=LibraryData().is_svg_file(active_item.filepath)
                 )
-            cached = item_data.library_page_cached_version
+            cached = active_item.library_page_cached_version
             if cached:
                 source_rect = cached.rect()
                 main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
@@ -3696,7 +3694,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 else:
                     painter.setPen(QPen(Qt.white))
                     _error_msg = _("Error")
-                    painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{item_data.filename}')
+                    painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{active_item.filename}')
         # right column end
 
         self.draw_middle_line(painter)
@@ -3758,8 +3756,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.setRenderHint(QPainter.Antialiasing, False)
 
             if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
-                item_data = active_item[1]
-                item_rect = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect)
+                item_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
                 painter.drawRect(item_rect) #for images with transparent layer
                 draw_shadow(
                     self,
@@ -3768,7 +3765,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     webRGBA(QColor(0, 0, 0, 100)),
                     webRGBA(QColor(0, 0, 0, 0))
                 )
-                painter.drawPixmap(item_rect, item_data.preview)
+                painter.drawPixmap(item_rect, active_item.preview)
 
         else:
             painter.setPen(QPen(Qt.white))
