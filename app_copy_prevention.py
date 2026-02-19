@@ -39,7 +39,7 @@ class ServerOrClient():
 
         print("begin of ServerOrClient.ipc_via_sockets")
 
-        SERVER_NAME = "krumasimageviewer"
+        SERVER_NAME = "krumassanimageviewer"
         SERVER_STARTED = False
 
         def start_server():
@@ -47,14 +47,14 @@ class ServerOrClient():
             server_obj = QLocalServer()
 
             def read_data_callback(server_obj):
-                clientConnection = server_obj.nextPendingConnection()
+                clientConnSocket = server_obj.nextPendingConnection()
 
                 # тут надо каким-то образом выждать
                 # пока клиент получит сообщение о коннекте с этим сервером
                 # и отправит нам данные, которые мы сейчас должны прочитать
                 if True:
                     # или ждём три секунды
-                    clientConnection.waitForReadyRead(3000)
+                    clientConnSocket.waitForReadyRead(3000)
                 else:
                     # или тянем время отправляя
                     # бессмысленный и ненужный в данном случае ответ
@@ -62,12 +62,12 @@ class ServerOrClient():
                     out = QDataStream(block, QIODevice.WriteOnly)
                     out.setVersion(QDataStream.Qt_5_3)
                     out.writeQString("ping")
-                    clientConnection.write(block)
-                    clientConnection.flush()
+                    clientConnSocket.write(block)
+                    clientConnSocket.flush()
 
                 path = None
                 try:
-                    data = clientConnection.read(2 ** 14)
+                    data = clientConnSocket.read(2 ** 14)
                     if data is not None:
                         path = data.decode("utf8")
                 except:
@@ -88,8 +88,8 @@ class ServerOrClient():
 
                 # deleteLater ставим после чтения данных, ибо участились ошибки типа
                 # RuntimeError: wrapped C/C++ object of type QLocalSocket has been deleted
-                clientConnection.disconnected.connect(clientConnection.deleteLater)
-                clientConnection.disconnectFromServer()
+                clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
+                clientConnSocket.disconnectFromServer()
 
             if server_obj.listen(SERVER_NAME):
                 server_obj.newConnection.connect(lambda: read_data_callback(server_obj))
