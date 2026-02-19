@@ -145,7 +145,7 @@ class ServerOrClient():
             def on_ready_read(client_socket):
                 # читаем ненужный и бессмысленный в данном случае ответ от сервера
                 msg = client_socket.readAll()
-                if msg:
+                if msg.data():
                     msg = msg.data().decode("utf8")
                     QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
 
