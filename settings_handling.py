@@ -47,7 +47,7 @@ class CustomSlider(QWidget):
         super().__init__()
         self.default_value = default_value
         self.value = self.default_value
-        self.offset = 15
+        self.offset = 40
         self.changing = False
         self.control_width = 18
         self.type = type
@@ -72,8 +72,10 @@ class CustomSlider(QWidget):
 
     def get_AB_points(self):
         h = self.rect().height()/2
-        A = QPointF(self.offset, h)
-        B = QPointF(self.rect().width()-self.offset, h)
+        left_offset = self.offset
+        right_offset = 8 #self.offset
+        A = QPointF(left_offset, h)
+        B = QPointF(self.rect().width()-right_offset, h)
         return A, B
 
     def draw_bar(self, painter, color):
@@ -161,18 +163,21 @@ class CustomSlider(QWidget):
             painter.setPen(Qt.NoPen)
             offset = 5
             r2 = r.adjusted(offset, offset, -offset, -offset)
-            path.addEllipse(r2)
-            gradient = QRadialGradient(r.center()-QPoint(0, int(r.height()/3)), self.control_width)
-            gradient.setColorAt(0, QColor(220, 220, 220))
-            gradient.setColorAt(1, QColor(50, 50, 50))
-            painter.setBrush(gradient)
-            painter.drawPath(path)
-            painter.setBrush(Qt.NoBrush)
-            painter.setPen(QPen(QColor(0, 0, 0), 1))
-            painter.drawEllipse(r2)
-            painter.setPen(QPen(QColor(100, 100, 150), 1))
+            if False: 
+                path.addEllipse(r2)
+                gradient = QRadialGradient(r.center()-QPoint(0, int(r.height()/3)), self.control_width)
+                gradient.setColorAt(0, QColor(220, 220, 220))
+                gradient.setColorAt(1, QColor(50, 50, 50))
+                painter.setBrush(gradient)
+                painter.drawPath(path)
+                painter.setBrush(Qt.NoBrush)
+                painter.setPen(QPen(QColor(0, 0, 0), 1))
+                painter.drawEllipse(r2)
+                painter.setPen(QPen(QColor(100, 100, 150), 1))
             painter.drawEllipse(r.adjusted(1,1,-1,-1))
-            if self.type == self.TYPE_SCALAR:
+            if True:
+                pass
+            elif self.type == self.TYPE_SCALAR:
                 color = QColor(220, 220, 220)
                 painter.setBrush(color)
                 painter.drawEllipse(r2)
@@ -682,11 +687,11 @@ class SettingsWindow(QWidget):
                 image: url(resources/switch_on.png);
             }
             QCheckBox:checked {
-                background-color: rgba(150, 150, 150, 50);
+                /* background-color: rgba(150, 150, 150, 50);*/
                 color: rgb(100, 255, 100);
             }
             QCheckBox:unchecked {
-                color: gray;
+                color: white;
             }
             QCheckBox:disabled {
                 background: rgba(127, 127, 127, 10);
@@ -835,7 +840,7 @@ class SettingsWindow(QWidget):
                 a, b = range_
                 val = (current_val-a)/(b-a)
                 sb = CustomSlider(CustomSlider.TYPE_SCALAR, 400, val)
-                sb.setFixedHeight(50)
+                sb.setFixedHeight(20)
                 sb.setRange(*range_)
                 self.values_widgets[id] = sb
                 sb.value_changed.connect(self.on_change_handler)
@@ -846,7 +851,6 @@ class SettingsWindow(QWidget):
                 layout.addWidget(label)
                 layout.addWidget(sb)
                 central_widget_layout.addLayout(layout)
-                central_widget_layout.addSpacing(20)
 
                 if id == 'small_images_fit_factor':
                     sb.value_changed.connect(self.on_small_images_fit_factor_change)
