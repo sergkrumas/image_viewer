@@ -49,6 +49,9 @@ class ServerOrClient():
             def read_data_callback(server_obj):
                 clientConnSocket = server_obj.nextPendingConnection()
 
+                # TODO: (19 фев 26) тут, по идее, надо только сокеты ловить,
+                # а не стремиться читать данные от них
+
                 # тут надо каким-то образом выждать
                 # пока клиент получит сообщение о коннекте с этим сервером
                 # и отправит нам данные, которые мы сейчас должны прочитать
@@ -67,6 +70,7 @@ class ServerOrClient():
 
                 path = None
                 try:
+                    # TODO: (19 фев 26) почему не используется readAll() ?
                     data = clientConnSocket.read(2 ** 14)
                     if data is not None:
                         path = data.decode("utf8")
@@ -110,6 +114,7 @@ class ServerOrClient():
                 data = str(path).encode("utf8")
                 client_socket.writeData(data)
 
+                # TODO: (19 фев 26) тут по смыслу больше подошёл бы oneshot-таймер
                 global transfer_delay_timer
                 transfer_delay_timer = QTimer()
                 transfer_delay_timer.timeout.connect(exit_func)
@@ -147,7 +152,7 @@ class ServerOrClient():
             client_socket.connected.connect(transfer_data_callback)
             client_socket.error.connect(client_socket_error)
             client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
-            client_socket.abort()
+            client_socket.abort() #reset socket
             client_socket.connectToServer(SERVER_NAME)
 
         start_client()
