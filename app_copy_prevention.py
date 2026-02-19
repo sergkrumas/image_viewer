@@ -75,12 +75,10 @@ class ServerOrClient():
                     traceback_lines += f"\nPath: {path}"
                     QMessageBox.critical(None, "Server", f"Unable to read from socket, {traceback_lines}")
 
-                Globals = cls.globals
-
                 try:
                     # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
                     # Ведь при первом открытии может прилететь несколько запросов сразу
-                    if (Globals.main_window is not None) and (path is not None):
+                    if (cls.globals.main_window is not None) and (path is not None):
                         open_request_callback(path)
                 except:
                     traceback_lines = traceback.format_exc()
@@ -93,13 +91,13 @@ class ServerOrClient():
                 clientConnection.disconnected.connect(clientConnection.deleteLater)
                 clientConnection.disconnectFromServer()
 
-            if not server_obj.listen(SERVER_NAME):
-                QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
-                return False
-            else:
+            if server_obj.listen(SERVER_NAME):
                 server_obj.newConnection.connect(lambda: read_data_callback(server_obj))
                 print("server started")
                 return True
+            else:
+                QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
+                return False
 
         def start_client():
             global client_socket
