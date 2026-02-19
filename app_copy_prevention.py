@@ -71,10 +71,9 @@ class ServerOrClient():
 
                 path = None
                 try:
-                    # TODO: (19 фев 26) почему не используется readAll() ?
-                    data = clientConnSocket.read(2 ** 14)
-                    if data:
-                        path = data.decode("utf8")
+                    qbytearray_obj = clientConnSocket.readAll()
+                    if qbytearray_obj.data():
+                        path = qbytearray_obj.data().decode("utf8")
                 except:
                     traceback_lines = traceback.format_exc()
                     traceback_lines += f"\nPath: {path}"
@@ -113,7 +112,7 @@ class ServerOrClient():
 
             def transfer_data_callback():
                 data = str(path).encode("utf8")
-                client_socket.writeData(data)
+                client_socket.write(data)
 
                 # TODO: (19 фев 26) тут по смыслу больше подошёл бы oneshot-таймер
                 global transfer_delay_timer

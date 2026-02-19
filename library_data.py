@@ -690,7 +690,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return files, records
 
     def load_fav_list(self):
-        files, _ = self.get_fav_files_list()
+        files, __ = self.get_fav_files_list()
         self.fav_folder = self.create_folder_data(_("Favorites"), files, image_filepath=None, virtual=True)
 
     def store_fav_list(self):
@@ -1660,6 +1660,8 @@ class ImageData():
 
     def update_fav_button_state(self):
         if LibraryData().globals.lite_mode:
+            return
+        if not LibraryData().globals.main_window.is_viewer_page_active():
             return
         favorite_btn = LibraryData().globals.control_panel.favorite_btn
         if LibraryData().is_in_fav_list(self):
