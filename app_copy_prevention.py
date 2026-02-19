@@ -73,7 +73,7 @@ class ServerOrClient():
                 try:
                     # TODO: (19 фев 26) почему не используется readAll() ?
                     data = clientConnSocket.read(2 ** 14)
-                    if data is not None:
+                    if data:
                         path = data.decode("utf8")
                 except:
                     traceback_lines = traceback.format_exc()
