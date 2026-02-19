@@ -128,7 +128,7 @@ class ServerOrClient():
                         "The connection was refused by the peer. Make sure the server is running,"
                         "and check that the host name and port settings are correct.",
                     QLocalSocket.PeerClosedError:
-                        None,
+                        "The remote socket closed the connection.",
                 }
                 default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
                 msg = errors.get(socketError, default_error_msg)
