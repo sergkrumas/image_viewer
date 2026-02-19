@@ -1416,6 +1416,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 Image.open(filepath).save(filepath)
                 self.show_static(filepath, pass_=2)
 
+    def is_not_modal_viewer_mode(self):
+        return self.is_viewer_page_active() or not self.viewer_modal
+
     def show_image(self, image_data, only_set_thumbnails_offset=False):
         # reset
         self.rotated_pixmap = None
@@ -1446,11 +1449,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         self.show_static(filepath)
                 except:
                     self.error_pixmap_and_reset(_("The file is corrupted"), traceback.format_exc())
-        if not self.viewer_modal:
+        if self.is_not_modal_viewer_mode():
             if not self.error:
                 self.read_image_metadata(image_data)
         self.restore_image_transformations()
-        if not self.viewer_modal:
+        if self.is_not_modal_viewer_mode():
             self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
             self.set_window_title(self.current_image_details())
             if self.error:
@@ -4010,7 +4013,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.drawRect(im_rect)
                 painter.setCompositionMode(cm)
 
-            if not self.viewer_modal:
+            if self.is_not_modal_viewer_mode():
                 # draw cyberpunk
                 if self.STNG_show_cyberpunk:
                     draw_cyberpunk_corners(self, painter, im_rect)
@@ -4038,7 +4041,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.setPen(Qt.NoPen)
             painter.drawRect(progress_bar_rect)
 
-        if not self.viewer_modal:
+        if self.is_not_modal_viewer_mode():
             self.draw_comments_viewer(painter)
 
             self.draw_view_history_row(painter)
