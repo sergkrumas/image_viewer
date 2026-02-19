@@ -662,9 +662,26 @@ class SettingsWindow(QWidget):
             QComboBox {
                 font-size: 11pt;
                 font-family: 'Consolas';
-                font-weight: normal;
+                font-weight: bold;
                 color: white;
                 background-color: transparent;
+                border: none;
+            }
+            QComboBox::drop-down {
+                color: white;
+                font-weight: normal;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #101010;
+                color: white;
+                font-weight: normal;
+                selection-color: black;
+                border: 1px solid #101010;
+                selection-background-color: white;
+
+            }
+            QComboBox:on{
+                padding-left: 10px;
             }
         """
         checkbox_style = """
