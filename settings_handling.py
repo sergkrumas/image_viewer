@@ -301,9 +301,11 @@ class SettingsWindow(QWidget):
     }
     QPushButton#save{
         color: rgb(70, 200, 70);
+        background-color: rgba(50, 220, 50, 0.05);
     }
     QPushButton#exit{
         color: rgb(220, 70, 70);
+        background-color: rgba(220, 50, 50, 0.05);
     }
     QPushButton#exit:hover{
         color: rgb(200, 0, 0);
@@ -654,7 +656,7 @@ class SettingsWindow(QWidget):
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init
-        main_style = "font-size: 11pt; font-family: 'Consolas'"
+        main_style = "font-size: 11pt; font-family: 'Consolas';"
         style = "color: white; " + main_style
         style_partition_label = "color: black; background-color: gray; padding-left: 20px; " + main_style
         main_style_button = "font-size: 13pt; padding: 5px 0px;"
@@ -899,7 +901,7 @@ class SettingsWindow(QWidget):
         head_label.setText(_("Settings"))
         head_label.setFixedHeight(50)
         head_label.setAlignment(Qt.AlignCenter)
-        head_label.setStyleSheet(style)
+        head_label.setStyleSheet(style + '; font-weight: bold;')
         main_layout.addWidget(head_label)
 
         main_layout.addWidget(self.scroll_area)
