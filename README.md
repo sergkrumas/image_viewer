@@ -114,11 +114,14 @@ If you browse pictures on Pinterest, you’ll like this masonry layout.
 
 ![](docs/waterfall_page.png)
 
-Left-click to open the modal viewer, double-click to close it. Use Ctrl + Mouse Wheel to change the number of columns.
+Left-click to open the modal viewer, double-click to close it. 
+
+Use `Ctrl + Mouse Wheel` to change the number of columns.
+Use `Ctrl + Shift + Mouse Wheel` to change the gaps between images.
 
 You can set the app to open on the Waterfall page in the settings.
 
-For static and animated files in the modal viewer, the keyboard and mouse controls work the same as on the Viewer page.
+For static and animated files in the modal viewer, the keyboard and mouse controls work the same as on the Viewer page. Rectangle selection magnifier from Viewer page is available.
 ![](docs/waterfall_page_modal_viewer.png)
 
 
