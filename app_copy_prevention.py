@@ -103,8 +103,6 @@ class IPC():
             cls.choose_start_option_callback(do_start_IPC_server, cls.path)
 
         cls.client_socket = QLocalSocket()
-
-
         # disconnected бахает, когда сервер вырубает соеденение со своей стороны через disconnectFromServer.
         # Размещение здесь функции exit_func позволяет нам не ждать пока сработает таймер,
         # заведённый в transfer_data_callback
@@ -121,28 +119,21 @@ class IPC():
         def read_data_callback(clientConnSocket):
             path = None
             try:
-                qbytearray_obj = clientConnSocket.readAll()
-                if qbytearray_obj.data():
-                    path = qbytearray_obj.data().decode("utf8")
+                path_bytes = clientConnSocket.readAll().data()
+                if path_bytes:
+                    path = path_bytes.decode("utf8")
             except:
                 QMessageBox.critical(None, "Server",
-                            f"Unable to read from socket, {traceback.format_exc()}\nPath: {path}")
+                            f"Unable to read from socket, {traceback.format_exc()}")
 
-            try:
-                # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
-                # Ведь при первом открытии может прилететь несколько запросов сразу
-                if (cls.globals.main_window is not None) and (path is not None):
-                    cls.open_request_as_IPC_server_callback(path)
-            except:
-                QMessageBox.critical(None, "Request Handling Error",
-                                    f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")
-
-            # deleteLater ставим после чтения данных, ибо участились ошибки типа
-            # RuntimeError: wrapped C/C++ object of type QLocalSocket has been deleted
+            # отключаем связь
             clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
             if clientConnSocket in cls.clients:
                 cls.clients.remove(clientConnSocket)
             clientConnSocket.disconnectFromServer()
+
+            # отправляем запрос на обработку
+            cls.open_request_as_IPC_server_callback(path)
 
         def new_connection_callback():
             clientConnSocket = cls.server_obj.nextPendingConnection()

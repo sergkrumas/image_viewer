@@ -5524,15 +5524,25 @@ def run_as_IPC_server_or_IPC_client(path):
             sys.exit(0)
 
     def open_request_as_IPC_server_callback(_path):
-        LibraryData().handle_input_data(_path)
+        # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
+        # Ведь при старте приложения может прилететь несколько запросов сразу,
+        # благодаря тому, что в проводнике Windows можно зажать Enter над картинкой
         MW = Globals.main_window
-        if MW.frameless_mode:
-            MW.showMaximized()
-        else:
-            MW.show()
-        MW.activateWindow()
-        to_print = f'retrieved data path: {_path}'
-        print(to_print)
+        if (MW is not None) and (path is not None):
+            ok = False
+            try:
+                LibraryData().handle_input_data(_path)
+                ok = True
+            except:
+                QMessageBox.critical(None, "Request Handling Error", f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")
+            if ok:
+                if MW.frameless_mode:
+                    MW.showMaximized()
+                else:
+                    MW.show()
+                MW.activateWindow()
+                to_print = f'retrieved data path: {_path}'
+                print(to_print)
 
     return IPC.via_sockets(path, open_request_as_IPC_server_callback, choose_start_option_callback)
 
@@ -5638,7 +5648,6 @@ def _main():
             _restart_app()
         sys.exit(0)
 
-    IPC.globals = Globals
     if not Globals.lite_mode:
         path = run_as_IPC_server_or_IPC_client(path)
 
