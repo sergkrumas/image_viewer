@@ -1880,7 +1880,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     break
                 c1 = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect).contains(curpos)
                 c2 = not item_data.preview_ui_rect.isNull()
-                if c1 and c2 and ai: 
+                if c1 and c2 and ai:
                     if ai is item_data:
                         cursor_over_preview = item_data
                         break
@@ -5259,8 +5259,15 @@ def show_system_tray(app, icon):
 
     if True:
         # вариант анимации с сияющим светодиодом в центре иконки приложения
+        app_icon1 = QIcon()
+        path_icon1 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_green.ico")
+        app_icon1.addFile(path_icon1)
+        app_icon2 = QIcon()
+        path_icon2 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_yellow.ico")
+        app_icon2.addFile(path_icon2)
+        icons = itertools.cycle((app_icon1, app_icon2))
         def tray_icon_animation_step():
-            pass
+            sti.setIcon(next(icons))
     else:
         # вариант анимации, где иконка сдвигается влево, и затем появляется справа,
         # и потом анимация зацикливается
