@@ -5267,7 +5267,7 @@ def choose_start_option_callback(do_start_server, path):
     elif ret == QMessageBox.Close:
         sys.exit(0)
 
-def open_request(path):
+def open_request_callback(path):
     LibraryData().handle_input_data(path)
     MW = Globals.main_window
     if MW.frameless_mode:
@@ -5622,7 +5622,7 @@ def _main():
     IPC.globals = Globals
 
     if not Globals.lite_mode:
-        path = IPC.via_sockets(path, open_request, choose_start_option_callback)
+        path = IPC.via_sockets(path, open_request_callback, choose_start_option_callback)
     Globals.is_path_exists = os.path.exists(path)
 
     generate_pixmaps(Globals, SettingsWindow)
