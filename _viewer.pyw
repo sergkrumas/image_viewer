@@ -32,7 +32,7 @@ from slice_pipette_tool import SlicePipetteToolMixin
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
 from control_panel import ControlPanel
-from app_copy_prevention import ServerOrClient
+from app_copy_prevention import IPC
 
 from win32con import VK_CAPITAL, VK_NUMLOCK, VK_SCROLL
 from ctypes import windll
@@ -5617,7 +5617,7 @@ def _main():
             _restart_app()
         sys.exit(0)
 
-    ServerOrClient.globals = Globals
+    IPC.globals = Globals
 
     if not Globals.lite_mode:
         path = IPC.via_sockets(path, open_request, choose_start_option_callback)
