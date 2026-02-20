@@ -72,6 +72,8 @@ class Globals():
     started_from_sublime_text = False
     aftercrash = False
 
+    _timer = None
+
     DEBUG = True
     FORCE_FULL_DEBUG = False
     CRASH_SIMULATOR = True
