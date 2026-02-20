@@ -41,14 +41,14 @@ class IPC():
     def via_sockets(
             cls,
             path,
-            open_request_callback,
+            open_request_as_IPC_server_callback,
             choose_start_option_callback,
         ):
 
         print("begin of IPC.via_sockets")
 
         cls.path = path
-        cls.open_request_callback = open_request_callback
+        cls.open_request_as_IPC_server_callback = open_request_as_IPC_server_callback
         cls.choose_start_option_callback = choose_start_option_callback
 
         cls.start_client()
@@ -80,7 +80,7 @@ class IPC():
             # Повторый запуск пригодился бы только для запуска сервера, для клиента такое не нужно.
             cls._timer = QTimer.singleShot(10*1000, exit_func)
 
-        def do_start_server():
+        def do_start_IPC_server():
             cls.SERVER_STARTED = cls.start_server()
 
         def client_socket_error(socketError):
@@ -100,7 +100,7 @@ class IPC():
 
             # если ошибка и произошла, то в нашем случае только из-за QLocalSocket.ServerNotFoundError,
             # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
-            cls.choose_start_option_callback(do_start_server, cls.path)
+            cls.choose_start_option_callback(do_start_IPC_server, cls.path)
 
         cls.client_socket = QLocalSocket()
 
@@ -132,7 +132,7 @@ class IPC():
                 # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
                 # Ведь при первом открытии может прилететь несколько запросов сразу
                 if (cls.globals.main_window is not None) and (path is not None):
-                    cls.open_request_callback(path)
+                    cls.open_request_as_IPC_server_callback(path)
             except:
                 QMessageBox.critical(None, "Request Handling Error",
                                     f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")

@@ -5240,43 +5240,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
 
-def choose_start_option_callback(do_start_server, path):
-    if Globals.force_full_mode:
-        ret = QMessageBox.No
-    else:
-        if Globals.do_not_show_start_dialog:
-            # запускаем лайтоый (упрощённый) режим
-            ret = QMessageBox.Yes
-        else:
-            # иначе по дефолту не запускаем, но обязательно спрашиваем
-            ret = QMessageBox.No
-            if not Globals.started_from_sublime_text:
-                if os.path.exists(path):
-                    ret = QMessageBox.question(None,
-                        _("Question"),
-                        _("No running app instance at the moment.\nStart app in lite mode?"),
-                        QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
-                        )
-    if ret == QMessageBox.Yes:
-        print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
-        restart_process_in_lite_mode(path)
-        sys.exit(0)
-    elif ret == QMessageBox.No:
-        # finally start server
-        do_start_server()
-    elif ret == QMessageBox.Close:
-        sys.exit(0)
 
-def open_request_callback(path):
-    LibraryData().handle_input_data(path)
-    MW = Globals.main_window
-    if MW.frameless_mode:
-        MW.showMaximized()
-    else:
-        MW.show()
-    MW.activateWindow()
-    to_print = f'retrieved data: {path}'
-    print(to_print)
 
 def input_path_dialog(path, exit=True):
     if os.path.exists(path):
@@ -5518,6 +5482,48 @@ class HookConsoleOutput:
                 l.append((timestamp, msg))
         return reversed(l)
 
+def run_as_IPC_server_or_IPC_client(path):
+    def choose_start_option_callback(do_start_IPC_server, _path):
+        if Globals.force_full_mode:
+            ret = QMessageBox.No
+        else:
+            if Globals.do_not_show_start_dialog:
+                # запускаем лайтоый (упрощённый) режим
+                ret = QMessageBox.Yes
+            else:
+                # иначе по дефолту не запускаем, но обязательно спрашиваем
+                ret = QMessageBox.No
+                if not Globals.started_from_sublime_text:
+                    if os.path.exists(_path):
+                        ret = QMessageBox.question(None,
+                            _("Question"),
+                            _("No running app instance at the moment.\nStart app in lite mode?"),
+                            QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
+                            )
+        if ret == QMessageBox.Yes:
+            print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
+            restart_process_in_lite_mode(_path)
+            sys.exit(0)
+        elif ret == QMessageBox.No:
+            # finally start server
+            do_start_IPC_server()
+        elif ret == QMessageBox.Close:
+            sys.exit(0)
+
+    def open_request_as_IPC_server_callback(_path):
+        LibraryData().handle_input_data(_path)
+        MW = Globals.main_window
+        if MW.frameless_mode:
+            MW.showMaximized()
+        else:
+            MW.show()
+        MW.activateWindow()
+        to_print = f'retrieved data path: {_path}'
+        print(to_print)
+
+    return IPC.via_sockets(path, open_request_as_IPC_server_callback, choose_start_option_callback)
+
+
 def _main():
 
     os.chdir(os.path.dirname(__file__))
@@ -5620,9 +5626,9 @@ def _main():
         sys.exit(0)
 
     IPC.globals = Globals
-
     if not Globals.lite_mode:
-        path = IPC.via_sockets(path, open_request_callback, choose_start_option_callback)
+        path = run_as_IPC_server_or_IPC_client(path)
+
     Globals.is_path_exists = os.path.exists(path)
 
     generate_pixmaps(Globals, SettingsWindow)
