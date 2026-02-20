@@ -63,12 +63,17 @@ class IPC():
     def start_client(cls): 
 
         def exit_func():
+            # QMessageBox.critical(None, "Job is done", "Меня выключают")
             sys.exit()
 
         def transfer_data_callback():
             data = str(cls.path).encode("utf8")
             cls.client_socket.write(data)
 
+            # TODO: все эти 10 секунд будет крутиться петля в via_sockets,
+            # и она грузит проц до 25%, надо придумать что-нибудь поэлегантней,
+            # может, в qt можно несколько раз запускать петлю app._exec()?
+            # Повторый запуск пригодился бы только для запуска сервера, для клиента такое не нужно.
             cls._timer = QTimer.singleShot(10*1000, exit_func)
 
         def do_start_server():
@@ -85,14 +90,18 @@ class IPC():
                     "The remote socket closed the connection.",
             }
             default_error_msg = "The following error occurred on client socket: %s." % cls.client_socket.errorString()
-            msg = errors.get(socketError, default_error_msg)
-            print(msg)
+            # msg = errors.get(socketError, default_error_msg)
+            # QMessageBox.critical(None, "Client Socket Error", f"{traceback.format_exc()}\n{msg}")
+            # print(msg)
+
             # если ошибка и произошла, то в нашем случае только из-за QLocalSocket.ServerNotFoundError,
             # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
             cls.choose_start_option_callback(do_start_server, cls.path)
 
         cls.client_socket = QLocalSocket()
 
+
+        cls.client_socket.disconnected.connect(exit_func) # когда сервер вырубает соеденение через disconnectFromServer
         cls.client_socket.connected.connect(transfer_data_callback)
         cls.client_socket.error.connect(client_socket_error)
         # cls.client_socket.readyRead.connect(lambda: on_ready_read(cls.client_socket))
