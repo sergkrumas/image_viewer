@@ -27,7 +27,7 @@ import traceback, os
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-class ServerOrClient():
+class IPC():
 
     SERVER_NAME = "krumassanimageviewer"
     SERVER_STARTED = False
@@ -35,15 +35,17 @@ class ServerOrClient():
     server_obj = None
     client_socket = None
 
+    clients = []
+
     @classmethod
-    def ipc_via_sockets(
+    def via_sockets(
             cls,
             path,
             open_request_callback,
             choose_start_option_callback,
         ):
 
-        print("begin of ServerOrClient.ipc_via_sockets")
+        print("begin of IPC.via_sockets")
 
         cls.path = path
         cls.open_request_callback = open_request_callback
@@ -54,7 +56,7 @@ class ServerOrClient():
         while not cls.SERVER_STARTED:
             processAppEvents(update_only=False)
 
-        print("end of ServerOrClient.ipc_via_sockets")
+        print("end of IPC.via_sockets")
         return path
 
     @classmethod
@@ -89,13 +91,6 @@ class ServerOrClient():
             # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
             cls.choose_start_option_callback(do_start_server, cls.path)
 
-        # def on_ready_read(client_socket):
-        #     # читаем ненужный и бессмысленный в данном случае ответ от сервера
-        #     msg = cls.client_socket.readAll()
-        #     if msg.data():
-        #         msg = msg.data().decode("utf8")
-        #         QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
-
         cls.client_socket = QLocalSocket()
 
         cls.client_socket.connected.connect(transfer_data_callback)
@@ -107,38 +102,15 @@ class ServerOrClient():
     @classmethod
     def start_server(cls):
 
-        def read_data_callback():
-            clientConnSocket = cls.server_obj.nextPendingConnection()
-
-            # TODO: (19 фев 26) тут, по идее, надо только сокеты ловить,
-            # а не стремиться читать данные от них,
-            # тогда не придётся ждать готовности к чтению
-
-            # тут надо каким-то образом выждать
-            # пока клиент получит сообщение о коннекте с этим сервером
-            # и отправит нам данные, которые мы сейчас должны прочитать
-            if True:
-                # или ждём три секунды
-                clientConnSocket.waitForReadyRead(3000)
-            else:
-                # или тянем время отправляя
-                # бессмысленный и ненужный в данном случае ответ
-                block = QByteArray()
-                out = QDataStream(block, QIODevice.WriteOnly)
-                out.setVersion(QDataStream.Qt_5_3)
-                out.writeQString("ping")
-                clientConnSocket.write(block)
-                clientConnSocket.flush()
-
+        def read_data_callback(clientConnSocket):
             path = None
             try:
                 qbytearray_obj = clientConnSocket.readAll()
                 if qbytearray_obj.data():
                     path = qbytearray_obj.data().decode("utf8")
             except:
-                traceback_lines = traceback.format_exc()
-                traceback_lines += f"\nPath: {path}"
-                QMessageBox.critical(None, "Server", f"Unable to read from socket, {traceback_lines}")
+                QMessageBox.critical(None, "Server",
+                            f"Unable to read from socket, {traceback.format_exc()}\nPath: {path}")
 
             try:
                 # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
@@ -146,20 +118,25 @@ class ServerOrClient():
                 if (cls.globals.main_window is not None) and (path is not None):
                     cls.open_request_callback(path)
             except:
-                traceback_lines = traceback.format_exc()
-                traceback_lines += f"\nPath: {path}"
-                traceback_lines += f"\nID: {os.getpid()}"
-                QMessageBox.critical(None, "Request Handling Error", f"{traceback_lines}")
+                QMessageBox.critical(None, "Request Handling Error",
+                                    f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")
 
             # deleteLater ставим после чтения данных, ибо участились ошибки типа
             # RuntimeError: wrapped C/C++ object of type QLocalSocket has been deleted
             clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
+            if clientConnSocket in cls.clients:
+                cls.clients.remove(clientConnSocket)
             clientConnSocket.disconnectFromServer()
+
+        def new_connection_callback():
+            clientConnSocket = cls.server_obj.nextPendingConnection()
+            clientConnSocket.readyRead.connect(lambda: read_data_callback(clientConnSocket))
+            cls.clients.append(clientConnSocket)
 
         cls.server_obj = QLocalServer()
 
         if cls.server_obj.listen(cls.SERVER_NAME):
-            cls.server_obj.newConnection.connect(read_data_callback)
+            cls.server_obj.newConnection.connect(new_connection_callback)
             print("server started")
             return True
         else:

@@ -5620,7 +5620,7 @@ def _main():
     ServerOrClient.globals = Globals
 
     if not Globals.lite_mode:
-        path = ServerOrClient.ipc_via_sockets(path, open_request, choose_start_option_callback)
+        path = IPC.via_sockets(path, open_request, choose_start_option_callback)
     Globals.is_path_exists = os.path.exists(path)
 
     generate_pixmaps(Globals, SettingsWindow)
