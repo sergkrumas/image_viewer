@@ -5257,23 +5257,29 @@ def show_system_tray(app, icon):
     sti.setIcon(icon)
     app.setProperty("stray_icon", sti)
 
-
-    ICON_HEIGHT = 32
-    # список оффестов иконки для получения для бесшовной анимации
-    offsets = list(range(0, ICON_HEIGHT+1))
-    offsets.extend(list(range(-ICON_HEIGHT, 0)))
-    opm = QPixmap(icon.pixmap(icon.actualSize(QSize(ICON_HEIGHT, ICON_HEIGHT))))
-    offsets = itertools.cycle(offsets)
-    def tray_icon_animation_step():
-        offset = next(offsets)
-        pm = QPixmap(opm.width(), opm.height())
-        pm.fill(Qt.transparent)
-        painter = QPainter()
-        painter.begin(pm)
-        painter.drawPixmap(QPoint(offset, 0), opm)
-        painter.end()
-        icon_frame = QIcon(pm)
-        sti.setIcon(icon_frame)
+    if True:
+        # вариант анимации с сияющим светодиодом в центре иконки приложения
+        def tray_icon_animation_step():
+            pass
+    else:
+        # вариант анимации, где иконка сдвигается влево, и затем появляется справа,
+        # и потом анимация зацикливается
+        ICON_HEIGHT = 32
+        # список оффестов иконки для получения бесшовной анимации
+        offsets = list(range(0, ICON_HEIGHT+1))
+        offsets.extend(list(range(-ICON_HEIGHT, 0)))
+        opm = QPixmap(icon.pixmap(icon.actualSize(QSize(ICON_HEIGHT, ICON_HEIGHT))))
+        offsets = itertools.cycle(offsets)
+        def tray_icon_animation_step():
+            offset = next(offsets)
+            pm = QPixmap(opm.width(), opm.height())
+            pm.fill(Qt.transparent)
+            painter = QPainter()
+            painter.begin(pm)
+            painter.drawPixmap(QPoint(offset, 0), opm)
+            painter.end()
+            icon_frame = QIcon(pm)
+            sti.setIcon(icon_frame)
 
     def tray_icon_animation_reset():
         sti.setIcon(icon)
