@@ -57,6 +57,10 @@ class IPC():
             processAppEvents(update_only=False)
 
         print("end of IPC.via_sockets")
+
+        # здесь возвращаем path чисто символически,
+        # и это возвращение происходит только тогда,
+        # когда приложение заработает как сервер
         return path
 
     @classmethod
