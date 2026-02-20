@@ -58,8 +58,54 @@ class ServerOrClient():
         return path
 
     @classmethod
+    def start_client(cls): 
+
+        def exit_func():
+            sys.exit()
+
+        def transfer_data_callback():
+            data = str(cls.path).encode("utf8")
+            cls.client_socket.write(data)
+
+            cls._timer = QTimer.singleShot(10*1000, exit_func)
+
+        def do_start_server():
+            cls.SERVER_STARTED = cls.start_server()
+
+        def client_socket_error(socketError):
+            errors = {
+                QLocalSocket.ServerNotFoundError:
+                    "The host was not found. Please check the host name and port settings.",
+                QLocalSocket.ConnectionRefusedError:
+                    "The connection was refused by the peer. Make sure the server is running,"
+                    "and check that the host name and port settings are correct.",
+                QLocalSocket.PeerClosedError:
+                    "The remote socket closed the connection.",
+            }
+            default_error_msg = "The following error occurred on client socket: %s." % cls.client_socket.errorString()
+            msg = errors.get(socketError, default_error_msg)
+            print(msg)
+            # если ошибка и произошла, то в нашем случае только из-за QLocalSocket.ServerNotFoundError,
+            # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
+            cls.choose_start_option_callback(do_start_server, cls.path)
+
+        # def on_ready_read(client_socket):
+        #     # читаем ненужный и бессмысленный в данном случае ответ от сервера
+        #     msg = cls.client_socket.readAll()
+        #     if msg.data():
+        #         msg = msg.data().decode("utf8")
+        #         QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
+
+        cls.client_socket = QLocalSocket()
+
+        cls.client_socket.connected.connect(transfer_data_callback)
+        cls.client_socket.error.connect(client_socket_error)
+        # cls.client_socket.readyRead.connect(lambda: on_ready_read(cls.client_socket))
+        cls.client_socket.abort() #reset socket
+        cls.client_socket.connectToServer(cls.SERVER_NAME)
+
+    @classmethod
     def start_server(cls):
-        cls.server_obj = QLocalServer()
 
         def read_data_callback():
             clientConnSocket = cls.server_obj.nextPendingConnection()
@@ -110,6 +156,8 @@ class ServerOrClient():
             clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
             clientConnSocket.disconnectFromServer()
 
+        cls.server_obj = QLocalServer()
+
         if cls.server_obj.listen(cls.SERVER_NAME):
             cls.server_obj.newConnection.connect(read_data_callback)
             print("server started")
@@ -118,53 +166,3 @@ class ServerOrClient():
             QMessageBox.critical(None, "Server", "Unable to start the server: %s." % cls.server_obj.errorString())
             return False
 
-    @classmethod
-    def start_client(cls): 
-        cls.client_socket = QLocalSocket()
-
-        def exit_func():
-            sys.exit()
-
-        def transfer_data_callback():
-            data = str(cls.path).encode("utf8")
-            cls.client_socket.write(data)
-
-            # TODO: (19 фев 26) тут по смыслу больше подошёл бы oneshot-таймер
-            global transfer_delay_timer
-            transfer_delay_timer = QTimer()
-            transfer_delay_timer.timeout.connect(exit_func)
-            transfer_delay_timer.setInterval(10*1000)
-            transfer_delay_timer.start()
-
-        def do_start_server():
-            cls.SERVER_STARTED = cls.start_server()
-
-        def client_socket_error(socketError):
-            errors = {
-                QLocalSocket.ServerNotFoundError:
-                    "The host was not found. Please check the host name and port settings.",
-                QLocalSocket.ConnectionRefusedError:
-                    "The connection was refused by the peer. Make sure the server is running,"
-                    "and check that the host name and port settings are correct.",
-                QLocalSocket.PeerClosedError:
-                    "The remote socket closed the connection.",
-            }
-            default_error_msg = "The following error occurred on client socket: %s." % cls.client_socket.errorString()
-            msg = errors.get(socketError, default_error_msg)
-            print(msg)
-            # если ошибка и произошла, то в нашем случае только из-за QLocalSocket.ServerNotFoundError,
-            # и это значит, что сервер не запущен, и тогда нам остаётся лишь запустить этот сервер
-            cls.choose_start_option_callback(do_start_server, cls.path)
-
-        def on_ready_read(client_socket):
-            # читаем ненужный и бессмысленный в данном случае ответ от сервера
-            msg = cls.client_socket.readAll()
-            if msg.data():
-                msg = msg.data().decode("utf8")
-                QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
-
-        cls.client_socket.connected.connect(transfer_data_callback)
-        cls.client_socket.error.connect(client_socket_error)
-        cls.client_socket.readyRead.connect(lambda: on_ready_read(cls.client_socket))
-        cls.client_socket.abort() #reset socket
-        cls.client_socket.connectToServer(cls.SERVER_NAME)
