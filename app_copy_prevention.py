@@ -101,10 +101,12 @@ class IPC():
         cls.client_socket = QLocalSocket()
 
 
-        cls.client_socket.disconnected.connect(exit_func) # когда сервер вырубает соеденение через disconnectFromServer
+        # когда сервер вырубает соеденение через disconnectFromServer
+        # это позволяет не ждать таймер, поставленный в transfer_data_callback
+        cls.client_socket.disconnected.connect(exit_func)
+
         cls.client_socket.connected.connect(transfer_data_callback)
         cls.client_socket.error.connect(client_socket_error)
-        # cls.client_socket.readyRead.connect(lambda: on_ready_read(cls.client_socket))
         cls.client_socket.abort() #reset socket
         cls.client_socket.connectToServer(cls.SERVER_NAME)
 
