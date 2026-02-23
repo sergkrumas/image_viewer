@@ -2320,6 +2320,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 vs.captured_thumb_rect_at_start = QRectF(sb_data.thumb_rect)
                 vs.captured_curpos = event.pos()
                 break
+
+        if not scrollbar_captured:
+            for scrollbar_index in vs.all():
+                sb_data = vs.data[scrollbar_index]
+                if sb_data.visible and sb_data.track_rect.contains(event.pos()):
+                    event_y = event.pos().y()
+                    if event_y > sb_data.thumb_rect.top():
+                        direction = -1
+                    else:
+                        direction = 1
+                    self.content_scroll_by_one_page(direction)
+
         return scrollbar_captured
 
     def clickable_scrollbars_mouseMoveEvent(self, event):
@@ -2585,8 +2597,21 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         offset = min(0, offset)
         return offset
 
-    def previews_list_folder_list_wheelEvent(self, scroll_value, event):
-        offset_delta = int(scroll_value*200)
+    def content_scroll_by_one_page(self, direction):
+        self.content_scroll(0, None, direction=direction)
+
+    def content_scroll_wheelEvent(self, scroll_value, event):
+        self.content_scroll(scroll_value, event)
+
+    def content_scroll(self, scroll_value, event, direction=None):
+        if direction is None:
+            offset_delta = int(scroll_value*200)
+        else:
+            if self.is_library_page_active():
+                offset_delta = self.library_page_viewframe_height()
+            elif self.is_waterfall_page_active():
+                offset_delta = self.waterfall_page_viewframe_height()
+            offset_delta *= direction
 
         if self.is_library_page_active():
             VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
@@ -2611,7 +2636,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                                 content_height,
                                                                 VIEWFRAME_HEIGHT,
                                                             )
-                        self.previews_list_set_active_item(event.pos())
+                        if event:
+                            self.previews_list_set_active_item(event.pos())
 
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
@@ -2625,7 +2651,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                             content_height,
                                                             VIEWFRAME_HEIGHT,
                                                         )
-                    self.previews_list_set_active_item(event.pos())
+                    if event:
+                        self.previews_list_set_active_item(event.pos())
         self.update()
 
     def is_control_panel_under_mouse(self):
@@ -2745,7 +2772,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         elif self.is_library_page_active():
-            self.previews_list_folder_list_wheelEvent(scroll_value, event)
+            self.content_scroll_wheelEvent(scroll_value, event)
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
@@ -2758,7 +2785,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 elif alt and (not shift) and (not ctrl):
                     self.waterfall_change_rounded_rect_radius(event, scroll_value)
                 else:
-                    self.previews_list_folder_list_wheelEvent(scroll_value, event)
+                    self.content_scroll_wheelEvent(scroll_value, event)
 
         elif self.is_viewer_page_active():
 
