@@ -86,7 +86,6 @@ class Globals():
     VIEW_HISTORY_SIZE = 20
     MULTIROW_THUMBNAILS_PADDING = 30
     PREVIEW_WIDTH = 200
-    PREVIEW_CORNER_RADIUS = 20
 
     DISABLE_ITEM_DISTORTION_FIXER = True
 
@@ -2652,18 +2651,29 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             return False
 
-    def waterfall_change_grid_gap(self, event, scroll_value):
+    def scroll_setting_value(self, event, scroll_value, setting_id):
+        setting_attr_name = f'STNG_{setting_id}'
         if scroll_value > 0:
-            n = 1
+            n = 1.0
         else:
-            n = -1
-        value = self.STNG_waterfall_grid_spacing + n
+            n = -1.0
+        value = getattr(self, setting_attr_name)
+        value += n
         value = self.apply_min_max_clamping(
             value,
-            *SettingsWindow.get_setting_span('waterfall_grid_spacing')
+            *SettingsWindow.get_setting_span(setting_id)
         )
-        self.STNG_waterfall_grid_spacing = float(value)
-        SettingsWindow.set_setting_value('waterfall_grid_spacing', float(value))
+        setattr(self, setting_attr_name, float(value))
+        SettingsWindow.set_setting_value(setting_id, float(value))
+        return float(value)
+
+    def waterfall_change_rounded_rect_radius(self, event, scroll_value):
+        value = self.scroll_setting_value(event, scroll_value, 'waterfall_corner_radius')
+        self.show_center_label(_(f'Preview corner radius: {value}'))
+        self.update()
+
+    def waterfall_change_grid_gap(self, event, scroll_value):
+        self.scroll_setting_value(event, scroll_value, 'waterfall_grid_spacing')
         cf = LibraryData().current_folder()
         if cf:
             LibraryData().update_current_folder_columns()
@@ -2717,9 +2727,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.update()
             return
 
-        scroll_value = event.angleDelta().y()/240
+        # когда зажат Alt, то event.angleDelta().y() будет 0.0,
+        # и тогда скролл надо читать из event.angleDelta().x()
+        angleDelta = event.angleDelta().y() or event.angleDelta().x()
+
+        scroll_value = angleDelta/240
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
         control_panel_undermouse = self.is_control_panel_under_mouse()
 
@@ -2736,10 +2751,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.viewer_modal:
                 self.viewer_wheelEvent(event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse)
             else:
-                if ctrl and (not shift):
+                if ctrl and (not shift) and (not alt):
                     self.waterfall_change_number_of_columns(event, scroll_value)
-                elif ctrl and shift:
+                elif ctrl and shift and (not alt):
                     self.waterfall_change_grid_gap(event, scroll_value)
+                elif alt and (not shift) and (not ctrl):
+                    self.waterfall_change_rounded_rect_radius(event, scroll_value)
                 else:
                     self.previews_list_folder_list_wheelEvent(scroll_value, event)
 
@@ -3347,6 +3364,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                         render_as_blackplate,
                                         hor_gap=self.waterfall_grid_get_horizontal_spacing(),
                                         ver_gap=self.waterfall_grid_get_vertical_spacing(),
+                                        corner_radius=self.STNG_waterfall_corner_radius,
                                     )
 
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
@@ -3740,10 +3758,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                                     any_images,
                                                                     render_as_blackplate=False,
                                                                     hor_gap=.0,
-                                                                    ver_gap=.0):
+                                                                    ver_gap=.0,
+                                                                    corner_radius=20.0):
 
-        PREVIEW_CORNER_RADIUS = Globals.PREVIEW_CORNER_RADIUS
-        rounded_previews = self.rounded_previews
+        rounded_previews = self.rounded_previews and corner_radius > 0.0
 
         if columns:
             if rounded_previews:
@@ -3769,7 +3787,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     pixmap = im_data.preview
                     if rounded_previews:
                         path = QPainterPath()
-                        path.addRoundedRect(r, PREVIEW_CORNER_RADIUS, PREVIEW_CORNER_RADIUS)
+                        path.addRoundedRect(r, corner_radius, corner_radius)
                         painter.setClipPath(path)
                         # painter.drawRect(r) #for images with transparent layer
                         painter.drawPixmap(r.toRect(), pixmap)

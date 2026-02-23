@@ -118,6 +118,7 @@ Left-click to open the modal viewer, double-click to close it.
 
 Use `Ctrl + Mouse Wheel` to change the number of columns.
 Use `Ctrl + Shift + Mouse Wheel` to change the gaps between images.
+Use `Alt + Mouse Wheel` to change corner rounding radius of images.
 
 You can set the app to open on the Waterfall page in the settings.
 
