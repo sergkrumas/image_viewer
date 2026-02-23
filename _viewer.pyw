@@ -2605,13 +2605,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
             if self.library_page_is_inside_left_part():
                 content_height = self.library_page_folders_content_height()
-                if content_height > VIEWFRAME_HEIGHT:                
+                if content_height > VIEWFRAME_HEIGHT:
                     LibraryData().folderslist_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
             else:
                 cf = LibraryData().current_folder()
                 if cf.library_columns:
                     content_height = self.library_page_previews_columns_content_height(cf)
-                    if content_height > VIEWFRAME_HEIGHT:                    
+                    if content_height > VIEWFRAME_HEIGHT:
                         cf.library_previews_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
@@ -2724,6 +2724,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         SettingsWindow.set_setting_value(setting_id, float(value))
         return float(value)
 
+    def library_change_rounded_rect_radius(self, event, scroll_value):
+        value = self.scroll_setting_value(event, scroll_value, 'library_corner_radius')
+        self.show_center_label(_(f'Preview corner radius: {value}'))
+        self.update()
+
     def waterfall_change_rounded_rect_radius(self, event, scroll_value):
         value = self.scroll_setting_value(event, scroll_value, 'waterfall_corner_radius')
         self.show_center_label(_(f'Preview corner radius: {value}'))
@@ -2802,7 +2807,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         elif self.is_library_page_active():
-            self.content_scroll_wheelEvent(scroll_value, event)
+            if alt and (not shift) and (not ctrl):
+                self.library_change_rounded_rect_radius(event, scroll_value)
+            else:
+                self.content_scroll_wheelEvent(scroll_value, event)
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
@@ -3685,7 +3693,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                         active_item,
                                         right_col_check_rect,
                                         cf.column_width, cf.library_previews_scroll_offset,
-                                        bool(cf.images_list)
+                                        bool(cf.images_list),
+                                        corner_radius=self.STNG_library_corner_radius,
                                     )
 
         if columns and active_item:

@@ -535,10 +535,15 @@ class SettingsWindow(QWidget):
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
 
 
+            '---librarypage': _('Library page'),
+            'library_corner_radius': (10.0, (0.0, 250.0), _('Library page rounded corner radius')),
+
+
             '---waterfallpage': _('Waterfall page'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
             'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
-            'waterfall_corner_radius': (20.0, (0.0, 250.0), _('Waterfall page corner radius')),
+            'waterfall_corner_radius': (20.0, (0.0, 250.0), _('Waterfall page rounded corner radius')),
+
 
             '---boardpage': _('Board page'),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
