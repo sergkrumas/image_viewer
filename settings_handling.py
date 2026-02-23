@@ -798,7 +798,8 @@ class SettingsWindow(QWidget):
 
                 current_lang_key = SettingsWindow.matrix['ui_lang'][0]
                 for n, (lang_key, lang_name) in enumerate(self.langs().items()):
-                    lang_combo_box.addItem(lang_name)
+                    icon = getattr(self.globals, f'lang_{lang_key}_icon')
+                    lang_combo_box.addItem(icon, lang_name)
                     lang_combo_box.setItemData(n, lang_key)
                     if lang_key == current_lang_key:
                         lang_combo_box.setCurrentIndex(n)

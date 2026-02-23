@@ -392,6 +392,14 @@ def lang_es_pixmap(Globals, lang_rect):
     painter.end()
     Globals.lang_es_pixmap = PIXMAP
 
+def lang_icons(Globals):
+    Globals.lang_en_icon = QIcon(Globals.lang_en_pixmap)
+    Globals.lang_ru_icon = QIcon(Globals.lang_ru_pixmap)
+    Globals.lang_de_icon = QIcon(Globals.lang_de_pixmap)
+    Globals.lang_fr_icon = QIcon(Globals.lang_fr_pixmap)
+    Globals.lang_it_icon = QIcon(Globals.lang_it_pixmap)
+    Globals.lang_es_icon = QIcon(Globals.lang_es_pixmap)
+
 def generate_pixmaps(Globals, SettingsWindow):
 
     print('start generating pixmaps')
@@ -412,5 +420,7 @@ def generate_pixmaps(Globals, SettingsWindow):
     lang_fr_pixmap(Globals, QRectF(lang_rect))
     lang_it_pixmap(Globals, QRectF(lang_rect))
     lang_es_pixmap(Globals, QRectF(lang_rect))
+
+    lang_icons(Globals)
 
     print('finish generating pixmaps')
