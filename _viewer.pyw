@@ -78,6 +78,7 @@ class Globals():
     DEBUG = True
     SUPER_LITE = True
     FORCE_FULL_DEBUG = False
+    SUPRESS_RERUN = False
     CRASH_SIMULATOR = True
 
     THUMBNAIL_WIDTH = 50
@@ -5579,13 +5580,14 @@ def _main():
 
     if not Globals.SUPER_LITE:
         if not Globals.DEBUG:
-            RERUN_ARG = '-rerun'
-            # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
-            # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
-            # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
-            if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
-                subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
-                sys.exit()
+            if not Globals.SUPRESS_RERUN:
+                RERUN_ARG = '-rerun'
+                # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
+                # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
+                # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
+                if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
+                    subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
+                    sys.exit()
 
     _was_DEBUG = Globals.DEBUG
     if sys.argv[0].lower().endswith("_viewer.pyw"):
