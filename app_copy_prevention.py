@@ -30,7 +30,6 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 class IPC():
 
     SERVER_NAME = "krumassanimageviewer"
-    SERVER_STARTED = False
 
     server_obj = None
     client_socket = None
@@ -51,10 +50,16 @@ class IPC():
         cls.open_request_as_IPC_server_callback = open_request_as_IPC_server_callback
         cls.choose_start_option_callback = choose_start_option_callback
 
+        cls.app = QApplication.instance()
+
         cls.start_client()
 
-        while not cls.SERVER_STARTED:
-            processAppEvents(update_only=False)
+        # (23 фев 26) ВАЖНО
+        # раньше тут была петля через while (not cls.SERVER_STARTED) и proccessEvents в теле цикла,
+        # но, судя по тому, что я наблюдаю при отладке, она здесь только мешает, даже в виде app.exec()
+        # Видимо, дело в том, что на Windows под сокетами скрываются named pipes, то есть, это не сокеты по сути.
+        # Но при возможном портировании программы на Linux стоит учесь этот нюанс, и наверное,
+        # придётся добавить тут петлю, и где-то разрывать её через app.exit() 
 
         print("end of IPC.via_sockets")
 
@@ -64,24 +69,30 @@ class IPC():
         return path
 
     @classmethod
+    def app_exit(cls):
+        app = QApplication().instance()
+        app.exit()
+        print('app_exit')
+
+    @classmethod
     def start_client(cls): 
 
         def exit_func():
-            # QMessageBox.critical(None, "Job is done", "Меня выключают")
+            # QMessageBox.warning(None, "Job is done", "Меня выключают")
+            # print('data-path is sent')
             sys.exit()
 
         def transfer_data_callback():
             data = str(cls.path).encode("utf8")
             cls.client_socket.write(data)
 
-            # TODO: все эти 10 секунд будет крутиться петля в via_sockets,
-            # и она грузит проц до 25%, надо придумать что-нибудь поэлегантней,
-            # может, в qt можно несколько раз запускать петлю app._exec()?
-            # Повторый запуск пригодился бы только для запуска сервера, для клиента такое не нужно.
+            # все эти 10 секунд будет крутиться петля в via_sockets,
+            # до тех пор пока не сокет не соединится
             cls._timer = QTimer.singleShot(10*1000, exit_func)
 
         def do_start_IPC_server():
-            cls.SERVER_STARTED = cls.start_server()
+            cls.client_socket.close()
+            cls.start_server()
 
         def client_socket_error(socketError):
             errors = {
@@ -93,7 +104,7 @@ class IPC():
                 QLocalSocket.PeerClosedError:
                     "The remote socket closed the connection.",
             }
-            default_error_msg = "The following error occurred on client socket: %s." % cls.client_socket.errorString()
+            default_error_msg = f"Client socket error: {cls.client_socket.errorString()}"
             # msg = errors.get(socketError, default_error_msg)
             # QMessageBox.critical(None, "Client Socket Error", f"{traceback.format_exc()}\n{msg}")
             # print(msg)
@@ -124,7 +135,7 @@ class IPC():
                     path = path_bytes.decode("utf8")
             except:
                 QMessageBox.critical(None, "Server",
-                            f"Unable to read from socket, {traceback.format_exc()}")
+                            f"Unable to read from socket or decode error, {traceback.format_exc()}")
 
             # отключаем связь
             clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
@@ -145,8 +156,8 @@ class IPC():
         if cls.server_obj.listen(cls.SERVER_NAME):
             cls.server_obj.newConnection.connect(new_connection_callback)
             print("server started")
-            return True
         else:
-            QMessageBox.critical(None, "Server", "Unable to start the server: %s." % cls.server_obj.errorString())
-            return False
+            QMessageBox.critical(None, "Server",
+                                f"Unable to start the server: {cls.server_obj.errorString()}")
+            print('unable to start server')
 
