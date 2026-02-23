@@ -541,8 +541,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.show_center_label(_("You cannot delete virtual folders from the library"), error=True)
             return
         elif len(self.folders) == 1:
-            MW.show_center_label(_("You cannot delete the folder if it is the single one in current session"), error=True)
-            return
+            create_virtual_folder = True
+            vf = self.create_empty_virtual_folder()
+            LibraryData().folders.remove(cf)
+            self.make_folder_current(vf, write_view_history=False)
         else:
             LibraryData().choose_previous_folder()
             LibraryData().folders.remove(cf)
@@ -713,6 +715,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # ведь код каждой из страниц подразумевает, что существует какая-то папка
         self.empty_virtual_folder = self.create_folder_data(_("OnAppStart virtual folder"), [], image_filepath=None, virtual=True, make_current=True)
         self.empty_virtual_folder.previews_done = True
+        return self.empty_virtual_folder
 
     def get_comm_virutal_folder(self):
         return self.comments_folder
