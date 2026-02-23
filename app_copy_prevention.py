@@ -31,6 +31,7 @@ class IPC():
 
     SERVER_NAME = "krumassanimageviewer"
 
+    SERVER_STARTED = False
     server_obj = None
     client_socket = None
 
@@ -50,16 +51,33 @@ class IPC():
         cls.open_request_as_IPC_server_callback = open_request_as_IPC_server_callback
         cls.choose_start_option_callback = choose_start_option_callback
 
-        cls.app = QApplication.instance()
+        app = QApplication.instance()
 
+        print('before start client')
         cls.start_client()
+        print('after start client, before app.exec')
+ 
+        if not cls.SERVER_STARTED:
+            # Про петлю app.exec() ниже важно понимать следующее: она нужна тут только для того,
+            # чтобы копии приложения застревали здесь и не пытались открывать своё окно,
+            # потому как, если в таком случе выполнение покинет пределы via_sockets,
+            # то эти окна появятся, а нам этого не надо.
+            # При запуске первой копии приложения все события, в том числе запуск сервера,
+            # ВНЕЗАПНО происходят ДО выхода из cls.start_client(), что конечно контринтуитивно,
+            # однако поэтому для первой копии приложения петля тут не нужна, потому как ей надо
+            # выходить из via_sockets и создавать иконку в трее и окно.
+            # Дополнительно надо смотреть комментарий в read_data_callback.
+            # Я не знаю в чём корни такого контринтутивного поведения, пока думаю, что 
+            # всё дело в том, что на Windows QLocalSocket и QLocalServer штуки реализованы
+            # через namedpipes.
+            # Но всё же, если я захочу портировать эту программу на Linux, то скорее всего
+            # для первой копии здесь тоже нужна будет петля, и в do_start_IPC_server придётся
+            # вызывать app.exit(), чтобы из неё выйти. А сейчас этот вызов не даёт ничего,
+            # потому как в момент работы функии transfer_data_callback мы ещё не находимся в петле,
+            # которая запускается следующей строчкой:
+            app.exec()
 
-        # (23 фев 26) ВАЖНО
-        # раньше тут была петля через while (not cls.SERVER_STARTED) и proccessEvents в теле цикла,
-        # но, судя по тому, что я наблюдаю при отладке, она здесь только мешает, даже в виде app.exec()
-        # Видимо, дело в том, что на Windows под сокетами скрываются named pipes, то есть, это не сокеты по сути.
-        # Но при возможном портировании программы на Linux стоит учесь этот нюанс, и наверное,
-        # придётся добавить тут петлю, и где-то разрывать её через app.exit() 
+        print('after app.exec')
 
         print("end of IPC.via_sockets")
 
@@ -67,12 +85,6 @@ class IPC():
         # и это возвращение происходит только тогда,
         # когда приложение заработает как сервер
         return path
-
-    @classmethod
-    def app_exit(cls):
-        app = QApplication().instance()
-        app.exit()
-        print('app_exit')
 
     @classmethod
     def start_client(cls): 
@@ -92,7 +104,7 @@ class IPC():
 
         def do_start_IPC_server():
             cls.client_socket.close()
-            cls.start_server()
+            cls.SERVER_STARTED = cls.start_server()
 
         def client_socket_error(socketError):
             errors = {
@@ -137,6 +149,12 @@ class IPC():
                 QMessageBox.critical(None, "Server",
                             f"Unable to read from socket or decode error, {traceback.format_exc()}")
 
+            # иммитация долгого ответа от сервера. Если её активировать, и при этом 
+            # клиент будет работать без локальной петли, то тогда клиент успеет
+            # показать окно пока ждёт, пока его отключит сервер,
+            # а этого допустить ни в коем случае нельзя
+            # time.sleep(5)
+
             # отключаем связь
             clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
             if clientConnSocket in cls.clients:
@@ -156,8 +174,9 @@ class IPC():
         if cls.server_obj.listen(cls.SERVER_NAME):
             cls.server_obj.newConnection.connect(new_connection_callback)
             print("server started")
+            return True
         else:
             QMessageBox.critical(None, "Server",
                                 f"Unable to start the server: {cls.server_obj.errorString()}")
             print('unable to start server')
-
+            return False
