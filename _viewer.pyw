@@ -67,7 +67,7 @@ class Globals():
     ERROR_PREVIEW_PIXMAP = None
 
     lite_mode = False # лайтовый (упрощённый) режим работы приложения
-    force_full_mode = False # обычный режим со всеми фичами без ограничений
+    force_standard_mode = False # обычный режим со всеми фичами без ограничений
     do_not_show_start_dialog = False
     is_path_exists = False
     started_from_sublime_text = False
@@ -77,7 +77,7 @@ class Globals():
 
     DEBUG = True
     SUPER_LITE = True
-    FORCE_FULL_DEBUG = False
+    FORCE_STANDARD_DEBUG = False
     SUPRESS_RERUN = False
     CRASH_SIMULATOR = True
 
@@ -4179,7 +4179,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def require_window_closing(self):
         if Globals.lite_mode:
             self.animated_or_not_animated_close(QApplication.instance().quit)
-        elif Globals.FORCE_FULL_DEBUG and Globals.DEBUG:
+        elif Globals.FORCE_STANDARD_DEBUG and Globals.DEBUG:
             QApplication.instance().quit()
         elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
             self.hide()
@@ -5520,7 +5520,7 @@ class HookConsoleOutput:
 
 def run_as_IPC_server_or_IPC_client(path):
     def choose_start_option_callback(do_start_IPC_server, _path):
-        if Globals.force_full_mode:
+        if Globals.force_standard_mode:
             ret = QMessageBox.No
         else:
             if Globals.do_not_show_start_dialog:
@@ -5628,7 +5628,7 @@ def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument('path', nargs='?', default=None)
     parser.add_argument('-lite', help="", action="store_true")
-    parser.add_argument('-full', help="", action="store_true")
+    parser.add_argument('-standard', help="", action="store_true")
     parser.add_argument('-frame', help="", action="store_true")
     parser.add_argument('-forcelibrarypage', help="", action="store_true")
     parser.add_argument('-rerun', help="", action="store_true")
@@ -5644,11 +5644,11 @@ def _main():
     if args.aftercrash:
         Globals.aftercrash = True
     Globals.lite_mode = args.lite
-    Globals.force_full_mode = args.full
+    Globals.force_standard_mode = args.standard
 
-    if _was_DEBUG and Globals.FORCE_FULL_DEBUG:
+    if _was_DEBUG and Globals.FORCE_STANDARD_DEBUG:
         Globals.lite_mode = False
-        Globals.force_full_mode = True
+        Globals.force_standard_mode = True
         path = get_predefined_path_if_started_from_sublimeText()
 
     if Globals.SUPER_LITE:
