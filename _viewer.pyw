@@ -2597,6 +2597,38 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         offset = min(0, offset)
         return offset
 
+    def content_scroll_ends(self, zero):
+        def zero_or_value(value):
+            if zero:
+                return 0
+            else:
+                return value
+        if self.is_library_page_active():
+            VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
+            if self.library_page_is_inside_left_part():
+                content_height = self.library_page_folders_content_height()
+                if content_height > VIEWFRAME_HEIGHT:                
+                    LibraryData().folderslist_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
+            else:
+                cf = LibraryData().current_folder()
+                if cf.library_columns:
+                    content_height = self.library_page_previews_columns_content_height(cf)
+                    if content_height > VIEWFRAME_HEIGHT:                    
+                        cf.library_previews_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
+        elif self.is_waterfall_page_active():
+            VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
+            cf = LibraryData().current_folder()
+            if cf.waterfall_columns:
+                content_height = self.waterfall_page_previews_columns_content_height(cf)
+                if content_height > VIEWFRAME_HEIGHT:
+                    cf.waterfall_previews_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
+
+    def content_scroll_home(self):
+        self.content_scroll_ends(True)
+
+    def content_scroll_end(self):
+        self.content_scroll_ends(False)
+
     def content_scroll_by_one_page(self, direction):
         self.content_scroll(0, None, direction=direction)
 
@@ -4366,10 +4398,27 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         elif self.is_library_page_active():
+
             if key == Qt.Key_Up:
                 LibraryData().choose_previous_folder()
             elif key == Qt.Key_Down:
                 LibraryData().choose_next_folder()
+
+            elif key == Qt.Key_Home:
+                self.content_scroll_home()
+            elif key == Qt.Key_End:
+                self.content_scroll_end()
+            elif key == Qt.Key_PageUp:
+                self.content_scroll_by_one_page(1)
+            elif key == Qt.Key_PageDown:
+                self.content_scroll_by_one_page(-1)
+
+            elif key == Qt.Key_Backtab:
+                LibraryData().choose_doom_scroll()
+            elif key == Qt.Key_Delete:
+                LibraryData().delete_current_folder()
+            elif check_scancode_for(event, "U"):
+                LibraryData().update_current_folder()
 
         elif self.is_waterfall_page_active():
 
@@ -4382,7 +4431,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.viewer_modal:
                 self.viewer_keyReleaseEvent(event)
             else:
-                pass
+                if key == Qt.Key_Home:
+                    self.content_scroll_home()
+                elif key == Qt.Key_End:
+                    self.content_scroll_end()
+                elif key == Qt.Key_PageUp:
+                    self.content_scroll_by_one_page(1)
+                elif key == Qt.Key_PageDown:
+                    self.content_scroll_by_one_page(-1)
 
         elif self.is_board_page_active():
 
@@ -4549,13 +4605,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         elif self.is_library_page_active():
-
-            if key == Qt.Key_Backtab:
-                LibraryData().choose_doom_scroll()
-            elif key == Qt.Key_Delete:
-                LibraryData().delete_current_folder()
-            elif check_scancode_for(event, "U"):
-                LibraryData().update_current_folder()
+            pass
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
