@@ -249,6 +249,149 @@ def null_pixmap(Globals):
 
     Globals.NULL_PIXMAP = QPixmap()
 
+def lang_pixmap_begin(lang_rect):
+    PIXMAP = QPixmap(lang_rect.size().toSize())
+    PIXMAP.fill(Qt.transparent)
+    painter = QPainter()
+    painter.begin(PIXMAP)
+    painter.setPen(QPen(Qt.gray, 1))
+    painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    return PIXMAP, painter
+
+def lang_en_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    red = QColor(201, 7, 42)
+    white = QColor(255, 255, 255)
+    blue = QColor(0, 27, 105)
+
+    painter.fillRect(lang_rect, red)
+
+    offset = 10
+    lang_rect.adjust(offset, 0, 0, -offset)
+    painter.fillRect(lang_rect, white)
+    offset = 8
+    lang_rect.adjust(offset, 0, 0, -offset)
+    painter.fillRect(lang_rect, blue)
+
+    p1 = lang_rect.bottomLeft()
+    p2 = lang_rect.topRight() + QPointF(lang_rect.width()/2, 0)
+
+    painter.setClipping(True)
+    painter.setClipRect(lang_rect)
+    painter.setPen(QPen(white, 15))
+
+    painter.drawLine(p1 + QPoint(0, 6), p2 + QPoint(0, 6))
+    painter.setPen(QPen(red, 5))
+
+    p1 += QPoint(0, 3)
+    p2 += QPoint(0, 3)
+    painter.drawLine(p1, p2)
+
+    painter.setClipping(False)
+
+    painter.end()
+    Globals.lang_en_pixmap = PIXMAP
+
+def lang_ru_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    white = QColor(255, 255, 255)
+    blue = QColor(0, 54, 167)
+    red = QColor(214, 39, 24)
+
+    painter.fillRect(lang_rect, white)
+    offset = lang_rect.height()/3
+    lang_rect.adjust(0, offset, 0, 0)
+    painter.fillRect(lang_rect, blue)
+    lang_rect.adjust(0, offset, 0, 0)
+    painter.fillRect(lang_rect, red)
+
+    painter.end()
+    Globals.lang_ru_pixmap = PIXMAP
+
+def lang_de_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    schwarz = QColor(0, 0, 0)
+    rot = QColor(222, 0, 0)
+    gelb = QColor(255, 207, 0)
+
+    painter.fillRect(lang_rect, schwarz)
+    offset = lang_rect.height()/3
+    lang_rect.adjust(0, offset, 0, 0)
+    painter.fillRect(lang_rect, rot)
+    lang_rect.adjust(0, offset, 0, 0)
+    painter.fillRect(lang_rect, gelb)
+
+    painter.end()
+    Globals.lang_de_pixmap = PIXMAP
+
+def lang_fr_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    blue =  QColor(0, 0, 146)
+    white = QColor(255, 255, 255)
+    red =  QColor(226, 0, 6)
+
+    painter.fillRect(lang_rect, blue)
+    offset = lang_rect.width()/3
+    lang_rect.adjust(offset, 0, 0, 0)
+    painter.fillRect(lang_rect, white)
+    lang_rect.adjust(offset, 0, 0, 0)
+    painter.fillRect(lang_rect, red)
+
+    painter.end()
+    Globals.lang_fr_pixmap = PIXMAP
+
+
+def lang_it_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    green = QColor(0, 147, 68)
+    white = QColor(255, 255, 255)
+    red = QColor(207, 39, 52)
+
+    painter.fillRect(lang_rect, green)
+    offset = lang_rect.width()/3
+    lang_rect.adjust(offset, 0, 0, 0)
+    painter.fillRect(lang_rect, white)
+    lang_rect.adjust(offset, 0, 0, 0)
+    painter.fillRect(lang_rect, red)
+
+    painter.end()
+    Globals.lang_it_pixmap = PIXMAP
+
+def lang_es_pixmap(Globals, lang_rect):
+
+    PIXMAP, painter = lang_pixmap_begin(lang_rect)
+
+    red = QColor(199, 3, 24)
+    yellow = QColor(255, 197, 0)
+
+    painter.fillRect(lang_rect, red)
+    offset = lang_rect.height()/4
+    lang_rect.adjust(0, offset, 0, 0)
+    painter.fillRect(lang_rect, yellow)
+    font = QFont()
+    TEXT_HEIGHT = 18
+    font.setPixelSize(TEXT_HEIGHT)
+    font.setWeight(1500)
+    painter.setFont(font)
+    painter.setPen(Qt.black)
+    painter.drawText(lang_rect.topLeft() + QPointF(0, offset + (offset*2 - TEXT_HEIGHT)/2), ' ES')
+    lang_rect.adjust(0, offset*2, 0, 0)
+    painter.fillRect(lang_rect, red)
+
+    painter.end()
+    Globals.lang_es_pixmap = PIXMAP
+
 def generate_pixmaps(Globals, SettingsWindow):
 
     print('start generating pixmaps')
@@ -261,5 +404,13 @@ def generate_pixmaps(Globals, SettingsWindow):
     tag_big_icon(Globals)
     comments_big_icon(Globals)
     minimize_icon(Globals)
+
+    lang_rect = QRectF(0, 0, 60, 60)
+    lang_en_pixmap(Globals, QRectF(lang_rect))
+    lang_ru_pixmap(Globals, QRectF(lang_rect))
+    lang_de_pixmap(Globals, QRectF(lang_rect))
+    lang_fr_pixmap(Globals, QRectF(lang_rect))
+    lang_it_pixmap(Globals, QRectF(lang_rect))
+    lang_es_pixmap(Globals, QRectF(lang_rect))
 
     print('finish generating pixmaps')

@@ -3526,106 +3526,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             pass
 
         elif lang == 'en':
-
-            red = QColor(201, 7, 42)
-            white = QColor(255, 255, 255)
-            blue = QColor(0, 27, 105)
-
-            painter.fillRect(lang_rect, red)
-
-            offset = 10
-            lang_rect.adjust(offset, 0, 0, -offset)
-            painter.fillRect(lang_rect, white)
-            offset = 8
-            lang_rect.adjust(offset, 0, 0, -offset)
-            painter.fillRect(lang_rect, blue)
-
-            p1 = lang_rect.bottomLeft()
-            p2 = lang_rect.topRight() + QPointF(lang_rect.width()/2, 0)
-
-            painter.setClipping(True)
-            painter.setClipRect(lang_rect)
-            painter.setPen(QPen(white, 15))
-
-            painter.drawLine(p1 + QPoint(0, 6), p2 + QPoint(0, 6))
-            painter.setPen(QPen(red, 5))
-
-            p1 += QPoint(0, 3)
-            p2 += QPoint(0, 3)
-            painter.drawLine(p1, p2)
-
-            painter.setClipping(False)
-
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_en_pixmap)
         elif lang == 'ru':
-
-            white = QColor(255, 255, 255)
-            blue = QColor(0, 54, 167)
-            red = QColor(214, 39, 24)
-
-            painter.fillRect(lang_rect, white)
-            offset = lang_rect.height()/3
-            lang_rect.adjust(0, offset, 0, 0)
-            painter.fillRect(lang_rect, blue)
-            lang_rect.adjust(0, offset, 0, 0)
-            painter.fillRect(lang_rect, red)
-
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_ru_pixmap)
         elif lang == 'de':
-
-            schwarz = QColor(0, 0, 0)
-            rot = QColor(222, 0, 0)
-            gelb = QColor(255, 207, 0)
-
-            painter.fillRect(lang_rect, schwarz)
-            offset = lang_rect.height()/3
-            lang_rect.adjust(0, offset, 0, 0)
-            painter.fillRect(lang_rect, rot)
-            lang_rect.adjust(0, offset, 0, 0)
-            painter.fillRect(lang_rect, gelb)
-
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_de_pixmap)
         elif lang == 'fr':
-
-            blue =  QColor(0, 0, 146)
-            white = QColor(255, 255, 255)
-            red =  QColor(226, 0, 6)
-
-            painter.fillRect(lang_rect, blue)
-            offset = lang_rect.width()/3
-            lang_rect.adjust(offset, 0, 0, 0)
-            painter.fillRect(lang_rect, white)
-            lang_rect.adjust(offset, 0, 0, 0)
-            painter.fillRect(lang_rect, red)
-
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_fr_pixmap)
         elif lang == 'it':
-
-            green = QColor(0, 147, 68)
-            white = QColor(255, 255, 255)
-            red = QColor(207, 39, 52)
-
-            painter.fillRect(lang_rect, green)
-            offset = lang_rect.width()/3
-            lang_rect.adjust(offset, 0, 0, 0)
-            painter.fillRect(lang_rect, white)
-            lang_rect.adjust(offset, 0, 0, 0)
-            painter.fillRect(lang_rect, red)
-
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_it_pixmap)
         elif lang == 'es':
-
-            red = QColor(199, 3, 24)
-            yellow = QColor(255, 197, 0)
-
-            painter.fillRect(lang_rect, red)
-            offset = lang_rect.height()/4
-            lang_rect.adjust(0, offset, 0, 0)
-            painter.fillRect(lang_rect, yellow)
-            font = QFont()
-            TEXT_HEIGHT = 18
-            font.setPixelSize(TEXT_HEIGHT)
-            font.setWeight(1500)
-            painter.setFont(font)
-            painter.setPen(Qt.black)
-            painter.drawText(lang_rect.topLeft() + QPointF(0, offset + (offset*2 - TEXT_HEIGHT)/2), ' ES')
-            lang_rect.adjust(0, offset*2, 0, 0)
-            painter.fillRect(lang_rect, red)
+            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_es_pixmap)
 
         painter.restore()
 
