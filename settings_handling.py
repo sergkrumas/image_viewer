@@ -163,7 +163,7 @@ class CustomSlider(QWidget):
             painter.setPen(Qt.NoPen)
             offset = 5
             r2 = r.adjusted(offset, offset, -offset, -offset)
-            if False: 
+            if False:
                 path.addEllipse(r2)
                 gradient = QRadialGradient(r.center()-QPoint(0, int(r.height()/3)), self.control_width)
                 gradient.setColorAt(0, QColor(220, 220, 220))
@@ -726,9 +726,9 @@ class SettingsWindow(QWidget):
             }
         """
         warn_style = """
-            color: rgb(200, 40, 40);
-            font-weight: 900;
-            font-size: 11pt;
+                color: rgb(200, 40, 40);
+                font-weight: 900;
+                font-size: 11pt;
         """
 
         self.checkboxes_widgets = {}
@@ -781,6 +781,14 @@ class SettingsWindow(QWidget):
         self.central_widget.setObjectName("central")
         central_widget_layout = QVBoxLayout()
 
+        def add_line_widget(layout):
+            widget = QWidget()
+            widget.setObjectName('line')
+            widget.setStyleSheet("QWidget#line{background: transparent; padding: 0; margin: 0;} QWidget#line:hover{background-color: rgba(0, 255, 0, .1)}")
+            widget.setLayout(layout)
+            layout.setContentsMargins(0, 5, 0, 5)
+            return widget
+
         for index, (id, params) in enumerate(self.matrix.items()):
 
             current_val = params[0]
@@ -827,7 +835,7 @@ class SettingsWindow(QWidget):
                 layout_main.addLayout(layout)
                 layout_main.addWidget(warn_label)
 
-                central_widget_layout.addLayout(layout_main)
+                central_widget_layout.addWidget(add_line_widget(layout_main))
                 central_widget_layout.addSpacing(10)
 
                 def lang_combobox_index_changed_callback(index):
@@ -847,7 +855,10 @@ class SettingsWindow(QWidget):
                 else:
                     chb.setChecked(current_val)
                     chb.stateChanged.connect(self.on_change_handler)
-                central_widget_layout.addWidget(chb)
+
+                layout = QHBoxLayout()
+                layout.addWidget(chb)
+                central_widget_layout.addWidget(add_line_widget(layout))
 
                 if id == 'show_gamepad_monitor':
                     chb.stateChanged.connect(lambda state, x=chb: self.handle_show_gamepad_monitor_chbox(state, x))
@@ -875,7 +886,7 @@ class SettingsWindow(QWidget):
                 layout = QHBoxLayout()
                 layout.addWidget(label)
                 layout.addWidget(sb)
-                central_widget_layout.addLayout(layout)
+                central_widget_layout.addWidget(add_line_widget(layout))
 
                 if id == 'small_images_fit_factor':
                     sb.value_changed.connect(self.on_small_images_fit_factor_change)
@@ -889,7 +900,7 @@ class SettingsWindow(QWidget):
                 label.setStyleSheet(style)
                 layout = QHBoxLayout()
                 layout.addWidget(label)
-                central_widget_layout.addLayout(layout)
+                central_widget_layout.addWidget(add_line_widget(layout))
 
 
         self.central_widget.setLayout(central_widget_layout)
