@@ -436,32 +436,48 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             points = reversed(points)
 
+            any_intersection = False
             for page_id, point in zip(self.other_pages_list, points):
-                # painter.drawPoint(point)
                 # код для отрисовки угловой кнопки
-                r = QRect(QPoint(0, 0), QPoint(50, 30))
-                r.moveCenter(point)
-                self.left_corner_menu_items.append((page_id, r))
-
+                menu_item_activation_rect = QRect(0, 0, 50, 30)
+                menu_item_activation_rect.moveCenter(point)
+                self.left_corner_menu_items.append((page_id, menu_item_activation_rect))
                 cursor_pos = self.mapFromGlobal(QCursor().pos())
                 page_name = self.pages.name(page_id)
-                text_align = Qt.AlignVCenter | Qt.AlignLeft
-                if r.contains(cursor_pos):
+                if menu_item_activation_rect.contains(cursor_pos):
+                    any_intersection = True
+                    if self.over_cursor_corner_menu_item_name != page_name:
+                        self.animated_page_name = page_name[0]
+                        self.corner_menu_timer.start()
+                    self.over_cursor_corner_menu_item_name = page_name
                     painter.setOpacity(1.0)
-                    text = page_name
-                    label_rect = QRect(r.topLeft(), r.bottomRight())
-                    br = painter.boundingRect(QRect(), text_align, text)
-                    label_rect.setWidth(br.width())
-                    text_rect = label_rect
+                    text = self.animated_page_name
                 else:
                     painter.setOpacity(.8)
                     text = page_name[0]
-                    text_rect = r
+                text_rect = QRect(menu_item_activation_rect)
+                text_align = Qt.AlignVCenter | Qt.AlignLeft
+                text_rect.setWidth(painter.boundingRect(QRect(), text_align, text).width())
                 painter.drawText(text_rect, text_align, text)
+            if not any_intersection:
+                self.over_cursor_corner_menu_item_name = ""
 
             painter.setFont(oldfont)
 
         painter.setOpacity(1.0)
+
+    def handle_corner_menu_timer(self):
+        ANIMATION_SUFFIX = "_"
+        ANIMATION_SUFFIX = ""
+        if self.animated_page_name != self.over_cursor_corner_menu_item_name + ANIMATION_SUFFIX:
+            inc_len = len(self.animated_page_name) + 1
+            self.animated_page_name = self.over_cursor_corner_menu_item_name[:inc_len] + ANIMATION_SUFFIX
+        else:
+            self.animated_page_name = self.animated_page_name.strip(ANIMATION_SUFFIX)
+            self.corner_menu_timer.stop()
+        if not self.corner_menu_visibility[self.InteractiveCorners.TOPLEFT]:
+            self.corner_menu_timer.stop()
+        self.update()
 
     def prepare_secret_hints(self):
         if not self.secret_hints_list:
@@ -602,6 +618,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT - 1
         self.center_label_info_type = self.label_type.SCALE
         self.center_label_error = False
+
+        self.over_cursor_corner_menu_item_name = ""
+        self.animated_page_name = ""
+        self.corner_menu_timer = QTimer()
+        self.corner_menu_timer.setInterval(30)
+        self.corner_menu_timer.timeout.connect(self.handle_corner_menu_timer)
 
         self.setMouseTracking(True)
         self.installEventFilter(self)
