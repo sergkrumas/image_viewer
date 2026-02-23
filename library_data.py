@@ -228,6 +228,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         self._current_folder = self.folders[self._index]
         if write_view_history:
             self.add_current_image_to_view_history()
+        self.on_current_folder_changed()
+
+    def on_current_folder_changed(self):
+        mw = self.globals.main_window
+        if mw.viewer_modal:
+            mw.leave_modal_viewer()
 
     def go_to_folder_of_current_image(self):
         im = LibraryData().current_folder().current_image()
@@ -252,6 +258,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.library_page_scroll_autoset_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
+        self.on_current_folder_changed()
         MW.update()
 
     @staticmethod
@@ -300,6 +307,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.library_page_scroll_autoset_or_reset()
         self.update_current_folder_columns()
         MW.update_control_panel_label_text()
+        self.on_current_folder_changed()
         MW.update()
 
     def choose_doom_scroll(self):
@@ -313,6 +321,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             index_ = next(indexes_it)
         self._index = next(indexes_it)
         self._current_folder = self.folders[self._index]
+        self.on_current_folder_changed()
         self.after_current_image_changed()
         self.load_board_data()
         ThumbnailsPreviewsThread(self._current_folder, self.globals).start()
@@ -385,6 +394,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         fd = image_data.folder_data
         self._index = self.folders.index(fd)
         self._current_folder = self.folders[self._index]
+        self.on_current_folder_changed()
         fd._index = fd.images_list.index(image_data)
 
     def prepare_modal_viewer_mode(self, image_data):
@@ -499,6 +509,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             self._current_folder = new_fd
             self._index = self.folders.index(new_fd)
             self.after_current_image_changed()
+            self.on_current_folder_changed()
 
         self.jump_to_image(index, leave_history_record=False)
 

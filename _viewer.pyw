@@ -1943,19 +1943,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
 
     def leave_modal_viewer(self):
-        if self.is_waterfall_page_active():
-            self.viewer_modal = False
-            self.waterfall_backplate = None
-            if self.waterfall_block_active_item:
-                cf = LibraryData().current_folder()
-                image_data = cf.current_image()
-                if image_data and not image_data.preview_ui_rect.isNull():
-                    self.waterfall_previews_list_active_item = image_data
-                    Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
-                else:
-                    self.waterfall_unblock_active_item()
-        else:
-            self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
+        # (23 фев 26) этот код, вообще говоря, может вызыываться и когда страница waterfall неактивна
+        self.viewer_modal = False
+        self.waterfall_backplate = None
+        if self.waterfall_block_active_item:
+            cf = LibraryData().current_folder()
+            image_data = cf.current_image()
+            if image_data and not image_data.preview_ui_rect.isNull():
+                self.waterfall_previews_list_active_item = image_data
+                Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
+            else:
+                self.waterfall_unblock_active_item()
 
     def waterfall_unblock_active_item(self):
         self.waterfall_block_active_item = False
