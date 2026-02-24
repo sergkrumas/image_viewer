@@ -718,48 +718,49 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.waterfall_block_active_item = False
 
         self.context_menu_stylesheet = """
+        QMenu{
+            background: transparent;
+            border: 1px solid rgb(50, 50, 50);
+            border-radius: 5px;
+            background-color: rgb(25, 25, 25);
+            padding: 5px;
+        }
         QMenu, QCheckBox{
-            padding: 0px;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: normal;
-            font-family: 'Consolas';
         }
         QMenu::item, QCheckBox{
-            padding: 10px;
-            background: #303940;
-            color: rgb(230, 230, 230);
+            padding: 8px;
+            color: gray;
+            padding: 5px 15px;
+            margin: 2px;
         }
         QMenu::icon{
             padding-left: 15px;
         }
         QMenu::item:selected, QCheckBox:hover{
-            background-color: rgb(253, 203, 54);
-            color: rgb(50, 50, 50);
+            color: rgb(252, 181, 49);
         }
         QMenu::item:checked, QCheckBox:checked{
             font-weight: bold;
-            color: white;
-            background: #304550;
+            color: rgb(200, 200, 200);
         }
         QMenu::item:unchecked, QCheckBox:unchecked{
-            background: #304550;
+            color: gray;
         }
         QMenu::item:checked:selected, QCheckBox:checked:hover{
             font-weight: bold;
-            color: rgb(50, 50, 50);
-            background-color: rgb(253, 203, 54);
+            color: rgb(252, 181, 49);
         }
         QMenu::item:unchecked:selected, QCheckBox:unchecked:hover{
-            color: rgb(50, 50, 50);
-            background-color: rgb(253, 203, 54);
+            color: rgb(252, 181, 49);
         }
         QMenu::item:disabled {
-            background-color: #303940;
-            color: black;
+            color: rgb(100, 100, 100);
         }
         QMenu::separator {
             height: 1px;
-            background: gray;
+            background: rgb(50, 50, 50);
         }
         """
 
