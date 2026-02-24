@@ -32,7 +32,7 @@ import operator
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name")
+ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time")
 
 class ThumbnailsPreviewsThread(QThread):
     update_signal = pyqtSignal(object)
@@ -92,6 +92,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.last_apng_check_result = False
             i.fav_folder = ...
             i.comments_folder = ...
+            i.total_TIME = 0
             i.ThumbnailsPreviewsThread = ThumbnailsPreviewsThread
 
             if not i.globals.lite_mode:
@@ -845,12 +846,32 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepaths
 
     @staticmethod
+    def make_thumbnail(Globals, image_data, source_pixmap):
+        THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
+        thumbnail = source_pixmap.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        image_data.set_thumbnail(thumbnail)
+
+    @staticmethod
+    def make_preview(Globals, image_data, source_pixmap, original_pixmap_size):
+        image_data.source_width = ow = original_pixmap_size.width()
+        image_data.source_height = oh = original_pixmap_size.height()
+        if LibraryData().is_svg_file(image_data.filepath):
+            image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
+            image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
+        preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
+        image_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
+        if ow != 0:
+            preview = source_pixmap.scaled(Globals.PREVIEW_WIDTH, preview_height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            image_data.preview = preview
+        else:
+            image_data.preview = ERROR_PREVIEW_PIXMAP
+
+    @staticmethod
     def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
-            images_list = list(get_index_centered_list(folder_data.images_list,
-                                                                      folder_data.current_image()))
+            images_list = list(get_index_centered_list(folder_data.images_list, folder_data.current_image()))
         else:
             images_list = folder_data.images_list
         folder_data.previews_done = False
@@ -864,6 +885,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 # switch to main thread
                 thread_instance.msleep(1)
 
+            start_time = time.time()
             if from_board_items:
                 source = image_data.board_item.pixmap
                 image_data.preview_error = False
@@ -883,46 +905,45 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 source = Globals.ERROR_PREVIEW_PIXMAP
                 image_data.preview_error = True
 
-            # thumbnail
-            THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
-            thumbnail = source.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH,
-                Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
-            )
-            image_data.set_thumbnail(thumbnail)
+            if False:
+                # thumbnail
+                LibraryData().make_thumbnail(Globals, image_data, source)
+                # preview
+                LibraryData().make_preview(Globals, image_data, source, source.size())
+
+            else:
+                # preview
+                LibraryData().make_preview(Globals, image_data, source, source.size())
+                # thumbnail
+                LibraryData().make_thumbnail(Globals, image_data, image_data.preview)
+
+            pass_time = time.time() - start_time
+
+            LibraryData().total_TIME += pass_time
+
             if thread_instance is not None:
                 data = ThreadRuntimeData(
                     int(id(thread_instance)),
                     n+1,
                     image_count,
                     thread_instance.ui_name,
+                    LibraryData().total_TIME
                 )
                 thread_instance.update_signal.emit(data)
-            # preview
-            image_data.source_width = ow = source.width()
-            image_data.source_height = oh = source.height()
-            if LibraryData().is_svg_file(image_data.filepath):
-                image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
-                image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
-            preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
-            image_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
-            if ow != 0:
-                preview = source.scaled(Globals.PREVIEW_WIDTH, preview_height,
-                    Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation
+
+        if thread_instance is not None:
+            thread_instance.update_signal.emit(None)
+
+            if folder_data not in LibraryData().all_folders():
+                data = ThreadRuntimeData(
+                    int(id(thread_instance)),
+                    image_count,
+                    image_count,
+                    "",
+                    LibraryData().total_TIME
                 )
-                image_data.preview = preview
-            else:
-                image_data.preview = ERROR_PREVIEW_PIXMAP
-            if thread_instance is not None:
-                thread_instance.update_signal.emit(None)
-                if folder_data not in LibraryData().all_folders():
-                    data = ThreadRuntimeData(
-                        int(id(thread_instance)),
-                        image_count,
-                        image_count,
-                        "",
-                    )
-                    thread_instance.update_signal.emit(data)
-                    return
+                thread_instance.update_signal.emit(data)
+                return
 
         folder_data.previews_done = True
         Globals = LibraryData().globals
@@ -1538,7 +1559,7 @@ class FolderData():
             columns = [LibraryModeImageColumn() for i in range(number_of_columns)]
             MW = LibraryData().globals.main_window
             gap_height = MW.waterfall_grid_get_vertical_spacing() if waterfall else 0.0
-            # для waterfall больше не показываем неподдерживаемые файлы отображаемые превьюшкой «?!» 
+            # для waterfall больше не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
             images_list = filter(lambda imd: not imd.preview_error, self.images_list) if waterfall else self.images_list
 
             for n, image_data in enumerate(images_list):

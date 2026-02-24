@@ -261,6 +261,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def update_threads_info(self, data):
         if data:
             done = data.current == data.count
+            # self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}, {data.time}")
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
         self.update()
 
