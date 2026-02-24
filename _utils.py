@@ -808,3 +808,16 @@ def bresenhamsLineAlgorithm(x0, y0, x1, y1):
             y += sy
     pixels_coords.append(QPoint(x, y))
     return pixels_coords
+
+class RoundedQMenu(QMenu):
+    def resizeEvent(self, event):
+        path = QPainterPath()
+        RADIUS = 5
+        # the rectangle must be translated and adjusted by 1 pixel in order to 
+        # correctly map the rounded shape
+        rect = QRectF(self.rect()).adjusted(.5, .5, -1.5, -1.5)
+        path.addRoundedRect(rect, RADIUS, RADIUS)
+        # QRegion is bitmap based, so the returned QPolygonF (which uses float
+        # values must be transformed to an integer based QPolygon
+        region = QRegion(path.toFillPolygon(QTransform()).toPolygon())
+        self.setMask(region)

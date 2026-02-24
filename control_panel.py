@@ -1474,7 +1474,7 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         if MW.is_start_page_active():
             return
-        CM = QMenu()
+        CM = RoundedQMenu()
         CM.setStyleSheet(self.parent().context_menu_stylesheet)
         CM.setAttribute(Qt.WA_TranslucentBackground, True)
         self.contextMenuActivated = True

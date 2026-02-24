@@ -252,7 +252,7 @@ class SlicePipetteToolMixin():
 
     def SPT_context_menu(self, event):
 
-        contextMenu = QMenu()
+        contextMenu = RoundedQMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
 
         def toggle_boolean_var_generic(obj, attr_name):

@@ -722,12 +722,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             background: transparent;
             border: 1px solid rgb(50, 50, 50);
             border-radius: 5px;
-            background-color: rgb(25, 25, 25);
             padding: 5px;
         }
         QMenu, QCheckBox{
             font-size: 17px;
             font-weight: normal;
+            background-color: rgb(25, 25, 25);
         }
         QMenu::item, QCheckBox{
             padding: 8px;
@@ -4812,7 +4812,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not self.context_menu_allowed:
             return
 
-        contextMenu = QMenu()
+        contextMenu = RoundedQMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
         contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
 

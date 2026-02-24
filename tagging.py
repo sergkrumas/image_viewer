@@ -553,7 +553,7 @@ class ClickableLabel(QLabel):
                 self.updateLinkedTextWidget()
                 self.updateParent.update()
             elif event.button() == Qt.RightButton:
-                contextMenu = QMenu()
+                contextMenu = RoundedQMenu()
                 context_menu_stylesheet = main_window.context_menu_stylesheet
                 contextMenu.setStyleSheet(context_menu_stylesheet)
 
@@ -571,7 +571,7 @@ class ClickableLabel(QLabel):
                 elif cur_action == action_edit_description:
                     form_window.init_tag_description_editing_mode(self.tag)
                 elif cur_action == action_delete:
-                    dialog_menu = QMenu()
+                    dialog_menu = RoundedQMenu()
                     dialog_menu.setStyleSheet(context_menu_stylesheet)
                     cancel_action = dialog_menu.addAction(_('Cancel'))
                     dialog_menu.addSeparator()
