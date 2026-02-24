@@ -38,12 +38,10 @@ Start page shows up when the app is run directly i.e. without request from Windo
 
 
 ## Viewer page (Google Picasa Photo Viewer Clone)
+### [Ultrashort Viewer Page Presentation on Youtube](https://www.youtube.com/watch?v=hlu9MMdf4-A)
+
 Default page. It shows up on the application startup if not set otherwise in the settings.
 ![](docs/screenshot.png)
-
-Viewer Page Presentation on Youtube:
-
-[![Comment](https://img.youtube.com/vi/hlu9MMdf4-A/0.jpg)](https://www.youtube.com/watch?v=hlu9MMdf4-A "Viewer Page Presentation — Watch on Youtube")
 
 ### Viewing animated images (GIFs, Animated PNGs)
 - Spacebar key - pauses/resumes playback
@@ -80,14 +78,11 @@ Hovering over thumbnail on the right side shows its original on the left side at
 
 
 ## Board page (PureRef Clone)
+### [Ultrashort Board Page Presentation on Youtube](https://www.youtube.com/watch?v=cWVgUz3I5Po)
+
 The Board Page has been in development since mid 2023 and was originally inspired by PureRef, and is now moving toward becoming an offline alternative to Miro. However, unlike the Viewer Page, I’m building the Board Page primarily for myself rather than for the community. It’s simply more convenient for me to have everything in one app.
 
 ![](docs/boards.png)
-
-Board Page Presentation on Youtube:
-
-[![Comment](https://img.youtube.com/vi/cWVgUz3I5Po/0.jpg)](https://www.youtube.com/watch?v=cWVgUz3I5Po "Board Page Presentation — Watch on Youtube")
-
 
 You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
 
