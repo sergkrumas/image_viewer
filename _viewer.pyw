@@ -3800,6 +3800,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                             normalized_progress=time.time() % 1.0,
                                             from_center_to_sides=True,
                 )
+            elif LibraryData().current_folder() is LibraryData.none_folder:
+                painter.drawText(area_rect, Qt.AlignCenter, _("Loading").upper())
             else:
                 painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
 
