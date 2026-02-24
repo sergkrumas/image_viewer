@@ -1535,7 +1535,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def boards_resolve_rects_intersection(self, rect1, rect2):
         # WARNING: (10 фев 26) пересечение прямоугольников надо проверять через пересечение проекций на обе оси,
         # а функция self.is_rect_insersects_rect даёт сбой, когда картинка, например, сильно вытянута по вертикали, и тогда
-        # при просмотре её верхушки или низины она пропадает с экрана. 
+        # при просмотре её верхушки или низины она пропадает с экрана.
         # Я затупил тогда, и сейчас исправляю свой затуп. К счастью, реализовывать сравнение проекций не нужно, всё уже реализовано в Qt.
         return rect1.intersects(rect2)
 
@@ -2162,7 +2162,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pass
 
         elif self.board_CP_cursor_handled:
-            pass 
+            pass
 
         elif self.scaling_ongoing:
             if self.scale_rastr_source is not None:
@@ -4005,7 +4005,7 @@ class BoardMixin(BoardTextEditItemMixin):
         pair = None
 
         current_pos = self.board_MapToBoard(self.get_center_position())
-        
+
         LocData = namedtuple("LocationData", "pos scale_x scale_y board_item")
 
 
