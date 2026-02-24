@@ -118,6 +118,8 @@ class BoardItem():
 
         self.__label_ui_rect = None
 
+        self.force_full_quality = False
+
     def set_tags(self, tags):
         self._tags = tags
 
@@ -679,6 +681,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_do_scale(-1)
             elif check_scancode_for(event, "R"):
                 self.board_do_scale(1)
+        elif check_scancode_for(event, "F"):
+            shift = event.modifiers() & Qt.ShiftModifier
+            self.board_toggle_full_forcing(reset=shift)
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
@@ -1532,6 +1537,16 @@ class BoardMixin(BoardTextEditItemMixin):
     #         self.rectrect_intersect_asim_check_pass(r2, r1),
     #     ))
 
+    def board_toggle_full_forcing(self, reset=False):
+        cf = self.LibraryData().current_folder()
+        toggle = not reset
+        for board_item in cf.board.items_list:
+            selection_area = board_item.get_selection_area(canvas=self)
+            item_rect = selection_area.boundingRect().toRect()
+            if self.boards_resolve_rects_intersection(self.rect(), item_rect):
+                board_item.force_full_quality = (not board_item.force_full_quality) if toggle else False
+        self.update()
+
     def boards_resolve_rects_intersection(self, rect1, rect2):
         # WARNING: (10 фев 26) пересечение прямоугольников надо проверять через пересечение проекций на обе оси,
         # а функция self.is_rect_insersects_rect даёт сбой, когда картинка, например, сильно вытянута по вертикали, и тогда
@@ -1639,11 +1654,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 image_to_draw = None
                 selection_area_rect = selection_area.boundingRect()
-                if selection_area_rect.width() < 250 or selection_area_rect.height() < 250:
-                    image_to_draw = image_data.preview
-                else:
+                full_quality = selection_area_rect.width() > 250 or selection_area_rect.height() > 250
+                full_quality = full_quality or board_item.force_full_quality
+                if full_quality:
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
+                else:
+                    image_to_draw = image_data.preview
 
                 if board_item._marked_item:
                     pass
