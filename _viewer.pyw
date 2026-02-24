@@ -4762,6 +4762,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def contextMenuChangeSVGScale(self):
         contextMenu = QMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
+        contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
 
         factors = [1, 5, 10, 20, 30, 40, 50, 80, 100]
         actions = []
@@ -4813,6 +4814,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         contextMenu = QMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
+        contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
 
         self.contextMenuActivated = True
 

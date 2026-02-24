@@ -1476,6 +1476,7 @@ class ControlPanel(QWidget, UtilsMixin):
             return
         CM = QMenu()
         CM.setStyleSheet(self.parent().context_menu_stylesheet)
+        CM.setAttribute(Qt.WA_TranslucentBackground, True)
         self.contextMenuActivated = True
         cf = self.LibraryData().current_folder()
         current_sort_type = cf.sort_type
