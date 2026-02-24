@@ -1770,7 +1770,11 @@ class BoardMixin(BoardTextEditItemMixin):
             try:
                 board_item.pixmap = QPixmap()
                 self.LibraryData().reset_apng_check_result()
-                animated = self.LibraryData().is_gif_file(filepath) or self.LibraryData().is_webp_file_animated(filepath) or self.LibraryData().is_apng_file_animated(filepath)
+                animated = any(
+                        self.LibraryData().is_gif_file(filepath)
+                    ,   self.LibraryData().is_webp_file_animated(filepath)
+                    ,   self.LibraryData().is_apng_file_animated(filepath)
+                )
                 if animated:
                     __load_animated(filepath)
                 elif self.LibraryData().is_svg_file(filepath):
