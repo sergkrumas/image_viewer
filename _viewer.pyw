@@ -765,6 +765,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         }
         """
 
+    def map_cursor_pos_inside_rect_to_frame_number(self, x_offset, rect, count):
+        factor = x_offset/rect.width()
+        fr_num_float = factor*count
+        fr_num = int(fr_num_float) #здесь int работает как floor
+        fr_num = min(count-1, fr_num)
+        return fr_num
+
     # def changeEvent(self, event):
     #     if event.type() == QEvent.WindowStateChange:
     #         if self.windowState() & Qt.WindowMaximized:

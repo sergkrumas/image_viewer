@@ -119,6 +119,9 @@ class BoardItem():
         self.__label_ui_rect = None
 
         self.force_full_quality = False
+        self.scrubbed = False
+
+        self.animated_file = False
 
     def set_tags(self, tags):
         self._tags = tags
@@ -1444,6 +1447,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.image_data = image_data
                 image_data.board_item = board_item
                 folder_data.board.items_list.append(board_item)
+                board_item.animated_file = self.board_is_animated_item(image_data.filepath)
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 if self.STNG_board_vertical_items_layout:
@@ -1554,6 +1558,13 @@ class BoardMixin(BoardTextEditItemMixin):
         # Я затупил тогда, и сейчас исправляю свой затуп. К счастью, реализовывать сравнение проекций не нужно, всё уже реализовано в Qt.
         return rect1.intersects(rect2)
 
+    def board_is_animated_item(self, filepath):
+        return any((
+                    self.LibraryData().is_gif_file(filepath)
+                ,   self.LibraryData().is_webp_file_animated(filepath)
+                ,   self.LibraryData().is_apng_file_animated(filepath)
+            ))
+
     def board_draw_item(self, painter, board_item):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
             FRAME_PADDING = BoardItem.FRAME_PADDING
@@ -1652,10 +1663,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.setBrush(Qt.NoBrush)
                 painter.drawRect(item_rect)
 
+                case4 = selection_area.boundingRect().toRect().contains(self.mapped_cursor_pos())
+
                 image_to_draw = None
                 selection_area_rect = selection_area.boundingRect()
                 full_quality = selection_area_rect.width() > 250 or selection_area_rect.height() > 250
-                full_quality = full_quality or board_item.force_full_quality
+                full_quality = any((
+                    full_quality,
+                    board_item.force_full_quality,
+                    board_item.types.ITEM_IMAGE and board_item.animated_file and (case4 or board_item.scrubbed)
+                ))
                 if full_quality:
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
@@ -1682,7 +1699,12 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.draw_board_item_comments(painter, ir, board_item._comments, cp)
                 painter.resetTransform()
 
-                case4 = selection_area.containsPoint(QPointF(self.mapped_cursor_pos()), Qt.WindingFill)
+                if board_item.types.ITEM_IMAGE and board_item.animated_file and case4:
+                    inside_rect_x_offset = self.mapped_cursor_pos().x() - selection_area_rect.left()
+                    offset = QPoint(int(inside_rect_x_offset), 0)
+                    p1 = selection_area_rect.topLeft() + offset
+                    p2 = selection_area_rect.bottomLeft() + offset
+                    painter.drawLine(p1, p2)
 
                 if show_tag_data and case4:
                     self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
@@ -1693,14 +1715,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 if case4:
                     self.board_item_under_mouse = board_item
 
-                selection_area_bounding_rect = selection_area.boundingRect()
+                selection_area_rect = selection_area.boundingRect()
 
                 if board_item._show_file_info_overlay:
                     text = board_item.info_text()
                     alignment = Qt.AlignCenter
 
                     painter.save()
-                    text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, text)
+                    text_rect = painter.boundingRect(selection_area_rect, alignment, text)
                     painter.setBrush(QBrush(Qt.white))
                     painter.setPen(Qt.NoPen)
                     painter.drawRect(text_rect)
@@ -1712,11 +1734,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_item == self.board_item_under_mouse:
                     if board_item.status:
                         alignment = Qt.AlignCenter | Qt.AlignVCenter
-                        text_rect = painter.boundingRect(selection_area_bounding_rect, alignment, board_item.status)
+                        text_rect = painter.boundingRect(selection_area_rect, alignment, board_item.status)
                         text_rect.adjust(-5, -5, 5, 5)
                         text_rect.moveTopLeft(selection_area[0])
 
-                        if text_rect.width() < selection_area_bounding_rect.width():
+                        if text_rect.width() < selection_area_rect.width():
                             path = QPainterPath()
                             path.addRoundedRect(QRectF(text_rect), 5, 5)
                             painter.setPen(Qt.NoPen)
@@ -1787,12 +1809,7 @@ class BoardMixin(BoardTextEditItemMixin):
             try:
                 board_item.pixmap = QPixmap()
                 self.LibraryData().reset_apng_check_result()
-                animated = any((
-                        self.LibraryData().is_gif_file(filepath)
-                    ,   self.LibraryData().is_webp_file_animated(filepath)
-                    ,   self.LibraryData().is_apng_file_animated(filepath)
-                ))
-                if animated:
+                if board_item.animated_file:
                     __load_animated(filepath)
                 elif self.LibraryData().is_svg_file(filepath):
                     __load_svg(filepath)
@@ -3379,11 +3396,44 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.canvas_origin = end_value
                 self.update_selection_bouding_box()
 
+        elif event.buttons() == Qt.NoButton:
+            bi = self.board_item_under_mouse
+            if bi:
+                self.board_item_cursor_scrubbing(bi, event)
+
         if self.PTWS_draw_monitor:
             self.board_SCALE_selected_items_choose_nearest_corner()
 
         self.board_cursor_setter()
         self.update()
+
+    def board_item_cursor_scrubbing(self, board_item, event):
+        bi = board_item
+        if bi.type == bi.types.ITEM_IMAGE and bi.animated:
+            if bi.movie is None:
+                # такое случается, когда доска загружена из файла
+                self.trigger_board_item_pixmap_loading(bi)
+            item_rect = bi.get_selection_area(canvas=self).boundingRect()
+            inside_rect_x_offset = event.pos().x() - item_rect.left()
+            frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                inside_rect_x_offset,
+                item_rect,
+                bi.movie.frameCount(),
+            )
+            self.board_item_animation_file_set_frame(bi, frame_index)
+            bi.scrubbed = True
+        if bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+            item_rect = bi.get_selection_area(canvas=self).boundingRect()
+            inside_rect_x_offset = event.pos().x() - item_rect.left()
+            image_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                inside_rect_x_offset,
+                item_rect,
+                len(board_item.item_folder_data.images_list),
+            )
+            board_item.item_folder_data.set_current_index(image_index)
+            # заставляем подгрузится
+            board_item.pixmap = None
+            board_item.update_corner_info()
 
     def board_is_items_transformation_ongoing(self):
         return self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing
@@ -3561,10 +3611,14 @@ class BoardMixin(BoardTextEditItemMixin):
             frames_list = list(reversed(frames_list))
         frames_list.append(0)
         i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
-        board_item.movie.jumpToFrame(frames_list[i])
+        frameIndex = frames_list[i]
+        self.board_item_animation_file_set_frame(board_item, frameIndex)
+        self.update()
+
+    def board_item_animation_file_set_frame(self, board_item, frame_index):
+        board_item.movie.jumpToFrame(frame_index)
         board_item.pixmap = board_item.movie.currentPixmap()
         board_item.update_corner_info()
-        self.update()
 
     def board_item_scroll_folder(self, board_item, scroll_value):
         if scroll_value > 0:
