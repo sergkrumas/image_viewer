@@ -1868,17 +1868,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             p_list = self.waterfall_previews_list
 
         if p_list:
-            for item_rect, item_data in p_list:
-                if item_rect.contains(event.pos()):
-                    if self.is_library_page_active():
+            if self.is_library_page_active():
+                for item_rect, item_data in p_list:
+                    if item_rect.contains(event.pos()):
                         LibraryData().show_that_imd_on_viewer_page(item_data)
-                    elif self.is_waterfall_page_active():
+                        break
+            elif self.is_waterfall_page_active():
+                for item_rect, item_data in p_list:
+                    content_default_rect = item_rect.contains(event.pos())
+                    contains_enlarge_rect = self.previews_enlarge_active_item_rect(item_rect).contains(event.pos()) and \
+                                                                                    self.waterfall_previews_list_active_item is item_data
+                    if content_default_rect or contains_enlarge_rect:
                         if self.waterfall_block_active_item:
                             # если ещё стоит блокировка, то прерываем его и выбираем активный элемент по координатам курсора
                             self.waterfall_unblock_active_item()
                             self.previews_list_set_active_item(event.pos())
                         self.enter_modal_viewer()
-                    break
+                        break
 
     def previews_list_mouseMoveEvent(self, event):
         self.previews_list_set_active_item(event.pos())
