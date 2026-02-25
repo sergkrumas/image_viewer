@@ -4111,13 +4111,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if pair is None:
             pair = next(self.fly_pairs)
 
-        def animate_scale():
-            loc_data = pair[1]
 
+        def get_bx_by(loc_data):
             if loc_data.board_item:
-                canvas_scale_x = self.canvas_scale_x
-                canvas_scale_y = self.canvas_scale_y
-
                 item_rect = loc_data.board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
                 fitted_rect = fit_rect_into_rect(item_rect, self.rect())
                 bx = fitted_rect.width()/item_rect.width()
@@ -4125,6 +4121,61 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 bx = loc_data.scale_x
                 by = loc_data.scale_y
+            return (bx, by)
+
+        def animate_scale_or_not_animate_that_is_the_question():
+
+            loc_data = pair[1]
+            bx, by = get_bx_by(loc_data)
+
+            skip_scale_animation = False
+
+            if not loc_data.board_item:
+                skip_scale_animation = False
+            else:
+                current_canvas_scale_x = self.canvas_scale_x
+                current_canvas_scale_y = self.canvas_scale_y
+
+                __, __, new_origin = self.do_scale_board(
+                    1.0, False, False, False,
+                    pivot=self.get_center_position(),
+                    factor_x=bx/current_canvas_scale_x,
+                    factor_y=by/current_canvas_scale_y,
+                    precalculate=True,
+                    canvas_origin=QPointF(self.canvas_origin),
+                    canvas_scale_x=current_canvas_scale_x,
+                    canvas_scale_y=current_canvas_scale_y,
+                )
+
+                if QVector2D(new_origin - self.canvas_origin).length() < 2.0:
+                    # Если точка ориджина не сместилась на заметную величину,
+                    # то анимация не нужна по сути, а 2.0 измеряется в пикселях
+                    if self.Globals.DEBUG:
+                        self.show_center_label('skipping the scale animation')
+                    skip_scale_animation = True
+                else:
+                    if self.Globals.DEBUG:
+                        self.show_center_label('doing the scale animation')
+                    skip_scale_animation = False
+
+            if skip_scale_animation:
+                callback_on_finish = animate_pause
+            else:
+                callback_on_finish = animate_scale
+
+            self.animate_properties(
+                [
+                    (self, "_anim_tech", 0.0, 1.0, lambda: None),
+                ],
+                anim_id="flying",
+                duration=0.01,
+                callback_on_finish=callback_on_finish,
+            )
+
+        def animate_scale():
+
+            loc_data = pair[1]
+            bx, by = get_bx_by(loc_data)
 
             self.animate_properties(
                 [
@@ -4134,7 +4185,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 anim_id="flying",
                 duration=1.5,
                 easing=QEasingCurve.InOutSine,
-                callback_on_finish=animate_pause,
+                callback_on_finish=animate_pause
             )
 
         def animate_pause():
@@ -4171,7 +4222,7 @@ class BoardMixin(BoardTextEditItemMixin):
             anim_id="flying",
             duration=2.0,
             easing=QEasingCurve.InOutSine,
-            callback_on_finish=animate_scale,
+            callback_on_finish=animate_scale_or_not_animate_that_is_the_question,
             # callback_on_finish=self.board_fly_over
         )
 
