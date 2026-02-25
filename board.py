@@ -1699,12 +1699,13 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.draw_board_item_comments(painter, ir, board_item._comments, cp)
                 painter.resetTransform()
 
-                if board_item.types.ITEM_IMAGE and board_item.animated_file and case4:
+                if board_item.types.ITEM_IMAGE and board_item.animated_file and case4 and board_item.scrubbed:
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - selection_area_rect.left()
                     offset = QPoint(int(inside_rect_x_offset), 0)
                     p1 = selection_area_rect.topLeft() + offset
                     p2 = selection_area_rect.bottomLeft() + offset
                     painter.drawLine(p1, p2)
+                    board_item.scrubbed = False
 
                 if show_tag_data and case4:
                     self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
@@ -3421,7 +3422,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.movie.frameCount(),
             )
             self.board_item_animation_file_set_frame(bi, frame_index)
-            bi.scrubbed = True
+            bi.scrubbed = True #заставляем скраб-линию отрисоваться, после её отрисовки это флаг сбросится,
+            # чтобы скраб-линия не отрисовывалась во время работы, например,
+            # той же board_fly_over, когда курсор мыши находится поверх айтема 
         if bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             item_rect = bi.get_selection_area(canvas=self).boundingRect()
             inside_rect_x_offset = event.pos().x() - item_rect.left()
