@@ -3619,9 +3619,13 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_item_animation_file_set_frame(self, board_item, frame_index):
-        board_item.movie.jumpToFrame(frame_index)
-        board_item.pixmap = board_item.movie.currentPixmap()
-        board_item.update_corner_info()
+        movie = board_item.movie
+        need = movie.currentFrameNumber() != frame_index
+        if need:
+            movie.jumpToFrame(frame_index)
+            board_item.pixmap = movie.currentPixmap()
+            board_item.update_corner_info()
+        return need
 
     def board_item_scroll_folder(self, board_item, scroll_value):
         if scroll_value > 0:
