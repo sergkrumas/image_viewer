@@ -4884,6 +4884,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 text = _("Expand window to two monitors frame")
             toggle_two_monitors_wide = contextMenu.addAction(text)
+            toggle_two_monitors_wide.triggered.connect(self.do_toggle_two_monitors_wide)
 
         if Globals.lite_mode:
             contextMenu.addSeparator()
@@ -4908,14 +4909,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 action_title = f"{_action_title} \"{folder_data.folder_path}\""
                 open_separated = contextMenu.addAction(action_title)
                 open_separated.triggered.connect(partial(open_in_separated_app_copy, folder_data))
-                toggle_two_monitors_wide = None
-                if self.frameless_mode:
-                    if self.two_monitors_wide:
-                        text = _("Narrow window back to monitor frame")
-                    else:
-                        text = _("Expand window to two monitors frame")
-                    toggle_two_monitors_wide = contextMenu.addAction(text)
-                    toggle_two_monitors_wide.triggered.connect(self.do_toggle_two_monitors_wide)
 
         elif self.is_board_page_active():
 
