@@ -1638,19 +1638,31 @@ class ImageData():
         self._selected = False              # обнуляется после каждого перемещения
         self._is_phantom = False
 
-        self.is_animated_file = self.fill_property_is_animated_file()
-        self.is_animated_apng = False
+        self._is_animated_file = None
+        self._is_animated_apng = None
 
-    def fill_property_is_animated_file(self):
-        LD = LibraryData
-        # TODO: (26 фев 26) вычисление is_animated_apng замедлит загрузку папок, надо что-то придумать,
-        # чтобы это исправить, в основном эта переменная нужна для страницы Board и Library 
-        self.is_animated_apng = LD.is_apng_file_animated(self.filepath)
-        return any((
+    # для страниц Boards и Library 
+    @property
+    def is_animated_file(self):
+        if self._is_animated_file is None:
+            LD = LibraryData
+            self._is_animated_file = any((
                     LD.is_gif_file(self.filepath)
                 ,   LD.is_webp_file_animated(self.filepath)
                 ,   self.is_animated_apng
             ))
+        return self._is_animated_file
+
+    # для страниц Board, Library, Viewer
+    @property
+    def is_animated_apng(self):
+        if self._is_animated_apng is None:
+            LD = LibraryData
+            # is_apng_file_animated читает файл для своей работы,
+            # лучше закешировать результат её вызова и вызывать только раз,
+            # и то, если данные потребовались, а не просто при создании экземпляра ImageData  
+            self._is_animated_apng = LD.is_apng_file_animated(self.filepath)
+        return self._is_animated_apng
 
     # атрибут preview нужен для boards, иначе будет вылет
     @property
