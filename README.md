@@ -49,6 +49,7 @@ Default page. It shows up on the application startup if not set otherwise in the
 - Spacebar key - pauses/resumes playback
 - Rolling the mouse wheel while holding left mouse button - changes current animation frame
 - Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (with range from 10% to 200%)
+- F4 - activates cursor scrubbing mode (videoeditors feature), playback is paused
 - «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file 
 
 ### Rectangle selection magnifier
