@@ -1907,23 +1907,26 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 if not self.waterfall_block_active_item:
                     self.waterfall_previews_list_active_item = data
 
-
         if p_list:
             cursor_over_preview = None
-            for item_rect, item_data in p_list:
-                if item_rect.contains(curpos):
-                    cursor_over_preview = item_data
-                    break
-                c1 = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect).contains(curpos)
-                c2 = not item_data.preview_ui_rect.isNull()
-                if c1 and c2 and ai:
-                    if ai is item_data:
+            if ai and self.previews_enlarge_active_item_rect(ai.preview_ui_rect).contains(curpos):
+                # оставляем активным, не меняем ничего
+                pass
+            else:
+                for item_rect, item_data in p_list:
+                    if item_rect.contains(curpos):
                         cursor_over_preview = item_data
                         break
-            if cursor_over_preview:
-                set_active_item(cursor_over_preview)
-            else:
-                set_active_item(None)
+                    c1 = self.previews_enlarge_active_item_rect(item_data.preview_ui_rect).contains(curpos)
+                    c2 = not item_data.preview_ui_rect.isNull()
+                    if c1 and c2 and ai:
+                        if ai is item_data:
+                            cursor_over_preview = item_data
+                            break
+                if cursor_over_preview:
+                    set_active_item(cursor_over_preview)
+                else:
+                    set_active_item(None)
 
     def enter_modal_viewer(self, app_start_item=None):
         if app_start_item:
@@ -3738,7 +3741,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 if isinstance(cached, QPixmap):
                     pixmap = cached
                 else:
-                    scrub_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
+                    enlarged_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
+                    scrub_rect = QRect(enlarged_rect)
+                    # уменьшая ширину и корректируя центр, вставляем неактивные поля по бокам для улучшенного UX
+                    scrub_rect.setWidth(scrub_rect.width()-20)
+                    scrub_rect.moveCenter(enlarged_rect.center())
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                     frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
                         inside_rect_x_offset,
@@ -3747,12 +3754,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     )
                     cached.jumpToFrame(frame_index)
                     pixmap = cached.currentPixmap()
+                    # draw scrub line
                     painter.setPen(QPen(Qt.white))
                     offset = QPoint(int(inside_rect_x_offset), 0)
                     painter.drawLine(
                         scrub_rect.topLeft() + offset,
                         scrub_rect.bottomLeft() + offset
                     )
+                    painter.setPen(Qt.NoPen)
                 source_rect = pixmap.rect()
                 main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
                 projected = fit_rect_into_rect(source_rect, main_rect)
