@@ -445,10 +445,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.left_corner_menu_items.append((page_id, menu_item_activation_rect))
                 cursor_pos = self.mapFromGlobal(QCursor().pos())
                 page_name = self.pages.name(page_id)
+                text_align = Qt.AlignVCenter | Qt.AlignLeft
                 if menu_item_activation_rect.contains(cursor_pos):
                     any_intersection = True
                     if self.over_cursor_corner_menu_item_name != page_name:
                         self.animated_page_name = page_name[0]
+                        self.animated_page_name_rect = painter.boundingRect(QRect(), text_align, page_name)
+                        self.animated_page_name_rect.moveTopLeft(menu_item_activation_rect.topLeft())
                         self.corner_menu_timer.start()
                     self.over_cursor_corner_menu_item_name = page_name
                     painter.setOpacity(1.0)
@@ -457,7 +460,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.setOpacity(.8)
                     text = page_name[0]
                 text_rect = QRect(menu_item_activation_rect)
-                text_align = Qt.AlignVCenter | Qt.AlignLeft
                 text_rect.setWidth(painter.boundingRect(QRect(), text_align, text).width())
                 painter.drawText(text_rect, text_align, text)
             if not any_intersection:
@@ -478,7 +480,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.corner_menu_timer.stop()
         if not self.corner_menu_visibility[self.InteractiveCorners.TOPLEFT]:
             self.corner_menu_timer.stop()
-        self.update()
+        self.update(self.animated_page_name_rect)
 
     def prepare_secret_hints(self):
         if not self.secret_hints_list:
