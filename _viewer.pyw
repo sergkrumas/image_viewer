@@ -2181,6 +2181,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             elif event.buttons() == Qt.LeftButton:
                 self.viewer_LeftButton_mouseMoveEvent(event)
 
+            self.update()
+
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
                 self.previews_list_mouseMoveEvent(event)
@@ -2191,6 +2193,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if event.buttons() == Qt.MiddleButton:
                 self.autoscroll_middleMouseMoveEvent()
 
+            self.update()
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
@@ -2208,8 +2211,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 if event.buttons() == Qt.MiddleButton:
                     self.autoscroll_middleMouseMoveEvent()
 
+            self.update()
 
-        self.update()
+        # здесь - self.update() - быть не должно 
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):

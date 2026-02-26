@@ -449,6 +449,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_autoscroll_zoom_init()
 
+        self.cursor_scrubbing_optimizer = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -762,12 +764,17 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
-        checkboxes.append(
+        checkboxes.extend((
             (_("Show debug graphics for transformation widget"),
-            self.board_debug_transform_widget,
+                self.board_debug_transform_widget,
                 partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
             ),
-        )
+
+            (_("Cursor scrubbing optimizer"),
+                self.cursor_scrubbing_optimizer,
+                partial(self.toggle_boolean_var_generic, self, 'cursor_scrubbing_optimizer')
+            ),
+        ))
         contextMenu.addSeparator()
 
         self.board_ContextMenuPluginsDefault(event, contextMenu)
@@ -1699,11 +1706,23 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.draw_board_item_comments(painter, ir, board_item._comments, cp)
                 painter.resetTransform()
 
-                if board_item.types.ITEM_IMAGE and board_item.animated_file and case4 and board_item.scrubbed:
+                if all((any((
+                            board_item.types.ITEM_IMAGE and board_item.animated_file,
+                            BoardItem.types.ITEM_FOLDER,
+                            BoardItem.types.ITEM_GROUP
+                        )),
+                        case4,
+                        board_item.scrubbed
+                    )):
+
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - selection_area_rect.left()
                     offset = QPoint(int(inside_rect_x_offset), 0)
-                    p1 = selection_area_rect.topLeft() + offset
-                    p2 = selection_area_rect.bottomLeft() + offset
+                    if self.globals.DEBUG:
+                        vertical_offset = QPoint(0, 50)
+                    else:
+                        vertical_offset = QPoint(0, 0)
+                    p1 = selection_area_rect.topLeft() + offset - vertical_offset
+                    p2 = selection_area_rect.bottomLeft() + offset + vertical_offset
                     painter.drawLine(p1, p2)
                     board_item.scrubbed = False
 
@@ -3347,11 +3366,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
+    def update(self, *args):
+        super().update(*args)
+
     def board_mouseMoveEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
+
+        special_update = False
+        self.board_scrubbed_item_rect = None
 
         if self.board_TextElementMouseMoveEvent(event):
             return
@@ -3400,16 +3425,20 @@ class BoardMixin(BoardTextEditItemMixin):
         elif event.buttons() == Qt.NoButton:
             bi = self.board_item_under_mouse
             if bi:
-                self.board_item_cursor_scrubbing(bi, event)
+                special_update = self.board_item_cursor_scrubbing(bi, event)
 
         if self.PTWS_draw_monitor:
             self.board_SCALE_selected_items_choose_nearest_corner()
 
         self.board_cursor_setter()
-        self.update()
+        if self.cursor_scrubbing_optimizer and self.board_scrubbed_item_rect:
+            self.update(self.board_scrubbed_item_rect)
+        else:
+            self.update()
 
     def board_item_cursor_scrubbing(self, board_item, event):
         bi = board_item
+        need = False
         if bi.type == bi.types.ITEM_IMAGE and bi.animated:
             if bi.movie is None:
                 # такое случается, когда доска загружена из файла
@@ -3421,10 +3450,15 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_rect,
                 bi.movie.frameCount(),
             )
-            self.board_item_animation_file_set_frame(bi, frame_index)
-            bi.scrubbed = True #заставляем скраб-линию отрисоваться, после её отрисовки это флаг сбросится,
+            # TODO: по идее need показывает, надо ли перерерисовывать окно, но 
+            # если опираться на её значение, то линия скраба будет запинаться,
+            # поэтому я пока воздержусь от её применения
+            need = self.board_item_animation_file_set_frame(bi, frame_index)
+            # заставляем скраб-линию отрисоваться, после её отрисовки это флаг сбросится,
             # чтобы скраб-линия не отрисовывалась во время работы, например,
             # той же board_fly_over, когда курсор мыши находится поверх айтема 
+            bi.scrubbed = True
+            self.board_scrubbed_item_rect = item_rect.toRect()
         if bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             item_rect = bi.get_selection_area(canvas=self).boundingRect()
             inside_rect_x_offset = event.pos().x() - item_rect.left()
@@ -3433,10 +3467,15 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_rect,
                 len(board_item.item_folder_data.images_list),
             )
-            board_item.item_folder_data.set_current_index(image_index)
-            # заставляем подгрузится
-            board_item.pixmap = None
-            board_item.update_corner_info()
+            need = image_index != board_item.item_folder_data._index
+            if need:
+                board_item.item_folder_data.set_current_index(image_index)
+                # заставляем подгрузится
+                board_item.pixmap = None
+                board_item.update_corner_info()
+            bi.scrubbed = True
+            self.board_scrubbed_item_rect = item_rect.toRect()
+        return need
 
     def board_is_items_transformation_ongoing(self):
         return self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing
