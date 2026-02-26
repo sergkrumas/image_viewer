@@ -4040,43 +4040,44 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if self.pixmap or self.invalid_movie:
             im_rect = self.get_image_viewport_rect()
 
-            # 1. DRAW SHADOW
-            OFFSET = 15
-            shadow_rect = QRectF(im_rect)
-            shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
-            draw_shadow(
-                self,
-                painter,
-                shadow_rect, 30,
-                webRGBA(QColor(0, 0, 0, 140)),
-                webRGBA(QColor(0, 0, 0, 0))
-            )
+            if self.STNG_draw_shadow_and_checkerboard_backplate:
+                # 1. DRAW SHADOW
+                OFFSET = 15
+                shadow_rect = QRectF(im_rect)
+                shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
+                draw_shadow(
+                    self,
+                    painter,
+                    shadow_rect, 30,
+                    webRGBA(QColor(0, 0, 0, 140)),
+                    webRGBA(QColor(0, 0, 0, 0))
+                )
 
-            # 2. DRAW CHECKERBOARD
-            checkerboard_br = QBrush()
-            pixmap = QPixmap(40, 40)
-            _p_ = QPainter()
-            _p_.begin(pixmap)
-            white_c = QColor(Qt.gray)
-            black_c = QColor(Qt.black)
+                # 2. DRAW CHECKERBOARD
+                checkerboard_br = QBrush()
+                pixmap = QPixmap(40, 40)
+                _p_ = QPainter()
+                _p_.begin(pixmap)
+                white_c = QColor(Qt.gray)
+                black_c = QColor(Qt.black)
 
-            if True:
-                # making it darker for aesthetic
-                white_c = white_c.darker(600)
+                if True:
+                    # making it darker for aesthetic
+                    white_c = white_c.darker(600)
 
-            _p_.fillRect(QRect(0, 0, 40, 40), QBrush(white_c))
-            _p_.setPen(Qt.NoPen)
-            _p_.setBrush(QBrush(black_c))
-            _p_.drawRect(QRect(0, 0, 20, 20))
-            _p_.drawRect(QRect(20, 20, 20, 20))
-            _p_.end()
-            checkerboard_br.setTexture(pixmap)
-            painter.setBrush(checkerboard_br)
-            painter.save()
-            painter.setOpacity(0.5)
-            painter.drawRect(im_rect)
-            painter.restore()
-            painter.setBrush(Qt.NoBrush)
+                _p_.fillRect(QRect(0, 0, 40, 40), QBrush(white_c))
+                _p_.setPen(Qt.NoPen)
+                _p_.setBrush(QBrush(black_c))
+                _p_.drawRect(QRect(0, 0, 20, 20))
+                _p_.drawRect(QRect(20, 20, 20, 20))
+                _p_.end()
+                checkerboard_br.setTexture(pixmap)
+                painter.setBrush(checkerboard_br)
+                painter.save()
+                painter.setOpacity(0.5)
+                painter.drawRect(im_rect)
+                painter.restore()
+                painter.setBrush(Qt.NoBrush)
 
             # 3. DRAW IMAGE
             pixmap = self.get_rotated_pixmap()

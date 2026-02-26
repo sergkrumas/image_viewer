@@ -533,6 +533,7 @@ class SettingsWindow(QWidget):
             'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
             'browse_images_only': (False, _('Allow browsing image filetypes only')),
             'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
+            'draw_shadow_and_checkerboard_backplate': (True, _('Draw shadow and checkerboard backplate')),
 
 
             '---librarypage': _('Library page'),
