@@ -3717,24 +3717,56 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if columns and active_item:
             if not hasattr(active_item, "library_page_cached_version"):
-                active_item.library_page_cached_version = load_image_respect_orientation(
-                    active_item.filepath,
-                    highres_svg=LibraryData().is_svg_file(active_item.filepath)
-                )
+
+                if active_item.is_animated_file:
+                    filepath = active_item.filepath
+                    if active_item.is_animated_apng:
+                        movie = APNGMovie(filepath)
+                    else:
+                        movie = QMovie(filepath)
+                        movie.setCacheMode(QMovie.CacheAll)
+                    movie.jumpToFrame(0)
+                    data = movie
+                else:
+                    data = load_image_respect_orientation(
+                        active_item.filepath,
+                        highres_svg=LibraryData().is_svg_file(active_item.filepath)
+                    )
+                active_item.library_page_cached_version = data
             cached = active_item.library_page_cached_version
             if cached:
-                source_rect = cached.rect()
+                if isinstance(cached, QPixmap):
+                    pixmap = cached
+                else:
+                    scrub_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
+                    inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
+                    frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                        inside_rect_x_offset,
+                        scrub_rect,
+                        cached.frameCount(),
+                    )
+                    cached.jumpToFrame(frame_index)
+                    pixmap = cached.currentPixmap()
+                    painter.setPen(QPen(Qt.white))
+                    offset = QPoint(int(inside_rect_x_offset), 0)
+                    painter.drawLine(
+                        scrub_rect.topLeft() + offset,
+                        scrub_rect.bottomLeft() + offset
+                    )
+                source_rect = pixmap.rect()
                 main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
                 projected = fit_rect_into_rect(source_rect, main_rect)
                 painter.setOpacity(0.8)
                 painter.drawRect(main_rect)
                 painter.setOpacity(1.0)
-                if cached.width() != 0:
-                    painter.drawPixmap(projected, cached, source_rect)
-                else:
+                if pixmap.isNull():
                     painter.setPen(QPen(Qt.white))
                     _error_msg = _("Error")
                     painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{active_item.filename}')
+                else:
+                    painter.drawPixmap(projected, pixmap, source_rect)
+
+
         # right column end
 
         self.draw_middle_line(painter)
