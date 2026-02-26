@@ -1651,7 +1651,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.noise_time += 0.005
             self.update()
 
-    def viewport_image_animation(self):
+    def viewviewer_image_animation(self):
         if self.animated:
             self.tick_animation()
 
@@ -1789,14 +1789,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.control_timer_handler()
 
         if self.is_viewer_page_active():
-            self.viewport_image_animation()
+            self.viewviewer_image_animation()
 
         elif self.is_board_page_active():
             self.board_timer_handler()
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
-                self.viewport_image_animation()
+                self.viewviewer_image_animation()
 
         self.animate_noise_cells_effect()
 
