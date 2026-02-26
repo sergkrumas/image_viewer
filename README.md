@@ -72,7 +72,7 @@ Library Page when the app running in the advanced mode or after more than one fo
 ![](docs/library_page_folders_list.png)
 
 Library Page thumbnails is bigger than the ones on the Viewer Page. 
-Hovering over thumbnail on the right side shows its original on the left side at maximum scale, but animated files showing as static frame:
+Hovering over thumbnail on the right side shows its original on the left side at maximum scale. Frames of animated files change while cursor scrubbing, default playback is not supported:
 ![](docs/library_page_hovering.png)
 
 
