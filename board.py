@@ -72,7 +72,7 @@ class BoardItem():
         ITEM_UNDEFINED = 0
         ITEM_IMAGE = 1
         ITEM_FOLDER = 2
-        ITEM_GROUP = 3
+        ITEM_GROUP = ITEM_NODE = 3
         ITEM_FRAME = 4
         ITEM_NOTE = 5
 
