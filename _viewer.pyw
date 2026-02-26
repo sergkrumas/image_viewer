@@ -2147,6 +2147,38 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.get_rotated_pixmap(force_update=True)
                 self.update()
 
+    def library_page_NoButton_mouseMoveEvent(self, event):
+        active_item = self.library_previews_list_active_item
+        if active_item:
+            if active_item.library_page_cached_original is None:
+                if active_item.is_animated_file:
+                    filepath = active_item.filepath
+                    if active_item.is_animated_apng:
+                        movie = APNGMovie(filepath)
+                    else:
+                        movie = QMovie(filepath)
+                        movie.setCacheMode(QMovie.CacheAll)
+                    movie.jumpToFrame(0)
+                    data = movie
+                else:
+                    data = load_image_respect_orientation(
+                        active_item.filepath,
+                        highres_svg=LibraryData().is_svg_file(active_item.filepath)
+                    )
+                active_item.library_page_cached_original = data
+            cached = active_item.library_page_cached_original
+            if isinstance(cached, QPixmap):
+                pass
+            else:
+                scrub_rect = self.get_scrub_rect_for_library_previews(active_item)
+                inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
+                frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                    inside_rect_x_offset,
+                    scrub_rect,
+                    cached.frameCount(),
+                )
+                cached.jumpToFrame(frame_index)
+
     def viewer_LeftButton_mouseReleaseEvent(self, event):
         if self.transformations_allowed:
             self.image_translating = False
@@ -2209,6 +2241,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
                 self.previews_grid_mouseMoveEvent(event)
+                self.library_page_NoButton_mouseMoveEvent(event)
 
             if event.buttons() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseMoveEvent(event)
@@ -2238,7 +2271,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.update()
 
-        # здесь - self.update() - быть не должно 
+        # здесь - self.update() - быть не должно
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -3674,7 +3707,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         cf = LibraryData().current_folder()
 
-        # left column
+        # left column begin
         scroll_offset = LibraryData().folderslist_scroll_offset
         scroll_offset += 70
         self.folders_list = []
@@ -3723,7 +3756,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             painter.drawPixmap(target, thumb or Globals.NULL_PIXMAP, source_rect)
         # left column end
 
-        # right column
+        # right column begin
         painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
@@ -3742,41 +3775,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                     )
 
         if columns and active_item:
-            if not hasattr(active_item, "library_page_cached_version"):
-
-                if active_item.is_animated_file:
-                    filepath = active_item.filepath
-                    if active_item.is_animated_apng:
-                        movie = APNGMovie(filepath)
-                    else:
-                        movie = QMovie(filepath)
-                        movie.setCacheMode(QMovie.CacheAll)
-                    movie.jumpToFrame(0)
-                    data = movie
-                else:
-                    data = load_image_respect_orientation(
-                        active_item.filepath,
-                        highres_svg=LibraryData().is_svg_file(active_item.filepath)
-                    )
-                active_item.library_page_cached_version = data
-            cached = active_item.library_page_cached_version
+            cached = active_item.library_page_cached_original
             if cached:
                 if isinstance(cached, QPixmap):
                     pixmap = cached
                 else:
-                    enlarged_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
-                    scrub_rect = QRect(enlarged_rect)
-                    # уменьшая ширину и корректируя центр, вставляем неактивные поля по бокам для улучшенного UX
-                    scrub_rect.setWidth(scrub_rect.width()-20)
-                    scrub_rect.moveCenter(enlarged_rect.center())
-                    inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
-                    frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
-                        inside_rect_x_offset,
-                        scrub_rect,
-                        cached.frameCount(),
-                    )
-                    cached.jumpToFrame(frame_index)
                     pixmap = cached.currentPixmap()
+                    scrub_rect = self.get_scrub_rect_for_library_previews(active_item)
+                    inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                     # draw scrub line
                     painter.setPen(QPen(Qt.white))
                     offset = QPoint(int(inside_rect_x_offset), 0)
@@ -3785,6 +3791,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         scrub_rect.bottomLeft() + offset
                     )
                     painter.setPen(Qt.NoPen)
+                # draw original on the left side
                 source_rect = pixmap.rect()
                 main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
                 projected = fit_rect_into_rect(source_rect, main_rect)
@@ -3797,8 +3804,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     painter.drawText(main_rect, Qt.AlignCenter, f'{_error_msg}\n{active_item.filename}')
                 else:
                     painter.drawPixmap(projected, pixmap, source_rect)
-
-
         # right column end
 
         self.draw_middle_line(painter)
@@ -3809,6 +3814,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.draw_library_scrollbars(painter)
 
         painter.restore()
+
+    def get_scrub_rect_for_library_previews(self, active_item):
+        enlarged_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
+        scrub_rect = QRect(enlarged_rect)
+        # уменьшая ширину и корректируя центр, вставляем неактивные поля по бокам для улучшенного UX
+        scrub_rect.setWidth(scrub_rect.width()-30)
+        scrub_rect.moveCenter(enlarged_rect.center())
+        return scrub_rect
 
     def draw_previews_grid(self, painter, columns, interaction_list,
                                                                     active_item,
