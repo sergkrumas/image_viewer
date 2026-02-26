@@ -4294,12 +4294,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             self.animated_or_not_animated_close(QApplication.instance().quit)
 
-    def show_center_label(self, info_type, error=False):
+    def show_center_label(self, info_type, error=False, duration=0.0):
         self.center_label_error = error
         self.center_label_info_type = info_type
         if info_type not in self.label_type.all():
             # текстовые сообщения показываем дольше
-            self.CENTER_LABEL_TIME_LIMIT = 5.0
+            self.CENTER_LABEL_TIME_LIMIT = duration or 5.0
         else:
             self.CENTER_LABEL_TIME_LIMIT = 2.0
         # show center label on screen
@@ -4410,6 +4410,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if key == Qt.Key_F4:
             self.viewer_cursor_scrubber_mode = not self.viewer_cursor_scrubber_mode
+            if self.viewer_cursor_scrubber_mode:
+                self.show_center_label(_('Cursor scrubbing mode activated'), duration=1.0)
+            else:
+                self.show_center_label(_('Cursor scrubbing mode disactivated'), error=True, duration=1.0)
             self.update()
 
         if not event.isAutoRepeat():
