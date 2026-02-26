@@ -4094,6 +4094,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 painter.drawRect(im_rect)
                 painter.setCompositionMode(cm)
 
+            # 4. DRAW OVERLAYS
             if self.is_not_modal_viewer_mode():
                 # draw cyberpunk
                 if self.STNG_show_cyberpunk:
