@@ -1860,7 +1860,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.is_top_right_menu_visible():
                 self.showMinimized()
 
-    def previews_list_mousePressEvent(self, event):
+    def previews_grid_mousePressEvent(self, event):
         p_list = None
         if self.is_library_page_active():
             p_list = self.library_previews_list
@@ -1883,14 +1883,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                         if self.waterfall_block_active_item:
                             # если ещё стоит блокировка, то прерываем его и выбираем активный элемент по координатам курсора
                             self.waterfall_unblock_active_item()
-                            self.previews_list_set_active_item(event.pos())
+                            self.previews_grid_set_active_item(event.pos())
                         self.enter_modal_viewer()
                         break
 
-    def previews_list_mouseMoveEvent(self, event):
-        self.previews_list_set_active_item(event.pos())
+    def previews_grid_mouseMoveEvent(self, event):
+        self.previews_grid_set_active_item(event.pos())
 
-    def previews_list_set_active_item(self, curpos):
+    def previews_grid_set_active_item(self, curpos):
         p_list = None
 
         if self.is_library_page_active():
@@ -2042,7 +2042,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_library_page_active():
             if event.button() == Qt.LeftButton:
                 if not self.clickable_scrollbars_mousePressEvent(event):
-                    self.previews_list_mousePressEvent(event)
+                    self.previews_grid_mousePressEvent(event)
 
                     if self.folders_list:
                         for item_rect, item_data in self.folders_list:
@@ -2068,7 +2068,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 if event.button() == Qt.LeftButton:
                     if not self.clickable_scrollbars_mousePressEvent(event):
-                        self.previews_list_mousePressEvent(event)
+                        self.previews_grid_mousePressEvent(event)
 
                 if event.button() == Qt.MiddleButton:
                     self.autoscroll_middleMousePressEvent(event)
@@ -2208,7 +2208,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
-                self.previews_list_mouseMoveEvent(event)
+                self.previews_grid_mouseMoveEvent(event)
 
             if event.buttons() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseMoveEvent(event)
@@ -2228,7 +2228,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.viewer_NoButton_mouseMoveEvent(event)
             else:
                 if event.buttons() == Qt.NoButton:
-                    self.previews_list_mouseMoveEvent(event)
+                    self.previews_grid_mouseMoveEvent(event)
 
                 if event.buttons() == Qt.LeftButton:
                     self.clickable_scrollbars_mouseMoveEvent(event)
@@ -2711,7 +2711,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                                 VIEWFRAME_HEIGHT,
                                                             )
                         if event:
-                            self.previews_list_set_active_item(event.pos())
+                            self.previews_grid_set_active_item(event.pos())
 
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
@@ -2726,7 +2726,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                                                             VIEWFRAME_HEIGHT,
                                                         )
                     if event:
-                        self.previews_list_set_active_item(event.pos())
+                        self.previews_grid_set_active_item(event.pos())
         self.update()
 
     def is_control_panel_under_mouse(self):
