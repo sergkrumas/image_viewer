@@ -1643,7 +1643,7 @@ class ImageData():
 
         self.library_page_cached_original = None
 
-    # для страниц Boards и Library 
+    # для страниц Boards и Library
     @property
     def is_animated_file(self):
         if self._is_animated_file is None:
@@ -1662,7 +1662,7 @@ class ImageData():
             LD = LibraryData
             # is_apng_file_animated читает файл для своей работы,
             # лучше закешировать результат её вызова и вызывать только раз,
-            # и то, если данные потребовались, а не просто при создании экземпляра ImageData  
+            # и то, если данные потребовались, а не просто при создании экземпляра ImageData
             self._is_animated_apng = LD.is_apng_file_animated(self.filepath)
         return self._is_animated_apng
 

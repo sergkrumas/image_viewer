@@ -50,7 +50,7 @@ Default page. It shows up on the application startup if not set otherwise in the
 - Rolling the mouse wheel while holding left mouse button - changes current animation frame
 - Rolling the mouse wheel while holding Shift **and** Ctrl key - changes playback speed (with range from 10% to 200%)
 - F4 key - activates cursor scrubbing mode (videoeditors feature), playback is paused. Press the key again to resume playback
-- «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file 
+- «Save .png/.jpg file...» in Context menu - saves current animation frame to .png/.jpg file
 
 ### Rectangle selection magnifier
 Hold `Ctrl` and drag with the left mouse button to activate the rectangular magnifier. Press `Esc` to exit.
@@ -72,7 +72,7 @@ Library Page when the app running in the lite mode:
 Library Page when the app running in the advanced mode or after more than one folder was opened via Start Page:
 ![](docs/library_page_folders_list.png)
 
-Library Page thumbnails is bigger than the ones on the Viewer Page. 
+Library Page thumbnails is bigger than the ones on the Viewer Page.
 Hovering over thumbnail on the right side shows its original on the left side at maximum scale. Frames of animated files change while cursor scrubbing, default playback is not supported:
 ![](docs/library_page_hovering.png)
 
@@ -110,7 +110,7 @@ If you browse pictures on Pinterest, you’ll like this masonry layout.
 
 ![](docs/waterfall_page.png)
 
-Left-click to open the modal viewer, double-click to close it. 
+Left-click to open the modal viewer, double-click to close it.
 
 Use `Ctrl + Mouse Wheel` to change the number of columns.
 Use `Ctrl + Shift + Mouse Wheel` to change the gaps between images.
@@ -165,7 +165,7 @@ Follow these steps:
 - 1) If you don't like default icons, it's high time to replace it, otherwise just skip that step. When replacing icons with your own ones strictly preserve original .ico-files  names otherwise application couldn't find these. You can extract the canonical Picasa Photo Viewer icon as I did on my computer. I would love to include a Picasa Photo Viewer icon in that open source clone, but I'm not allowed to do so under the terms of the GNU GPL license. The Icon with filename `image_viewer.ico` shows up for every image file in Windows Explorer that has been associated with application, the other icon with filename `image_viewer_lite.ico` shows up on windows taskbar as app icon
 - 2) Go to the app folder, then double-click on the file `get_winreg_file.pyw`. As a result the message box shows up informing that reg-file generated and placed to the app folder. Double-click on generated reg-file and then confirm registry operation (this may require to run as administrator to be succeced)
 
-After these steps you could see the app in Windows Explorer context menu for images files: in the menu item "Open with...", and in the opened submenu the program will be called **Krumassan Image Viewer**. From now on you can manually associate the app with images files. Unfortunatly, there's no way to automatically set all these associations due to the Windows security measures taken. Fortunatly, in this repository, in folder **test** you can find all files with common image extensions to set associations manually. 
+After these steps you could see the app in Windows Explorer context menu for images files: in the menu item "Open with...", and in the opened submenu the program will be called **Krumassan Image Viewer**. From now on you can manually associate the app with images files. Unfortunatly, there's no way to automatically set all these associations due to the Windows security measures taken. Fortunatly, in this repository, in folder **test** you can find all files with common image extensions to set associations manually.
 
 ## How to use
 
@@ -175,24 +175,24 @@ If you've installed Python and dependencies, then double-click on `viewer.pyw` r
 
 `python.exe viewer.pyw path_fo_folder_or_image_file`
 
-Make sure that python.exe has suited version. See requirements about Python version above. 
+Make sure that python.exe has suited version. See requirements about Python version above.
 
-## Features 
-- complete clone if we talk about the image viewer itself 
+## Features
+- complete clone if we talk about the image viewer itself
 - F1 key to see which key doing what
-- Viewing history per folder and per global one 
+- Viewing history per folder and per global one
 - Small images tend to fit maximum screen area (this behavior could be finely tuned in the app settings)
 - Changing images order by rearranging image thumbnails
-- Observing interactive collages on Board Page (PureRef Clone) 
+- Observing interactive collages on Board Page (PureRef Clone)
 - Plugin system for Board Page
 
 Program runs in lite mode by default, but standard mode is available.
 
 When running in standard mode:
   - Tray icon
-  - Image metadata viewer  
+  - Image metadata viewer
   - Commented image regions
-  - Viewed folders history in library page, stored to disk 
+  - Viewed folders history in library page, stored to disk
   - Tags for images
 
 ## What to do on app crash

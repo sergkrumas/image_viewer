@@ -3442,13 +3442,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_rect,
                 bi.movie.frameCount(),
             )
-            # TODO: по идее need показывает, надо ли перерерисовывать окно, но 
+            # TODO: по идее need показывает, надо ли перерерисовывать окно, но
             # если опираться на её значение, то линия скраба будет запинаться,
             # поэтому я пока воздержусь от её применения
             need = self.board_item_animation_file_set_frame(bi, frame_index)
             # заставляем скраб-линию отрисоваться, после её отрисовки это флаг сбросится,
             # чтобы скраб-линия не отрисовывалась во время работы, например,
-            # той же board_fly_over, когда курсор мыши находится поверх айтема 
+            # той же board_fly_over, когда курсор мыши находится поверх айтема
             bi.scrubbed = True
             self.board_scrubbed_item_rect = item_rect.toRect()
         if bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
