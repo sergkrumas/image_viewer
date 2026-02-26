@@ -1454,7 +1454,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.image_data = image_data
                 image_data.board_item = board_item
                 folder_data.board.items_list.append(board_item)
-                board_item.animated_file = self.board_is_animated_item(image_data.filepath)
+                board_item.animated_file = image_data.is_animated_file
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 if self.STNG_board_vertical_items_layout:
@@ -1564,13 +1564,6 @@ class BoardMixin(BoardTextEditItemMixin):
         # при просмотре её верхушки или низины она пропадает с экрана.
         # Я затупил тогда, и сейчас исправляю свой затуп. К счастью, реализовывать сравнение проекций не нужно, всё уже реализовано в Qt.
         return rect1.intersects(rect2)
-
-    def board_is_animated_item(self, filepath):
-        return any((
-                    self.LibraryData().is_gif_file(filepath)
-                ,   self.LibraryData().is_webp_file_animated(filepath)
-                ,   self.LibraryData().is_apng_file_animated(filepath)
-            ))
 
     def board_draw_item(self, painter, board_item):
         if board_item.type in [BoardItem.types.ITEM_FRAME]:

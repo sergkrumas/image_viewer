@@ -1642,6 +1642,16 @@ class ImageData():
         self._selected = False              # обнуляется после каждого перемещения
         self._is_phantom = False
 
+        self.is_animated_file = self.fill_property_is_animated_file()
+
+    def fill_property_is_animated_file(self):
+        ld = LibraryData()
+        return any((
+                    ld.is_gif_file(self.filepath)
+                ,   ld.is_webp_file_animated(self.filepath)
+                ,   ld.is_apng_file_animated(self.filepath)
+            ))
+
     # атрибут preview нужен для boards, иначе будет вылет
     @property
     def preview(self):
