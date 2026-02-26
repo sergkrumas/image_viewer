@@ -2130,6 +2130,23 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             for anim_task in self.get_current_animation_tasks_id("zoom"):
                 anim_task.translation_delta_when_animation = self.mapped_cursor_pos() - self.old_cursor_pos
 
+    def viewer_NoButton_mouseMoveEvent(self, event):
+        if self.animated and self.viewer_cursor_scrubber_mode:
+            curpos = self.mapped_cursor_pos()
+            im_rect = self.get_image_viewport_rect()
+            if im_rect.contains(curpos):
+                scrub_rect = QRect(im_rect.toRect())
+                inside_rect_x_offset = curpos.x() - scrub_rect.left()
+                frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                    inside_rect_x_offset,
+                    scrub_rect,
+                    self.movie.frameCount(),
+                )
+                self.movie.jumpToFrame(frame_index)
+                self.pixmap = self.movie.currentPixmap()
+                self.get_rotated_pixmap(force_update=True)
+                self.update()
+
     def viewer_LeftButton_mouseReleaseEvent(self, event):
         if self.transformations_allowed:
             self.image_translating = False
@@ -2184,6 +2201,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.image_comment_mouseMoveEvent(event)
             elif event.buttons() == Qt.LeftButton:
                 self.viewer_LeftButton_mouseMoveEvent(event)
+            elif event.buttons() == Qt.NoButton:
+                self.viewer_NoButton_mouseMoveEvent(event)
 
             self.update()
 
@@ -2205,6 +2224,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.region_zoom_in_mouseMoveEvent(event)
                 elif event.buttons() == Qt.LeftButton:
                     self.viewer_LeftButton_mouseMoveEvent(event)
+                elif event.buttons() == Qt.NoButton:
+                    self.viewer_NoButton_mouseMoveEvent(event)
             else:
                 if event.buttons() == Qt.NoButton:
                     self.previews_list_mouseMoveEvent(event)
@@ -4110,6 +4131,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
                 self.draw_secret_hint(painter)
 
+            if self.animated and self.viewer_cursor_scrubber_mode:
+                curpos = self.mapped_cursor_pos()
+                if im_rect.contains(curpos):
+                    scrub_rect = QRect(im_rect.toRect())
+                    inside_rect_x_offset = curpos.x() - scrub_rect.left()
+                    # draw scrub line
+                    painter.setPen(QPen(Qt.white))
+                    offset = QPoint(int(inside_rect_x_offset), 0)
+                    painter.drawLine(
+                        scrub_rect.topLeft() + offset,
+                        scrub_rect.bottomLeft() + offset
+                    )
+                    painter.setPen(Qt.NoPen)
+
         elif self.movie:
             pass
         else:
@@ -4359,6 +4394,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if key == Qt.Key_F10 and not event.isAutoRepeat():
             self.toggle_BW_filter()
+
+        if key == Qt.Key_F4:
+            self.viewer_cursor_scrubber_mode = not self.viewer_cursor_scrubber_mode
+            self.update()
 
         if not event.isAutoRepeat():
             if key == Qt.Key_F5:
