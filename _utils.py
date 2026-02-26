@@ -821,3 +821,12 @@ class RoundedQMenu(QMenu):
         # values must be transformed to an integer based QPolygon
         region = QRegion(path.toFillPolygon(QTransform()).toPolygon())
         self.setMask(region)
+
+def rect_to_sting(rect):
+    width = rect.width()
+    height = rect.height()
+    x0 = rect.x()
+    y0 = rect.y()
+    x1 = rect.right()
+    y1 = rect.bottom()
+    return f"[w:{width:.02f}, h:{height:.02f}, ({x0:.02f}, {y0:.02f}), ({x1:.02f}, {y1:.02f})]"
