@@ -718,6 +718,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.waterfall_appstart = False
         self.waterfall_block_active_item = False
 
+        self.viewer_cursor_scrubber_mode = False
+
         self.context_menu_stylesheet = """
         QMenu{
             background: transparent;
@@ -1651,8 +1653,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.noise_time += 0.005
             self.update()
 
-    def viewviewer_image_animation(self):
-        if self.animated:
+    def viewer_image_animation(self):
+        if self.animated and not self.viewer_cursor_scrubber_mode:
             self.tick_animation()
 
     def cursor_corners_buttons_and_menus(self):
@@ -1789,14 +1791,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.control_timer_handler()
 
         if self.is_viewer_page_active():
-            self.viewviewer_image_animation()
+            self.viewer_image_animation()
 
         elif self.is_board_page_active():
             self.board_timer_handler()
 
         elif self.is_waterfall_page_active():
             if self.viewer_modal:
-                self.viewviewer_image_animation()
+                self.viewer_image_animation()
 
         self.animate_noise_cells_effect()
 
