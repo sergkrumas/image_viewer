@@ -89,7 +89,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.viewed_list = []
             i.phantom_image = ImageData("", None)
             i.phantom_image._is_phantom = True
-            i.last_apng_check_result = False
             i.fav_folder = ...
             i.comments_folder = ...
             i.total_TIME = 0
@@ -284,11 +283,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @staticmethod
     def is_apng_file_animated(filepath):
-        value = LibraryData().last_apng_check_result = filepath.lower().endswith(('.apng', '.png')) and is_apng_file_animated(filepath)
+        value = filepath.lower().endswith(('.apng', '.png')) and is_apng_file_animated(filepath)
         return value
-
-    def reset_apng_check_result(self):
-        self.last_apng_check_result = False
 
     @staticmethod
     def is_webp_file_animated(filepath):
@@ -1643,13 +1639,15 @@ class ImageData():
         self._is_phantom = False
 
         self.is_animated_file = self.fill_property_is_animated_file()
+        self.is_animated_apng = False
 
     def fill_property_is_animated_file(self):
-        ld = LibraryData()
+        LD = LibraryData
+        self.is_animated_apng = LD.is_apng_file_animated(self.filepath)
         return any((
-                    ld.is_gif_file(self.filepath)
-                ,   ld.is_webp_file_animated(self.filepath)
-                ,   ld.is_apng_file_animated(self.filepath)
+                    LD.is_gif_file(self.filepath)
+                ,   LD.is_webp_file_animated(self.filepath)
+                ,   self.is_animated_apng
             ))
 
     # атрибут preview нужен для boards, иначе будет вылет

@@ -1786,7 +1786,7 @@ class BoardMixin(BoardTextEditItemMixin):
             print(msg)
 
         def __load_animated(filepath):
-            if self.LibraryData().last_apng_check_result:
+            if board_item.image_data.is_animated_apng:
                 board_item.movie = APNGMovie(filepath)
             else:
                 board_item.movie = QMovie(filepath)
@@ -1821,7 +1821,6 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             try:
                 board_item.pixmap = QPixmap()
-                self.LibraryData().reset_apng_check_result()
                 if board_item.animated_file:
                     __load_animated(filepath)
                 elif self.LibraryData().is_svg_file(filepath):

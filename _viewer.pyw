@@ -1472,12 +1472,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.error_pixmap_and_reset(_("Unable\nto display"), f"{_unsup_file_msg}\n{filename}")
             else:
                 try:
-                    LibraryData().reset_apng_check_result()
                     animated = False or LibraryData().is_gif_file(filepath)
                     animated = animated or LibraryData().is_webp_file_animated(filepath)
                     animated = animated or LibraryData().is_apng_file_animated(filepath)
                     if animated:
-                        self.show_animated(filepath, self.LibraryData().last_apng_check_result)
+                        self.show_animated(filepath, image_data.is_animated_apng)
                     elif LibraryData().is_svg_file(filepath):
                         self.show_svg(filepath)
                     else:
