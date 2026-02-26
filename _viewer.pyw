@@ -3463,7 +3463,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
-        self.draw_previews_as_columns(painter,
+        self.draw_previews_grid(painter,
                                         columns,
                                         interaction_list,
                                         active_item,
@@ -3731,7 +3731,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         columns = cf.library_columns
         active_item = self.library_previews_list_active_item
 
-        self.draw_previews_as_columns(painter,
+        self.draw_previews_grid(painter,
                                         columns,
                                         interaction_list,
                                         active_item,
@@ -3810,7 +3810,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         painter.restore()
 
-    def draw_previews_as_columns(self, painter, columns, interaction_list,
+    def draw_previews_grid(self, painter, columns, interaction_list,
                                                                     active_item,
                                                                     area_rect,
                                                                     column_width, scroll_offset,
