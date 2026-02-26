@@ -599,7 +599,7 @@ msgstr "Название родительского айтема для этой
 
 #: board.py:1818
 msgid "Pressing Backspace key returns to board of the folder {0}"
-msgstr "Клавиша Пробел вернёт на доску папки {0}"
+msgstr "Клавиша Антипробел (другие названия: забой/бэкспейс) вернёт на доску папки {0}"
 
 #: board.py:1836
 msgid "Add to the group ({})"
