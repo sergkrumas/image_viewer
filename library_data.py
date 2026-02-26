@@ -1643,6 +1643,8 @@ class ImageData():
 
     def fill_property_is_animated_file(self):
         LD = LibraryData
+        # TODO: (26 фев 26) вычисление is_animated_apng замедлит загрузку папок, надо что-то придумать,
+        # чтобы это исправить, в основном эта переменная нужна для страницы Board и Library 
         self.is_animated_apng = LD.is_apng_file_animated(self.filepath)
         return any((
                     LD.is_gif_file(self.filepath)
