@@ -4323,9 +4323,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.SPT_toggle_tool_state()
             elif key == Qt.Key_F7:
                 self.SPT_set_plots_position()
-            elif key == Qt.Key_F8:
-                self.SPT_copy_current_to_clipboard()
-            elif check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier and self.spt_tool_activated:
+            elif self.spt_tool_activated and check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier:
                 self.SPT_copy_current_to_clipboard()
             elif key == Qt.Key_F4:
                 self.SPT_cycle_toggle_scale_factor_value()
