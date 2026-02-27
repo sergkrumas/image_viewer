@@ -1492,16 +1492,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_ctrl_z(self):
         for bi in self.board_get_selected_or_visible_items():
-            self.board_retrieve_transforms_back_from_history(bi)
+            self.board_retrieve_transform_back_from_history(bi)
         self.update_selection_bouding_box()
 
     def board_reset_items_to_layout_transforms(self):
         for bi in self.board_get_selected_or_visible_items():
-            self.board_stash_current_transforms_to_history(bi)
+            self.board_stash_current_transform_to_history(bi)
             self.board_apply_layout_transforms(bi)
         self.update_selection_bouding_box()
 
-    def board_stash_current_transforms_to_history(self, board_item):
+    def board_stash_current_transform_to_history(self, board_item):
         # item_key = board_item.board_index
         item_key = id(board_item)
         BoardItemTransform = namedtuple('BoardItemTransform', 'position rotation scale_x scale_y')
@@ -1512,7 +1512,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.scale_y,
         ))
 
-    def board_retrieve_transforms_back_from_history(self, board_item):
+    def board_retrieve_transform_back_from_history(self, board_item):
         # item_key = board_item.board_index
         item_key = id(board_item)
         transforms_list = self.board_item_ctrl_z_data.get(item_key, None)
@@ -2754,7 +2754,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for board_item in items_list:
             board_item.__position = QPointF(board_item.position)
-            self.board_stash_current_transforms_to_history(board_item)
+            self.board_stash_current_transform_to_history(board_item)
             if not viewport_zoom_changed:
                 board_item.__position_init = QPointF(board_item.position)
             board_item._children_items = []
@@ -2997,7 +2997,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for bi in self.selected_items:
             bi.__rotation = bi.rotation
             bi.__position = QPointF(bi.position)
-            self.board_stash_current_transforms_to_history(bi)
+            self.board_stash_current_transform_to_history(bi)
 
             if not viewport_zoom_changed:
                 bi.__rotation_init = bi.rotation
@@ -3172,7 +3172,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.__scale_x = bi.scale_x
             bi.__scale_y = bi.scale_y
             bi.__position = QPointF(bi.position)
-            self.board_stash_current_transforms_to_history(bi)
+            self.board_stash_current_transform_to_history(bi)
             if not viewport_zoom_changed:
                 bi.__scale_x_init = bi.scale_x
                 bi.__scale_y_init = bi.scale_y
