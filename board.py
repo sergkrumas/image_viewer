@@ -1481,14 +1481,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.show_center_label('reset items transforms')
 
-    def prepare_board(self, folder_data):
+    def board_prepare_items_layout_and_viewport(self, folder_data):
+
+        # layout and items overlays
         if self.Globals.DEBUG:
             offset = QPointF(0, 0) - QPointF(500, 0)
         else:
             offset = QPointF(0, 0)
-
         items_list = folder_data.board.items_list = []
-
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
@@ -1506,9 +1506,12 @@ class BoardMixin(BoardTextEditItemMixin):
                     board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
                     board_item._comments = self.LibraryData().get_comments_for_image(image_data)
 
+        # for board items map
         self.build_board_bounding_rect(folder_data)
 
         folder_data.board.ready = True
+
+        # UX: viewport positioning and scaling
         if self.STNG_board_move_to_current_on_first_open:
             if folder_data.current_image().board_item is not None:
                 self.board_fit_content_on_screen(folder_data.current_image())
@@ -1546,7 +1549,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_frame_items_text_rects = []
 
         if not self.is_board_ready():
-            self.prepare_board(folder_data)
+            self.board_prepare_items_layout_and_viewport(folder_data)
         else:
 
             painter.setPen(QPen(Qt.white, 1))
@@ -4557,7 +4560,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             cf.board.ready = False
 
-            self.prepare_board(cf)
+            self.board_prepare_items_layout_and_viewport(cf)
             self.board_place_items_in_column()
 
         self.update()
