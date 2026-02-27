@@ -4880,7 +4880,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         return selected_comment
 
     def contextMenuChangeSVGScale(self):
-        contextMenu = QMenu()
+        contextMenu = RoundedQMenu()
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
         contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
 
