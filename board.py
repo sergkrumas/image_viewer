@@ -1510,16 +1510,20 @@ class BoardMixin(BoardTextEditItemMixin):
             offset = QPointF(0, 0) - QPointF(500, 0)
         else:
             offset = QPointF(0, 0)
-        items_list = folder_data.board.items_list = []
+        board = folder_data.board
+        board.items_list = []
         for image_data in folder_data.images_list:
             if not image_data.preview_error:
                 board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+                # linking board and image data
                 board_item.image_data = image_data
                 image_data.board_item = board_item
-                folder_data.board.items_list.append(board_item)
+                board.items_list.append(board_item)
+                # fill attributes and overlays
                 board_item.animated_file = image_data.is_animated_file
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+                self.board_save_layout_transforms(board_item)
                 if self.STNG_board_vertical_items_layout:
                     offset += QPointF(0, image_data.source_height)
                 else:
@@ -1531,7 +1535,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # for board items map
         self.build_board_bounding_rect(folder_data)
 
-        folder_data.board.ready = True
+        board.ready = True
 
         # UX: viewport positioning and scaling
         if self.STNG_board_move_to_current_on_first_open:
