@@ -32,6 +32,8 @@ from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
 
+from collections import defaultdict
+
 from hidapi_adapter import draw_gamepad_monitor, draw_gamepad_easing_monitor
 
 import cbor2
@@ -452,6 +454,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_autoscroll_zoom_init()
 
         self.cursor_scrubbing_optimizer = False
+
+        self.board_item_ctrl_z_data = defaultdict(list)
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -1473,10 +1477,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf.board.current_item_group_index += 1
         return cf.board.current_item_group_index
 
-    def board_ctrl_z(self):
-        self.show_center_label('Ctrl+Z')
-
-    def board_reset_items_to_layout_transforms(self):
+    def board_get_selected_or_visible_items(self):
         cf = self.LibraryData().current_folder()
         items_to_reset = []
         viewport_rect = self.rect()
@@ -1487,9 +1488,40 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_selection_rect = bi.get_selection_area(canvas=self).boundingRect().toRect()
                 if item_selection_rect.intersects(viewport_rect):
                     items_to_reset.append(bi)
-        for bi in items_to_reset:
+        return items_to_reset
+
+    def board_ctrl_z(self):
+        for bi in self.board_get_selected_or_visible_items():
+            self.board_retrieve_transforms_back_from_history(bi)
+            self.update_selection_bouding_box()
+
+    def board_reset_items_to_layout_transforms(self):
+        for bi in self.board_get_selected_or_visible_items():
+            self.board_stash_current_transforms_to_history(bi)
             self.board_apply_layout_transforms(bi)
             self.update_selection_bouding_box()
+
+    def board_stash_current_transforms_to_history(self, board_item):
+        # item_key = board_item.board_index
+        item_key = id(board_item)
+        BoardItemTransform = namedtuple('BoardItemTransform', 'position rotation scale_x scale_y')
+        self.board_item_ctrl_z_data[item_key].append(BoardItemTransform(
+            QPointF(board_item.position),
+            board_item.rotation,
+            board_item.scale_x,
+            board_item.scale_y,
+        ))
+
+    def board_retrieve_transforms_back_from_history(self, board_item):
+        # item_key = board_item.board_index
+        item_key = id(board_item)
+        transforms_list = self.board_item_ctrl_z_data.get(item_key, None)
+        if transforms_list:
+            transform = transforms_list.pop()
+            board_item.position = QPointF(transform.position)
+            board_item.rotation = transform.rotation
+            board_item.scale_x = transform.scale_x
+            board_item.scale_y = transform.scale_y
 
     def board_apply_layout_transforms(self, board_item):
         board_item.position = QPointF(board_item.layout_position)
@@ -2722,6 +2754,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for board_item in items_list:
             board_item.__position = QPointF(board_item.position)
+            self.board_stash_current_transforms_to_history(board_item)
             if not viewport_zoom_changed:
                 board_item.__position_init = QPointF(board_item.position)
             board_item._children_items = []
@@ -2964,6 +2997,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for bi in self.selected_items:
             bi.__rotation = bi.rotation
             bi.__position = QPointF(bi.position)
+            self.board_stash_current_transforms_to_history(bi)
 
             if not viewport_zoom_changed:
                 bi.__rotation_init = bi.rotation
@@ -3138,6 +3172,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.__scale_x = bi.scale_x
             bi.__scale_y = bi.scale_y
             bi.__position = QPointF(bi.position)
+            self.board_stash_current_transforms_to_history(bi)
             if not viewport_zoom_changed:
                 bi.__scale_x_init = bi.scale_x
                 bi.__scale_y_init = bi.scale_y
