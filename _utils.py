@@ -822,7 +822,7 @@ class RoundedQMenu(QMenu):
         region = QRegion(path.toFillPolygon(QTransform()).toPolygon())
         self.setMask(region)
 
-def rect_to_sting(rect):
+def rect_to_string(rect):
     if rect:
         width = rect.width()
         height = rect.height()
