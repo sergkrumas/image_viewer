@@ -1493,13 +1493,13 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_ctrl_z(self):
         for bi in self.board_get_selected_or_visible_items():
             self.board_retrieve_transforms_back_from_history(bi)
-            self.update_selection_bouding_box()
+        self.update_selection_bouding_box()
 
     def board_reset_items_to_layout_transforms(self):
         for bi in self.board_get_selected_or_visible_items():
             self.board_stash_current_transforms_to_history(bi)
             self.board_apply_layout_transforms(bi)
-            self.update_selection_bouding_box()
+        self.update_selection_bouding_box()
 
     def board_stash_current_transforms_to_history(self, board_item):
         # item_key = board_item.board_index
