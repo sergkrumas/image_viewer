@@ -635,11 +635,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.gamepad = None
         self.gamepad_timer = None
 
-        self.board_init()
-        self.tagging_init()
-
         self.SettingsWindow = SettingsWindow
         SettingsWindow.settings_init(self)
+
+        self.board_init()
+        self.tagging_init()
 
         self.library_previews_list_active_item = None
         self.library_previews_list = None

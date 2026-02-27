@@ -547,6 +547,7 @@ class SettingsWindow(QWidget):
 
 
             '---boardpage': _('Board page'),
+            'board_load_plugins_at_startup': (False, _("Load board plugins at startup")),
             'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
             'board_draw_canvas_origin': (False, _('Show board origin')),
             'board_vertical_items_layout': (False, _('Vertical items layout')),

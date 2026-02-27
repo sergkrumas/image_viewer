@@ -428,7 +428,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_plugins = []
 
         self.active_plugin = None
-        self.board_PluginsInit()
+        self.board_plugins_loaded = False
+        if self.STNG_board_load_plugins_at_startup:
+            self.board_LoadPlugins()
 
         self.debug_file_io_filepath = _("[variable self.debug_file_io_filepath is not set!]")
 
@@ -543,7 +545,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.show_center_label(_("{0} activated").format(pi.name))
         self.update()
 
-    def board_PluginsInit(self):
+    def board_LoadPlugins(self, from_context_menu=False):
         plugins_folder = os.path.join(os.path.dirname(__file__), 'board_plugins')
         if not os.path.exists(plugins_folder):
             return
@@ -552,8 +554,12 @@ class BoardMixin(BoardTextEditItemMixin):
             for filename in filenames:
                 plugin_filepath = os.path.join(cur_dir, filename)
                 if plugin_filepath.lower().endswith('.py'):
-                    self.board_PluginInit(plugin_filepath)
+                    self.board_LoadPlugin(plugin_filepath)
         # print('end init plugins')
+        self.board_plugins_loaded = True
+        if from_context_menu:
+            menu = self.board_PluginsMenu(None)
+            menu.exec_(QCursor().pos())
 
     def load_module_and_get_register_function(self, script_filename, full_path):
         spec = importlib.util.spec_from_file_location(script_filename, full_path)
@@ -566,7 +572,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pass
         return module, plugin_func
 
-    def board_PluginInit(self, filepath):
+    def board_LoadPlugin(self, filepath):
         # print(f'\t{filepath}')
         filename = os.path.basename(filepath)
         module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
@@ -730,18 +736,31 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             event.ignore()
 
-    def board_ContextMenuPluginsDefault(self, event, contextMenu):
+    def board_PluginsMenu(self, menu):
         pis = []
         for pi in self.board_plugins:
             if pi.add_to_menu:
                 pis.append(pi)
-
         if pis:
-            submenu = contextMenu.addMenu(_('Plugin Boards'))
+            if menu is not None:
+                plugin_items_menu = menu.addMenu(_('Plugin Boards'))
+            else:
+                plugin_items_menu = RoundedQMenu()
+                plugin_items_menu.setStyleSheet(self.context_menu_stylesheet)
             for pi in pis:
-                create_board_for_plugin = submenu.addAction(pi.name)
+                create_board_for_plugin = plugin_items_menu.addAction(pi.name)
                 create_board_for_plugin.triggered.connect(pi.menu_callback)
+        else:
+            plugin_items_menu = None
+        return plugin_items_menu
 
+    def board_ContextMenuPluginsDefault(self, event, contextMenu):
+        menu = self.board_PluginsMenu(contextMenu)
+        if menu:
+            pass
+        elif not self.board_plugins_loaded:
+            action = contextMenu.addAction(_("Load Plugins..."))
+            action.triggered.connect(partial(self.board_LoadPlugins, from_context_menu=True))            
         contextMenu.addSeparator()
 
     def board_menuActivatedOverFrameItem(self):
