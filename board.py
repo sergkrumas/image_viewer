@@ -558,8 +558,9 @@ class BoardMixin(BoardTextEditItemMixin):
         # print('end init plugins')
         self.board_plugins_loaded = True
         if from_context_menu:
-            menu = self.board_PluginsMenu(None)
-            menu.exec_(QCursor().pos())
+            menu = self.board_PluginsMenu(None, loading_result=True)
+            if menu:
+                menu.exec_(QCursor().pos())
 
     def load_module_and_get_register_function(self, script_filename, full_path):
         spec = importlib.util.spec_from_file_location(script_filename, full_path)
@@ -736,7 +737,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             event.ignore()
 
-    def board_PluginsMenu(self, menu):
+    def board_PluginsMenu(self, menu, loading_result=False):
         pis = []
         for pi in self.board_plugins:
             if pi.add_to_menu:
@@ -750,6 +751,10 @@ class BoardMixin(BoardTextEditItemMixin):
             for pi in pis:
                 create_board_for_plugin = plugin_items_menu.addAction(pi.name)
                 create_board_for_plugin.triggered.connect(pi.menu_callback)
+        elif loading_result:
+            plugin_items_menu = RoundedQMenu()
+            a = plugin_items_menu.addAction(_("No plugins found"))
+            a.setEnabled(False)
         else:
             plugin_items_menu = None
         return plugin_items_menu
@@ -760,7 +765,11 @@ class BoardMixin(BoardTextEditItemMixin):
             pass
         elif not self.board_plugins_loaded:
             action = contextMenu.addAction(_("Load Plugins..."))
-            action.triggered.connect(partial(self.board_LoadPlugins, from_context_menu=True))            
+            action.triggered.connect(partial(self.board_LoadPlugins, from_context_menu=True))
+        else:
+            a = contextMenu.addAction(_("No plugins found"))
+            a.setEnabled(False)
+
         contextMenu.addSeparator()
 
     def board_menuActivatedOverFrameItem(self):
