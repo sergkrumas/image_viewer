@@ -1474,12 +1474,34 @@ class BoardMixin(BoardTextEditItemMixin):
         return cf.board.current_item_group_index
 
     def board_ctrl_z(self):
-
         self.show_center_label('Ctrl+Z')
 
     def board_reset_items_to_layout_transforms(self):
+        cf = self.LibraryData().current_folder()
+        items_to_reset = []
+        viewport_rect = self.rect()
+        if self.selected_items:
+            items_to_reset = self.selected_items[:]
+        else:
+            for bi in cf.board.items_list:
+                item_selection_rect = bi.get_selection_area(canvas=self).boundingRect().toRect()
+                if item_selection_rect.intersects(viewport_rect):
+                    items_to_reset.append(bi)
+        for bi in items_to_reset:
+            self.board_apply_layout_transforms(bi)
+            self.update_selection_bouding_box()
 
-        self.show_center_label('reset items transforms')
+    def board_apply_layout_transforms(self, board_item):
+        board_item.position = QPointF(board_item.layout_position)
+        board_item.rotation = board_item.layout_rotation
+        board_item.scale_x = board_item.layout_scale_x
+        board_item.scale_y = board_item.layout_scale_y
+
+    def board_save_layout_transforms(self, board_item):
+        board_item.layout_position = QPointF(board_item.position)
+        board_item.layout_rotation = board_item.rotation
+        board_item.layout_scale_x = board_item.scale_x
+        board_item.layout_scale_y = board_item.scale_y
 
     def board_prepare_items_layout_and_viewport(self, folder_data):
 
