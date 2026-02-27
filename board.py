@@ -696,6 +696,8 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, "F"):
             shift = event.modifiers() & Qt.ShiftModifier
             self.board_toggle_full_forcing(reset=shift)
+        elif check_scancode_for(event, "Z") and event.modifiers() & Qt.ControlModifier:
+            self.board_ctrl_z()
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
@@ -837,6 +839,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         board_place_items_in_column = contextMenu.addAction(_('Place items in column'))
         board_place_items_in_column.triggered.connect(self.board_place_items_in_column)
+
+        board_reset_items_to_layout_transforms = contextMenu.addAction(_("Reset item(s) to layout position, scale, rotation"))
+        board_reset_items_to_layout_transforms.triggered.connect(self.board_reset_items_to_layout_transforms)
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
@@ -1467,6 +1472,14 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         cf.board.current_item_group_index += 1
         return cf.board.current_item_group_index
+
+    def board_ctrl_z(self):
+
+        self.show_center_label('Ctrl+Z')
+
+    def board_reset_items_to_layout_transforms(self):
+
+        self.show_center_label('reset items transforms')
 
     def prepare_board(self, folder_data):
         if self.Globals.DEBUG:
