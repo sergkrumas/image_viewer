@@ -332,16 +332,16 @@ class MenuWindow(QMainWindow):
         go_web_btn.clicked.connect(partial(webbrowser.open, 'github.com/sergkrumas/image_viewer'))
 
 
-        generate_locales_btn = QPushButton("Generate locales")
+        generate_locales_btn = QPushButton("Generate locales folders")
         generate_locales_btn.clicked.connect(partial(generate_locales, this_folder))
 
-        move_pot_to_po_btn = QPushButton("Move .pot to .po")
+        move_pot_to_po_btn = QPushButton("Copy .pot file into .po file for each locale")
         move_pot_to_po_btn.clicked.connect(partial(move_pot_to_po, this_folder))
 
         generate_pot_file_btn = QPushButton("Generate .pot file\n(update main template file)")
         generate_pot_file_btn.clicked.connect(partial(generate_pot_file, this_folder))
 
-        sync_po_files_btn = QPushButton("Sync .po files\n(see CHANGELOG.md\nfor sync_po_files documentation)")
+        sync_po_files_btn = QPushButton("Sync .po files with .pot file\n(see CHANGELOG.md\nfor sync_po_files documentation)")
         keep_old_entries_chb = QCheckBox('Keep old entries (Sync .po files)')
         keep_old_entries_chb.setChecked(False)
         keep_old_entries_chb.setStyleSheet('font-size: 10pt;')
