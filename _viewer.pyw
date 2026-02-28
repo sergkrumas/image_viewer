@@ -4941,6 +4941,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         menu = args[0]
         action = menu.addAction(*args[1:-1])
         action.triggered.connect(callback)
+        return action
 
     def toggle_scrubber_menu_item(self, menu):
         if self.viewer_cursor_scrubber_mode:
@@ -5000,7 +5001,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.is_waterfall_page_active():
             checkboxes.append(
-                        (_("Rounded previews"), self.rounded_previews, partial(toggle_boolean_var_generic, self, 'rounded_previews'))
+                        (
+                            _("Rounded previews"),
+                            self.rounded_previews,
+                            partial(toggle_boolean_var_generic, self, 'rounded_previews')
+                        )
             )
 
 
@@ -5008,37 +5013,30 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.addItemToMenu(contextMenu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
 
         if Globals.DEBUG or True:
-            debug_populate_data_to_test_library_page = contextMenu.addAction('Create virtual folder list')
-            debug_populate_data_to_test_library_page.triggered.connect(self.debug_populate_data_to_test_library_page)
+            self.addItemToMenu(contextMenu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
             sep()
 
-        open_settings = contextMenu.addAction(_("Settings..."))
-        open_settings.triggered.connect(self.open_settings_window)
+        self.addItemToMenu(contextMenu, _("Settings..."), self.open_settings_window)
         sep()
 
         if self.frameless_mode:
             text = _("Show window frame")
         else:
             text = _("Hide window frame and maximize")
-        toggle_frame_mode = contextMenu.addAction(text)
-        toggle_frame_mode.triggered.connect(self.toggle_window_frame)
-        toggle_frame_mode.setShortcut(QKeySequence(Qt.Key_F9))
+        self.addItemToMenu(contextMenu, text, self.toggle_window_frame).setShortcut(QKeySequence(Qt.Key_F9))
 
         if self.fullscreen_mode:
             text = _("Leave full-screen mode")
         else:
             text = _("Go full screen")
-        toggle_fullscreen = contextMenu.addAction(text)
-        toggle_fullscreen.triggered.connect(self.toggle_fullscreen)
-        toggle_fullscreen.setShortcut(QKeySequence(Qt.Key_F11))
+        self.addItemToMenu(contextMenu, text, self.toggle_fullscreen).setShortcut(QKeySequence(Qt.Key_F11))
 
         if self.frameless_mode:
             if self.two_monitors_wide:
                 text = _("Narrow window back to monitor frame")
             else:
                 text = _("Expand window to two monitors frame")
-            toggle_two_monitors_wide = contextMenu.addAction(text)
-            toggle_two_monitors_wide.triggered.connect(self.do_toggle_two_monitors_wide)
+            self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide)
 
         if Globals.lite_mode:
             contextMenu.addSeparator()
