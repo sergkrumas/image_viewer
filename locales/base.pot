@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-02-28 11:32+0300\n"
+"POT-Creation-Date: 2026-02-28 11:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -85,10 +85,6 @@ msgstr ""
 
 #: _viewer.pyw:1962
 msgid "No active item!"
-msgstr ""
-
-#: _viewer.pyw:1964
-msgid "Modal viewer is not configured for current page!"
 msgstr ""
 
 #: _viewer.pyw:2808 _viewer.pyw:2813

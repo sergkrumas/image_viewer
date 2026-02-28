@@ -1961,7 +1961,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             else:
                 self.show_center_label(_("No active item!"), error=True)
         else:
-            self.show_center_label(_("Modal viewer is not configured for current page!"), error=True)
+            raise Exception("Modal viewer is not configured for current page")
 
     def leave_modal_viewer(self):
         # (23 фев 26) этот код, вообще говоря, может вызыываться и когда страница waterfall неактивна
