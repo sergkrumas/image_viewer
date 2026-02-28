@@ -5153,7 +5153,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             contextMenu.addAction(wa)
 
         sep()
-        self.addItemToMenu(contextMenu, _("Hide this menu"), lambda: None)
+        self.addItemToMenu(contextMenu, _("Hide this menu"), lambda: None).setShortcut(Qt.Key_Escape)
 
         if self.SPT_is_context_menu_allowed():
             self.SPT_context_menu(event)
