@@ -26,6 +26,7 @@ import locale
 from collections import defaultdict
 import webbrowser
 
+from functools import partial
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -328,31 +329,31 @@ class MenuWindow(QMainWindow):
         self.secondary_label.setStyleSheet("font-weight:bold; font-size: 18pt; color: black; font-family: consolas;")
 
         go_web_btn = QPushButton("Go Web")
-        go_web_btn.clicked.connect(lambda: webbrowser.open('github.com/sergkrumas/image_viewer'))
+        go_web_btn.clicked.connect(partial(webbrowser.open, 'github.com/sergkrumas/image_viewer'))
 
 
         generate_locales_btn = QPushButton("Generate locales")
-        generate_locales_btn.clicked.connect(lambda: generate_locales(this_folder))
+        generate_locales_btn.clicked.connect(partial(generate_locales, this_folder))
 
         move_pot_to_po_btn = QPushButton("Move .pot to .po")
-        move_pot_to_po_btn.clicked.connect(lambda: move_pot_to_po(this_folder))
+        move_pot_to_po_btn.clicked.connect(partial(move_pot_to_po, this_folder))
 
         generate_pot_file_btn = QPushButton("Generate .pot file\n(update main template file)")
-        generate_pot_file_btn.clicked.connect(lambda: generate_pot_file(this_folder))
+        generate_pot_file_btn.clicked.connect(partial(generate_pot_file, this_folder))
 
         sync_po_files_btn = QPushButton("Sync .po files\n(see CHANGELOG.md\nfor sync_po_files documentation)")
-        sync_po_files_btn.clicked.connect(self.sync_po_files_handler(this_folder))
         keep_old_entries_chb = QCheckBox('Keep old entries (Sync .po files)')
         keep_old_entries_chb.setChecked(False)
         keep_old_entries_chb.setStyleSheet('font-size: 10pt;')
         self.keep_old_entries_chb = keep_old_entries_chb
+        sync_po_files_btn.clicked.connect(partial(self.sync_po_files_handler, this_folder))
 
         generate_mo_files_btn = QPushButton("Generate .mo files\n(create compiled locale files)")
-        generate_mo_files_btn.clicked.connect(generate_mo_file(this_folder))
+        generate_mo_files_btn.clicked.connect(partial(generate_mo_file, this_folder))
 
 
         ql = QLabel('<center>Read the source file to find out more!</center>' )
-        ql.setStyleSheet("font-weight:bold; font-size: 12pt; color: #aaaaaa; border: 3px dashed #cccccc; padding: 10px 5px; margin: 0 50px; font-family: consolas;")
+        ql.setStyleSheet("font-weight:bold; font-size: 12pt; color: #ff5566; border: 3px dashed #ff5566; padding: 10px 5px; margin: 0 50px; font-family: consolas;")
 
         self.root_layout = QVBoxLayout()
         self.child_layout = QVBoxLayout()
