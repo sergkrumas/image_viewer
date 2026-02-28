@@ -4948,9 +4948,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             text = _("Desactivate cursor scrubbing")
         else:
             text = _("Activate cursor scrubbing for animation files")
-        toggle_scrubber = menu.addAction(text)
-        toggle_scrubber.triggered.connect(self.toggle_viewer_cursor_scrubber_mode)
-        toggle_scrubber.setShortcut(QKeySequence(Qt.Key_F4))
+        self.addItemToMenu(menu, text, self.toggle_viewer_cursor_scrubber_mode).setShortcut(QKeySequence(Qt.Key_F4))
 
     def open_folder_menu_item(self, contextMenu, event):
         folder_data = None
@@ -5068,7 +5066,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.board_contextMenu(event, contextMenu, checkboxes)
 
 
-        if self.is_waterfall_page_active():
+        elif self.is_waterfall_page_active():
 
             self.toggle_scrubber_menu_item(contextMenu)
 
