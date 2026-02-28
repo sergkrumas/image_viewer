@@ -4952,7 +4952,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         toggle_scrubber.triggered.connect(self.toggle_viewer_cursor_scrubber_mode)
         toggle_scrubber.setShortcut(QKeySequence(Qt.Key_F4))
 
-    def open_folder_menu_item(self, contextMenu):
+    def open_folder_menu_item(self, contextMenu, event):
         folder_data = None
         if self.folders_list:
             for item_rect, item_data in self.folders_list:
@@ -5060,7 +5060,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.is_library_page_active():
     
-            self.open_folder_menu_item(contextMenu)
+            self.open_folder_menu_item(contextMenu, event)
 
 
         elif self.is_board_page_active():
