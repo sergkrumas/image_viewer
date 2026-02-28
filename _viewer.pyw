@@ -4384,7 +4384,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def start_lite_process(self, path):
         start_lite_process(path)
 
-    def toggle_BW_filter(self):
+    def toggle_grayscale_filter(self):
         self.BW_filter_state = BWFilterState.cycle_toggle(self.BW_filter_state)
         self.update()
 
@@ -4443,14 +4443,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if key == Qt.Key_F9 and not event.isAutoRepeat():
             self.toggle_window_frame()
 
-        if key == Qt.Key_F10 and not event.isAutoRepeat():
-            self.toggle_BW_filter()
-
         if key == Qt.Key_F11 and not event.isAutoRepeat():
             self.toggle_fullscreen()
 
         if key == Qt.Key_F12 and not event.isAutoRepeat():
             self.do_toggle_two_monitors_wide()
+
+        if key == Qt.Key_F3 and not event.isAutoRepeat():
+            self.toggle_grayscale_filter()
 
         if key == Qt.Key_F4:
             self.toggle_viewer_cursor_scrubber_mode()
@@ -5075,6 +5075,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the right"), partial(self.toggle_window_monitor, 'right')).setShortcut(Qt.Key_Right | Qt.ControlModifier)
             self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the left"), partial(self.toggle_window_monitor, 'left')).setShortcut(Qt.Key_Left | Qt.ControlModifier)
+
+        self.addItemToMenu(contextMenu, _("Next grayscale filter state"), self.toggle_grayscale_filter).setShortcut(Qt.Key_F3)
 
         sep()
 
