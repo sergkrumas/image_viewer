@@ -4936,6 +4936,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             LibraryData().create_empty_virtual_folder()
             LibraryData().current_folder().folder_path = f'{n}'
 
+    def addItemToMenu(self, *args):
+        callback = args[-1]
+        menu = args[0]
+        action = menu.addAction(*args[1:-1])
+        action.triggered.connect(callback)
+
     def toggle_scrubber_menu_item(self, menu):
         if self.viewer_cursor_scrubber_mode:
             text = _("Desactivate cursor scrubbing")
@@ -4951,6 +4957,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         contextMenu = RoundedQMenu()
+        sep = contextMenu.addSeparator
         contextMenu.setStyleSheet(self.context_menu_stylesheet)
         contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
 
@@ -4958,9 +4965,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.context_menu_exec_point = self.mapped_cursor_pos()
 
-        minimize_window = contextMenu.addAction(_("Minimize"))
-        minimize_window.triggered.connect(Globals.main_window.showMinimized)
-        contextMenu.addSeparator()
+        self.addItemToMenu(contextMenu, _("Minimize"), Globals.main_window.showMinimized)
+
+        sep()
 
         def toggle_boolean_var_generic(obj, attr_name):
             setattr(obj, attr_name, not getattr(obj, attr_name))
@@ -4969,10 +4976,26 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.toggle_boolean_var_generic = toggle_boolean_var_generic
 
         checkboxes = [
-            (_("DEBUG"), Globals.DEBUG, partial(toggle_boolean_var_generic, Globals, 'DEBUG'))
-            , (_("Show FPS"), self.show_fps_indicator, partial(toggle_boolean_var_generic, self, 'show_fps_indicator'))
-            , (_("Antialiasing and pixmap smoothing"), Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM, partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM'))
-            , (_("Use pixmap-proxy for text items"), Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS, partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS'))
+                (
+                    _("DEBUG"),
+                    Globals.DEBUG,
+                    partial(toggle_boolean_var_generic, Globals, 'DEBUG')
+                )
+            ,   (
+                    _("Show FPS"),
+                    self.show_fps_indicator,
+                    partial(toggle_boolean_var_generic, self, 'show_fps_indicator')
+                )
+            ,   (   
+                    _("Antialiasing and pixmap smoothing"),
+                    Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM,
+                    partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')
+                )
+            ,   (
+                    _("Use pixmap-proxy for text items"),
+                    Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS,
+                    partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')
+                )
         ]
 
         if self.is_waterfall_page_active():
@@ -4982,17 +5005,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
 
         if Globals.CRASH_SIMULATOR:
-            crash_simulator = contextMenu.addAction(_("Make program crash intentionally (for dev purposes only)..."))
-            crash_simulator.triggered.connect(lambda: 1/0)
+            self.addItemToMenu(contextMenu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
 
         if Globals.DEBUG or True:
             debug_populate_data_to_test_library_page = contextMenu.addAction('Create virtual folder list')
             debug_populate_data_to_test_library_page.triggered.connect(self.debug_populate_data_to_test_library_page)
-            contextMenu.addSeparator()
+            sep()
 
         open_settings = contextMenu.addAction(_("Settings..."))
         open_settings.triggered.connect(self.open_settings_window)
-        contextMenu.addSeparator()
+        sep()
 
         if self.frameless_mode:
             text = _("Show window frame")
