@@ -4374,6 +4374,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.fullscreen_mode = not self.fullscreen_mode
             self.showMaximized()
 
+    def toggle_viewer_cursor_scrubber_mode(self):
+        self.viewer_cursor_scrubber_mode = not self.viewer_cursor_scrubber_mode
+        if self.viewer_cursor_scrubber_mode:
+            self.show_center_label(_('Cursor scrubbing mode activated'), duration=1.0)
+        else:
+            self.show_center_label(_('Cursor scrubbing mode disactivated'), error=True, duration=1.0)
+        self.update()
+
     def keyReleaseEvent(self, event):
         key = event.key()
 
@@ -4417,12 +4425,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.toggle_BW_filter()
 
         if key == Qt.Key_F4:
-            self.viewer_cursor_scrubber_mode = not self.viewer_cursor_scrubber_mode
-            if self.viewer_cursor_scrubber_mode:
-                self.show_center_label(_('Cursor scrubbing mode activated'), duration=1.0)
-            else:
-                self.show_center_label(_('Cursor scrubbing mode disactivated'), error=True, duration=1.0)
-            self.update()
+            self.toggle_viewer_cursor_scrubber_mode()
 
         if not event.isAutoRepeat():
             if key == Qt.Key_F5:
@@ -4933,6 +4936,15 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             LibraryData().create_empty_virtual_folder()
             LibraryData().current_folder().folder_path = f'{n}'
 
+    def toggle_scrubber_menu_item(self, menu):
+        if self.viewer_cursor_scrubber_mode:
+            text = _("Desactivate cursor scrubbing")
+        else:
+            text = _("Activate cursor scrubbing for animation files")
+        toggle_scrubber = menu.addAction(text)
+        toggle_scrubber.triggered.connect(self.toggle_viewer_cursor_scrubber_mode)
+        toggle_scrubber.setShortcut(QKeySequence(Qt.Key_F4))
+
     def contextMenuEvent(self, event):
 
         if not self.context_menu_allowed:
@@ -5039,6 +5051,8 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if self.image_data and not self.image_data.is_supported_filetype:
                 open_unsupported_file = contextMenu.addAction(_("Open unsupported file..."))
                 open_unsupported_file.triggered.connect(self.open_unsupported_file)
+
+            self.toggle_scrubber_menu_item(contextMenu)
 
             contextMenu.addSeparator()
 
