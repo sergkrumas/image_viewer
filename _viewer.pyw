@@ -5085,65 +5085,46 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             if not Globals.lite_mode:
                 sel_comment = self.get_selected_comment(event.pos())
                 if sel_comment:
-                    _action_text = _("Edit comment text")
-                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
-                    change_comment_text = contextMenu.addAction(action_text)
-                    change_comment_text.triggered.connect(partial(self.change_comment_text_menuitem, sel_comment))
+                    text = _("Edit comment text {0}").format(sel_comment.get_title())
+                    self.addItemToMenu(contextMenu, text, partial(self.change_comment_text_menuitem, sel_comment))
 
-                    _action_text = _("Redefine comment borders")
-                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
-                    change_comment_borders = contextMenu.addAction(action_text)
-                    change_comment_borders.triggered.connect(partial(self.change_comment_borders_menuitem, sel_comment))
+                    text = _("Redefine comment borders {0}").format(sel_comment.get_title())
+                    self.addItemToMenu(contextMenu, text, partial(self.change_comment_borders_menuitem, sel_comment))
 
-                    _action_text = _("Delete comment")
-                    action_text = f'{_action_text} "{sel_comment.get_title()}"'
-                    delete_comment = contextMenu.addAction(action_text)
-                    delete_comment.triggered.connect(partial(self.delete_comment_menuitem, sel_comment))
+                    text = _("Delete comment {0}").format(sel_comment.get_title())
+                    self.addItemToMenu(contextMenu, text, partial(self.delete_comment_menuitem, sel_comment))
 
                     sep()
 
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
-                    copy_image_metadata = contextMenu.addAction(_("Copy metadata to clipboard"))
-                    copy_image_metadata.triggered.connect(partial(QApplication.clipboard().setText, ci.image_metadata_info))
+                    self.addItemToMenu(contextMenu, _("Copy metadata to clipboard"), partial(QApplication.clipboard().setText, ci.image_metadata_info))
 
 
             sep()
 
             if not self.error:
-                show_in_explorer = contextMenu.addAction(_("Find on disk"))
-                show_in_explorer.triggered.connect(Globals.control_panel.show_in_folder)
-                show_in_gchrome = contextMenu.addAction(_("Open in Google Chrome"))
-                show_in_gchrome.triggered.connect(self.show_in_gchrome_menuitem)
-                place_at_center = contextMenu.addAction(_("Place image in window center"))
-                place_at_center.triggered.connect(self.place_at_center_menuitem)
+                self.addItemToMenu(contextMenu, _("Find on disk"), Globals.control_panel.show_in_folder)
+                self.addItemToMenu(contextMenu, _("Open in Google Chrome"), self.show_in_gchrome_menuitem)
+                self.addItemToMenu(contextMenu, _("Place image in window center"), self.place_at_center_menuitem)
 
             sep()
 
             if self.svg_rendered:
-                text = _("Change SVG rasterization resolution...")
-                change_svg_scale = contextMenu.addAction(text)
-                change_svg_scale.triggered.connect(self.contextMenuChangeSVGScale)
+                self.addItemToMenu(contextMenu, _("Change SVG rasterization resolution..."), self.contextMenuChangeSVGScale)
                 sep()
 
             if not self.error:
-                save_as_png = contextMenu.addAction(_("Save .png file..."))
-                save_as_png.triggered.connect(partial(self.save_image_as, 'png'))
+                self.addItemToMenu(contextMenu, _("Save .png file..."), partial(self.save_image_as, 'png'))
+                self.addItemToMenu(contextMenu, _("Save .jpg file..."), partial(self.save_image_as, 'jpg'))
 
-                save_as_jpg = contextMenu.addAction(_("Save .jpg file..."))
-                save_as_jpg.triggered.connect(partial(self.save_image_as, 'jpg'))
-
-                copy_to_cp = contextMenu.addAction(_("Copy to clipboard"))
-                copy_to_cp.triggered.connect(self.copy_to_clipboard)
-
-                copy_from_cp = contextMenu.addAction(_("Paste from clipboard"))
-                copy_from_cp.triggered.connect(self.paste_from_clipboard)
+                self.addItemToMenu(contextMenu, _("Copy to clipboard"), self.copy_to_clipboard)
+                self.addItemToMenu(contextMenu, _("Paste from clipboard"), self.paste_from_clipboard)
 
                 if LibraryData().current_folder().is_fav_folder():
                     sep()
-                    action_title = _("Switch from fovorites folder to actual image folder")
-                    go_to_folder = contextMenu.addAction(action_title)
-                    go_to_folder.triggered.connect(LibraryData().go_to_folder_of_current_image)
+                    self.addItemToMenu(contextMenu, _("Switch from fovorites folder to actual image folder"), LibraryData().go_to_folder_of_current_image)
+
 
         TOGGLE_CHECKBOX = """
             QCheckBox {
