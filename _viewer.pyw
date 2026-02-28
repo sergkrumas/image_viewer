@@ -653,7 +653,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         self.init_help_infopanel()
 
-        self.error = False
+        self.viewer_error = False
 
         self.invert_image = False
 
@@ -1466,7 +1466,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         filepath = self.image_data.filepath
         self.viewer_reset(simple=True)
         # setting new image
-        self.error = False
+        self.viewer_error = False
         if filepath == "":
             self.error_pixmap_and_reset(_("No images"), "", no_background=True)
         else:
@@ -1488,13 +1488,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 except:
                     self.error_pixmap_and_reset(_("The file is corrupted"), traceback.format_exc())
         if self.is_not_modal_viewer_mode():
-            if not self.error:
+            if not self.viewer_error:
                 self.read_image_metadata(image_data)
         self.restore_image_transformations()
         if self.is_not_modal_viewer_mode():
             self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
             self.set_window_title(self.current_image_details())
-            if self.error:
+            if self.viewer_error:
                 self.tags_list = []
             else:
                 self.tags_list = LibraryData().get_tags_for_image_data(image_data)
@@ -1502,7 +1502,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.update()
 
     def error_pixmap_and_reset(self, title, message, no_background=False):
-        self.error = True
+        self.viewer_error = True
         if not self.image_data.is_supported_filetype:
             if LibraryData.is_text_file(self.image_data.filepath):
                 with open(self.image_data.filepath, "rb") as file:
@@ -1573,7 +1573,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
     def get_rotated_pixmap(self, force_update=False):
         if self.rotated_pixmap is None or force_update:
             rm = QTransform()
-            if not self.error: # не поворачиваем пиксмапы с инфой об ошибке
+            if not self.viewer_error: # не поворачиваем пиксмапы с инфой об ошибке
                 rm.rotate(self.image_rotation)
             if self.pixmap is None and self.animated:
                 movie = self.movie
@@ -1592,7 +1592,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         else:
             orig_width = 0
             orig_height = 0
-        if self.error:
+        if self.viewer_error:
             image_scale = 1.0
             self.image_center_position = self.get_center_position()
         else:
@@ -4735,7 +4735,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         self.save_inframed_image(shift_pressed, ctrl_pressed)
 
     def save_inframed_image(self, use_screen_scale, reset_path):
-        if not self.image_data.filepath or self.error:
+        if not self.image_data.filepath or self.viewer_error:
             self.show_center_label(_("Unable to save: no source file or source file is not found"), error=True)
             return
         path = self.image_data.filepath
@@ -5103,7 +5103,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             sep()
 
-            if not self.error:
+            if not self.viewer_error:
                 self.addItemToMenu(contextMenu, _("Find on disk"), Globals.control_panel.show_in_folder)
                 self.addItemToMenu(contextMenu, _("Open in Google Chrome"), self.show_in_gchrome_menuitem)
                 self.addItemToMenu(contextMenu, _("Place image in window center"), self.place_at_center_menuitem)
@@ -5114,7 +5114,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 self.addItemToMenu(contextMenu, _("Change SVG rasterization resolution..."), self.contextMenuChangeSVGScale)
                 sep()
 
-            if not self.error:
+            if not self.viewer_error:
                 self.addItemToMenu(contextMenu, _("Save .png file..."), partial(self.save_image_as, 'png'))
                 self.addItemToMenu(contextMenu, _("Save .jpg file..."), partial(self.save_image_as, 'jpg'))
 
