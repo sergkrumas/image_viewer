@@ -1405,6 +1405,8 @@ class FolderData():
         self.waterfall_previews_scroll_offset = 0
         self.column_width = 0
 
+        self.waterfall_number_of_columns = 0
+
         self.sort_type = "original"
         self.sort_type_reversed = False
 
