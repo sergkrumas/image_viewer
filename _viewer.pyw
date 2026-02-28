@@ -5039,11 +5039,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide)
 
         if Globals.lite_mode:
-            contextMenu.addSeparator()
+            sep()
             rerun_in_extended_mode = contextMenu.addAction(_("Restart app in standard mode"))
             rerun_in_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, False))
         else:
-            contextMenu.addSeparator()
+            sep()
             rerun_extended_mode = contextMenu.addAction(_("Restart app (to purge unused data in memory)"))
             rerun_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
@@ -5078,7 +5078,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.toggle_scrubber_menu_item(contextMenu)
 
-            contextMenu.addSeparator()
+            sep()
 
             if not Globals.lite_mode:
                 sel_comment = self.get_selected_comment(event.pos())
@@ -5098,7 +5098,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     delete_comment = contextMenu.addAction(action_text)
                     delete_comment.triggered.connect(partial(self.delete_comment_menuitem, sel_comment))
 
-                    contextMenu.addSeparator()
+                    sep()
 
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
@@ -5106,7 +5106,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     copy_image_metadata.triggered.connect(partial(QApplication.clipboard().setText, ci.image_metadata_info))
 
 
-            contextMenu.addSeparator()
+            sep()
 
             if not self.error:
                 show_in_explorer = contextMenu.addAction(_("Find on disk"))
@@ -5116,13 +5116,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 place_at_center = contextMenu.addAction(_("Place image in window center"))
                 place_at_center.triggered.connect(self.place_at_center_menuitem)
 
-            contextMenu.addSeparator()
+            sep()
 
             if self.svg_rendered:
                 text = _("Change SVG rasterization resolution...")
                 change_svg_scale = contextMenu.addAction(text)
                 change_svg_scale.triggered.connect(self.contextMenuChangeSVGScale)
-                contextMenu.addSeparator()
+                sep()
 
             if not self.error:
                 save_as_png = contextMenu.addAction(_("Save .png file..."))
@@ -5138,7 +5138,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 copy_from_cp.triggered.connect(self.paste_from_clipboard)
 
                 if LibraryData().current_folder().is_fav_folder():
-                    contextMenu.addSeparator()
+                    sep()
                     action_title = _("Switch from fovorites folder to actual image folder")
                     go_to_folder = contextMenu.addAction(action_title)
                     go_to_folder.triggered.connect(LibraryData().go_to_folder_of_current_image)
