@@ -4410,6 +4410,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if key == Qt.Key_F11 and not event.isAutoRepeat():
             self.toggle_fullscreen()
 
+        if key == Qt.Key_F9 and not event.isAutoRepeat():
+            self.toggle_window_frame()
+
         if key == Qt.Key_F10 and not event.isAutoRepeat():
             self.toggle_BW_filter()
 
@@ -4985,6 +4988,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             text = _("Hide window frame and maximize")
         toggle_frame_mode = contextMenu.addAction(text)
         toggle_frame_mode.triggered.connect(self.toggle_window_frame)
+        toggle_frame_mode.setShortcut(QKeySequence(Qt.Key_F9))
 
         if self.fullscreen_mode:
             text = _("Leave full-screen mode")
