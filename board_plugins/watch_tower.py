@@ -121,8 +121,7 @@ def open_data_file(self):
 
 def implantToContextMenu(self, contextMenu):
     contextMenu.addSeparator()
-    action = contextMenu.addAction('Watch Tower: Открыть файл путей для показа')
-    action.triggered.connect(partial(open_data_file, self))
+    self.addItemToMenu(contextMenu, 'Watch Tower: Открыть файл путей для показа', partial(open_data_file, self))
 
 def contextMenu(self, event, contextMenu, checkboxes):
     # нет смысла в полном меню, поэтому оставлю только имплант

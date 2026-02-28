@@ -668,11 +668,9 @@ def implantToContextMenu(self, contextMenu):
     if self.front_tracker_task_under_mouse:
         contextMenu.addSeparator()
         task = self.front_tracker_task_under_mouse
-        open_task = contextMenu.addAction('Front Tracker: Open task in Sublime Text')
-        open_task.triggered.connect(partial(openTaskInSublimeText, self, task))
+        self.addItemToMenu(contextMenu, 'Front Tracker: Open task in Sublime Text', partial(openTaskInSublimeText, self, task))
 
-    rescan = contextMenu.addAction('Front Tracker: Rescan')
-    rescan.triggered.connect(partial(rescanData, self))
+    self.addItemToMenu(contextMenu, 'Front Tracker: Rescan', partial(rescanData, self))
 
 def contextMenu(self, event, contextMenu, checkboxes):
     # self.board_contextMenuDefault(event, contextMenu, checkboxes)

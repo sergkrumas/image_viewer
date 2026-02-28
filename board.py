@@ -755,12 +755,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 plugin_items_menu = RoundedQMenu()
                 plugin_items_menu.setStyleSheet(self.context_menu_stylesheet)
             for pi in pis:
-                create_board_for_plugin = plugin_items_menu.addAction(pi.name)
-                create_board_for_plugin.triggered.connect(pi.menu_callback)
+                self.addItemToMenu(plugin_items_menu, pi.name, pi.menu_callback)
         elif loading_result:
             plugin_items_menu = RoundedQMenu()
-            a = plugin_items_menu.addAction(_("No plugins found"))
-            a.setEnabled(False)
+            self.addItemToMenu(plugin_items_menu, _("No plugins found")).setEnabled(False)
         else:
             plugin_items_menu = None
         return plugin_items_menu
@@ -770,11 +768,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if menu:
             pass
         elif not self.board_plugins_loaded:
-            action = contextMenu.addAction(_("Load Plugins..."))
-            action.triggered.connect(partial(self.board_LoadPlugins, from_context_menu=True))
+            self.addItemToMenu(contextMenu, _("Load Plugins..."), partial(self.board_LoadPlugins, from_context_menu=True))
         else:
-            a = contextMenu.addAction(_("No plugins found"))
-            a.setEnabled(False)
+            self.addItemToMenu(contextMenu, _("No plugins found"), lambda: None).setEnabled(False)
 
         contextMenu.addSeparator()
 

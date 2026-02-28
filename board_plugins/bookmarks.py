@@ -127,11 +127,8 @@ def edit_group_metadata(self, invoke_cause=''):
 def implantToContextMenu(self, contextMenu):
     if any_group_item(self):
         contextMenu.addSeparator()
-        edit_name = contextMenu.addAction('Bookmarks: Редактировать имя файла')
-        edit_name.triggered.connect(partial(edit_group_metadata, self, 'edit_name'))
-
-        edit_pagenum = contextMenu.addAction('Bookmarks: Редактировать страницу')
-        edit_pagenum.triggered.connect(partial(edit_group_metadata, self, 'edit_pagenum'))
+        self.addItemToMenu(contextMenu, 'Bookmarks: Редактировать имя файла', partial(edit_group_metadata, self, 'edit_name'))
+        self.addItemToMenu(contextMenu, 'Bookmarks: Редактировать страницу', partial(edit_group_metadata, self, 'edit_pagenum'))
 
 def contextMenu(self, event, contextMenu, checkboxes):
     # self.board_contextMenuDefault(event, contextMenu, checkboxes, plugin_implant=implantToContextMenu)
