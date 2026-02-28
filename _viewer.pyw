@@ -4952,6 +4952,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         toggle_scrubber.triggered.connect(self.toggle_viewer_cursor_scrubber_mode)
         toggle_scrubber.setShortcut(QKeySequence(Qt.Key_F4))
 
+    def open_folder_menu_item(self, contextMenu):
+        folder_data = None
+        if self.folders_list:
+            for item_rect, item_data in self.folders_list:
+                if item_rect.contains(event.pos()):
+                    folder_data = item_data
+                    break
+            if folder_data and not folder_data.virtual:
+                text = _("Open folder \"{0}\" in separate app instance ").format(folder_data.folder_path)
+                self.addItemToMenu(contextMenu, text, partial(open_in_separated_app_copy, folder_data))
+
     def contextMenuEvent(self, event):
 
         if not self.context_menu_allowed:
@@ -5040,41 +5051,32 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if Globals.lite_mode:
             sep()
-            rerun_in_extended_mode = contextMenu.addAction(_("Restart app in standard mode"))
-            rerun_in_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, False))
+            self.addItemToMenu(contextMenu, _("Restart app in standard mode"), partial(do_rerun_in_default_mode, False))
         else:
             sep()
-            rerun_extended_mode = contextMenu.addAction(_("Restart app (to purge unused data in memory)"))
-            rerun_extended_mode.triggered.connect(partial(do_rerun_in_default_mode, self.is_library_page_active()))
+            self.addItemToMenu(contextMenu, _("Restart app (to purge unused data in memory)"), partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
-        open_in_sep_app = contextMenu.addAction(_("Open in separate app instance"))
-        open_in_sep_app.triggered.connect(partial(open_in_separated_app_copy, LibraryData().current_folder()))
+        self.addItemToMenu(contextMenu, _("Open in separate app instance"), partial(open_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
-            folder_data = None
-            if self.folders_list:
-                for item_rect, item_data in self.folders_list:
-                    if item_rect.contains(event.pos()):
-                        folder_data = item_data
-            if folder_data and not folder_data.virtual:
-                _action_title = _("Open the folder in separate app instance")
-                action_title = f"{_action_title} \"{folder_data.folder_path}\""
-                open_separated = contextMenu.addAction(action_title)
-                open_separated.triggered.connect(partial(open_in_separated_app_copy, folder_data))
+    
+            self.open_folder_menu_item(contextMenu)
+
 
         elif self.is_board_page_active():
 
             self.board_contextMenu(event, contextMenu, checkboxes)
 
+
         if self.is_waterfall_page_active():
 
             self.toggle_scrubber_menu_item(contextMenu)
 
+
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
-                open_unsupported_file = contextMenu.addAction(_("Open unsupported file..."))
-                open_unsupported_file.triggered.connect(self.open_unsupported_file)
+                self.addItemToMenu(contextMenu, _("Open unsupported file..."), self.open_unsupported_file)
 
             self.toggle_scrubber_menu_item(contextMenu)
 
