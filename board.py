@@ -684,9 +684,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_dive_inside_board_item(back_to_referer=True)
         elif key in [Qt.Key_Delete]:
             self.board_delete_selected_board_items()
-        elif key in [Qt.Key_F12]:
-            if not event.isAutoRepeat():
-                self.board_activate_gamepad()
         elif key in [Qt.Key_Asterisk, Qt.Key_Slash, Qt.Key_Minus]:
             self.board_SCALE_selected_items(
                 up=key==Qt.Key_Asterisk,
@@ -813,6 +810,8 @@ class BoardMixin(BoardTextEditItemMixin):
         ))
         sep = contextMenu.addSeparator
         sep()
+
+        self.addItemToMenu(contextMenu, _("Activate/desactivate gamepad input"), self.board_toogle_gamepad_input)
 
         self.board_ContextMenuPluginsDefault(event, contextMenu)
 
@@ -3995,8 +3994,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_activate_gamepad(self):
-        hidapi_adapter.activate_gamepad(self)
+    def board_toogle_gamepad_input(self):
+        hidapi_adapter.toggle_gamepad_inputs(self)
 
     def board_fit_selected_items_on_screen(self):
         self.board_fit_content_on_screen(None, use_selection=True)

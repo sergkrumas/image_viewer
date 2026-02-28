@@ -4429,12 +4429,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if key == Qt.Key_Right:
             if event.modifiers() & Qt.ControlModifier:
                 if self.frameless_mode:
-                    self.toggle_monitor('right')
+                    self.toggle_window_monitor('right')
                     done = True
         elif key == Qt.Key_Left:
             if event.modifiers() & Qt.ControlModifier:
                 if self.frameless_mode:
-                    self.toggle_monitor('left')
+                    self.toggle_window_monitor('left')
                     done = True
         if done:
             return
@@ -4844,7 +4844,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.two_monitors_wide = True
 
-    def toggle_monitor(self, direction):
+    def toggle_window_monitor(self, direction):
         if not self.two_monitors_wide:
             desktop = QDesktopWidget()
             for i in range(0, desktop.screenCount()):
@@ -5061,12 +5061,16 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             text = _("Go full screen")
         self.addItemToMenu(contextMenu, text, self.toggle_fullscreen).setShortcut(QKeySequence(Qt.Key_F11))
 
-        if self.frameless_mode:
-            if self.two_monitors_wide:
-                text = _("Narrow window back to monitor frame")
-            else:
-                text = _("Expand window to two monitors frame")
-            self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide)
+        if QApplication.desktop().screenCount() > 1:
+            if self.frameless_mode:
+                if self.two_monitors_wide:
+                    text = _("Narrow window back to monitor frame")
+                else:
+                    text = _("Expand window to two monitors frame")
+                self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide).setShortcut(Qt.Key_F12)
+
+            self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the right"), partial(self.toggle_window_monitor, 'right')).setShortcut(Qt.Key_Right | Qt.ControlModifier)
+            self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the left"), partial(self.toggle_window_monitor, 'left')).setShortcut(Qt.Key_Left | Qt.ControlModifier)
 
         sep()
 

@@ -672,7 +672,7 @@ def open_device(device):
     gamepad.set_nonblocking(True)
     return gamepad
 
-def activate_gamepad(obj):
+def toggle_gamepad_inputs(obj):
     if obj.gamepad:
         deactivate_listening(obj)
     else:
