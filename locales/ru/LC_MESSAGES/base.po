@@ -1394,7 +1394,7 @@ msgstr "Загрузка изображений на доску"
 
 #: settings_handling.py:514
 msgid "Gamepad dead zone radius"
-msgstr "Радиус мёртвой зоны геймпада"
+msgstr "Радиус мёртвой зоны геймпада (для неисправных стиков)"
 
 #: settings_handling.py:515
 msgid "Show gamepad monitor (for setting dead zone radius)"
