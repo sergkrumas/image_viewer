@@ -4439,14 +4439,18 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if done:
             return
 
-        if key == Qt.Key_F11 and not event.isAutoRepeat():
-            self.toggle_fullscreen()
 
         if key == Qt.Key_F9 and not event.isAutoRepeat():
             self.toggle_window_frame()
 
         if key == Qt.Key_F10 and not event.isAutoRepeat():
             self.toggle_BW_filter()
+
+        if key == Qt.Key_F11 and not event.isAutoRepeat():
+            self.toggle_fullscreen()
+
+        if key == Qt.Key_F12 and not event.isAutoRepeat():
+            self.do_toggle_two_monitors_wide()
 
         if key == Qt.Key_F4:
             self.toggle_viewer_cursor_scrubber_mode()
