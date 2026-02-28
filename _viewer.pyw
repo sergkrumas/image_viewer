@@ -5046,6 +5046,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
             self.board_contextMenu(event, contextMenu, checkboxes)
 
+        if self.is_waterfall_page_active():
+
+            self.toggle_scrubber_menu_item(contextMenu)
+
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
