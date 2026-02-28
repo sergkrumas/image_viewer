@@ -4967,13 +4967,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         action.triggered.connect(callback)
         return action
 
-    def toggle_scrubber_menu_item(self, menu):
-        if self.viewer_cursor_scrubber_mode:
-            text = _("Desactivate cursor scrubbing")
-        else:
-            text = _("Activate cursor scrubbing for animation files")
-        self.addItemToMenu(menu, text, self.toggle_viewer_cursor_scrubber_mode).setShortcut(QKeySequence(Qt.Key_F4))
-
     def open_folder_menu_item(self, contextMenu, event):
         folder_data = None
         if self.folders_list:
@@ -4982,7 +4975,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     folder_data = item_data
                     break
             if folder_data and not folder_data.virtual:
-                text = _("Open folder \"{0}\" in separate app instance ").format(folder_data.folder_path)
+                text = _("Open folder \"{0}\" in separate app instance").format(folder_data.folder_path)
                 self.addItemToMenu(contextMenu, text, partial(open_in_separated_app_copy, folder_data))
 
     def contextMenuEvent(self, event):
@@ -5020,15 +5013,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     self.show_fps_indicator,
                     partial(toggle_boolean_var_generic, self, 'show_fps_indicator')
                 )
-            ,   (   
+            ,   (
                     _("Antialiasing and pixmap smoothing"),
                     Globals.ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM,
                     partial(toggle_boolean_var_generic, Globals, 'ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM')
-                )
-            ,   (
-                    _("Use pixmap-proxy for text items"),
-                    Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS,
-                    partial(toggle_boolean_var_generic, Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')
                 )
         ]
 
@@ -5041,6 +5029,14 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 )
             )
 
+        if self.is_waterfall_page_active() or self.is_viewer_page_active():
+            checkboxes.append(
+                (
+                    _("Cursor scrubbing for animation files"),
+                    self.viewer_cursor_scrubber_mode,
+                    partial(toggle_boolean_var_generic, self, 'viewer_cursor_scrubber_mode')
+                )
+            )
 
         if Globals.CRASH_SIMULATOR:
             self.addItemToMenu(contextMenu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
@@ -5050,6 +5046,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             sep()
 
         self.addItemToMenu(contextMenu, _("Settings..."), self.open_settings_window)
+
         sep()
 
         if self.frameless_mode:
@@ -5071,17 +5068,17 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 text = _("Expand window to two monitors frame")
             self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide)
 
+        sep()
+
         if Globals.lite_mode:
-            sep()
             self.addItemToMenu(contextMenu, _("Restart app in standard mode"), partial(do_rerun_in_default_mode, False))
         else:
-            sep()
             self.addItemToMenu(contextMenu, _("Restart app (to purge unused data in memory)"), partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
         self.addItemToMenu(contextMenu, _("Open in separate app instance"), partial(open_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
-    
+
             self.open_folder_menu_item(contextMenu, event)
 
 
@@ -5092,15 +5089,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         elif self.is_waterfall_page_active():
 
-            self.toggle_scrubber_menu_item(contextMenu)
+            pass
 
 
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
                 self.addItemToMenu(contextMenu, _("Open unsupported file..."), self.open_unsupported_file)
-
-            self.toggle_scrubber_menu_item(contextMenu)
 
             sep()
 
@@ -5121,7 +5116,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
                     self.addItemToMenu(contextMenu, _("Copy metadata to clipboard"), partial(QApplication.clipboard().setText, ci.image_metadata_info))
-
 
             sep()
 
@@ -5157,6 +5151,9 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)
             contextMenu.addAction(wa)
+
+        sep()
+        self.addItemToMenu(contextMenu, _("Hide this menu"), lambda: None)
 
         if self.SPT_is_context_menu_allowed():
             self.SPT_context_menu(event)

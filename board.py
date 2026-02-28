@@ -795,14 +795,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
         checkboxes.extend((
-            (_("Show debug graphics for transformation widget"),
+            (
+                _("Show debug graphics for transformation widget"),
                 self.board_debug_transform_widget,
                 partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
             ),
-
-            (_("Cursor scrubbing optimizer"),
+            (
+                _("Cursor scrubbing optimizer"),
                 self.cursor_scrubbing_optimizer,
                 partial(self.toggle_boolean_var_generic, self, 'cursor_scrubbing_optimizer')
+            ),
+            (
+                _("Use pixmap-proxy for text items"),
+                self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS,
+                partial(self.toggle_boolean_var_generic, self.Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')
             ),
         ))
         sep = contextMenu.addSeparator
