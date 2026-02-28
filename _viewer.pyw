@@ -2805,12 +2805,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
     def library_change_rounded_rect_radius(self, event, scroll_value):
         value = self.scroll_setting_value(event, scroll_value, 'library_corner_radius')
-        self.show_center_label(_(f'Preview corner radius: {value}'))
+        self.show_center_label(_("Preview corner radius: {0}").format(value))
         self.update()
 
     def waterfall_change_rounded_rect_radius(self, event, scroll_value):
         value = self.scroll_setting_value(event, scroll_value, 'waterfall_corner_radius')
-        self.show_center_label(_(f'Preview corner radius: {value}'))
+        self.show_center_label(_("Preview corner radius: {0}").format(value))
         self.update()
 
     def waterfall_change_grid_gap(self, event, scroll_value):
@@ -2852,11 +2852,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         SettingsWindow.set_setting_value('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
-            msg = _(f"You've set 0 columns, so the number of columns depends only on the window width.")
+            msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
         elif value == max_value:
-            msg = _(f"You've set {value} columns. This is the maximum!")
+            msg = _("You've set {0} columns. This is the maximum!").format(value)
         else:
-            msg = _(f"You've set {value} columns")
+            msg = _("You've set {0} columns").format(value)
         LibraryData().update_current_folder_columns()
         msg += f"\n\n{cf.waterfall_number_of_columns} columns are now displayed"
         self.show_center_label(msg)
