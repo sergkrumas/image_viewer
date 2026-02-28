@@ -268,13 +268,13 @@ class SlicePipetteToolMixin():
             (_("show saturation"), self.spt_show_saturation, partial(toggle_boolean_var_generic, self, "spt_show_saturation")),
             (_("show lightness"), self.spt_show_lightness, partial(toggle_boolean_var_generic, self, "spt_show_lightness")),
 
-            (_("pretty plots"), self.spt_pretty_plots, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
+            (_("prettify plots"), self.spt_pretty_plots, partial(toggle_boolean_var_generic, self, "spt_pretty_plots")),
         ]
 
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
             chb = QCheckBox(title)
-            chb.setStyleSheet(self.context_menu_stylesheet)
+            chb.setStyleSheet(self.toggle_checkbox_stylesheet + self.context_menu_stylesheet)
             chb.setChecked(value)
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)

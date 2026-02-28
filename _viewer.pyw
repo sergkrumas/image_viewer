@@ -769,6 +769,30 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         }
         """
 
+        self.toggle_checkbox_stylesheet = """
+            QCheckBox {
+                font-family: 'Consolas';
+                color: white;
+                font-weight: normal;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(resources/switch_off_narrow.png);
+            }
+            QCheckBox::indicator:checked {
+                image: url(resources/switch_on_narrow.png);
+            }
+            QCheckBox:checked {
+                color: rgb(100, 255, 100);
+            }
+            QCheckBox:unchecked {
+                color: rgb(220, 220, 220);
+            }
+        """
+
     def map_cursor_pos_inside_rect_to_frame_number(self, x_offset, rect, count):
         factor = x_offset/rect.width()
         fr_num_float = factor*count
@@ -5010,11 +5034,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
 
         if self.is_waterfall_page_active():
             checkboxes.append(
-                        (
-                            _("Rounded previews"),
-                            self.rounded_previews,
-                            partial(toggle_boolean_var_generic, self, 'rounded_previews')
-                        )
+                (
+                    _("Rounded previews"),
+                    self.rounded_previews,
+                    partial(toggle_boolean_var_generic, self, 'rounded_previews')
+                )
             )
 
 
@@ -5123,36 +5147,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     sep()
                     self.addItemToMenu(contextMenu, _("Switch from fovorites folder to actual image folder"), LibraryData().go_to_folder_of_current_image)
 
-
-        TOGGLE_CHECKBOX = """
-            QCheckBox {
-                font-family: 'Consolas';
-                color: white;
-                font-weight: normal;
-            }
-            QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-            }
-            QCheckBox::indicator:unchecked {
-                image: url(resources/switch_off_narrow.png);
-            }
-            QCheckBox::indicator:checked {
-                image: url(resources/switch_on_narrow.png);
-            }
-            QCheckBox:checked {
-                color: rgb(100, 255, 100);
-            }
-            QCheckBox:unchecked {
-                color: rgb(220, 220, 220);
-            }
-        """
         max_title_chars = max(len(title) for title, _, _ in checkboxes)
 
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
             chb = QCheckBox(title.ljust(max_title_chars))
-            chb.setStyleSheet(TOGGLE_CHECKBOX + self.context_menu_stylesheet)
+            chb.setStyleSheet(self.toggle_checkbox_stylesheet + self.context_menu_stylesheet)
             chb.setChecked(value)
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)
