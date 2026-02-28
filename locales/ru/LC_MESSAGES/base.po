@@ -4,16 +4,17 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-02-28 11:53+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-02-28 22:15+0300\n"
+"PO-Revision-Date: 2026-02-28 22:31+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-
+"X-Generator: Poedit 3.5\n"
 
 #: _utils.py:309
 msgid ""
@@ -23,7 +24,7 @@ msgstr ""
 "Невозможно выполнить команду,\n"
 "сначала надо запустить браузер Google Chrome!"
 
-#: _utils.py:309 _viewer.pyw:3805 library_data.py:1105
+#: _utils.py:309 _viewer.pyw:3829 library_data.py:1105
 msgid "Error"
 msgstr "Ошибка"
 
@@ -51,7 +52,7 @@ msgstr "BOARD"
 msgid "LIBRARY"
 msgstr "LIBRARY"
 
-#: _viewer.pyw:1415 _viewer.pyw:1476
+#: _viewer.pyw:1439 _viewer.pyw:1500
 msgid ""
 "Unable\n"
 "to display"
@@ -59,39 +60,39 @@ msgstr ""
 "Невозможно\n"
 "отобразить"
 
-#: _viewer.pyw:1415 _viewer.pyw:1489
+#: _viewer.pyw:1439 _viewer.pyw:1513
 msgid "The file is corrupted"
 msgstr "Файл повреждён"
 
-#: _viewer.pyw:1471 _viewer.pyw:3901
+#: _viewer.pyw:1495 _viewer.pyw:3925
 msgid "No images"
 msgstr "Нет изображений"
 
-#: _viewer.pyw:1475
+#: _viewer.pyw:1499
 msgid "The file is not supported"
 msgstr "Этот файл не поддерживается"
 
-#: _viewer.pyw:1535
+#: _viewer.pyw:1559
 msgid "LOADING"
 msgstr "ЗАГРУЗКА"
 
-#: _viewer.pyw:1568
+#: _viewer.pyw:1592
 msgid "broken file"
 msgstr "файл повреждён"
 
-#: _viewer.pyw:1571 _viewer.pyw:3899
+#: _viewer.pyw:1595 _viewer.pyw:3923
 msgid "Loading"
 msgstr "Загрузка"
 
-#: _viewer.pyw:3538
+#: _viewer.pyw:3562
 msgid "DRAG AND DROP A FILE OR A FOLDER"
 msgstr "ПЕРЕТАЩИ СЮДА ФАЙЛ ИЛИ ПАПКУ С ФАЙЛАМИ"
 
-#: _viewer.pyw:3542
+#: _viewer.pyw:3566
 msgid "or left mouse click to open Explorer dialog."
-msgstr "или кликни левой кнопкой мыши, чтобы открыть диалог"
+msgstr "или кликни левой кнопкой мыши, чтобы открыть диалог."
 
-#: _viewer.pyw:3543
+#: _viewer.pyw:3567
 msgid ""
 "\n"
 "\n"
@@ -101,7 +102,7 @@ msgstr ""
 "\n"
 "Клик правой кнопкой — открыть окно настроек."
 
-#: _viewer.pyw:3546
+#: _viewer.pyw:3570
 msgid ""
 "\n"
 "\n"
@@ -111,7 +112,7 @@ msgstr ""
 "\n"
 "[программа запущена в лайтовом (упрощённом) режиме]"
 
-#: _viewer.pyw:3548
+#: _viewer.pyw:3572
 msgid ""
 "\n"
 "\n"
@@ -125,7 +126,7 @@ msgstr ""
 "\n"
 "[программа запущена в обычном режиме]"
 
-#: _viewer.pyw:3632
+#: _viewer.pyw:3656
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -135,25 +136,25 @@ msgstr ""
 "Программа была запущена из 32bit-го интерпретатора Python,\n"
 "из-за чего сейчас имеет ограничение по потребляемой памяти до 1.5GB\n"
 "и рискует зависнуть при подходе значения потребляемой памяти к 1.5GB.\n"
-"Для увеличения доступной памяти надо запуститься из 64bit-го интерпретатора!"
+"Для увеличения доступной памяти надо запуститься из 64bit-го интерпретатора."
 
-#: _viewer.pyw:3894
+#: _viewer.pyw:3918
 msgid "Please wait"
 msgstr "Подождите"
 
-#: _viewer.pyw:4199
+#: _viewer.pyw:4223
 msgid "speed"
 msgstr "скорость"
 
-#: _viewer.pyw:4204
+#: _viewer.pyw:4228
 msgid "frame"
 msgstr "кадр"
 
-#: _viewer.pyw:4255
+#: _viewer.pyw:4279
 msgid "viewing history"
 msgstr "история просмотра"
 
-#: _viewer.pyw:4711
+#: _viewer.pyw:4750
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
@@ -161,155 +162,131 @@ msgstr ""
 "Отмена!\n"
 "Анимационные эффекты отключены в настройках"
 
-#: _viewer.pyw:4730
+#: _viewer.pyw:4769
 msgid "Unable to save: no source file or source file is not found"
 msgstr "Невозможно сохранить: отсутствует исходный файл или исходный файл не найден на диске"
 
-#: _viewer.pyw:4757
+#: _viewer.pyw:4796
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr "Путь к папке не задан или сама заданная папка не найдена на диске"
 
-#: _viewer.pyw:4764
+#: _viewer.pyw:4803
 msgid "The image is saved in file"
 msgstr "Изображение сохранено в файл"
 
-#: _viewer.pyw:4768
+#: _viewer.pyw:4807
 msgid "Choose folder to put images in"
 msgstr "Выберите папку, в которую будут складываться картинки"
 
-#: _viewer.pyw:4794
+#: _viewer.pyw:4833
 msgid "Save file"
 msgstr "Сохранить файл"
 
-#: _viewer.pyw:4858
+#: _viewer.pyw:4897
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr "Отмена! Фича пока не реализована для анимированных изображений"
 
-#: _viewer.pyw:4869
+#: _viewer.pyw:4908
 msgid "pasted!"
 msgstr "вставлено!"
 
-#: _viewer.pyw:4943
+#: _viewer.pyw:5001
 msgid "Minimize"
 msgstr "Свернуть"
 
-#: _viewer.pyw:4954
+#: _viewer.pyw:5013
 msgid "DEBUG"
 msgstr "ОТЛАДКА"
 
-#: _viewer.pyw:4956
+#: _viewer.pyw:5023
 msgid "Antialiasing and pixmap smoothing"
 msgstr "Антиальясинг и сглаживание пиксмапов"
 
-#: _viewer.pyw:4957
+#: board.py:806
 msgid "Use pixmap-proxy for text items"
 msgstr "Pixmap-прокси для пометок типа «Текст»"
 
-#: _viewer.pyw:4967
+#: _viewer.pyw:5048
 msgid "Make program crash intentionally (for dev purposes only)..."
 msgstr "Крашнуть приложение (для дебага)..."
 
-#: _viewer.pyw:4975
+#: _viewer.pyw:5054
 msgid "Settings..."
 msgstr "Настройки..."
 
-#: _viewer.pyw:4980
-msgid "Enable window mode"
-msgstr "Переключиться в оконный режим"
-
-#: _viewer.pyw:4982
-msgid "Enable full-screen mode"
-msgstr "Переключиться в полноэкранный режим"
-
-#: _viewer.pyw:4987
+#: _viewer.pyw:5073
 msgid "Narrow window back to monitor frame"
 msgstr "Вернуть окно в монитор"
 
-#: _viewer.pyw:4989
+#: _viewer.pyw:5075
 msgid "Expand window to two monitors frame"
 msgstr "Развернуть окно на два монитора"
 
-#: _viewer.pyw:4995
+#: _viewer.pyw:5086
 msgid "Restart app in standard mode"
 msgstr "Перезапустить в обычном режиме"
 
-#: _viewer.pyw:4999
+#: _viewer.pyw:5088
 msgid "Restart app (to purge unused data in memory)"
 msgstr "Перезапуск (для сброса лишней памяти)"
 
-#: _viewer.pyw:5002
+#: _viewer.pyw:5090
 msgid "Open in separate app instance"
 msgstr "Открыть в отдельной копии приложения"
 
-#: _viewer.pyw:5012
-msgid "Open the folder in separate app instance"
-msgstr "Открыть папку в копии приложения"
-
-#: _viewer.pyw:5024
+#: _viewer.pyw:5110
 msgid "Open unsupported file..."
 msgstr "Открыть неподдерживаемый файл..."
 
-#: _viewer.pyw:5032
-msgid "Edit comment text"
-msgstr "Редактировать текст комента"
-
-#: _viewer.pyw:5037
-msgid "Redefine comment borders"
-msgstr "Переопределить границы комента"
-
-#: _viewer.pyw:5042
-msgid "Delete comment"
-msgstr "Удалить комент"
-
-#: _viewer.pyw:5051
+#: _viewer.pyw:5130
 msgid "Copy metadata to clipboard"
 msgstr "Скопировать метаданные в буфер обмена"
 
-#: _viewer.pyw:5058
+#: _viewer.pyw:5135
 msgid "Find on disk"
 msgstr "Найти на диске"
 
-#: _viewer.pyw:5060 board.py:864
+#: _viewer.pyw:5136 board.py:855
 msgid "Open in Google Chrome"
 msgstr "Открыть в Google Chrome"
 
-#: _viewer.pyw:5062
+#: _viewer.pyw:5137
 msgid "Place image in window center"
 msgstr "Вернуть картинку в центр окна"
 
-#: _viewer.pyw:5068
+#: _viewer.pyw:5142
 msgid "Change SVG rasterization resolution..."
 msgstr "Изменить разрешение растеризации SVG-файла..."
 
-#: _viewer.pyw:5074
+#: _viewer.pyw:5146
 msgid "Save .png file..."
 msgstr "Сохранить в .png..."
 
-#: _viewer.pyw:5077
+#: _viewer.pyw:5147
 msgid "Save .jpg file..."
 msgstr "Сохранить в .jpg..."
 
-#: _viewer.pyw:5080
+#: _viewer.pyw:5149
 msgid "Copy to clipboard"
 msgstr "Копировать в буфер обмена"
 
-#: _viewer.pyw:5083
+#: _viewer.pyw:5150
 msgid "Paste from clipboard"
 msgstr "Вставить из буфера обмена"
 
-#: _viewer.pyw:5088
+#: _viewer.pyw:5154
 msgid "Switch from fovorites folder to actual image folder"
 msgstr "Перейти из избранного в папку с этим изображением"
 
-#: _viewer.pyw:5160
+#: _viewer.pyw:5204
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr "Теперь переопределите границы комментария через Ctrl+Shift+LMB"
 
-#: _viewer.pyw:5664
+#: _viewer.pyw:5708
 msgid "Question"
 msgstr "Вопрос"
 
-#: _viewer.pyw:5665
+#: _viewer.pyw:5709
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
@@ -317,33 +294,33 @@ msgstr ""
 "Не обнаружено запущенной копии приложения.\n"
 "Запуститься в лайтовом (упрощённом) режиме?"
 
-#: _viewer.pyw:5401
+#: _viewer.pyw:5445
 msgid "Choose folder with pictures in it"
 msgstr "Выбери папку с пикчами"
 
-#: _viewer.pyw:5403
+#: _viewer.pyw:5447
 msgid "Error-error"
 msgstr "Ошибочка"
 
-#: _viewer.pyw:5403
+#: _viewer.pyw:5447
 msgid "Nothing to show, exit..."
 msgstr ""
 "Ну раз ничего не выбрал, то я закрываюсь.\n"
-"Пака"
+"Пака..."
 
-#: _viewer.pyw:5466
+#: _viewer.pyw:5510
 msgid "Memory allocated"
 msgstr "Выделенная память"
 
-#: _viewer.pyw:5476
+#: _viewer.pyw:5520
 msgid "Purge unused objects"
 msgstr "Удалить ненужные объекты из памяти"
 
-#: _viewer.pyw:5589
+#: _viewer.pyw:5633
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr "Ни изображение, ни папка, в которой оно находится, не существуют"
 
-#: _viewer.pyw:5797
+#: _viewer.pyw:5841
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
@@ -351,7 +328,7 @@ msgstr ""
 "Информация о краше сохранена в файл\n"
 "\t{0}"
 
-#: _viewer.pyw:5798
+#: _viewer.pyw:5842
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -363,9 +340,9 @@ msgstr ""
 "\n"
 "Перезапустить приложение?"
 
-#: _viewer.pyw:5799
+#: _viewer.pyw:5843
 msgid "Fatal Error!"
-msgstr "Это фиаско, мои чюваки"
+msgstr "Это фиаско, мои чюваки!"
 
 #: board.py:178
 msgid "FOLDER {0}"
@@ -415,27 +392,27 @@ msgstr "{0} активировано"
 msgid "You're on viewer page now"
 msgstr "Теперь ты на странице вьювера"
 
-#: board.py:736
+#: board.py:733
 msgid "No files, only folders supported"
 msgstr "Файлы не поддерживаются, поддерживаются только папки"
 
-#: board.py:753
+#: board.py:750
 msgid "Plugin Boards"
 msgstr "Доски-плагины"
 
-#: board.py:792
+#: board.py:785
 msgid "Change frame item label"
 msgstr "Изменить название айтема-фрейма"
 
-#: board.py:793
+#: board.py:786
 msgid "Label Text:"
 msgstr "Название:"
 
-#: board.py:802
+#: board.py:796
 msgid "Show debug graphics for transformation widget"
 msgstr "Отображать отладочную графику для виджета трансформации"
 
-#: board.py:822
+#: board.py:823
 msgid "Go to the link in the note (Explorer or Browser)"
 msgstr "Пройти по ссылке в заметке (Проводник или веб-браузер)"
 
@@ -443,59 +420,59 @@ msgstr "Пройти по ссылке в заметке (Проводник и�
 msgid "Folder..."
 msgstr "Папка..."
 
-#: board.py:828
+#: board.py:827
 msgid "Group"
 msgstr "Группа"
 
-#: board.py:831
+#: board.py:830
 msgid "{0} (add selected items to it: {1})"
 msgstr "{0} (добавить в группу выделенные элементы: {1})"
 
-#: board.py:835
+#: board.py:833
 msgid "Frame"
 msgstr "Фрейм"
 
-#: board.py:838 board_note_item.py:404
+#: board.py:835 board_note_item.py:404
 msgid "Note"
 msgstr "Заметка"
 
-#: board.py:841
+#: board.py:837
 msgid "Force highres loading of all items right now (may take some time)"
 msgstr "Загрузить хайрезные версии всем айтемам (может занять время)"
 
-#: board.py:844
+#: board.py:839
 msgid "Place items in column"
 msgstr "Разместить айтемы вертикально"
 
-#: board.py:852
+#: board.py:846
 msgid "Change frame title '{0}'"
-msgstr "Изменить название фрейма \'{}\'"
+msgstr "Изменить название фрейма '{0}'"
 
-#: board.py:856
+#: board.py:849
 msgid "Take current image from group and place nearby"
 msgstr "Вынуть текущую картинку из группы"
 
-#: board.py:861
+#: board.py:853
 msgid "Open in viewer in separated app copy running in lite mode"
 msgstr "Открыть на странице вьювера в копии приложения в упрощённом режиме"
 
-#: board.py:869
+#: board.py:860
 msgid "{0} Virtual Folder"
 msgstr "{0} Виртуальная Папка"
 
-#: board.py:875
+#: board.py:866
 msgid "Board loading"
 msgstr "Загрузка доски"
 
-#: board.py:879
+#: board.py:870
 msgid "Board saving"
 msgstr "Сохранение доски"
 
-#: board.py:886
+#: board.py:877
 msgid "Board File (*.board)"
 msgstr "Файл доски (*.board)"
 
-#: board.py:908
+#: board.py:899
 msgid ""
 "Error: either the file does not exist or the extension is wrong.\n"
 "Abort!\n"
@@ -505,39 +482,39 @@ msgstr ""
 "Отмена!\n"
 "{0}"
 
-#: board.py:929
+#: board.py:920
 msgid "Reading error: neither cbor2 nor json could be read. Abort!"
 msgstr "Ошибка чтения: ни cbor2, ни json не читается. Отмена!"
 
-#: board.py:935
+#: board.py:926
 msgid "Board has been loaded from file {0} of format {1}"
 msgstr "Доска загружена из файла {0} формата {1}"
 
-#: board.py:1287
+#: board.py:1278
 msgid "Project is saved to {0}"
 msgstr "Проект сохранён сюда {0}"
 
-#: board.py:1304
+#: board.py:1295
 msgid "You cannot dive inside item when board operation is not finished!"
-msgstr "Нельзя погружаться если операция с доской не завершена"
+msgstr "Нельзя погружаться если операция с доской не завершена!"
 
-#: board.py:1326
+#: board.py:1317
 msgid "You can dive inside groups, folders and animated items only!"
 msgstr "Нырять можно только в группы, папки и анимированные картинки!"
 
-#: board.py:1332
+#: board.py:1323
 msgid "ANIMATED FILE Virtual Folder"
 msgstr "Анимированного файла Виртуальная Папка"
 
-#: board.py:1366
+#: board.py:1357
 msgid "Place cursor above a group item!"
 msgstr "Наведи курсор на группу!"
 
-#: board.py:1374
+#: board.py:1365
 msgid "No place to return"
-msgstr "Некуда возвращаться!"
+msgstr "Некуда возвращаться"
 
-#: board.py:1423
+#: board.py:1414
 msgid ""
 "WELCOME TO\n"
 "BOARDS"
@@ -545,135 +522,135 @@ msgstr ""
 "ДОБРО ПОЖАЛОВАТЬ\n"
 "НА СТРАНИЦУ ДОСОК"
 
-#: board.py:1435
+#: board.py:1426
 msgid "WAITING"
 msgstr "ПОДОЖДИ"
 
-#: board.py:1436
+#: board.py:1427
 msgid "creating previews"
 msgstr "создаются превьюшки"
 
-#: board.py:1626
+#: board.py:1617
 msgid "perfomance status: {0} images drawn"
 msgstr "изображений отображается {0}"
 
-#: board.py:2026
+#: board.py:2017
 msgid "Virtual folder board: {}"
 msgstr "Доска виртуальной папки: {}"
 
-#: board.py:2028
+#: board.py:2019
 msgid "Board folder: {}"
 msgstr "Папка доски {}"
 
-#: board.py:2030
+#: board.py:2021
 msgid "File-plugin name: {}"
 msgstr "Имя файла-плагина: {}"
 
-#: board.py:2032
+#: board.py:2023
 msgid "This board has no plugin attached"
 msgstr "У этой доски нет прикреплённого плагина"
 
-#: board.py:2033
+#: board.py:2024
 msgid "Current item index: {}"
 msgstr "Индекс текущего айтема: {}"
 
-#: board.py:2034
+#: board.py:2025
 msgid "Current item-group index: {}"
 msgstr "Индекс текущего айтема-группы: {}"
 
-#: board.py:2035
+#: board.py:2026
 msgid "Board bounding rect: {}"
 msgstr "Габаритный прямоугольник всех айтемов доски: {}"
 
-#: board.py:2040
+#: board.py:2031
 msgid "You've entered this board from the board of folder {}"
 msgstr "В эту доску вошли из доски папки {}"
 
-#: board.py:2042
+#: board.py:2033
 msgid "Parent folder of this board {}"
 msgstr "Родительская папка этой доски {}"
 
-#: board.py:2044
+#: board.py:2035
 msgid "This board parent item title {}"
 msgstr "Название родительского айтема для этой доски {}"
 
-#: board.py:2065
+#: board.py:2056
 msgid "Pressing Backspace key returns to board of the folder {0}"
 msgstr "Клавиша Антипробел (другие названия: забой/бэкспейс) вернёт на доску папки {0}"
 
-#: board.py:2083
+#: board.py:2074
 msgid "Add to the group ({})"
 msgstr "Добавить в группу ({})"
 
-#: board.py:2253
+#: board.py:2244
 msgid "AXES"
 msgstr "НАЧАЛО"
 
-#: board.py:2258
+#: board.py:2249
 msgid "ORIGIN"
 msgstr "КООРДИНАТ"
 
-#: board.py:2369
+#: board.py:2360
 msgid "The camera has been moved"
 msgstr "Камера перемещена на указанную позицию"
 
-#: board.py:2371
+#: board.py:2362
 msgid "Out of the map frame!"
 msgstr "Клик вне карты!"
 
-#: board.py:2498
+#: board.py:2489
 msgid "Loading hires images"
 msgstr "Загрузка изображений в высоком качестве"
 
-#: board.py:2509
+#: board.py:2500
 msgid "You cannot delete items from animated file board"
 msgstr "Нельзя удалять айтемы из доски анимированного файла"
 
-#: board.py:2544 board.py:2602
+#: board.py:2535 board.py:2593
 msgid "GROUP Virtual Folder"
 msgstr "Группы Виртуальная Папка"
 
-#: board.py:2566
+#: board.py:2557
 msgid "Nothing to delete, the group is empty"
 msgstr "Нечего удалять, группа пуста"
 
-#: board.py:2588
+#: board.py:2579
 msgid "Group-item not found"
 msgstr "Айтем-группа не найдена"
 
-#: board.py:2600
+#: board.py:2591
 msgid "You cannot create group-item inside virtual folder board"
 msgstr "Нельзя создавать айтемы-группы внутри доски виртуальной папки"
 
-#: board.py:2627
+#: board.py:2618
 msgid "You cannot create note-item inside virtual folder board"
 msgstr "Нельзя создавать айтемы-заметки внутри доски виртуальной папки"
 
-#: board.py:2639
+#: board.py:2630
 msgid "Choose folder with images in it"
 msgstr "Выбери папку с пикчами в ней"
 
-#: board.py:2641
+#: board.py:2632
 msgid "Loading folder to the board"
 msgstr "Загрузка папки на доску"
 
-#: board.py:2712 board.py:3978
+#: board.py:2703 board.py:3969
 msgid "No items selected!"
 msgstr "Не выделеного ни одного айтема!"
 
-#: board.py:2725
+#: board.py:2716
 msgid "FRAME ITEM"
 msgstr "АЙТЕМ-ФРЕЙМ"
 
-#: board.py:3923
+#: board.py:3914
 msgid "Loading image to the board"
 msgstr "Загрузка изображения на доску"
 
-#: board.py:3972
+#: board.py:3963
 msgid "This element is not presented on the board"
 msgstr "Этот элемент не представлен на доске"
 
-#: board.py:4055
+#: board.py:4046
 msgid "No items on the board! Abort!"
 msgstr "На доске нет айтемов! Отмена!"
 
@@ -975,7 +952,7 @@ msgstr ""
 
 #: library_data.py:381
 msgid "You're not allowed to delete this!"
-msgstr "Это не удалить"
+msgstr "Это не удалить!"
 
 #: library_data.py:495
 msgid "you've reached the end of the viewing history"
@@ -1023,19 +1000,19 @@ msgstr "Попытаться актуализировать записи"
 
 #: library_data.py:1961
 msgid "No outdated records detected!"
-msgstr "Не найдено неактуальных записей"
+msgstr "Не найдено неактуальных записей!"
 
 #: library_data.py:2042
 msgid "Comments database updated!"
-msgstr "База данных коментов обновлена"
+msgstr "База данных коментов обновлена!"
 
 #: library_data.py:2047
 msgid "Favorites database updated!"
-msgstr "База данных избранного обновлена"
+msgstr "База данных избранного обновлена!"
 
 #: library_data.py:2050
 msgid "Tags database updated!"
-msgstr "База данных тегов обновлена"
+msgstr "База данных тегов обновлена!"
 
 #: library_data.py:2052
 msgid ""
@@ -1057,27 +1034,27 @@ msgstr "Файлы из неактуальных записей избранно
 msgid "Outdated records in tags database ({0}):"
 msgstr "Файлы из неактуальных записей тегов ({0}):"
 
-#: _viewer.pyw:3593 settings_handling.py:392
+#: _viewer.pyw:3617 settings_handling.py:392
 msgid "English"
 msgstr "Английский"
 
-#: _viewer.pyw:3591 settings_handling.py:393
+#: _viewer.pyw:3615 settings_handling.py:393
 msgid "Russian"
 msgstr "Русский"
 
-#: _viewer.pyw:3597 settings_handling.py:395
+#: _viewer.pyw:3621 settings_handling.py:395
 msgid "German"
 msgstr "Немецкий"
 
-#: _viewer.pyw:3595 settings_handling.py:396
+#: _viewer.pyw:3619 settings_handling.py:396
 msgid "French"
 msgstr "Французский"
 
-#: _viewer.pyw:3601 settings_handling.py:397
+#: _viewer.pyw:3625 settings_handling.py:397
 msgid "Italian"
 msgstr "Итальянский"
 
-#: _viewer.pyw:3599 settings_handling.py:398
+#: _viewer.pyw:3623 settings_handling.py:398
 msgid "Spanish"
 msgstr "Испанский"
 
@@ -1267,7 +1244,7 @@ msgstr "Пипетка-растяжка активирована!"
 
 #: slice_pipette_tool.py:182
 msgid "Color {0} has been copied to clipboard!"
-msgstr "Значение цвета {} скопировано в буфер обмена!"
+msgstr "Значение цвета {0} скопировано в буфер обмена!"
 
 #: slice_pipette_tool.py:200
 msgid "Distance is too short!"
@@ -1300,10 +1277,6 @@ msgstr "показывать насыщение"
 #: slice_pipette_tool.py:269
 msgid "show lightness"
 msgstr "показывать светлость"
-
-#: slice_pipette_tool.py:271
-msgid "pretty plots"
-msgstr "Намарафетить графики"
 
 #: tagging.py:380
 msgid "Tags are not supposed to be used when app is running in lite mode!"
@@ -1376,19 +1349,19 @@ msgstr ""
 "        правый стик (вертикальная ось) - зум камеры\n"
 "        кнопка X на геймпаде - поменять левый и правый стики ролями. При повторном нажатии возвращает всё обратно\n"
 
-#: board.py:819
+#: board.py:821
 msgid "Multifolder board..."
 msgstr "Собрать доску из содержимого нескольких папок..."
 
-#: board.py:4563
+#: board.py:4554
 msgid "Choose Directories"
 msgstr "Выбор папок"
 
-#: board.py:4594
+#: board.py:4585
 msgid "No folders selected!"
-msgstr "Папки не выбраны"
+msgstr "Папки не выбраны!"
 
-#: board.py:4618
+#: board.py:4609
 msgid "Loading images to the board"
 msgstr "Загрузка изображений на доску"
 
@@ -1412,59 +1385,59 @@ msgstr "Шаг масштабирования выделенных айтемо�
 msgid "WATERFALL"
 msgstr ""
 
-#: _viewer.pyw:1962
+#: _viewer.pyw:1986
 msgid "No active item!"
 msgstr "Не определён активный айтем!"
 
-#: _viewer.pyw:2808 _viewer.pyw:2813
+#: _viewer.pyw:2832 _viewer.pyw:2837
 msgid "Preview corner radius: {0}"
 msgstr "Радиус скругления углов у превьюшек: {0}"
 
-#: _viewer.pyw:2855
+#: _viewer.pyw:2879
 msgid "You've set 0 columns, so the number of columns depends only on the window width."
-msgstr "Задано НОЛЬ столбцов, значит их число будет определятся автоматически по ширине окна"
+msgstr "Задано НОЛЬ столбцов, значит их число будет определятся автоматически по ширине окна."
 
-#: _viewer.pyw:2857
+#: _viewer.pyw:2881
 msgid "You've set {0} columns. This is the maximum!"
 msgstr "Задано {0} столбцов. Больше выставить нельзя!"
 
-#: _viewer.pyw:2859
+#: _viewer.pyw:2883
 msgid "You've set {0} columns"
 msgstr "Задано {0} столбцов"
 
-#: _viewer.pyw:4416
+#: _viewer.pyw:4404
 msgid "Cursor scrubbing mode activated"
 msgstr "Прокрутка с помощью курсора активирована"
 
-#: _viewer.pyw:4418
+#: _viewer.pyw:4406
 msgid "Cursor scrubbing mode disactivated"
 msgstr "Дезактивирована прокрутка с помощью курсора"
 
-#: _viewer.pyw:4955
+#: _viewer.pyw:5018
 msgid "Show FPS"
 msgstr "Показать количество кадров в секунду (FPS)"
 
-#: _viewer.pyw:4962
+#: _viewer.pyw:5032
 msgid "Rounded previews"
 msgstr "Скруглённые превьюшки"
 
-#: board.py:762 board.py:776
+#: board.py:758 board.py:770
 msgid "No plugins found"
 msgstr "Board-плагины не найдены"
 
-#: board.py:773
+#: board.py:768
 msgid "Load Plugins..."
-msgstr "Загрузить board-плагины"
+msgstr "Загрузить board-плагины..."
 
-#: board.py:807
+#: board.py:801
 msgid "Cursor scrubbing optimizer"
 msgstr "Оптимизация отрисовки для прокрутки с помощью курсора"
 
-#: board.py:847
+#: board.py:841
 msgid "Reset item(s) to layout position, scale, rotation"
 msgstr "Выставить начальные позицию, масштаб и ориентацию для айтема"
 
-#: board.py:4612
+#: board.py:4603
 msgid "No images found in selected folders!"
 msgstr "Поддерживаемых изображений не найдено в выбранных папках!"
 
@@ -1530,3 +1503,63 @@ msgstr "Располагать айтемы вертикально, а не го
 #: settings_handling.py:567
 msgid "Waterfall page transparent value"
 msgstr "Прозрачность страницы WATERFALL"
+
+#: _viewer.pyw:4984
+msgid "Open folder \"{0}\" in separate app instance"
+msgstr "Открыть папку \"{0}\" в копии приложения"
+
+#: _viewer.pyw:5041
+msgid "Cursor scrubbing for animation files"
+msgstr "Перематывание курсором мыши для анимированных изображений"
+
+#: _viewer.pyw:5059
+msgid "Show window frame"
+msgstr "Показать рамку окна"
+
+#: _viewer.pyw:5061
+msgid "Hide window frame and maximize"
+msgstr "Скрыть рамку окна и максимально развернуть окно"
+
+#: _viewer.pyw:5065
+msgid "Leave full-screen mode"
+msgstr "Выйти из полноэкранного режима"
+
+#: _viewer.pyw:5067
+msgid "Go full screen"
+msgstr "Перейти в полноэкранный режим"
+
+#: _viewer.pyw:5078
+msgid "Switch the window to the monitor on the right"
+msgstr "Перенести окно приложения на монитор справа"
+
+#: _viewer.pyw:5079
+msgid "Switch the window to the monitor on the left"
+msgstr "Перенести окно приложения на монитор слева"
+
+#: _viewer.pyw:5081
+msgid "Next grayscale filter state"
+msgstr "Переключить фильтр отображения на следующий режим"
+
+#: _viewer.pyw:5117
+msgid "Edit comment text {0}"
+msgstr "Редактировать текст комента {0}"
+
+#: _viewer.pyw:5120
+msgid "Redefine comment borders {0}"
+msgstr "Переопределить границы комента {0}"
+
+#: _viewer.pyw:5123
+msgid "Delete comment {0}"
+msgstr "Удалить комент {0}"
+
+#: _viewer.pyw:5168
+msgid "Hide this menu"
+msgstr "Скрыть это меню"
+
+#: board.py:814
+msgid "Activate/desactivate gamepad input"
+msgstr "Включить/выключить управление с геймпада"
+
+#: slice_pipette_tool.py:271
+msgid "prettify plots"
+msgstr "намарафетить графики"
