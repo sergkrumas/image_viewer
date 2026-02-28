@@ -79,7 +79,6 @@ class Globals():
     SUPER_LITE = True
     FORCE_STANDARD_DEBUG = False
     SUPRESS_RERUN = False
-    CRASH_SIMULATOR = True
 
     THUMBNAIL_WIDTH = 50
     AUGMENTED_THUBNAIL_INCREMENT = 20
@@ -5044,12 +5043,10 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 )
             )
 
-        if Globals.CRASH_SIMULATOR:
-            self.addItemToMenu(contextMenu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
-
-        if Globals.DEBUG or True:
-            self.addItemToMenu(contextMenu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
-            sep()
+        menu = contextMenu.addMenu(_("DEBUG tools..."))
+        self.addItemToMenu(menu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
+        self.addItemToMenu(menu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
+        sep()
 
         self.addItemToMenu(contextMenu, _("Settings..."), self.open_settings_window)
 
