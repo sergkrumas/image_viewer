@@ -4369,6 +4369,11 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         cb.clear(mode=cb.Clipboard)
         cb.setText(text, mode=cb.Clipboard)
 
+    def toggle_fullscreen(self):
+        if self.frameless_mode:
+            self.fullscreen_mode = not self.fullscreen_mode
+            self.showMaximized()
+
     def keyReleaseEvent(self, event):
         key = event.key()
 
@@ -4403,9 +4408,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             return
 
         if key == Qt.Key_F11 and not event.isAutoRepeat():
-            if self.frameless_mode:
-                self.fullscreen_mode = not self.fullscreen_mode
-                self.showMaximized()
+            self.toggle_fullscreen()
 
         if key == Qt.Key_F10 and not event.isAutoRepeat():
             self.toggle_BW_filter()
@@ -4977,11 +4980,20 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         contextMenu.addSeparator()
 
         if self.frameless_mode:
-            text = _("Enable window mode")
+            text = _("Show window frame")
         else:
-            text = _("Enable full-screen mode")
+            text = _("Hide window frame and maximize")
         toggle_frame_mode = contextMenu.addAction(text)
         toggle_frame_mode.triggered.connect(self.toggle_window_frame)
+
+        if self.fullscreen_mode:
+            text = _("Leave full-screen mode")
+        else:
+            text = _("Go full screen")
+        toggle_fullscreen = contextMenu.addAction(text)
+        toggle_fullscreen.triggered.connect(self.toggle_fullscreen)
+        toggle_fullscreen.setShortcut(QKeySequence(Qt.Key_F11))
+
         if self.frameless_mode:
             if self.two_monitors_wide:
                 text = _("Narrow window back to monitor frame")
