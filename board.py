@@ -791,6 +791,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
+        def addItem(*args):
+            return self.addItemToMenu(contextMenu, *args)
+
         checkboxes.extend((
             (
                 _("Show debug graphics for transformation widget"),
@@ -811,48 +814,48 @@ class BoardMixin(BoardTextEditItemMixin):
         sep = contextMenu.addSeparator
         sep()
 
-        self.addItemToMenu(contextMenu, _("Activate/desactivate gamepad input"), self.board_toogle_gamepad_input)
+        addItem(_("Activate/desactivate gamepad input"), self.board_toogle_gamepad_input)
 
         self.board_ContextMenuPluginsDefault(event, contextMenu)
 
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
-        self.addItemToMenu(contextMenu, _('Multifolder board...'), self.board_prepare_multifolder_board)
+        addItem(_('Multifolder board...'), self.board_prepare_multifolder_board)
 
-        self.addItemToMenu(contextMenu, _("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
+        addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
 
-        self.addItemToMenu(contextMenu, _("Folder..."), self.board_add_item_folder)
+        addItem(_("Folder..."), self.board_add_item_folder)
 
         text = _("Group")
         sel_count = self.board_selected_items_count()
         if sel_count > 0:
             text = _("{0} (add selected items to it: {1})").format(text, sel_count)
-        self.addItemToMenu(contextMenu, text, self.board_add_item_group_noargs)
+        addItem(text, self.board_add_item_group_noargs)
 
-        self.addItemToMenu(contextMenu, _("Frame"), self.board_add_item_frame)
+        addItem(_("Frame"), self.board_add_item_frame)
 
-        self.addItemToMenu(contextMenu, _("Note"), self.board_add_item_note)
+        addItem(_("Note"), self.board_add_item_note)
 
-        self.addItemToMenu(contextMenu, _("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
+        addItem(_("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
 
-        self.addItemToMenu(contextMenu, _('Place items in column'), self.board_place_items_in_column)
+        addItem(_('Place items in column'), self.board_place_items_in_column)
 
-        self.addItemToMenu(contextMenu, _("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
+        addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
 
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
-            self.addItemToMenu(contextMenu, _('Change frame title \'{0}\'').format(frame_item.label), partial(self.board_change_frame_item_label, frame_item))
+            addItem(_('Change frame title \'{0}\'').format(frame_item.label), partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
-            self.addItemToMenu(contextMenu, _('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
+            addItem(_('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
 
         sep()
 
-        self.addItemToMenu(contextMenu, _("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
+        addItem(_("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
 
-        self.addItemToMenu(contextMenu, _("Open in Google Chrome"), self.board_open_in_google_chrome)
+        addItem(_("Open in Google Chrome"), self.board_open_in_google_chrome)
 
 
     def board_CreatePluginVirtualFolder(self, plugin_name):

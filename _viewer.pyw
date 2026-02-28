@@ -4988,16 +4988,19 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         if not self.context_menu_allowed:
             return
 
-        contextMenu = RoundedQMenu()
-        sep = contextMenu.addSeparator
-        contextMenu.setStyleSheet(self.context_menu_stylesheet)
-        contextMenu.setAttribute(Qt.WA_TranslucentBackground, True)
+        cM = RoundedQMenu()
+        sep = cM.addSeparator
+        cM.setStyleSheet(self.context_menu_stylesheet)
+        cM.setAttribute(Qt.WA_TranslucentBackground, True)
 
         self.contextMenuActivated = True
 
         self.context_menu_exec_point = self.mapped_cursor_pos()
 
-        self.addItemToMenu(contextMenu, _("Minimize"), Globals.main_window.showMinimized)
+        def addItem(*args):
+            return self.addItemToMenu(cM, *args)
+
+        addItem(_("Minimize"), Globals.main_window.showMinimized)
 
         sep()
 
@@ -5043,12 +5046,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 )
             )
 
-        menu = contextMenu.addMenu(_("DEBUG tools..."))
+        menu = cM.addMenu(_("DEBUG tools..."))
         self.addItemToMenu(menu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
         self.addItemToMenu(menu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
         sep()
 
-        self.addItemToMenu(contextMenu, _("Settings..."), self.open_settings_window)
+        addItem(_("Settings..."), self.open_settings_window)
 
         sep()
 
@@ -5056,13 +5059,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
             text = _("Show window frame")
         else:
             text = _("Hide window frame and maximize")
-        self.addItemToMenu(contextMenu, text, self.toggle_window_frame).setShortcut(QKeySequence(Qt.Key_F9))
+        addItem(text, self.toggle_window_frame).setShortcut(QKeySequence(Qt.Key_F9))
 
         if self.fullscreen_mode:
             text = _("Leave full-screen mode")
         else:
             text = _("Go full screen")
-        self.addItemToMenu(contextMenu, text, self.toggle_fullscreen).setShortcut(QKeySequence(Qt.Key_F11))
+        addItem(text, self.toggle_fullscreen).setShortcut(QKeySequence(Qt.Key_F11))
 
         if QApplication.desktop().screenCount() > 1:
             if self.frameless_mode:
@@ -5070,30 +5073,30 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                     text = _("Narrow window back to monitor frame")
                 else:
                     text = _("Expand window to two monitors frame")
-                self.addItemToMenu(contextMenu, text, self.do_toggle_two_monitors_wide).setShortcut(Qt.Key_F12)
+                addItem(text, self.do_toggle_two_monitors_wide).setShortcut(Qt.Key_F12)
 
-            self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the right"), partial(self.toggle_window_monitor, 'right')).setShortcut(Qt.Key_Right | Qt.ControlModifier)
-            self.addItemToMenu(contextMenu, _("Switch the window to the monitor on the left"), partial(self.toggle_window_monitor, 'left')).setShortcut(Qt.Key_Left | Qt.ControlModifier)
+            addItem(_("Switch the window to the monitor on the right"), partial(self.toggle_window_monitor, 'right')).setShortcut(Qt.Key_Right | Qt.ControlModifier)
+            addItem(_("Switch the window to the monitor on the left"), partial(self.toggle_window_monitor, 'left')).setShortcut(Qt.Key_Left | Qt.ControlModifier)
 
-        self.addItemToMenu(contextMenu, _("Next grayscale filter state"), self.toggle_grayscale_filter).setShortcut(Qt.Key_F3)
+        addItem(_("Next grayscale filter state"), self.toggle_grayscale_filter).setShortcut(Qt.Key_F3)
 
         sep()
 
         if Globals.lite_mode:
-            self.addItemToMenu(contextMenu, _("Restart app in standard mode"), partial(do_rerun_in_default_mode, False))
+            addItem(_("Restart app in standard mode"), partial(do_rerun_in_default_mode, False))
         else:
-            self.addItemToMenu(contextMenu, _("Restart app (to purge unused data in memory)"), partial(do_rerun_in_default_mode, self.is_library_page_active()))
+            addItem(_("Restart app (to purge unused data in memory)"), partial(do_rerun_in_default_mode, self.is_library_page_active()))
 
-        self.addItemToMenu(contextMenu, _("Open in separate app instance"), partial(open_in_separated_app_copy, LibraryData().current_folder()))
+        addItem(_("Open in separate app instance"), partial(open_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
 
-            self.open_folder_menu_item(contextMenu, event)
+            self.open_folder_menu_item(cM, event)
 
 
         elif self.is_board_page_active():
 
-            self.board_contextMenu(event, contextMenu, checkboxes)
+            self.board_contextMenu(event, cM, checkboxes)
 
 
         elif self.is_waterfall_page_active():
@@ -5104,7 +5107,7 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif self.is_viewer_page_active():
 
             if self.image_data and not self.image_data.is_supported_filetype:
-                self.addItemToMenu(contextMenu, _("Open unsupported file..."), self.open_unsupported_file)
+                addItem(_("Open unsupported file..."), self.open_unsupported_file)
 
             sep()
 
@@ -5112,62 +5115,62 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
                 sel_comment = self.get_selected_comment(event.pos())
                 if sel_comment:
                     text = _("Edit comment text {0}").format(sel_comment.get_title())
-                    self.addItemToMenu(contextMenu, text, partial(self.change_comment_text_menuitem, sel_comment))
+                    addItem(text, partial(self.change_comment_text_menuitem, sel_comment))
 
                     text = _("Redefine comment borders {0}").format(sel_comment.get_title())
-                    self.addItemToMenu(contextMenu, text, partial(self.change_comment_borders_menuitem, sel_comment))
+                    addItem(text, partial(self.change_comment_borders_menuitem, sel_comment))
 
                     text = _("Delete comment {0}").format(sel_comment.get_title())
-                    self.addItemToMenu(contextMenu, text, partial(self.delete_comment_menuitem, sel_comment))
+                    addItem(text, partial(self.delete_comment_menuitem, sel_comment))
 
                     sep()
 
                 ci = LibraryData().current_folder().current_image()
                 if ci.image_metadata:
-                    self.addItemToMenu(contextMenu, _("Copy metadata to clipboard"), partial(QApplication.clipboard().setText, ci.image_metadata_info))
+                    addItem(_("Copy metadata to clipboard"), partial(QApplication.clipboard().setText, ci.image_metadata_info))
 
             sep()
 
             if not self.viewer_error:
-                self.addItemToMenu(contextMenu, _("Find on disk"), Globals.control_panel.show_in_folder)
-                self.addItemToMenu(contextMenu, _("Open in Google Chrome"), self.show_in_gchrome_menuitem)
-                self.addItemToMenu(contextMenu, _("Place image in window center"), self.place_at_center_menuitem)
+                addItem(_("Find on disk"), Globals.control_panel.show_in_folder)
+                addItem(_("Open in Google Chrome"), self.show_in_gchrome_menuitem)
+                addItem(_("Place image in window center"), self.place_at_center_menuitem)
 
             sep()
 
             if self.svg_rendered:
-                self.addItemToMenu(contextMenu, _("Change SVG rasterization resolution..."), self.contextMenuChangeSVGScale)
+                addItem(_("Change SVG rasterization resolution..."), self.contextMenuChangeSVGScale)
                 sep()
 
             if not self.viewer_error:
-                self.addItemToMenu(contextMenu, _("Save .png file..."), partial(self.save_image_as, 'png'))
-                self.addItemToMenu(contextMenu, _("Save .jpg file..."), partial(self.save_image_as, 'jpg'))
+                addItem(_("Save .png file..."), partial(self.save_image_as, 'png'))
+                addItem(_("Save .jpg file..."), partial(self.save_image_as, 'jpg'))
 
-                self.addItemToMenu(contextMenu, _("Copy to clipboard"), self.copy_to_clipboard)
-                self.addItemToMenu(contextMenu, _("Paste from clipboard"), self.paste_from_clipboard)
+                addItem(_("Copy to clipboard"), self.copy_to_clipboard)
+                addItem(_("Paste from clipboard"), self.paste_from_clipboard)
 
                 if LibraryData().current_folder().is_fav_folder():
                     sep()
-                    self.addItemToMenu(contextMenu, _("Switch from fovorites folder to actual image folder"), LibraryData().go_to_folder_of_current_image)
+                    addItem(_("Switch from fovorites folder to actual image folder"), LibraryData().go_to_folder_of_current_image)
 
         max_title_chars = max(len(title) for title, _, _ in checkboxes)
 
         for title, value, callback in checkboxes:
-            wa = QWidgetAction(contextMenu)
+            wa = QWidgetAction(cM)
             chb = QCheckBox(title.ljust(max_title_chars))
             chb.setStyleSheet(self.toggle_checkbox_stylesheet + self.context_menu_stylesheet)
             chb.setChecked(value)
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)
-            contextMenu.addAction(wa)
+            cM.addAction(wa)
 
         sep()
-        self.addItemToMenu(contextMenu, _("Hide this menu"), lambda: None).setShortcut(Qt.Key_Escape)
+        addItem(_("Hide this menu"), lambda: None).setShortcut(Qt.Key_Escape)
 
         if self.SPT_is_context_menu_allowed():
             self.SPT_context_menu(event)
         else:
-            action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+            action = cM.exec_(self.mapToGlobal(event.pos()))
 
         self.contextMenuActivated = False
 
