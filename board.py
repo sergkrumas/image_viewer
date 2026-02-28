@@ -809,60 +809,50 @@ class BoardMixin(BoardTextEditItemMixin):
                 partial(self.toggle_boolean_var_generic, self, 'cursor_scrubbing_optimizer')
             ),
         ))
-        contextMenu.addSeparator()
+        sep = contextMenu.addSeparator
+        sep()
 
         self.board_ContextMenuPluginsDefault(event, contextMenu)
 
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
-        board_load_multifolder = contextMenu.addAction(_('Multifolder board...'))
-        board_load_multifolder.triggered.connect(self.board_prepare_multifolder_board)
+        self.addItemToMenu(contextMenu, _('Multifolder board...'), self.board_prepare_multifolder_board)
 
-        board_go_to_note = contextMenu.addAction(_("Go to the link in the note (Explorer or Browser)"))
-        board_go_to_note.triggered.connect(partial(self.board_go_to_note, event))
+        self.addItemToMenu(contextMenu, _("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
 
-        board_add_item_folder = contextMenu.addAction(_("Folder..."))
-        board_add_item_folder.triggered.connect(self.board_add_item_folder)
+        self.addItemToMenu(contextMenu, _("Folder..."), self.board_add_item_folder)
 
-        command_label = _("Group")
+        text = _("Group")
         sel_count = self.board_selected_items_count()
         if sel_count > 0:
-            command_label = _("{0} (add selected items to it: {1})").format(command_label, sel_count)
-        board_add_item_group = contextMenu.addAction(command_label)
-        board_add_item_group.triggered.connect(self.board_add_item_group_noargs)
+            text = _("{0} (add selected items to it: {1})").format(text, sel_count)
+        self.addItemToMenu(contextMenu, text, self.board_add_item_group_noargs)
 
-        board_add_item_frame = contextMenu.addAction(_("Frame"))
-        board_add_item_frame.triggered.connect(self.board_add_item_frame)
+        self.addItemToMenu(contextMenu, _("Frame"), self.board_add_item_frame)
 
-        board_add_item_note = contextMenu.addAction(_("Note"))
-        board_add_item_note.triggered.connect(self.board_add_item_note)
+        self.addItemToMenu(contextMenu, _("Note"), self.board_add_item_note)
 
-        board_load_highres = contextMenu.addAction(_("Force highres loading of all items right now (may take some time)"))
-        board_load_highres.triggered.connect(self.board_load_highres)
+        self.addItemToMenu(contextMenu, _("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
 
-        board_place_items_in_column = contextMenu.addAction(_('Place items in column'))
-        board_place_items_in_column.triggered.connect(self.board_place_items_in_column)
+        self.addItemToMenu(contextMenu, _('Place items in column'), self.board_place_items_in_column)
 
-        board_reset_items_to_layout_transforms = contextMenu.addAction(_("Reset item(s) to layout position, scale, rotation"))
-        board_reset_items_to_layout_transforms.triggered.connect(self.board_reset_items_to_layout_transforms)
+        self.addItemToMenu(contextMenu, _("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
+
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
-            board_change_frame_item_label = contextMenu.addAction(_('Change frame title \'{0}\'').format(frame_item.label))
-            board_change_frame_item_label.triggered.connect(partial(self.board_change_frame_item_label, frame_item))
+            self.addItemToMenu(contextMenu, _('Change frame title \'{0}\'').format(frame_item.label), partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
-            board_retrieve_current_from_group_item = contextMenu.addAction(_('Take current image from group and place nearby'))
-            board_retrieve_current_from_group_item.triggered.connect(self.board_retrieve_current_from_group_item)
+            self.addItemToMenu(contextMenu, _('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
 
-        contextMenu.addSeparator()
+        sep()
 
-        board_open_in_app_copy = contextMenu.addAction(_("Open in viewer in separated app copy running in lite mode"))
-        board_open_in_app_copy.triggered.connect(self.board_open_in_app_copy)
+        self.addItemToMenu(contextMenu, _("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
 
-        board_open_in_google_chrome = contextMenu.addAction(_("Open in Google Chrome"))
-        board_open_in_google_chrome.triggered.connect(self.board_open_in_google_chrome)
+        self.addItemToMenu(contextMenu, _("Open in Google Chrome"), self.board_open_in_google_chrome)
+
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(
