@@ -352,6 +352,10 @@ class MenuWindow(QMainWindow):
         generate_mo_files_btn.clicked.connect(partial(generate_mo_file, this_folder))
 
 
+        ql2 = QLabel('<center>Make sure you run this app from console\nto see important logs!</center>' )
+        ql2.setStyleSheet("font-weight:bold; font-size: 12pt; color: #ff5566; border: 3px dashed #ff5566; padding: 10px 5px; margin: 0 50px; font-family: consolas;")
+        ql2.setWordWrap(True)
+
         ql = QLabel('<center>Read the source file to find out more!</center>' )
         ql.setStyleSheet("font-weight:bold; font-size: 12pt; color: #ff5566; border: 3px dashed #ff5566; padding: 10px 5px; margin: 0 50px; font-family: consolas;")
 
@@ -366,7 +370,8 @@ class MenuWindow(QMainWindow):
 
         self.child_layout.addWidget( self.repo_url )
 
-
+        self.child_layout.addSpacing(35)
+        self.child_layout.addWidget(ql2)
         self.child_layout.addSpacing(35)
         self.child_layout.addWidget(go_web_btn)
         self.child_layout.addSpacing(30)
