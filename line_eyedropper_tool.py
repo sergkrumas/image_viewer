@@ -155,13 +155,19 @@ class LineEyedropperToolMixin():
             self.let_input_point_dragging = False
 
     def LET_entry_point(self):
-        self.let_catch_input_data = True
+        if self.let_tool_input_points or self.let_tool_activated:
+            self.let_tool_input_points = []
+            self.let_tool_activated = False
+            self.let_tool_line_points = []
+            self.let_catch_input_data = False
+            self.let_tool_pixels_colors = []
+            self.show_center_label(_('Slice pipette disactivated!'), error=True)
+        else:
+            self.let_catch_input_data = True
 
     def LET_input_data_catcher(self):
         cursor_pos = self.mapped_cursor_pos()
         input_points_count = len(self.let_tool_input_points)
-        msg = None
-        desactivate = False
         if input_points_count < 2:
             self.let_tool_input_points.append(cursor_pos)
             self.let_tool_activated = True
@@ -170,20 +176,10 @@ class LineEyedropperToolMixin():
                 p2 = self.let_tool_input_points[1]
                 self.let_catch_input_data = False
                 if QVector2D(p1 - p2).length() < 40:
-                    desactivate = True
-                    msg = _('Distance is too short!')
+                    self.LET_entry_point() # desactivation branch
+                    self.show_center_label(_('Distance is too short!'), error=True)
                 else:
                     self._LET_update_plot(new=True)
-
-        #     desactivate = True
-        # if desactivate:
-        #     self.let_tool_input_points = []
-        #     self.let_tool_activated = False
-        #     self.let_tool_line_points = []
-        #     self.let_tool_pixels_colors = []
-        #     if msg is None:
-        #         msg = _('Slice pipette disactivated!')
-        #     self.show_center_label(msg, error=True)
         self.update()
 
     def LET_mousePressEvent(self, event):
