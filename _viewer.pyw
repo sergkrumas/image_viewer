@@ -625,7 +625,7 @@ class AppMixin():
                     r = desktop.screenGeometry(screen=i)
                     QCursor().setPos(r.center())
                     break
-            start_lite_process(content_path)
+            cls.APP_start_lite_process(content_path)
         else:
             msg = _("Neither the image nor the folder it is in don't exist")
             QMessageBox.critical(None, "Отмена!", msg)
