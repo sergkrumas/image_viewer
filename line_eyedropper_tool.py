@@ -29,7 +29,7 @@ class LineEyedropperToolMixin():
 
     def LET_init(self):
         """
-            initializing slice pipette tool
+            initializing Line EyeDropper tool
         """
         self.let_tool_activated = False
         self.let_tool_input_points = []
@@ -87,7 +87,7 @@ class LineEyedropperToolMixin():
             self._LET_update_plot()
             self.update()
         else:
-            self.show_center_label(_('Slice Pipette tool is not activated!'), error=True)
+            self.show_center_label(_('Line EyeDropper tool is not activated!'), error=True)
 
     def LET_build_input_point_rect(self, pos):
         rsw = self.let_input_point_rect_side_width
@@ -163,7 +163,7 @@ class LineEyedropperToolMixin():
             self.let_tool_line_points = []
             self.let_catch_input_data = False
             self.let_tool_pixels_colors = []
-            self.show_center_label(_('Slice pipette disactivated!'), error=True)
+            self.show_center_label(_('Line EyeDropper disactivated!'), error=True)
         else:
             self.let_catch_input_data = True
 
@@ -263,7 +263,7 @@ class LineEyedropperToolMixin():
             self.show_center_label(_('Color {0} has been copied to clipboard!').format(color_repr))
             self.update()
         else:
-            self.show_center_label(_('Slice Pipette tool is not activated!'), error=True)
+            self.show_center_label(_('Line EyeDropper tool is not activated!'), error=True)
 
     def LET_generate_test_image(self):
         rect = self.rect()
@@ -329,7 +329,7 @@ class LineEyedropperToolMixin():
 
         addItem(_("Update the plots"), self.LET_update)
         addItem(_("Exit the tool mode"), self.LET_entry_point)
-        addItem(_("increase the plots width"), self.LET_cycle_toggle_scale_factor_value)
+        addItem(_("Increase the plots width"), self.LET_cycle_toggle_scale_factor_value)
         addItem(_("Place the plots using mouse cursor..."), self.LET_enter_placing_plots)
 
         contextMenu.addSeparator()

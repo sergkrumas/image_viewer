@@ -79,7 +79,7 @@ files_to_parse = [
     'settings_handling.py', #DONE
     'hidapi_adapter.py', #DONE
     'colorpicker.py', #DONE
-    'slice_pipette_tool.py', #DONE
+    'line_eyedropper_tool.py', #DONE
 ]
 
 def get_locales(this_folder):
