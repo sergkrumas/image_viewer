@@ -104,28 +104,107 @@ class Globals():
     app_title = _("Krumassan Image Viewer v0.90 Alpha by Sergei Krumas")
     github_repo = _("https://github.com/sergkrumas/image_viewer")
 
-class BWFilterState():
 
-    off = 0
-    on_TRANSPARENT_BACKGROUND = 1
-    on = 2
+class HookConsoleOutput:
+    messages = []
+    def __init__(self):
+        self.console = sys.stdout
+        # self.file = open('file.txt', 'w')
+
+    def write(self, message):
+        if self.console:
+            self.console.write(message)
+        type(self).messages.insert(0, (time.time(), message))
+        type(self).messages = type(self).messages[:100]
+        # self.file.write(message)
+
+    def flush(self):
+        if self.console:
+            self.console.flush()
+        # self.file.flush()
 
     @classmethod
-    def cycle_toggle(cls, current_state):
-        states = [cls.off, cls.on_TRANSPARENT_BACKGROUND, cls.on]
-        cycled_states = itertools.cycle(states)
-        for state in cycled_states:
-            if current_state == state:
-                break
-        return next(cycled_states)
+    def check_messages(cls):
+        return bool(list(cls.get_messages()))
+
+    @classmethod
+    def clear_messages_list(cls):
+        cls.messages.clear()
+
+    @classmethod
+    def get_messages(cls):
+        l = []
+        for timestamp, msg in cls.messages:
+            if (time.time() - timestamp) < 10:
+                l.append((timestamp, msg))
+        return reversed(l)
+
 
 class AppMixin():
-    
+
+    @classmethod
+    def APP_get_crashlog_filepath(cls):
+        return os.path.join(os.path.dirname(__file__), "crash.log")
+
+    @classmethod
+    def APP_get_predefined_path_if_started_from_sublimeText(cls):
+        path = ""
+        if not Globals.SUPER_LITE:
+            process = psutil.Process(os.getpid())
+            cmdline = process.cmdline()
+            if "-u" in cmdline:
+                print('started from sublime text')
+                # run from sublime_text
+                Globals.started_from_sublime_text = True
+                default_paths_txt = os.path.join(os.path.dirname(__file__), "user_data",
+                                                                Globals.DEFAULT_PATHS_FILENAME)
+                create_pathsubfolders_if_not_exist(os.path.dirname(default_paths_txt))
+                if os.path.exists(default_paths_txt):
+                    with open(default_paths_txt, "r", encoding="utf8") as file:
+                        data = file.read() or None
+                        if data:
+                            paths = list(filter(bool, data.split("\n")))
+                            if paths:
+                                path = paths[-1]
+                                print(f"\tdefault path is set to {path}")
+            else:
+                Globals.started_from_sublime_text = False
+        return path
+
+    @classmethod
+    def APP_excepthook(cls, exc_type, exc_value, exc_tb):
+        # пишем инфу о краше
+        if type(exc_tb) is str:
+            traceback_lines = exc_tb
+        else:
+            traceback_lines = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        # locale.setlocale(locale.LC_ALL, "russian")
+        datetime_string = time.strftime("%A, %d %B %Y %X").capitalize()
+        spaces = " "*15
+        dt = f"{spaces} {datetime_string} {spaces}"
+        dashes = "-"*len(dt)
+        dt_framed = f"{dashes}\n{dt}\n{dashes}\n"
+        with open(cls.APP_get_crashlog_filepath(), "a+", encoding="utf8") as crash_log:
+            crash_log.write("\n"*10)
+            crash_log.write(dt_framed)
+            crash_log.write("\n")
+            crash_log.write(sys.version)
+            crash_log.write("\n\n")
+            crash_log.write(traceback_lines)
+        print(traceback_lines)
+        app = QApplication.instance()
+        stray_icon = app.property("stray_icon")
+        if stray_icon:
+            stray_icon.hide()
+        if not Globals.DEBUG:
+            cls.APP_restart(aftercrash=True)
+        sys.exit()
+
     @classmethod
     def APP_main(cls):
 
         os.chdir(os.path.dirname(__file__))
-        sys.excepthook = excepthook
+        sys.excepthook = cls.APP_excepthook
         pid = os.getpid()
         arguments = ", ".join(sys.argv)
         print(f'Proccess ID: {pid} Command Arguments: {arguments}')
@@ -150,7 +229,7 @@ class AppMixin():
 
         sys.stdout = HookConsoleOutput()
 
-        path = get_predefined_path_if_started_from_sublimeText()
+        path = cls.APP_get_predefined_path_if_started_from_sublimeText()
 
         SettingsWindow.globals = Globals
         SettingsWindow.load_from_disk()
@@ -158,7 +237,7 @@ class AppMixin():
         Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
 
         app = QApplication(sys.argv)
-        app.aboutToQuit.connect(exit_threads)
+        app.aboutToQuit.connect(cls.APP_exit_threads)
 
         # задание иконки для таскбара
         myappid = 'sergei_krumas.image_viewer.client.1'
@@ -201,7 +280,7 @@ class AppMixin():
         if _was_DEBUG and Globals.FORCE_STANDARD_DEBUG:
             Globals.lite_mode = False
             Globals.force_standard_mode = True
-            path = get_predefined_path_if_started_from_sublimeText()
+            path = cls.APP_get_predefined_path_if_started_from_sublimeText()
 
         if Globals.SUPER_LITE:
             # нужно здесь для того, чтобы не тратить время на долгий вызов ServerOrClient.ipc_via_sockets
@@ -216,16 +295,16 @@ class AppMixin():
             app.setQuitOnLastWindowClosed(True)
 
         if Globals.aftercrash:
-            filepath = get_crashlog_filepath()
+            filepath = cls.APP_get_crashlog_filepath()
             crashfileinfo = _("Crash info save to file\n\t{0}").format(filepath)
             msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
             ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
             if ret == QMessageBox.Yes:
-                _restart_app()
+                cls.APP_restart()
             sys.exit(0)
 
         if not Globals.lite_mode:
-            path = run_as_IPC_server_or_IPC_client(path)
+            path = cls.APP_run_as_IPC_server_or_IPC_client(path)
 
         Globals.is_path_exists = os.path.exists(path)
 
@@ -389,6 +468,277 @@ class AppMixin():
         sti.show()
         return sti
 
+    @classmethod
+    def APP_input_path_dialog(cls, path, exit=True):
+        if os.path.exists(path):
+            pass
+        else:
+            path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with pictures in it")))
+            if not path and exit:
+                QMessageBox.critical(None, _("Error-error"), _("Nothing to show, exit..."))
+                sys.exit()
+        return path
+
+    @classmethod
+    def APP_run_as_IPC_server_or_IPC_client(cls, path):
+        def choose_start_option_callback(do_start_IPC_server, _path):
+            if Globals.force_standard_mode:
+                ret = QMessageBox.No
+            else:
+                if Globals.do_not_show_start_dialog:
+                    # запускаем лайтоый (упрощённый) режим
+                    ret = QMessageBox.Yes
+                else:
+                    # иначе по дефолту не запускаем, но обязательно спрашиваем
+                    ret = QMessageBox.No
+                    if not Globals.started_from_sublime_text:
+                        if os.path.exists(_path):
+                            ret = QMessageBox.question(None,
+                                _("Question"),
+                                _("No running app instance at the moment.\nStart app in lite mode?"),
+                                QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
+                                )
+            if ret == QMessageBox.Yes:
+                print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
+                cls.APP_restart_process_in_lite_mode(_path)
+                sys.exit(0)
+            elif ret == QMessageBox.No:
+                # finally start server
+                do_start_IPC_server()
+            elif ret == QMessageBox.Close:
+                sys.exit(0)
+
+        def open_request_as_IPC_server_callback(_path):
+            # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
+            # Ведь при старте приложения может прилететь несколько запросов сразу,
+            # благодаря тому, что в проводнике Windows можно зажать Enter над картинкой
+            MW = Globals.main_window
+            if (MW is not None) and (path is not None):
+                ok = False
+                try:
+                    LibraryData().handle_input_data(_path)
+                    ok = True
+                except:
+                    QMessageBox.critical(None, "Request Handling Error", f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")
+                if ok:
+                    if MW.frameless_mode:
+                        MW.showMaximized()
+                    else:
+                        MW.show()
+                    MW.activateWindow()
+                    to_print = f'retrieved data path: {_path}'
+                    print(to_print)
+
+        return IPC.via_sockets(path, open_request_as_IPC_server_callback, choose_start_option_callback)
+
+    @classmethod
+    def APP_restart(cls, aftercrash=False):
+        args = [sys.executable, sys.argv[0]]
+        filepath = None
+        if aftercrash:
+            try:
+                filepath = LibraryData().current_folder().current_image().filepath
+            except:
+                pass
+            if filepath is not None:
+                args.append(filepath)
+            if not Globals.lite_mode:
+                args.append('-standard')
+            args.append('-aftercrash')
+        else:
+            if len(sys.argv) > 1:
+                filepath = sys.argv[1]
+                if os.path.exists(filepath):
+                    args.append(filepath)
+            if '-standard' in sys.argv:
+                args.append('-standard')
+        subprocess.Popen(args)
+
+    @classmethod
+    def APP_exit_threads(cls):
+        # принудительно глушим все потоки, что ещё работают
+        for thread in ThumbnailsPreviewsThread.threads_pool:
+            thread.terminate()
+            # нужно вызывать terminate вместо exit
+
+    @classmethod
+    def APP_retrieve_cmd_args(cls):
+        bin_args = []
+        iterable = vars(Globals.args).items()
+        for arg_name, arg_value in iterable:
+            if isinstance(arg_value, bool):
+                if arg_value:
+                    bin_args.append(f'-{arg_name}')
+            elif isinstance(arg_value, str):
+                bin_args.append(arg_value)
+            elif isinstance(arg_value, type(None)):
+                pass
+            else:
+                raise Exception(f'Not supported argument "{arg_name}" with value "{arg_value}"')
+        return bin_args
+
+    @classmethod
+    def APP_restart_process_in_lite_mode(cls, path=None):
+        app_path = sys.argv[0]
+        if path is not None:
+            args = [path]
+        else:
+            args = cls.APP_retrieve_cmd_args()
+        args.insert(0, app_path)
+        args.insert(0, sys.executable)
+        args.append('-lite')
+        subprocess.Popen(args)
+
+    @classmethod
+    def APP_start_lite_process(cls, path):
+        if Globals.DEBUG:
+            app_path = __file__
+        else:
+            app_path = sys.argv[0]
+        args = [sys.executable, app_path, path, "-lite"]
+        subprocess.Popen(args)
+
+    @classmethod
+    def APP_rerun_in_standard_mode(cls, is_on_library_page):
+        path = LibraryData.get_content_path(LibraryData().current_folder())
+        if Globals.DEBUG:
+            app_path = __file__
+        else:
+            app_path = sys.argv[0]
+        args = [sys.executable, app_path, path, "-standard"]
+        if is_on_library_page:
+            args.append("-forcelibrarypage")
+        subprocess.Popen(args)
+        app = QApplication.instance()
+        app.exit()
+
+    @classmethod
+    def APP_open_folder_in_separated_app_copy(cls, folder_data):
+        content_path = LibraryData.get_content_path(folder_data)
+        if content_path is not None:
+            # если есть второй монитор, то уводим окно на него,
+            # перемещая для этого курсор
+            desktop = QDesktopWidget()
+            screen_num = desktop.screenNumber(Globals.main_window)
+            for i in range(0, desktop.screenCount()):
+                if i != screen_num:
+                    r = desktop.screenGeometry(screen=i)
+                    QCursor().setPos(r.center())
+                    break
+            start_lite_process(content_path)
+        else:
+            msg = _("Neither the image nor the folder it is in don't exist")
+            QMessageBox.critical(None, "Отмена!", msg)
+
+
+class Slideshow(QWidget):
+    @classmethod
+    def start_slideshow(cls, main_window):
+        slideshow = cls(main_window)
+        desktop = QDesktopWidget()
+        screen_geometry = desktop.screenGeometry(slideshow)
+        slideshow.move(screen_geometry.x(), screen_geometry.y())
+        slideshow.resize(screen_geometry.width(), screen_geometry.height())
+        slideshow.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        slideshow.setAttribute(Qt.WA_TranslucentBackground)
+        slideshow.show()
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        c = QColor(Qt.black)
+        painter.setBrush(QBrush(c))
+        painter.setOpacity(self.opacity)
+        painter.drawRect(self.rect())
+        painter.setPen(QPen(QColor(Qt.white)))
+        font = painter.font()
+        font.setPixelSize(30)
+        font.setWeight(1900)
+        font.setFamily("Consolas")
+        painter.setFont(font)
+        painter.drawText(QRectF(self.rect()), Qt.AlignCenter, self.text)
+        t = fit(
+            time.time(),
+            self.start_time,
+            self.start_time+self.TRANSITION_DURATION,
+            0.0,
+            1.0
+        )
+        # t = min(t, 1.0)
+        painter.setOpacity((1.0-t)*self.opacity)
+        if self.p1:
+            target = fit_rect_into_rect(self.p1.rect(), self.rect())
+            painter.drawPixmap(target, self.p1, self.p1.rect())
+        painter.setOpacity(t*self.opacity)
+        if self.p2:
+            target = fit_rect_into_rect(self.p2.rect(), self.rect())
+            painter.drawPixmap(target, self.p2, self.p2.rect())
+        painter.end()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__( *args, **kwargs)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.inner_timer)
+        self.timer_interval = 10
+        self.timer.setInterval(self.timer_interval)
+        self.timer.start()
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        images_list = LibraryData().current_folder().images_list
+        images_list = [im for im in images_list if im.is_supported_filetype]
+        self.pairs = get_cycled_pairs_slideshow(images_list)
+        self.opacity = 0.001
+        self.increase_opacity = True
+        self.show_this()
+        self.p1 = None
+        self.p2 = None
+        self.set_pics()
+        main_window = Globals.main_window
+        self.TRANSITION_DURATION = main_window.STNG_slides_transition_duration
+        self.DELAY_DURATION = main_window.STNG_slides_delay_duration
+
+    def load_pixmap(self, filepath):
+        return load_image_respect_orientation(filepath, highres_svg=LibraryData().is_svg_file(filepath))
+
+    def set_pics(self):
+        pair = next(self.pairs)
+        p1, p2, text = pair
+        # загружаем картинки
+        self.p1 = self.load_pixmap(p1.filepath)
+        self.p2 = self.load_pixmap(p2.filepath)
+        # время задаётся только после загрузок картинок!
+        self.start_time = time.time()
+        self.text = text
+
+    def inner_timer(self):
+        self.update()
+
+        SHOW_HIDE_SPEED = 0.03
+        if self.increase_opacity:
+            self.opacity += SHOW_HIDE_SPEED
+        else:
+            self.opacity -= SHOW_HIDE_SPEED
+        self.opacity = min(max(0.0, self.opacity), 1.0)
+        if self.opacity == 0.0 and not self.increase_opacity:
+            self.close()
+        # закрыть, если окно потеряло фокус
+        window_hwnd = int(self.winId())
+        foreground_hwnd = ctypes.windll.user32.GetForegroundWindow()
+        if foreground_hwnd != window_hwnd:
+            self.close_this()
+
+        if time.time() - self.start_time > (self.TRANSITION_DURATION + self.DELAY_DURATION):
+            if self.increase_opacity:
+                self.set_pics()
+        self.setCursor(Qt.BlankCursor)
+
+    def show_this(self):
+        self.increase_opacity = True
+
+    def close_this(self):
+        self.increase_opacity = False
+
+    def keyReleaseEvent(self, event):
+        self.close_this()
 
 
 class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, SlicePipetteToolMixin):
@@ -442,6 +792,21 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
 
     pages.count = len(pages.all())
 
+    class BWFilterState():
+
+        off = 0
+        on_TRANSPARENT_BACKGROUND = 1
+        on = 2
+
+        @classmethod
+        def cycle_toggle(cls, current_state):
+            states = [cls.off, cls.on_TRANSPARENT_BACKGROUND, cls.on]
+            cycled_states = itertools.cycle(states)
+            for state in cycled_states:
+                if current_state == state:
+                    break
+            return next(cycled_states)
+
     class label_type():
         FRAME_NUMBER = 'FRAMENUMBER'
         PLAYSPEED = 'PLAYSPEED'
@@ -477,6 +842,234 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
                   , cls.WATERFALL_PAGE_RIGHT
             ]
 
+    def __init__(self, *args, frameless_mode=True, **kwargs):
+        self.frameless_mode = frameless_mode
+        self.stay_on_top = False
+        self.handling_input = False
+
+        self.Globals = Globals
+        self.LibraryData = LibraryData
+        self.ImageData = ImageData
+        self.FolderData = FolderData
+        self.BoardData = BoardData
+        self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
+
+        if SettingsWindow.get_setting_value("hide_on_app_start"):
+            self.need_for_init_after_call_from_tray = True
+        else:
+            self.need_for_init_after_call_from_tray = False
+        super().__init__(*args, **kwargs)
+
+        self.start_page_lang_btns = []
+
+        self.set_loading_text()
+
+        self.prepare_secret_hints()
+
+        self.set_window_title("")
+        self.set_window_style()
+
+        self.current_page = self.pages.START_PAGE
+        self.current_page_draw_callback = self.startpage_draw_callback
+        self.current_page_transparency_value = 0.9
+        self.update_other_pages_list()
+
+        self.transformations_allowed = True
+        self.animated = False
+        self.image_translating = False
+        self.image_center_position = QPointF(0, 0)
+        self.image_rotation = 0
+        self.image_scale = 1.0
+
+        self.pixmap = None
+
+        self.threads_info = {}
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.on_timer)
+        self.timer.start(10)
+
+        self.secret_width = 0
+        self.secret_height = 0
+
+        self.movie = None
+        self.invalid_movie = False
+
+        self.CENTER_LABEL_TIME_LIMIT = 2
+        self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT - 1
+        self.center_label_info_type = self.label_type.SCALE
+        self.center_label_error = False
+
+        self.over_cursor_corner_menu_item_name = ""
+        self.animated_page_name = ""
+        self.corner_menu_timer = QTimer()
+        self.corner_menu_timer.setInterval(30)
+        self.corner_menu_timer.timeout.connect(self.handle_corner_menu_timer)
+
+        self.setMouseTracking(True)
+        self.installEventFilter(self)
+        self.setAcceptDrops(True)
+
+        self.gamepad = None
+        self.gamepad_timer = None
+
+        self.SettingsWindow = SettingsWindow
+        SettingsWindow.settings_init(self)
+
+        self.board_init()
+        self.tagging_init()
+
+        self.library_previews_list_active_item = None
+        self.library_previews_list = None
+
+        self.waterfall_previews_list_active_item = None
+        self.waterfall_previews_list = None
+
+        self.region_zoom_in_init()
+
+        self.contextMenuActivated = False
+
+        self.init_help_infopanel()
+
+        self.viewer_error = False
+
+        self.invert_image = False
+
+        self.animation_tasks = []
+        self.animation_timer = QTimer()
+        self.animation_timer.setInterval(20)
+        self.animation_timer.timeout.connect(self.do_properties_animation_on_timer)
+        self.animation_timer_work_timestamp = time.time()
+
+        self.block_paginating = False
+
+        self._key_pressed = False
+        self._key_unreleased = False
+
+        self.two_monitors_wide = False
+
+        self.left_button_pressed = False
+
+        self.comment_data = None
+        self.comment_data_candidate = None
+
+        self.noise_time = 0.0
+
+        self.image_rect = QRectF()
+
+        self.corner_menu_visibility = [False, False]
+        self.left_corner_menu_items = []
+
+        self.fullscreen_mode = False
+        self.firstCall_showMaximized = True
+
+        self.BW_filter_state = self.BWFilterState.off
+
+        class CornerUIButtons():
+            NO_BUTTON = 0
+            LEFT_CORNER = 1
+            RIGHT_CORNER = 2
+            LEFT_CORNER_MENU = 3
+            RIGHT_CORNER_MENU = 4
+
+        self.CornerUIButtons = CornerUIButtons
+        self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
+
+        self.SPT_init()
+
+        self.gamepad_thread_instance = None
+        self.left_stick_vec = QPointF(0, 0)
+        self.right_stick_vec = QPointF(0, 0)
+
+        self.fps_iterator = None
+        self.fps_counter = 0
+        self.fps_indicator = 0
+        self.show_fps_indicator = Globals.DEBUG
+        self.fps_timestamp = 0.0
+
+        self.viewer_modal = False
+
+        self.autoscroll_init()
+
+        self.rounded_previews = True
+
+        self.board_CP_cursor_handled = False
+
+        self.waterfall_appstart = False
+        self.waterfall_block_active_item = False
+
+        self.viewer_cursor_scrubber_mode = False
+
+        self.context_menu_stylesheet = """
+        QMenu{
+            background: transparent;
+            border: 1px solid rgb(50, 50, 50);
+            border-radius: 5px;
+            padding: 5px;
+        }
+        QMenu, QCheckBox{
+            font-size: 17px;
+            font-weight: normal;
+            background-color: rgb(25, 25, 25);
+        }
+        QMenu::item, QCheckBox{
+            padding: 8px;
+            color: gray;
+            padding: 5px 15px;
+            margin: 2px;
+        }
+        QMenu::icon{
+            padding-left: 15px;
+        }
+        QMenu::item:selected, QCheckBox:hover{
+            color: rgb(252, 181, 49);
+        }
+        QMenu::item:checked, QCheckBox:checked{
+            font-weight: bold;
+            color: rgb(200, 200, 200);
+        }
+        QMenu::item:unchecked, QCheckBox:unchecked{
+            color: gray;
+        }
+        QMenu::item:checked:selected, QCheckBox:checked:hover{
+            font-weight: bold;
+            color: rgb(252, 181, 49);
+        }
+        QMenu::item:unchecked:selected, QCheckBox:unchecked:hover{
+            color: rgb(252, 181, 49);
+        }
+        QMenu::item:disabled {
+            color: rgb(100, 100, 100);
+        }
+        QMenu::separator {
+            height: 1px;
+            background: rgb(50, 50, 50);
+        }
+        """
+
+        self.toggle_checkbox_stylesheet = """
+            QCheckBox {
+                font-family: 'Consolas';
+                color: white;
+                font-weight: normal;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator:unchecked {
+                image: url(resources/switch_off_narrow.png);
+            }
+            QCheckBox::indicator:checked {
+                image: url(resources/switch_on_narrow.png);
+            }
+            QCheckBox:checked {
+                color: rgb(100, 255, 100);
+            }
+            QCheckBox:unchecked {
+                color: rgb(220, 220, 220);
+            }
+        """
 
     def dragEnterEvent(self, event):
         if self.is_board_page_active():
@@ -834,235 +1427,6 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self.stay_on_top = not self.stay_on_top
             self.set_window_style()
             self.show()
-
-    def __init__(self, *args, frameless_mode=True, **kwargs):
-        self.frameless_mode = frameless_mode
-        self.stay_on_top = False
-        self.handling_input = False
-
-        self.Globals = Globals
-        self.LibraryData = LibraryData
-        self.ImageData = ImageData
-        self.FolderData = FolderData
-        self.BoardData = BoardData
-        self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
-
-        if SettingsWindow.get_setting_value("hide_on_app_start"):
-            self.need_for_init_after_call_from_tray = True
-        else:
-            self.need_for_init_after_call_from_tray = False
-        super().__init__(*args, **kwargs)
-
-        self.start_page_lang_btns = []
-
-        self.set_loading_text()
-
-        self.prepare_secret_hints()
-
-        self.set_window_title("")
-        self.set_window_style()
-
-        self.current_page = self.pages.START_PAGE
-        self.current_page_draw_callback = self.startpage_draw_callback
-        self.current_page_transparency_value = 0.9
-        self.update_other_pages_list()
-
-        self.transformations_allowed = True
-        self.animated = False
-        self.image_translating = False
-        self.image_center_position = QPointF(0, 0)
-        self.image_rotation = 0
-        self.image_scale = 1.0
-
-        self.pixmap = None
-
-        self.threads_info = {}
-
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.on_timer)
-        self.timer.start(10)
-
-        self.secret_width = 0
-        self.secret_height = 0
-
-        self.movie = None
-        self.invalid_movie = False
-
-        self.CENTER_LABEL_TIME_LIMIT = 2
-        self.center_label_time = time.time() - self.CENTER_LABEL_TIME_LIMIT - 1
-        self.center_label_info_type = self.label_type.SCALE
-        self.center_label_error = False
-
-        self.over_cursor_corner_menu_item_name = ""
-        self.animated_page_name = ""
-        self.corner_menu_timer = QTimer()
-        self.corner_menu_timer.setInterval(30)
-        self.corner_menu_timer.timeout.connect(self.handle_corner_menu_timer)
-
-        self.setMouseTracking(True)
-        self.installEventFilter(self)
-        self.setAcceptDrops(True)
-
-        self.gamepad = None
-        self.gamepad_timer = None
-
-        self.SettingsWindow = SettingsWindow
-        SettingsWindow.settings_init(self)
-
-        self.board_init()
-        self.tagging_init()
-
-        self.library_previews_list_active_item = None
-        self.library_previews_list = None
-
-        self.waterfall_previews_list_active_item = None
-        self.waterfall_previews_list = None
-
-        self.region_zoom_in_init()
-
-        self.contextMenuActivated = False
-
-        self.init_help_infopanel()
-
-        self.viewer_error = False
-
-        self.invert_image = False
-
-        self.animation_tasks = []
-        self.animation_timer = QTimer()
-        self.animation_timer.setInterval(20)
-        self.animation_timer.timeout.connect(self.do_properties_animation_on_timer)
-        self.animation_timer_work_timestamp = time.time()
-
-        self.block_paginating = False
-
-        self._key_pressed = False
-        self._key_unreleased = False
-
-        self.two_monitors_wide = False
-
-        self.left_button_pressed = False
-
-        self.comment_data = None
-        self.comment_data_candidate = None
-
-        self.noise_time = 0.0
-
-        self.image_rect = QRectF()
-
-        self.corner_menu_visibility = [False, False]
-        self.left_corner_menu_items = []
-
-        self.fullscreen_mode = False
-        self.firstCall_showMaximized = True
-
-        self.BW_filter_state = BWFilterState.off
-
-        class CornerUIButtons():
-            NO_BUTTON = 0
-            LEFT_CORNER = 1
-            RIGHT_CORNER = 2
-            LEFT_CORNER_MENU = 3
-            RIGHT_CORNER_MENU = 4
-
-        self.CornerUIButtons = CornerUIButtons
-        self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
-
-        self.SPT_init()
-
-        self.gamepad_thread_instance = None
-        self.left_stick_vec = QPointF(0, 0)
-        self.right_stick_vec = QPointF(0, 0)
-
-        self.fps_iterator = None
-        self.fps_counter = 0
-        self.fps_indicator = 0
-        self.show_fps_indicator = Globals.DEBUG
-        self.fps_timestamp = 0.0
-
-        self.viewer_modal = False
-
-        self.autoscroll_init()
-
-        self.rounded_previews = True
-
-        self.board_CP_cursor_handled = False
-
-        self.waterfall_appstart = False
-        self.waterfall_block_active_item = False
-
-        self.viewer_cursor_scrubber_mode = False
-
-        self.context_menu_stylesheet = """
-        QMenu{
-            background: transparent;
-            border: 1px solid rgb(50, 50, 50);
-            border-radius: 5px;
-            padding: 5px;
-        }
-        QMenu, QCheckBox{
-            font-size: 17px;
-            font-weight: normal;
-            background-color: rgb(25, 25, 25);
-        }
-        QMenu::item, QCheckBox{
-            padding: 8px;
-            color: gray;
-            padding: 5px 15px;
-            margin: 2px;
-        }
-        QMenu::icon{
-            padding-left: 15px;
-        }
-        QMenu::item:selected, QCheckBox:hover{
-            color: rgb(252, 181, 49);
-        }
-        QMenu::item:checked, QCheckBox:checked{
-            font-weight: bold;
-            color: rgb(200, 200, 200);
-        }
-        QMenu::item:unchecked, QCheckBox:unchecked{
-            color: gray;
-        }
-        QMenu::item:checked:selected, QCheckBox:checked:hover{
-            font-weight: bold;
-            color: rgb(252, 181, 49);
-        }
-        QMenu::item:unchecked:selected, QCheckBox:unchecked:hover{
-            color: rgb(252, 181, 49);
-        }
-        QMenu::item:disabled {
-            color: rgb(100, 100, 100);
-        }
-        QMenu::separator {
-            height: 1px;
-            background: rgb(50, 50, 50);
-        }
-        """
-
-        self.toggle_checkbox_stylesheet = """
-            QCheckBox {
-                font-family: 'Consolas';
-                color: white;
-                font-weight: normal;
-            }
-            QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-            }
-            QCheckBox::indicator:unchecked {
-                image: url(resources/switch_off_narrow.png);
-            }
-            QCheckBox::indicator:checked {
-                image: url(resources/switch_on_narrow.png);
-            }
-            QCheckBox:checked {
-                color: rgb(100, 255, 100);
-            }
-            QCheckBox:unchecked {
-                color: rgb(220, 220, 220);
-            }
-        """
 
     def map_cursor_pos_inside_rect_to_frame_number(self, x_offset, rect, count):
         factor = x_offset/rect.width()
@@ -2127,7 +2491,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
                     break
 
             if not lang_button_pressed:
-                path = input_path_dialog("", exit=False)
+                path = self.APP_input_path_dialog("", exit=False)
                 if path:
                     LibraryData().handle_input_data(path)
                     self.update()
@@ -3605,12 +3969,12 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self._paintEvent(event, p)
             p.end()
             image = color_image.convertToFormat(QImage.Format_Grayscale16)
-            if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
+            if self.BW_filter_state == self.BWFilterState.on_TRANSPARENT_BACKGROUND:
                 painter.drawImage(QPoint(0, 0), color_image)
                 painter.save()
                 painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
             painter.drawImage(QPoint(0, 0), image)
-            if self.BW_filter_state == BWFilterState.on_TRANSPARENT_BACKGROUND:
+            if self.BW_filter_state == self.BWFilterState.on_TRANSPARENT_BACKGROUND:
                 painter.restore()
         else:
             self._paintEvent(event, painter)
@@ -4652,11 +5016,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             im_data.anim_paused = not im_data.anim_paused
         self.update()
 
-    def start_lite_process(self, path):
-        start_lite_process(path)
-
     def toggle_grayscale_filter(self):
-        self.BW_filter_state = BWFilterState.cycle_toggle(self.BW_filter_state)
+        self.BW_filter_state = self.BWFilterState.cycle_toggle(self.BW_filter_state)
         self.update()
 
     def set_clipboard(self, text):
@@ -5250,7 +5611,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
                     break
             if folder_data and not folder_data.virtual:
                 text = _("Open folder \"{0}\" in separate app instance").format(folder_data.folder_path)
-                self.addItemToMenu(contextMenu, text, partial(open_in_separated_app_copy, folder_data))
+                self.addItemToMenu(contextMenu, text, partial(self.APP_open_folder_in_separated_app_copy, folder_data))
 
     def contextMenuEvent(self, event):
 
@@ -5362,11 +5723,11 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         sep()
 
         if Globals.lite_mode:
-            addItem(_("Restart app in standard mode"), partial(do_rerun_in_default_mode, False))
+            addItem(_("Restart app in standard mode"), partial(self.APP_rerun_in_standard_mode, False))
         else:
-            addItem(_("Restart app (to purge unused data in memory)"), partial(do_rerun_in_default_mode, self.is_library_page_active()))
+            addItem(_("Restart app (to purge unused data in memory)"), partial(self.APP_rerun_in_standard_mode, self.is_library_page_active()))
 
-        addItem(_("Open in separate app instance"), partial(open_in_separated_app_copy, LibraryData().current_folder()))
+        addItem(_("Open in separate app instance"), partial(self.APP_open_folder_in_separated_app_copy, LibraryData().current_folder()))
 
         if self.is_library_page_active():
 
@@ -5713,260 +6074,19 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
 
                 painter.restore()
 
-
-
-
-
-def input_path_dialog(path, exit=True):
-    if os.path.exists(path):
-        pass
-    else:
-        path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with pictures in it")))
-        if not path and exit:
-            QMessageBox.critical(None, _("Error-error"), _("Nothing to show, exit..."))
-            sys.exit()
-    return path
-
-
-def get_crashlog_filepath():
-    return os.path.join(os.path.dirname(__file__), "crash.log")
-
-def excepthook(exc_type, exc_value, exc_tb):
-    # пишем инфу о краше
-    if type(exc_tb) is str:
-        traceback_lines = exc_tb
-    else:
-        traceback_lines = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    # locale.setlocale(locale.LC_ALL, "russian")
-    datetime_string = time.strftime("%A, %d %B %Y %X").capitalize()
-    spaces = " "*15
-    dt = f"{spaces} {datetime_string} {spaces}"
-    dashes = "-"*len(dt)
-    dt_framed = f"{dashes}\n{dt}\n{dashes}\n"
-    with open(get_crashlog_filepath(), "a+", encoding="utf8") as crash_log:
-        crash_log.write("\n"*10)
-        crash_log.write(dt_framed)
-        crash_log.write("\n")
-        crash_log.write(sys.version)
-        crash_log.write("\n\n")
-        crash_log.write(traceback_lines)
-    print(traceback_lines)
-    app = QApplication.instance()
-    stray_icon = app.property("stray_icon")
-    if stray_icon:
-        stray_icon.hide()
-    if not Globals.DEBUG:
-        _restart_app(aftercrash=True)
-    sys.exit()
-
-def _restart_app(aftercrash=False):
-    args = [sys.executable, sys.argv[0]]
-    filepath = None
-    if aftercrash:
-        try:
-            filepath = LibraryData().current_folder().current_image().filepath
-        except:
-            pass
-        if filepath is not None:
-            args.append(filepath)
-        if not Globals.lite_mode:
-            args.append('-full')
-        args.append('-aftercrash')
-    else:
-        if len(sys.argv) > 1:
-            filepath = sys.argv[1]
-            if os.path.exists(filepath):
-                args.append(filepath)
-        if '-full' in sys.argv:
-            args.append('-full')
-    subprocess.Popen(args)
-
-def exit_threads():
-    # принудительно глушим все потоки, что ещё работают
-    for thread in ThumbnailsPreviewsThread.threads_pool:
-        thread.terminate()
-        # нужно вызывать terminate вместо exit
-
-def restart_process_in_lite_mode(path=None):
-    app_path = sys.argv[0]
-    if path is not None:
-        args = [path]
-    else:
-        args = retrieve_cmd_args()
-    args.insert(0, app_path)
-    args.insert(0, sys.executable)
-    args.append('-lite')
-    subprocess.Popen(args)
-
-def start_lite_process(path):
-    if Globals.DEBUG:
-        app_path = __file__
-    else:
-        app_path = sys.argv[0]
-    args = [sys.executable, app_path, path, "-lite"]
-    subprocess.Popen(args)
-
-def do_rerun_in_default_mode(is_on_library_page):
-    path = LibraryData.get_content_path(LibraryData().current_folder())
-    if Globals.DEBUG:
-        app_path = __file__
-    else:
-        app_path = sys.argv[0]
-    args = [sys.executable, app_path, path, "-full"]
-    if is_on_library_page:
-        args.append("-forcelibrarypage")
-    subprocess.Popen(args)
-    app = QApplication.instance()
-    app.exit()
-
-def open_in_separated_app_copy(folder_data):
-    content_path = LibraryData.get_content_path(folder_data)
-    if content_path is not None:
-        # если есть второй монитор, то уводим окно на него,
-        # перемещая для этого курсор
-        desktop = QDesktopWidget()
-        screen_num = desktop.screenNumber(Globals.main_window)
-        for i in range(0, desktop.screenCount()):
-            if i != screen_num:
-                r = desktop.screenGeometry(screen=i)
-                QCursor().setPos(r.center())
-                break
-        start_lite_process(content_path)
-    else:
-        msg = _("Neither the image nor the folder it is in don't exist")
-        QMessageBox.critical(None, "Отмена!", msg)
-
-def get_predefined_path_if_started_from_sublimeText():
-    path = ""
-    if not Globals.SUPER_LITE:
-        process = psutil.Process(os.getpid())
-        cmdline = process.cmdline()
-        if "-u" in cmdline:
-            print('started from sublime text')
-            # run from sublime_text
-            Globals.started_from_sublime_text = True
-            default_paths_txt = os.path.join(os.path.dirname(__file__), "user_data",
-                                                            Globals.DEFAULT_PATHS_FILENAME)
-            create_pathsubfolders_if_not_exist(os.path.dirname(default_paths_txt))
-            if os.path.exists(default_paths_txt):
-                with open(default_paths_txt, "r", encoding="utf8") as file:
-                    data = file.read() or None
-                    if data:
-                        paths = list(filter(bool, data.split("\n")))
-                        if paths:
-                            path = paths[-1]
-                            print(f"\tdefault path is set to {path}")
+    def start_slideshow_for_current_folder(self):
+        if LibraryData().current_folder().images_list:
+            Slideshow.start_slideshow(self)
         else:
-            Globals.started_from_sublime_text = False
-    return path
+            self.show_center_label(_("No images to show"), error=True)
+        self.update()
 
-class HookConsoleOutput:
-    messages = []
-    def __init__(self):
-        self.console = sys.stdout
-        # self.file = open('file.txt', 'w')
-
-    def write(self, message):
-        if self.console:
-            self.console.write(message)
-        type(self).messages.insert(0, (time.time(), message))
-        type(self).messages = type(self).messages[:100]
-        # self.file.write(message)
-
-    def flush(self):
-        if self.console:
-            self.console.flush()
-        # self.file.flush()
-
-    @classmethod
-    def check_messages(cls):
-        return bool(list(cls.get_messages()))
-
-    @classmethod
-    def clear_messages_list(cls):
-        cls.messages.clear()
-
-    @classmethod
-    def get_messages(cls):
-        l = []
-        for timestamp, msg in cls.messages:
-            if (time.time() - timestamp) < 10:
-                l.append((timestamp, msg))
-        return reversed(l)
-
-def run_as_IPC_server_or_IPC_client(path):
-    def choose_start_option_callback(do_start_IPC_server, _path):
-        if Globals.force_standard_mode:
-            ret = QMessageBox.No
-        else:
-            if Globals.do_not_show_start_dialog:
-                # запускаем лайтоый (упрощённый) режим
-                ret = QMessageBox.Yes
-            else:
-                # иначе по дефолту не запускаем, но обязательно спрашиваем
-                ret = QMessageBox.No
-                if not Globals.started_from_sublime_text:
-                    if os.path.exists(_path):
-                        ret = QMessageBox.question(None,
-                            _("Question"),
-                            _("No running app instance at the moment.\nStart app in lite mode?"),
-                            QMessageBox.Yes | QMessageBox.No | QMessageBox.Close,
-                            )
-        if ret == QMessageBox.Yes:
-            print("------ RERUN FROM 'CHOOSE_START_OPTION_CALLBACK' ------")
-            restart_process_in_lite_mode(_path)
-            sys.exit(0)
-        elif ret == QMessageBox.No:
-            # finally start server
-            do_start_IPC_server()
-        elif ret == QMessageBox.Close:
-            sys.exit(0)
-
-    def open_request_as_IPC_server_callback(_path):
-        # Сначала проверяем, открылось ли приложение полностью и открылось ли окно.
-        # Ведь при старте приложения может прилететь несколько запросов сразу,
-        # благодаря тому, что в проводнике Windows можно зажать Enter над картинкой
-        MW = Globals.main_window
-        if (MW is not None) and (path is not None):
-            ok = False
-            try:
-                LibraryData().handle_input_data(_path)
-                ok = True
-            except:
-                QMessageBox.critical(None, "Request Handling Error", f"{traceback.format_exc()}\nPath: {path}\nID: {os.getpid()}")
-            if ok:
-                if MW.frameless_mode:
-                    MW.showMaximized()
-                else:
-                    MW.show()
-                MW.activateWindow()
-                to_print = f'retrieved data path: {_path}'
-                print(to_print)
-
-    return IPC.via_sockets(path, open_request_as_IPC_server_callback, choose_start_option_callback)
-
-
-
-def retrieve_cmd_args():
-    bin_args = []
-    iterable = vars(Globals.args).items()
-    for arg_name, arg_value in iterable:
-        if isinstance(arg_value, bool):
-            if arg_value:
-                bin_args.append(f'-{arg_name}')
-        elif isinstance(arg_value, str):
-            bin_args.append(arg_value)
-        elif isinstance(arg_value, type(None)):
-            pass
-        else:
-            raise Exception(f'Not supported argument "{arg_name}" with value "{arg_value}"')
-    return bin_args
 
 def main():
     try:
         MainWindow.APP_main()
     except Exception as e:
-        excepthook(type(e), e, traceback.format_exc())
+        MainWindow.APP_excepthook(type(e), e, traceback.format_exc())
 
 if __name__ == '__main__':
     main()

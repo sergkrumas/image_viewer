@@ -362,14 +362,7 @@ class ControlPanel(QWidget, UtilsMixin):
         self.LibraryData().show_previous_image()
 
     def play(self):
-        MW = self.globals.main_window
-        Slideshow.globals = self.globals
-        Slideshow.LibraryData = self.LibraryData
-        if self.LibraryData().current_folder().images_list:
-            Slideshow.start_slideshow()
-        else:
-            MW.show_center_label(_("No images to show"), error=True)
-        MW.update()
+        self.globals.main_window.start_slideshow_for_current_folder()
 
     def show_next(self):
         self.LibraryData().show_next_image()
@@ -1546,118 +1539,6 @@ class ControlPanel(QWidget, UtilsMixin):
             self.do_toggle_fullscreen()
         self.globals.control_panel.update()
         MW.update()
-
-class Slideshow(QWidget):
-    @classmethod
-    def start_slideshow(cls):
-        main_window = cls.globals.main_window
-        slideshow = Slideshow(main_window)
-        desktop = QDesktopWidget()
-        screen_geometry = desktop.screenGeometry(slideshow)
-        slideshow.move(screen_geometry.x(), screen_geometry.y())
-        slideshow.resize(screen_geometry.width(), screen_geometry.height())
-        slideshow.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        slideshow.setAttribute(Qt.WA_TranslucentBackground)
-        slideshow.show()
-
-    def paintEvent(self, event):
-        painter = QPainter()
-        painter.begin(self)
-        c = QColor(Qt.black)
-        painter.setBrush(QBrush(c))
-        painter.setOpacity(self.opacity)
-        painter.drawRect(self.rect())
-        painter.setPen(QPen(QColor(Qt.white)))
-        font = painter.font()
-        font.setPixelSize(30)
-        font.setWeight(1900)
-        font.setFamily("Consolas")
-        painter.setFont(font)
-        painter.drawText(QRectF(self.rect()), Qt.AlignCenter, self.text)
-        main_window = self.globals.main_window
-        t = fit(
-            time.time(),
-            self.start_time,
-            self.start_time+self.TRANSITION_DURATION,
-            0.0,
-            1.0
-        )
-        # t = min(t, 1.0)
-        painter.setOpacity((1.0-t)*self.opacity)
-        if self.p1:
-            target = fit_rect_into_rect(self.p1.rect(), self.rect())
-            painter.drawPixmap(target, self.p1, self.p1.rect())
-        painter.setOpacity(t*self.opacity)
-        if self.p2:
-            target = fit_rect_into_rect(self.p2.rect(), self.rect())
-            painter.drawPixmap(target, self.p2, self.p2.rect())
-        painter.end()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__( *args, **kwargs)
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.inner_timer)
-        self.timer_interval = 10
-        self.timer.setInterval(self.timer_interval)
-        self.timer.start()
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        images_list = self.LibraryData().current_folder().images_list
-        images_list = [im for im in images_list if im.is_supported_filetype]
-        self.pairs = get_cycled_pairs_slideshow(images_list)
-        self.opacity = 0.001
-        self.increase_opacity = True
-        self.show_this()
-        self.p1 = None
-        self.p2 = None
-        self.set_pics()
-        main_window = self.globals.main_window
-        self.TRANSITION_DURATION = main_window.STNG_slides_transition_duration
-        self.DELAY_DURATION = main_window.STNG_slides_delay_duration
-
-    def load_pixmap(self, filepath):
-        return load_image_respect_orientation(filepath, highres_svg=self.LibraryData().is_svg_file(filepath))
-
-    def set_pics(self):
-        pair = next(self.pairs)
-        p1, p2, text = pair
-        # загружаем картинки
-        self.p1 = self.load_pixmap(p1.filepath)
-        self.p2 = self.load_pixmap(p2.filepath)
-        # время задаётся только после загрузок картинок!
-        self.start_time = time.time()
-        self.text = text
-
-    def inner_timer(self):
-        self.update()
-
-        SHOW_HIDE_SPEED = 0.03
-        if self.increase_opacity:
-            self.opacity += SHOW_HIDE_SPEED
-        else:
-            self.opacity -= SHOW_HIDE_SPEED
-        self.opacity = min(max(0.0, self.opacity), 1.0)
-        if self.opacity == 0.0 and not self.increase_opacity:
-            self.close()
-        # закрыть, если окно потеряло фокус
-        window_hwnd = int(self.winId())
-        foreground_hwnd = ctypes.windll.user32.GetForegroundWindow()
-        if foreground_hwnd != window_hwnd:
-            self.close_this()
-
-        if time.time() - self.start_time > (self.TRANSITION_DURATION + self.DELAY_DURATION):
-            if self.increase_opacity:
-                self.set_pics()
-        self.setCursor(Qt.BlankCursor)
-
-    def show_this(self):
-        self.increase_opacity = True
-
-    def close_this(self):
-        self.increase_opacity = False
-
-    def keyReleaseEvent(self, event):
-        self.close_this()
-
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
