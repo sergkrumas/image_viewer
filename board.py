@@ -801,20 +801,23 @@ class BoardMixin(BoardTextEditItemMixin):
                 partial(self.toggle_boolean_var_generic, self, 'board_debug_transform_widget')
             ),
             (
+                _("Use pixmap-proxy for text items"),
+                self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS,
+                partial(self.toggle_boolean_var_generic, self.Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')
+            ),
+            (
                 _("Cursor scrubbing optimizer"),
                 self.cursor_scrubbing_optimizer,
                 partial(self.toggle_boolean_var_generic, self, 'cursor_scrubbing_optimizer')
             ),
             (
-                _("Use pixmap-proxy for text items"),
-                self.Globals.USE_PIXMAP_PROXY_FOR_TEXT_ITEMS,
-                partial(self.toggle_boolean_var_generic, self.Globals, 'USE_PIXMAP_PROXY_FOR_TEXT_ITEMS')
+                _("Сontrol with a gamepad"),
+                hidapi_adapter.is_gamepad_input_ready(self),
+                partial(hidapi_adapter.toggle_gamepad_inputs, self)
             ),
         ))
         sep = contextMenu.addSeparator
         sep()
-
-        addItem(_("Activate/desactivate gamepad input"), self.board_toogle_gamepad_input)
 
         self.board_ContextMenuPluginsDefault(event, contextMenu)
 
@@ -3996,9 +3999,6 @@ class BoardMixin(BoardTextEditItemMixin):
             )
 
         self.update()
-
-    def board_toogle_gamepad_input(self):
-        hidapi_adapter.toggle_gamepad_inputs(self)
 
     def board_fit_selected_items_on_screen(self):
         self.board_fit_content_on_screen(None, use_selection=True)
