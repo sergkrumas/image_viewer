@@ -108,7 +108,7 @@ class LineEyedropperToolMixin():
         return False
 
     def LET_is_let_tool_activated(self):
-        return self.let_tool_activated
+        return self.let_tool_activated or self.let_catch_input_data
 
     def LET_set_cursor(self):
         if self.let_tool_activated:
@@ -116,6 +116,8 @@ class LineEyedropperToolMixin():
                 self.setCursor(Qt.PointingHandCursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
+        elif self.let_catch_input_data:
+            self.setCursor(Qt.ArrowCursor)
 
     def LET_find_point_perp_intersection(self, line, point):
         perpendic_line = QLineF(point, QPointF(point.x(), 0.0))
@@ -323,10 +325,20 @@ class LineEyedropperToolMixin():
         self.LET_hover_plots = False
 
     def LET_draw_info(self, painter):
+        cursor_pos = self.mapped_cursor_pos()
+        if self.let_catch_input_data and not self.let_tool_activated:
+
+            painter.setPen(QPen(QColor(100, 100, 100), 1))
+            painter.setBrush(Qt.NoBrush)
+
+            r = self.LET_build_input_point_rect(cursor_pos)
+            r.adjust(15, 15, -15, -15)
+            painter.drawEllipse(r)
+            painter.drawText(r.bottomRight()+QPoint(10, 0), _("Make two left-clicks to begin"))
+
         if self.let_tool_activated and len(self.let_tool_input_points) > 0:
             self.LET_hover_init()
 
-            cursor_pos = self.mapFromGlobal(QCursor().pos())
             if len(self.let_tool_input_points) < 2:
                 p2 = cursor_pos
                 p1 = self.let_tool_input_points[0]
