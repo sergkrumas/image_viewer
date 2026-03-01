@@ -119,7 +119,279 @@ class BWFilterState():
                 break
         return next(cycled_states)
 
-class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, SlicePipetteToolMixin):
+class AppMixin():
+    
+    @classmethod
+    def APP_main(cls):
+
+        os.chdir(os.path.dirname(__file__))
+        sys.excepthook = excepthook
+        pid = os.getpid()
+        arguments = ", ".join(sys.argv)
+        print(f'Proccess ID: {pid} Command Arguments: {arguments}')
+
+        if not Globals.SUPER_LITE:
+            if not Globals.DEBUG:
+                if not Globals.SUPRESS_RERUN:
+                    RERUN_ARG = '-rerun'
+                    # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
+                    # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
+                    # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
+                    if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
+                        subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
+                        sys.exit()
+
+        _was_DEBUG = Globals.DEBUG
+        if sys.argv[0].lower().endswith("_viewer.pyw"):
+            Globals.DEBUG = True
+        else:
+            Globals.DEBUG = False
+
+
+        sys.stdout = HookConsoleOutput()
+
+        path = get_predefined_path_if_started_from_sublimeText()
+
+        SettingsWindow.globals = Globals
+        SettingsWindow.load_from_disk()
+
+        Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
+
+        app = QApplication(sys.argv)
+        app.aboutToQuit.connect(exit_threads)
+
+        # задание иконки для таскбара
+        myappid = 'sergei_krumas.image_viewer.client.1'
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        app_icon = QIcon()
+        path_icon = os.path.abspath(os.path.join(".", "..", "icons/image_viewer.ico"))
+        if not os.path.exists(path_icon) or True:
+            path_icon = os.path.join(os.path.dirname(__file__), "image_viewer.ico")
+        app_icon.addFile(path_icon)
+        app.setWindowIcon(app_icon)
+
+        if viewer_dll is None:
+            Globals.explorer_paths = []
+        else:
+            Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
+
+        frameless_mode = True and SettingsWindow.get_setting_value("show_fullscreen")
+        # разбор аргументов
+        parser = argparse.ArgumentParser()
+        parser.add_argument('path', nargs='?', default=None)
+        parser.add_argument('-lite', help="", action="store_true")
+        parser.add_argument('-standard', help="", action="store_true")
+        parser.add_argument('-frame', help="", action="store_true")
+        parser.add_argument('-forcelibrarypage', help="", action="store_true")
+        parser.add_argument('-rerun', help="", action="store_true")
+        parser.add_argument('-aftercrash', help="", action="store_true")
+        parser.add_argument('-board', help='', action='store_true')
+        args = parser.parse_args(sys.argv[1:])
+        # print(args)
+        Globals.args = args
+        if args.path:
+            path = args.path
+        if args.frame:
+            frameless_mode = False
+        if args.aftercrash:
+            Globals.aftercrash = True
+        Globals.lite_mode = args.lite
+        Globals.force_standard_mode = args.standard
+
+        if _was_DEBUG and Globals.FORCE_STANDARD_DEBUG:
+            Globals.lite_mode = False
+            Globals.force_standard_mode = True
+            path = get_predefined_path_if_started_from_sublimeText()
+
+        if Globals.SUPER_LITE:
+            # нужно здесь для того, чтобы не тратить время на долгий вызов ServerOrClient.ipc_via_sockets
+            # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
+            Globals.lite_mode = True
+
+        if Globals.lite_mode:
+            app_icon = QIcon()
+            path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_lite.ico")
+            app_icon.addFile(path_icon)
+            app.setWindowIcon(app_icon)
+            app.setQuitOnLastWindowClosed(True)
+
+        if Globals.aftercrash:
+            filepath = get_crashlog_filepath()
+            crashfileinfo = _("Crash info save to file\n\t{0}").format(filepath)
+            msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
+            ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
+            if ret == QMessageBox.Yes:
+                _restart_app()
+            sys.exit(0)
+
+        if not Globals.lite_mode:
+            path = run_as_IPC_server_or_IPC_client(path)
+
+        Globals.is_path_exists = os.path.exists(path)
+
+        generate_pixmaps(Globals, SettingsWindow)
+
+        # создание иконки в трее
+        sti = None
+        if not Globals.lite_mode:
+            sti = cls.APP_add_icon_to_system_tray(app, app_icon)
+
+        # инициализация библиотеки
+        LibraryData.globals = Globals
+        LibraryData.FolderData = FolderData
+        # загрузка данных библиотеки
+        lib = LibraryData()
+        # создание элементов интерфейса
+        MainWindow.globals = Globals
+        MainWindow.LibraryData = LibraryData
+        MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
+        if frameless_mode:
+            MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown
+            if not SettingsWindow.get_setting_value("hide_on_app_start"):
+                MW.showMaximized()
+        else:
+            MW.show()
+            MW.resize(800, 540)
+        MW.setWindowIcon(app_icon)
+
+        # создание панели управления
+        ControlPanel.globals = Globals
+        ControlPanel.LibraryData = LibraryData
+        ControlPanel.SettingsWindow = SettingsWindow
+        # CP = MW.recreate_control_panel()
+
+        legacy_viewer_page_branch = True
+        # Нужно для того, чтобы иконка показалась в таскбаре.
+        # И нужно это делать до того как будет показана панель управления.
+        if not os.path.exists(path):
+            # если путь не задан, то по дефолту
+            # будет отображена стартовая страница
+
+            if args.board:
+                LibraryData().create_empty_virtual_folder()
+                # тут хороший приём применён:
+                # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
+                # а потом уже меняем полностью через change_page
+                MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
+                # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
+                MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
+                if path.lower().endswith('.board'):
+                    MW.board_loadBoard(path)
+                elif path.lower().endswith('.py'):
+                    MW.board_loadPluginBoard(path)
+                else:
+                    raise Exception(f'Unable to handle board argument {path}')
+                legacy_viewer_page_branch = False
+
+        else:
+            waterfall_page_needed = SettingsWindow.get_setting_value("open_app_on_waterfall_page")
+            if waterfall_page_needed:
+                MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
+
+            else:
+                MW.change_page_at_appstart(MW.pages.VIEWER_PAGE)
+
+            MW.update()
+
+        processAppEvents()
+
+        # обработка входящих данных
+        if legacy_viewer_page_branch:
+            if path:
+                LibraryData().handle_input_data(path, check_windows_explorer_window=True)
+            else:
+                # без запроса
+                LibraryData().create_empty_virtual_folder()
+            if args.forcelibrarypage:
+                MW.change_page(MW.pages.LIBRARY_PAGE)
+
+        # вход в петлю обработки сообщений
+        exit_code = app.exec()
+        if sti:
+            sti.hide()
+        sys.exit(exit_code)
+
+    @classmethod
+    def APP_add_icon_to_system_tray(cls, app, icon):
+        sti = QSystemTrayIcon(app)
+        sti.setIcon(icon)
+        app.setProperty("stray_icon", sti)
+
+        if True:
+            # вариант анимации с сияющим светодиодом в центре иконки приложения
+            app_icon1 = QIcon()
+            path_icon1 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_green.ico")
+            app_icon1.addFile(path_icon1)
+            app_icon2 = QIcon()
+            path_icon2 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_yellow.ico")
+            app_icon2.addFile(path_icon2)
+            icons = itertools.cycle((app_icon1, app_icon2))
+            def tray_icon_animation_step():
+                sti.setIcon(next(icons))
+        else:
+            # вариант анимации, где иконка сдвигается влево, и затем появляется справа,
+            # и потом анимация зацикливается
+            ICON_HEIGHT = 32
+            # список оффестов иконки для получения бесшовной анимации
+            offsets = list(range(0, ICON_HEIGHT+1))
+            offsets.extend(list(range(-ICON_HEIGHT, 0)))
+            opm = QPixmap(icon.pixmap(icon.actualSize(QSize(ICON_HEIGHT, ICON_HEIGHT))))
+            offsets = itertools.cycle(offsets)
+            def tray_icon_animation_step():
+                offset = next(offsets)
+                pm = QPixmap(opm.width(), opm.height())
+                pm.fill(Qt.transparent)
+                painter = QPainter()
+                painter.begin(pm)
+                painter.drawPixmap(QPoint(offset, 0), opm)
+                painter.end()
+                icon_frame = QIcon(pm)
+                sti.setIcon(icon_frame)
+
+        def tray_icon_animation_reset():
+            sti.setIcon(icon)
+
+        app.setProperty('tray_icon_animation_step', tray_icon_animation_step)
+        app.setProperty('tray_icon_animation_reset', tray_icon_animation_reset)
+
+        @pyqtSlot()
+        def on_trayicon_activated(reason):
+            MW = Globals.main_window
+            if reason == QSystemTrayIcon.Trigger:
+                if MW.frameless_mode:
+                    MW.showMaximized()
+                    if MW.need_for_init_after_call_from_tray:
+                        MW.need_for_init_after_call_from_tray = False
+                        MW.restore_image_transformations()
+                        MW.update()
+                else:
+                    MW.showNormal()
+                MW.activateWindow()
+            if reason == QSystemTrayIcon.Context:
+                menu = QMenu()
+                process = psutil.Process(os.getpid())
+                mb_size = process.memory_info().rss / 1024 / 1024
+                msg = _("Memory allocated")
+                memory_status = f'{msg} ~{mb_size:0.2f} MB'
+                memory = menu.addAction(memory_status)
+                menu.addSeparator()
+                quit = menu.addAction('Quit')
+                action = menu.exec_(QCursor().pos())
+                if action == quit:
+                    app = QApplication.instance()
+                    app.quit()
+                elif action == memory:
+                    msg = _("Purge unused objects")
+                    QMessageBox.critical(None, "Not implemented", msg)
+            return
+        sti.activated.connect(on_trayicon_activated)
+        sti.setToolTip("\n".join((Globals.app_title, Globals.github_repo)))
+        sti.show()
+        return sti
+
+
+
+class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, SlicePipetteToolMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -5455,82 +5727,6 @@ def input_path_dialog(path, exit=True):
             sys.exit()
     return path
 
-def show_system_tray(app, icon):
-    sti = QSystemTrayIcon(app)
-    sti.setIcon(icon)
-    app.setProperty("stray_icon", sti)
-
-    if True:
-        # вариант анимации с сияющим светодиодом в центре иконки приложения
-        app_icon1 = QIcon()
-        path_icon1 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_green.ico")
-        app_icon1.addFile(path_icon1)
-        app_icon2 = QIcon()
-        path_icon2 = os.path.join(os.path.dirname(__file__), r"icon_source\led_glow_yellow.ico")
-        app_icon2.addFile(path_icon2)
-        icons = itertools.cycle((app_icon1, app_icon2))
-        def tray_icon_animation_step():
-            sti.setIcon(next(icons))
-    else:
-        # вариант анимации, где иконка сдвигается влево, и затем появляется справа,
-        # и потом анимация зацикливается
-        ICON_HEIGHT = 32
-        # список оффестов иконки для получения бесшовной анимации
-        offsets = list(range(0, ICON_HEIGHT+1))
-        offsets.extend(list(range(-ICON_HEIGHT, 0)))
-        opm = QPixmap(icon.pixmap(icon.actualSize(QSize(ICON_HEIGHT, ICON_HEIGHT))))
-        offsets = itertools.cycle(offsets)
-        def tray_icon_animation_step():
-            offset = next(offsets)
-            pm = QPixmap(opm.width(), opm.height())
-            pm.fill(Qt.transparent)
-            painter = QPainter()
-            painter.begin(pm)
-            painter.drawPixmap(QPoint(offset, 0), opm)
-            painter.end()
-            icon_frame = QIcon(pm)
-            sti.setIcon(icon_frame)
-
-    def tray_icon_animation_reset():
-        sti.setIcon(icon)
-
-    app.setProperty('tray_icon_animation_step', tray_icon_animation_step)
-    app.setProperty('tray_icon_animation_reset', tray_icon_animation_reset)
-
-    @pyqtSlot()
-    def on_trayicon_activated(reason):
-        MW = Globals.main_window
-        if reason == QSystemTrayIcon.Trigger:
-            if MW.frameless_mode:
-                MW.showMaximized()
-                if MW.need_for_init_after_call_from_tray:
-                    MW.need_for_init_after_call_from_tray = False
-                    MW.restore_image_transformations()
-                    MW.update()
-            else:
-                MW.showNormal()
-            MW.activateWindow()
-        if reason == QSystemTrayIcon.Context:
-            menu = QMenu()
-            process = psutil.Process(os.getpid())
-            mb_size = process.memory_info().rss / 1024 / 1024
-            msg = _("Memory allocated")
-            memory_status = f'{msg} ~{mb_size:0.2f} MB'
-            memory = menu.addAction(memory_status)
-            menu.addSeparator()
-            quit = menu.addAction('Quit')
-            action = menu.exec_(QCursor().pos())
-            if action == quit:
-                app = QApplication.instance()
-                app.quit()
-            elif action == memory:
-                msg = _("Purge unused objects")
-                QMessageBox.critical(None, "Not implemented", msg)
-        return
-    sti.activated.connect(on_trayicon_activated)
-    sti.setToolTip("\n".join((Globals.app_title, Globals.github_repo)))
-    sti.show()
-    return sti
 
 def get_crashlog_filepath():
     return os.path.join(os.path.dirname(__file__), "crash.log")
@@ -5750,194 +5946,6 @@ def run_as_IPC_server_or_IPC_client(path):
     return IPC.via_sockets(path, open_request_as_IPC_server_callback, choose_start_option_callback)
 
 
-def _main():
-
-    os.chdir(os.path.dirname(__file__))
-    sys.excepthook = excepthook
-    pid = os.getpid()
-    arguments = ", ".join(sys.argv)
-    print(f'Proccess ID: {pid} Command Arguments: {arguments}')
-
-    if not Globals.SUPER_LITE:
-        if not Globals.DEBUG:
-            if not Globals.SUPRESS_RERUN:
-                RERUN_ARG = '-rerun'
-                # Этот перезапуск с аргументом -rerun нужен для борьбы с идиотским проводником Windows,
-                # который зачем-то запускает два процесса, и затем они держатся запущенными только для того,
-                # чтобы работал один единственный процесс. У меня же всё традиционно, поэтому обязательный перезапуск.
-                if (RERUN_ARG not in sys.argv) and ("-aftercrash" not in sys.argv):
-                    subprocess.Popen([sys.executable, *sys.argv, RERUN_ARG])
-                    sys.exit()
-
-    _was_DEBUG = Globals.DEBUG
-    if sys.argv[0].lower().endswith("_viewer.pyw"):
-        Globals.DEBUG = True
-    else:
-        Globals.DEBUG = False
-
-
-    sys.stdout = HookConsoleOutput()
-
-    path = get_predefined_path_if_started_from_sublimeText()
-
-    SettingsWindow.globals = Globals
-    SettingsWindow.load_from_disk()
-
-    Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
-
-    app = QApplication(sys.argv)
-    app.aboutToQuit.connect(exit_threads)
-
-    # задание иконки для таскбара
-    myappid = 'sergei_krumas.image_viewer.client.1'
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    app_icon = QIcon()
-    path_icon = os.path.abspath(os.path.join(".", "..", "icons/image_viewer.ico"))
-    if not os.path.exists(path_icon) or True:
-        path_icon = os.path.join(os.path.dirname(__file__), "image_viewer.ico")
-    app_icon.addFile(path_icon)
-    app.setWindowIcon(app_icon)
-
-    if viewer_dll is None:
-        Globals.explorer_paths = []
-    else:
-        Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
-
-    frameless_mode = True and SettingsWindow.get_setting_value("show_fullscreen")
-    # разбор аргументов
-    parser = argparse.ArgumentParser()
-    parser.add_argument('path', nargs='?', default=None)
-    parser.add_argument('-lite', help="", action="store_true")
-    parser.add_argument('-standard', help="", action="store_true")
-    parser.add_argument('-frame', help="", action="store_true")
-    parser.add_argument('-forcelibrarypage', help="", action="store_true")
-    parser.add_argument('-rerun', help="", action="store_true")
-    parser.add_argument('-aftercrash', help="", action="store_true")
-    parser.add_argument('-board', help='', action='store_true')
-    args = parser.parse_args(sys.argv[1:])
-    # print(args)
-    Globals.args = args
-    if args.path:
-        path = args.path
-    if args.frame:
-        frameless_mode = False
-    if args.aftercrash:
-        Globals.aftercrash = True
-    Globals.lite_mode = args.lite
-    Globals.force_standard_mode = args.standard
-
-    if _was_DEBUG and Globals.FORCE_STANDARD_DEBUG:
-        Globals.lite_mode = False
-        Globals.force_standard_mode = True
-        path = get_predefined_path_if_started_from_sublimeText()
-
-    if Globals.SUPER_LITE:
-        # нужно здесь для того, чтобы не тратить время на долгий вызов ServerOrClient.ipc_via_sockets
-        # (ведь сокет секунду ждёт ответа, чтобы понять что делать дальше)
-        Globals.lite_mode = True
-
-    if Globals.lite_mode:
-        app_icon = QIcon()
-        path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_lite.ico")
-        app_icon.addFile(path_icon)
-        app.setWindowIcon(app_icon)
-        app.setQuitOnLastWindowClosed(True)
-
-    if Globals.aftercrash:
-        filepath = get_crashlog_filepath()
-        crashfileinfo = _("Crash info save to file\n\t{0}").format(filepath)
-        msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
-        ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
-        if ret == QMessageBox.Yes:
-            _restart_app()
-        sys.exit(0)
-
-    if not Globals.lite_mode:
-        path = run_as_IPC_server_or_IPC_client(path)
-
-    Globals.is_path_exists = os.path.exists(path)
-
-    generate_pixmaps(Globals, SettingsWindow)
-
-    # создание иконки в трее
-    sti = None
-    if not Globals.lite_mode:
-        sti = show_system_tray(app, app_icon)
-
-    # инициализация библиотеки
-    LibraryData.globals = Globals
-    LibraryData.FolderData = FolderData
-    # загрузка данных библиотеки
-    lib = LibraryData()
-    # создание элементов интерфейса
-    MainWindow.globals = Globals
-    MainWindow.LibraryData = LibraryData
-    MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
-    if frameless_mode:
-        MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown
-        if not SettingsWindow.get_setting_value("hide_on_app_start"):
-            MW.showMaximized()
-    else:
-        MW.show()
-        MW.resize(800, 540)
-    MW.setWindowIcon(app_icon)
-
-    # создание панели управления
-    ControlPanel.globals = Globals
-    ControlPanel.LibraryData = LibraryData
-    ControlPanel.SettingsWindow = SettingsWindow
-    # CP = MW.recreate_control_panel()
-
-    legacy_viewer_page_branch = True
-    # Нужно для того, чтобы иконка показалась в таскбаре.
-    # И нужно это делать до того как будет показана панель управления.
-    if not os.path.exists(path):
-        # если путь не задан, то по дефолту
-        # будет отображена стартовая страница
-
-        if args.board:
-            LibraryData().create_empty_virtual_folder()
-            # тут хороший приём применён:
-            # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
-            # а потом уже меняем полностью через change_page
-            MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
-            # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
-            MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
-            if path.lower().endswith('.board'):
-                MW.board_loadBoard(path)
-            elif path.lower().endswith('.py'):
-                MW.board_loadPluginBoard(path)
-            else:
-                raise Exception(f'Unable to handle board argument {path}')
-            legacy_viewer_page_branch = False
-
-    else:
-        waterfall_page_needed = SettingsWindow.get_setting_value("open_app_on_waterfall_page")
-        if waterfall_page_needed:
-            MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
-
-        else:
-            MW.change_page_at_appstart(MW.pages.VIEWER_PAGE)
-
-        MW.update()
-
-    processAppEvents()
-
-    # обработка входящих данных
-    if legacy_viewer_page_branch:
-        if path:
-            LibraryData().handle_input_data(path, check_windows_explorer_window=True)
-        else:
-            # без запроса
-            LibraryData().create_empty_virtual_folder()
-        if args.forcelibrarypage:
-            MW.change_page(MW.pages.LIBRARY_PAGE)
-
-    # вход в петлю обработки сообщений
-    exit_code = app.exec()
-    if sti:
-        sti.hide()
-    sys.exit(exit_code)
 
 def retrieve_cmd_args():
     bin_args = []
@@ -5956,7 +5964,7 @@ def retrieve_cmd_args():
 
 def main():
     try:
-        _main()
+        MainWindow.APP_main()
     except Exception as e:
         excepthook(type(e), e, traceback.format_exc())
 
