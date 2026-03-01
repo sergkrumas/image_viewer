@@ -28,6 +28,7 @@ from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
 from tagging import TaggingMixing
 from line_eyedropper_tool import LineEyedropperToolMixin
+from xyz_dispatcher import XYZMixin
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
@@ -741,7 +742,16 @@ class Slideshow(QWidget):
         self.close_this()
 
 
-class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, LineEyedropperToolMixin):
+class MainWindow(QMainWindow,
+                    UtilsMixin,
+                    AppMixin,
+                    BoardMixin,
+                    HelpWidgetMixin,
+                    CommentingMixin,
+                    TaggingMixing,
+                    LineEyedropperToolMixin,
+                    XYZMixin,
+        ):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01
@@ -1070,6 +1080,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
                 color: rgb(220, 220, 220);
             }
         """
+
+        self.init_XYZ()
 
     def dragEnterEvent(self, event):
         if self.is_board_page_active():
@@ -5595,7 +5607,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         # триггера, он может вызвать их со своими аргументами, которые нам здесь не нужны.
         # Однако, если их не экранировать через лямбду, они перепишут значения именованых
         # аргументов в колбэках. Таким образом, благодаря лямбде ниже, мы их отбрасываем.
-        action.triggered.connect(lambda: callback()) 
+        action.triggered.connect(lambda: callback())
         return action
 
     def open_folder_menu_item(self, contextMenu, event):

@@ -41,7 +41,7 @@ from PyQt5.QtGui import *
 # el.install() # copies el.gettext as _ to builtins for all app modules
 
 # IMPORTANT!
-# use 
+# use
 # `__import__('builtins').__dict__['_'] = __import__('gettext').gettext`
 # instead
 # `from gettext import gettext as _`
@@ -313,7 +313,7 @@ class MenuWindow(QMainWindow):
 
     def sync_po_files_handler(self, this_folder):
         sync_po_files(
-            this_folder, 
+            this_folder,
             keep_old_entries=self.keep_old_entries_chb.isChecked()
         )
 
