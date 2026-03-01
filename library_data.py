@@ -232,7 +232,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def on_current_folder_changed(self):
         mw = self.globals.main_window
-        if mw.viewer_modal:
+        if mw and mw.viewer_modal:
             mw.leave_modal_viewer()
 
     def go_to_folder_of_current_image(self):
