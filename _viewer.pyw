@@ -27,7 +27,7 @@ from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
 from tagging import TaggingMixing
-from slice_pipette_tool import SlicePipetteToolMixin
+from line_eyedropper_tool import LineEyedropperToolMixin
 
 from pixmaps_generation import generate_pixmaps
 from settings_handling import SettingsWindow
@@ -741,7 +741,7 @@ class Slideshow(QWidget):
         self.close_this()
 
 
-class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, SlicePipetteToolMixin):
+class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin, CommentingMixin, TaggingMixing, LineEyedropperToolMixin):
 
     UPPER_SCALE_LIMIT = 100.0
     LOWER_SCALE_LIMIT = 0.01

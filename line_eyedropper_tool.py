@@ -24,7 +24,7 @@ from functools import partial
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 
-class SlicePipetteToolMixin():
+class LineEyedropperToolMixin():
 
 
     def SPT_init(self):
