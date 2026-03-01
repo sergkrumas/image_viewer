@@ -975,7 +975,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         self.CornerUIButtons = CornerUIButtons
         self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
 
-        self.SPT_init()
+        self.LET_init()
 
         self.gamepad_thread_instance = None
         self.left_stick_vec = QPointF(0, 0)
@@ -2376,8 +2376,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             if False:
                 pass
 
-            elif self.SPT_is_spt_tool_activated():
-                self.SPT_set_cursor()
+            elif self.LET_is_let_tool_activated():
+                self.LET_set_cursor()
 
             elif self.cursor_corners_buttons_and_menus():
                 pass
@@ -2689,8 +2689,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self.corner_UI_button_pressed = corner_UI_button
             return
 
-        if self.SPT_check_mouse_event_inside_input_point(event):
-            self.SPT_mousePressEvent(event)
+        if self.LET_check_mouse_event_inside_input_point(event):
+            self.LET_mousePressEvent(event)
             return
 
         if self.is_board_page_active():
@@ -2862,8 +2862,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         if self.corner_UI_button_pressed > self.CornerUIButtons.NO_BUTTON:
             return
 
-        if self.spt_input_point_dragging:
-            self.SPT_mouseMoveEvent(event)
+        if self.let_input_point_dragging:
+            self.LET_mouseMoveEvent(event)
             return
 
         if self.is_board_page_active():
@@ -2944,8 +2944,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
             return
 
-        if self.spt_input_point_dragging:
-            self.SPT_mouseReleaseEvent(event)
+        if self.let_input_point_dragging:
+            self.LET_mouseReleaseEvent(event)
             return
 
         if self.is_board_page_active():
@@ -4054,7 +4054,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
 
 
         # draw slice pipette tool
-        self.SPT_draw_info(painter)
+        self.LET_draw_info(painter)
 
 
         # draw center label
@@ -5091,15 +5091,15 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
 
 
             if key == Qt.Key_F5:
-                self.SPT_update()
+                self.LET_update()
             elif key == Qt.Key_F6:
-                self.SPT_toggle_tool_state()
+                self.LET_toggle_tool_state()
             elif key == Qt.Key_F7:
-                self.SPT_set_plots_position()
+                self.LET_set_plots_position()
             elif key == Qt.Key_F8:
-                self.SPT_cycle_toggle_scale_factor_value()
-            elif self.spt_tool_activated and check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier:
-                self.SPT_copy_current_to_clipboard()
+                self.LET_cycle_toggle_scale_factor_value()
+            elif self.let_tool_activated and check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier:
+                self.LET_copy_current_to_clipboard()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
@@ -5807,8 +5807,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         sep()
         addItem(_("Hide this menu"), lambda: None).setShortcut(Qt.Key_Escape)
 
-        if self.SPT_is_context_menu_allowed():
-            self.SPT_context_menu(event)
+        if self.LET_is_context_menu_allowed():
+            self.LET_context_menu(event)
         else:
             action = cM.exec_(self.mapToGlobal(event.pos()))
 
