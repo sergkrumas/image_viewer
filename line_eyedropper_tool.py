@@ -451,6 +451,8 @@ class LineEyedropperToolMixin():
                         painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.let_tool_pixels_colors)*self.let_hor_scale_factor, 0))
 
 
+            plot_black = QColor(10, 10, 10)
+
             # draw plots
             if len(self.let_tool_input_points) > 1:
 
@@ -459,7 +461,7 @@ class LineEyedropperToolMixin():
                 painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
 
-                painter.fillRect(backplate_rect1, Qt.white)
+                painter.fillRect(backplate_rect1, plot_black)
                 draw_plot_line(plot1_pos)
 
                 # RGB plot
@@ -493,21 +495,46 @@ class LineEyedropperToolMixin():
                                     painter.drawLine(_pos, plot_pos)
                             prev_pc_pos[color_num] = QPoint(plot_pos)
 
-                painter.fillRect(backplate_rect2, Qt.white)
+                painter.fillRect(backplate_rect2, plot_black)
                 draw_plot_line(plot2_pos, hue_level=True)
 
                 if plp_index > -1:
+                    def calc_string_rect(string):
+                        return painter.boundingRect(QRect(), Qt.AlignLeft, string)
+                    def calc_string_width(string):
+                        return calc_string_rect(string).width()
+
                     color = self.let_tool_pixels_colors[plp_index]
-                    text = f'RGB: {color.redF():.05}  {color.greenF():.05}  {color.blueF():.05}'
-                    text += f'\nHSL: {color.hslHueF():.05}  {color.hslSaturationF():.05}  {color.lightnessF():.05}'
-                    rect = painter.boundingRect(QRect(), Qt.AlignLeft, text)
+                    SEP = "  "
+                    text1 = f'RGB:{SEP}{color.redF():.05f}{SEP}{color.greenF():.05f}{SEP}{color.blueF():.05f}'
+                    text2 = f'HSL:{SEP}{color.hslHueF():.05f}{SEP}{color.hslSaturationF():.05f}{SEP}{color.lightnessF():.05f}'
+                    all_text = f'{text1}\n{text2}'
+                    rect = calc_string_rect(all_text)
 
                     rect.moveTopLeft(plot2_pos + QPoint(plp_index*self.let_hor_scale_factor, 0) + QPoint(0, 10))
 
-                    painter.setPen(Qt.black)
+                    painter.setPen(Qt.white)
 
-                    painter.fillRect(rect.adjusted(-5, -5, 5,5), Qt.white)
-                    painter.drawText(rect, Qt.AlignLeft, text)
+                    painter.fillRect(rect.adjusted(-5, -5, 5,5), Qt.black)
+                    painter.drawText(rect, Qt.AlignLeft, text1)
+
+                    sep_width = calc_string_width(SEP)
+                    offset = rect.bottomLeft()
+                    colors = [None, Qt.white, Qt.green, Qt.red]
+                    for part, color in zip(text2.split(SEP), colors):
+                        if color is not None:
+                            backplate_rect = QRect(offset, calc_string_rect(part).size())
+                            c = backplate_rect.center()
+                            backplate_rect.moveCenter(c - QPoint(0, backplate_rect.height()-3))
+                            backplate_rect.setWidth(backplate_rect.width()+4)
+                            painter.setBrush(QBrush(color))
+                            painter.setPen(Qt.NoPen)
+                            painter.drawRect(backplate_rect)
+                            painter.setPen(Qt.black)
+                        else:
+                            painter.setPen(Qt.white)
+                        painter.drawText(offset, part)
+                        offset += QPoint(sep_width + calc_string_width(part), 0)
 
                 # HSL plot
                 prev_pc_pos = [None, None, None]
@@ -534,7 +561,7 @@ class LineEyedropperToolMixin():
                         plot_pos = QPoint(plot2_pos.x() + n*self.let_hor_scale_factor, plot2_pos.y() - value)
                         if component == 0:
                             # color = pc
-                            color = Qt.black
+                            color = Qt.white
                         elif component == 1:
                             color = Qt.green
                         elif component == 2:
