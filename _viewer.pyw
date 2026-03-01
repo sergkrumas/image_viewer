@@ -2689,8 +2689,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self.corner_UI_button_pressed = corner_UI_button
             return
 
-        if self.LET_check_mouse_event_inside_input_point(event):
-            self.LET_mousePressEvent(event)
+        if self.LET_mousePressEvent(event):
             return
 
         if self.is_board_page_active():
@@ -2862,8 +2861,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         if self.corner_UI_button_pressed > self.CornerUIButtons.NO_BUTTON:
             return
 
-        if self.let_input_point_dragging:
-            self.LET_mouseMoveEvent(event)
+        if self.LET_mouseMoveEvent(event):
             return
 
         if self.is_board_page_active():
@@ -2944,8 +2942,7 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             self.corner_UI_button_pressed = self.CornerUIButtons.NO_BUTTON
             return
 
-        if self.let_input_point_dragging:
-            self.LET_mouseReleaseEvent(event)
+        if self.LET_mouseReleaseEvent(event):
             return
 
         if self.is_board_page_active():
@@ -5041,6 +5038,8 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
     def keyReleaseEvent(self, event):
         key = event.key()
 
+        ctrl_only = event.modifiers() == Qt.ControlModifier
+
         if self.is_board_text_input_event:
             if not event.isAutoRepeat():
                 self.is_board_text_input_event = False
@@ -5074,6 +5073,13 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
 
         if not event.isAutoRepeat():
 
+            if key == Qt.Key_F3:
+                self.toggle_grayscale_filter()
+
+            if key == Qt.Key_F4:
+                self.toggle_viewer_cursor_scrubber_mode()
+
+
             if key == Qt.Key_F9:
                 self.toggle_window_frame()
 
@@ -5083,23 +5089,9 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             if key == Qt.Key_F12:
                 self.do_toggle_two_monitors_wide()
 
-            if key == Qt.Key_F3:
-                self.toggle_grayscale_filter()
-
-            if key == Qt.Key_F4:
-                self.toggle_viewer_cursor_scrubber_mode()
-
-
-            if key == Qt.Key_F5:
-                self.LET_update()
-            elif key == Qt.Key_F6:
-                self.LET_toggle_tool_state()
-            elif key == Qt.Key_F7:
-                self.LET_set_plots_position()
-            elif key == Qt.Key_F8:
-                self.LET_cycle_toggle_scale_factor_value()
-            elif self.let_tool_activated and check_scancode_for(event, 'C') and event.modifiers() == Qt.ControlModifier:
-                self.LET_copy_current_to_clipboard()
+            if self.let_tool_activated:
+                if check_scancode_for(event, 'C') and ctrl_only:
+                    self.LET_copy_current_color_to_clipboard()
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
@@ -5728,6 +5720,10 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
             addItem(_("Restart app (to purge unused data in memory)"), partial(self.APP_rerun_in_standard_mode, self.is_library_page_active()))
 
         addItem(_("Open in separate app instance"), partial(self.APP_open_folder_in_separated_app_copy, LibraryData().current_folder()))
+
+        sep()
+
+        addItem(_("Line EyeDropper Tool..."), partial(self.LET_entry_point))
 
         if self.is_library_page_active():
 

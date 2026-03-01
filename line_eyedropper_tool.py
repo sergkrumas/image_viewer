@@ -64,6 +64,8 @@ class LineEyedropperToolMixin():
 
         self.let_hor_scale_factor = 1
 
+        self.let_catch_input_data = False
+
         self.LET_hover_init()
 
     def LET_cycle_toggle_scale_factor_value(self):
@@ -121,14 +123,14 @@ class LineEyedropperToolMixin():
         result = line.intersects(perpendic_line)
         return result[1].toPoint()
 
-    def LET_mousePressEvent(self, event):
+    def LET_mousePressDragging(self, event):
         if self.let_input_point_dragging:
             self.let_input_point_dragging_START_CURSOR_POS = QPoint(event.pos())
             self.let_input_point_dragging_START_INPUT_POS = QPoint(self.let_tool_input_points[self.let_input_point_dragging_INDEX])
             self.let_input_point_dragging_START_LINE = QLineF(*self.let_tool_input_points)
             self.update()
 
-    def LET_mouseMoveEvent(self, event):
+    def LET_mouseMoveDragging(self, event):
         if self.let_input_point_dragging and self.let_input_point_dragging_INDEX > -1:
             _index = self.let_input_point_dragging_INDEX
             scp = self.let_input_point_dragging_START_CURSOR_POS
@@ -145,10 +147,71 @@ class LineEyedropperToolMixin():
             self._LET_update_plot()
             self.update()
 
-    def LET_mouseReleaseEvent(self, event):
+    def LET_mouseReleaseDragging(self, event):
         if self.let_input_point_dragging:
             self.let_input_point_dragging_INDEX = -1
             self.let_input_point_dragging = False
+
+    def LET_entry_point(self):
+        self.let_catch_input_data = True
+
+    def LET_input_data_catcher(self):
+        cursor_pos = self.mapped_cursor_pos()
+        input_points_count = len(self.let_tool_input_points)
+        msg = None
+        desactivate = False
+        if input_points_count < 2:
+            self.let_tool_input_points.append(cursor_pos)
+            self.let_tool_activated = True
+            if len(self.let_tool_input_points) == 2:
+                p1 = self.let_tool_input_points[0]
+                p2 = self.let_tool_input_points[1]
+                self.let_catch_input_data = False
+                if QVector2D(p1 - p2).length() < 40:
+                    desactivate = True
+                    msg = _('Distance is too short!')
+                else:
+                    self._LET_update_plot(new=True)
+
+        #     desactivate = True
+        # if desactivate:
+        #     self.let_tool_input_points = []
+        #     self.let_tool_activated = False
+        #     self.let_tool_line_points = []
+        #     self.let_tool_pixels_colors = []
+        #     if msg is None:
+        #         msg = _('Slice pipette disactivated!')
+        #     self.show_center_label(msg, error=True)
+        self.update()
+
+    def LET_mousePressEvent(self, event):
+        if self.let_catch_input_data:
+            self.LET_input_data_catcher()
+            return True
+        elif self.LET_check_mouse_event_inside_input_point(event):
+            self.LET_mousePressDragging(event)
+            return True
+        else:
+            return False
+
+    def LET_mouseMoveEvent(self, event):
+        if self.let_catch_input_data:
+            self.update()
+            return True
+        elif self.let_input_point_dragging:
+            self.LET_mouseMoveDragging(event)
+            return True
+        else:
+            return False
+
+    def LET_mouseReleaseEvent(self, event):
+        if self.let_catch_input_data:
+            return True
+        elif self.let_input_point_dragging:
+            self.LET_mouseReleaseDragging(event)
+            return True
+        else:
+            return False
 
     def _LET_update_plot(self, new=False):
         p1 = self.let_tool_input_points[0]
@@ -166,7 +229,7 @@ class LineEyedropperToolMixin():
     def LET_set_plots_position(self):
         self.let_plots_pos = self.mapFromGlobal(QCursor().pos())
 
-    def LET_copy_current_to_clipboard(self):
+    def LET_copy_current_color_to_clipboard(self):
         if self.let_tool_activated:
             color = self.let_tool_pixels_colors[self.draw_plp_index]
             _hex = color.name()
@@ -183,34 +246,6 @@ class LineEyedropperToolMixin():
             self.update()
         else:
             self.show_center_label(_('Slice Pipette tool is not activated!'), error=True)
-
-    def LET_toggle_tool_state(self):
-        cursor_pos = self.mapFromGlobal(QCursor().pos())
-        input_points_count = len(self.let_tool_input_points)
-        msg = None
-        desactivate = False
-        if input_points_count < 2:
-            self.let_tool_input_points.append(cursor_pos)
-            self.let_tool_activated = True
-            if len(self.let_tool_input_points) == 2:
-                p1 = self.let_tool_input_points[0]
-                p2 = self.let_tool_input_points[1]
-                if QVector2D(p1 - p2).length() < 40:
-                    desactivate = True
-                    msg = _('Distance is too short!')
-                else:
-                    self._LET_update_plot(new=True)
-        else:
-            desactivate = True
-        if desactivate:
-            self.let_tool_input_points = []
-            self.let_tool_activated = False
-            self.let_tool_line_points = []
-            self.let_tool_pixels_colors = []
-            if msg is None:
-                msg = _('Slice pipette disactivated!')
-            self.show_center_label(msg, error=True)
-        self.update()
 
     def LET_generate_test_image(self):
         rect = self.rect()
