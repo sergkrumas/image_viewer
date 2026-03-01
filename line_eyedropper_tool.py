@@ -328,13 +328,11 @@ class LineEyedropperToolMixin():
             return self.addItemToMenu(contextMenu, *args)
 
         addItem(_("Update the plots"), self.LET_update)
-        addItem(_("Exit the tool mode"), self.LET_entry_point)
         addItem(_("Increase the plots width"), self.LET_cycle_toggle_scale_factor_value)
         addItem(_("Place the plots using mouse cursor..."), self.LET_enter_placing_plots)
 
         contextMenu.addSeparator()
 
-        addItem(_("Hide this menu"), lambda: None)
 
         contextMenu.addSeparator()
 
@@ -346,6 +344,14 @@ class LineEyedropperToolMixin():
             chb.stateChanged.connect(callback)
             wa.setDefaultWidget(chb)
             contextMenu.addAction(wa)
+
+        contextMenu.addSeparator()
+
+        addItem(_("Hide this menu"), lambda: None)
+
+        contextMenu.addSeparator()
+
+        addItem(_("Exit the tool mode"), self.LET_entry_point)
 
         action = contextMenu.exec_(self.mapToGlobal(event.pos()))
 
