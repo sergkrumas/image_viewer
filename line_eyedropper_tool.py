@@ -66,6 +66,8 @@ class LineEyedropperToolMixin():
 
         self.let_catch_input_data = False
 
+        self.placing_plots_mode = False
+
         self.LET_hover_init()
 
     def LET_cycle_toggle_scale_factor_value(self):
@@ -189,6 +191,9 @@ class LineEyedropperToolMixin():
         elif self.LET_check_mouse_event_inside_input_point(event):
             self.LET_mousePressDragging(event)
             return True
+        elif self.placing_plots_mode:
+            self.update()
+            return True
         else:
             return False
 
@@ -199,6 +204,10 @@ class LineEyedropperToolMixin():
         elif self.let_input_point_dragging:
             self.LET_mouseMoveDragging(event)
             return True
+        elif self.placing_plots_mode:
+            self.LET_set_plots_position()
+            self.update()
+            return True
         else:
             return False
 
@@ -207,6 +216,11 @@ class LineEyedropperToolMixin():
             return True
         elif self.let_input_point_dragging:
             self.LET_mouseReleaseDragging(event)
+            return True
+        elif self.placing_plots_mode:
+            self.LET_set_plots_position()
+            self.LET_leave_placing_plots()
+            self.update()
             return True
         else:
             return False
@@ -223,6 +237,12 @@ class LineEyedropperToolMixin():
         if new:
             p1, p2 = self.let_tool_input_points
             self.let_plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+
+    def LET_enter_placing_plots(self):
+        self.placing_plots_mode = True
+
+    def LET_leave_placing_plots(self):
+        self.placing_plots_mode = False
 
     def LET_set_plots_position(self):
         self.let_plots_pos = self.mapFromGlobal(QCursor().pos())
@@ -304,6 +324,20 @@ class LineEyedropperToolMixin():
             (_("prettify plots"), self.let_pretty_plots, partial(toggle_boolean_var_generic, self, "let_pretty_plots")),
         ]
 
+        def addItem(*args):
+            return self.addItemToMenu(contextMenu, *args)
+
+        addItem(_("Update the plots"), self.LET_update)
+        addItem(_("Exit the tool mode"), self.LET_entry_point)
+        addItem(_("increase the plots width"), self.LET_cycle_toggle_scale_factor_value)
+        addItem(_("Place the plots using mouse cursor..."), self.LET_enter_placing_plots)
+
+        contextMenu.addSeparator()
+
+        addItem(_("Hide this menu"), lambda: None)
+
+        contextMenu.addSeparator()
+
         for title, value, callback in checkboxes:
             wa = QWidgetAction(contextMenu)
             chb = QCheckBox(title)
@@ -368,6 +402,9 @@ class LineEyedropperToolMixin():
                 plp_index = int(delta.x()/self.let_hor_scale_factor)
                 self.LET_hover_plots = True
 
+            if self.placing_plots_mode:
+                plp_index = -1
+
             painter.save()
 
             # drawing proximity circle
@@ -414,7 +451,7 @@ class LineEyedropperToolMixin():
             # draw line ends hovers
             for i_pos in self.let_tool_input_points:
                 r = self.LET_build_input_point_rect(i_pos)
-                if r.contains(self.mapFromGlobal(QCursor().pos())):
+                if r.contains(self.mapped_cursor_pos()):
                     painter.drawEllipse(r)
                     self.LET_hover_ends = True
                     break
@@ -460,6 +497,7 @@ class LineEyedropperToolMixin():
                 painter.fillRect(backplate_rect1, plot_black)
                 draw_plot_line(plot1_pos)
 
+
                 # RGB plot
                 prev_pc_pos = [None, None, None]
                 for n, pc in enumerate(self.let_tool_pixels_colors):
@@ -494,11 +532,24 @@ class LineEyedropperToolMixin():
                 painter.fillRect(backplate_rect2, plot_black)
                 draw_plot_line(plot2_pos, hue_level=True)
 
+                def calc_string_rect(string):
+                    return painter.boundingRect(QRect(), Qt.AlignLeft, string)
+                def calc_string_width(string):
+                    return calc_string_rect(string).width()
+
+
+                text = _("Use the context menu of the plots")
+                text_rect = calc_string_rect(text)
+                text_rect.moveBottomLeft(backplate_rect2.bottomLeft() + QPoint(0, 20))
+                painter.setBrush(QBrush(Qt.black))
+                pen = painter.pen()
+                painter.setPen(Qt.NoPen)
+                painter.drawRect(text_rect.adjusted(-3, -3, 3, 3))
+                painter.setPen(Qt.white)
+                painter.drawText(text_rect, Qt.AlignLeft, text)
+                painter.setPen(pen)
+
                 if plp_index > -1:
-                    def calc_string_rect(string):
-                        return painter.boundingRect(QRect(), Qt.AlignLeft, string)
-                    def calc_string_width(string):
-                        return calc_string_rect(string).width()
 
                     color = self.let_tool_pixels_colors[plp_index]
                     SEP = "  "
@@ -534,6 +585,7 @@ class LineEyedropperToolMixin():
                     draw_text_parts_in_rects(rect.bottomLeft(), text2, [None, Qt.white, Qt.green, Qt.red])
 
                     draw_text_parts_in_rects(QPoint(rect.left()-1, rect.center().y()), text1, [None, Qt.red, Qt.green, QColor(144, 213, 255)])
+
 
 
                 # HSL plot
