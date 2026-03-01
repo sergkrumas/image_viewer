@@ -515,26 +515,30 @@ class LineEyedropperToolMixin():
 
                     painter.setPen(Qt.white)
 
-                    painter.fillRect(rect.adjusted(-5, -5, 5,5), Qt.black)
-                    painter.drawText(rect, Qt.AlignLeft, text1)
+                    painter.fillRect(rect.adjusted(-5, -5, 5,5), plot_black)
 
-                    sep_width = calc_string_width(SEP)
-                    offset = rect.bottomLeft()
-                    colors = [None, Qt.white, Qt.green, Qt.red]
-                    for part, color in zip(text2.split(SEP), colors):
-                        if color is not None:
-                            backplate_rect = QRect(offset, calc_string_rect(part).size())
-                            c = backplate_rect.center()
-                            backplate_rect.moveCenter(c - QPoint(0, backplate_rect.height()-3))
-                            backplate_rect.setWidth(backplate_rect.width()+4)
-                            painter.setBrush(QBrush(color))
-                            painter.setPen(Qt.NoPen)
-                            painter.drawRect(backplate_rect)
-                            painter.setPen(Qt.black)
-                        else:
-                            painter.setPen(Qt.white)
-                        painter.drawText(offset, part)
-                        offset += QPoint(sep_width + calc_string_width(part), 0)
+                    def draw_text_parts_in_rects(offset, text, colors):
+                        sep_width = calc_string_width(SEP)
+                        offset = QPoint(offset)
+                        for part, color in zip(text.split(SEP), colors):
+                            if color is not None:
+                                backplate_rect = QRect(offset, calc_string_rect(part).size())
+                                c = backplate_rect.center()
+                                backplate_rect.moveCenter(c - QPoint(0, backplate_rect.height()-3))
+                                backplate_rect.setWidth(backplate_rect.width()+4)
+                                painter.setBrush(QBrush(color))
+                                painter.setPen(Qt.NoPen)
+                                painter.drawRect(backplate_rect)
+                                painter.setPen(Qt.black)
+                            else:
+                                painter.setPen(Qt.white)
+                            painter.drawText(offset, part)
+                            offset += QPoint(sep_width + calc_string_width(part), 0)
+
+                    draw_text_parts_in_rects(rect.bottomLeft(), text2, [None, Qt.white, Qt.green, Qt.red])
+
+                    draw_text_parts_in_rects(QPoint(rect.left()-1, rect.center().y()), text1, [None, Qt.red, Qt.green, QColor(144, 213, 255)])
+
 
                 # HSL plot
                 prev_pc_pos = [None, None, None]
