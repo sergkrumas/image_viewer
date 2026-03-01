@@ -4638,9 +4638,6 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         elif check_scancode_for(event, "Q") and not self.active_element:
             LibraryData().show_finder_window()
 
-        elif check_scancode_for(event, "P") and not self.active_element:
-            self.toggle_stay_on_top()
-            self.update()
 
         elif key == Qt.Key_1 and not self.active_element:
             self.change_page(self.pages.START_PAGE)
@@ -5054,6 +5051,13 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         addItem(_("Settings..."), self.open_settings_window)
 
         sep()
+
+        if not self.frameless_mode:
+            if not self.stay_on_top:
+                text = _("Always on top")
+            else:
+                text = _("Disable \"Always on top\"")
+            addItem(text, self.toggle_stay_on_top)
 
         if self.frameless_mode:
             text = _("Show window frame")
