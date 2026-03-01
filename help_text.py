@@ -300,7 +300,7 @@ class HelpWidget(QWidget):
         vl.addWidget(exit_btn)
         self.setLayout(vl)
 
-        self.resize(parent.width()-100, parent.height())
+        self.resize(parent.width()-100, parent.height()-100)
 
         desktop_rect = QDesktopWidget().screenGeometry(screen=0)
         x = (desktop_rect.width() - self.frameSize().width()) // 2

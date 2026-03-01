@@ -5046,9 +5046,12 @@ class MainWindow(QMainWindow, UtilsMixin, BoardMixin, HelpWidgetMixin, Commentin
         menu = cM.addMenu(_("DEBUG tools..."))
         self.addItemToMenu(menu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
         self.addItemToMenu(menu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
+
         sep()
 
         addItem(_("Settings..."), self.open_settings_window)
+        addItem(_("Help"), self.toggle_infopanel)
+        addItem(_("Message the developer"), partial(execute_clickable_text, 'https://github.com/sergkrumas/image_viewer/issues'))
 
         sep()
 
