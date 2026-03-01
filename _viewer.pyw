@@ -5591,7 +5591,11 @@ class MainWindow(QMainWindow, UtilsMixin, AppMixin, BoardMixin, HelpWidgetMixin,
         callback = args[-1]
         menu = args[0]
         action = menu.addAction(*args[1:-1])
-        action.triggered.connect(callback)
+        # тут обязательно коллбэк через лямбду, потому что когда Qt вызывает обработчики
+        # триггера, он может вызвать их со своими аргументами, которые нам здесь не нужны.
+        # Однако, если их не экранировать через лямбду, они перепишут значения именованых
+        # аргументов в колбэках. Таким образом, благодаря лямбде ниже, мы их отбрасываем.
+        action.triggered.connect(lambda: callback()) 
         return action
 
     def open_folder_menu_item(self, contextMenu, event):
