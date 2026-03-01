@@ -4588,7 +4588,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_('No folders selected!'), error=True)
             return
 
-        cf = self.LibraryData().current_folder()
+        cf = self.LibraryData().current_folder() #startapp virtual folder
 
         cf.images_list.clear()
         cf.set_current_index(0)
@@ -4598,6 +4598,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
             # грузим из папок в стартовую папку
             cf.images_list.extend(self.LibraryData().current_folder().images_list)
+
+            # почему-то он иногда сообщает, что виртуальную доску удалить нельзя,
+            # но по идее такого сообщения быть не должно
+            # Пока просто буду делать проверку
+            if cf is not self.LibraryData().current_folder():
+                # удаляем информацию о загруженной папке
+                self.LibraryData().delete_current_folder()
 
         for image_data in cf.images_list:
             image_data.folder_data = cf
