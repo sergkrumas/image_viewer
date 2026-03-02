@@ -66,7 +66,7 @@ class LineEyedropperToolMixin():
 
         self.let_catch_input_data = False
 
-        self.placing_plots_mode = False
+        self.let_placing_plots_mode = False
 
         self.LET_hover_init()
 
@@ -191,7 +191,7 @@ class LineEyedropperToolMixin():
         elif self.LET_check_mouse_event_inside_input_point(event):
             self.LET_mousePressDragging(event)
             return True
-        elif self.placing_plots_mode:
+        elif self.let_placing_plots_mode:
             self.update()
             return True
         else:
@@ -204,7 +204,7 @@ class LineEyedropperToolMixin():
         elif self.let_input_point_dragging:
             self.LET_mouseMoveDragging(event)
             return True
-        elif self.placing_plots_mode:
+        elif self.let_placing_plots_mode:
             self.LET_set_plots_position()
             self.update()
             return True
@@ -217,7 +217,7 @@ class LineEyedropperToolMixin():
         elif self.let_input_point_dragging:
             self.LET_mouseReleaseDragging(event)
             return True
-        elif self.placing_plots_mode:
+        elif self.let_placing_plots_mode:
             self.LET_set_plots_position()
             self.LET_leave_placing_plots()
             self.update()
@@ -239,10 +239,10 @@ class LineEyedropperToolMixin():
             self.let_plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
 
     def LET_enter_placing_plots(self):
-        self.placing_plots_mode = True
+        self.let_placing_plots_mode = True
 
     def LET_leave_placing_plots(self):
-        self.placing_plots_mode = False
+        self.let_placing_plots_mode = False
 
     def LET_set_plots_position(self):
         self.let_plots_pos = self.mapFromGlobal(QCursor().pos())
@@ -408,7 +408,7 @@ class LineEyedropperToolMixin():
                 plp_index = int(delta.x()/self.let_hor_scale_factor)
                 self.LET_hover_plots = True
 
-            if self.placing_plots_mode:
+            if self.let_placing_plots_mode:
                 plp_index = -1
 
             painter.save()
