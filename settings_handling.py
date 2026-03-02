@@ -765,6 +765,17 @@ class Settings(SettingsWindow):
             raise Exception('no setting with such ID', setting_id)
 
     @classmethod
+    def langs_data(cls):
+        return {
+            'en': (cls.globals.lang_en_pixmap, _('English')),
+            'ru': (cls.globals.lang_ru_pixmap, _("Russian")),
+            'de': (cls.globals.lang_de_pixmap, _('German')),
+            'fr': (cls.globals.lang_fr_pixmap, _('French')),
+            'it': (cls.globals.lang_it_pixmap, _('Italian')),
+            'es': (cls.globals.lang_es_pixmap, _('Spanish')),
+        }
+
+    @classmethod
     def langs(cls):
         return {
             'en': _('English'),

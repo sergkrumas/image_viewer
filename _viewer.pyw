@@ -4216,24 +4216,16 @@ class MainWindow(QMainWindow,
 
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, start_text)
 
-        langs = (
-            ('en', Globals.lang_en_pixmap, _('English')),
-            ('ru', Globals.lang_ru_pixmap, _("Russian")),
-            ('de', Globals.lang_de_pixmap, _('German')),
-            ('fr', Globals.lang_fr_pixmap, _('French')),
-            ('it', Globals.lang_it_pixmap, _('Italian')),
-            ('es', Globals.lang_es_pixmap, _('Spanish')),
-        )
-
         SPAN_WIDTH = 30
         LANG_BTN_WIDTH = 100
+        current_lang = Settings.matrix['ui_lang'][0]
+        langs = Settings.langs_data()
         langs_count = len(langs)
         top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
-        current_lang = Settings.matrix['ui_lang'][0]
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        for n, (lang_code, lang_flag_pixmap, lang_name) in enumerate(langs):
+        for lang_code, (lang_flag_pixmap, lang_name) in langs.items():
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
             self.draw_startpage_langflag_radiobutton(painter,
                 rect,
