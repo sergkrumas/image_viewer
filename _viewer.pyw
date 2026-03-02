@@ -4673,6 +4673,8 @@ class MainWindow(QMainWindow,
                 viewframe_height=100, track_rect=QRect(), content_offset=0.0, index=0, curpos=None,
                 highlighting_allowed=True):
 
+        ROUNDED_RADIUS = 5
+
         vs = self.vertical_scrollbars
         data = vs.data[index]
         if content_height > viewframe_height:
@@ -4692,7 +4694,9 @@ class MainWindow(QMainWindow,
                 painter.setOpacity(0.3)
             else:
                 painter.setOpacity(0.1)
-            painter.fillRect(track_rect, Qt.white)
+            path = QPainterPath()
+            path.addRoundedRect(QRectF(track_rect), ROUNDED_RADIUS, ROUNDED_RADIUS)
+            painter.fillPath(path, Qt.white)
 
             # вычисление высоты ползунка с учётом того, что она не должна быть меньше заданного минимума
             viewframe_fac = viewframe_height/content_height
@@ -4712,7 +4716,7 @@ class MainWindow(QMainWindow,
                 thumb_color = Qt.white
 
             path = QPainterPath()
-            path.addRoundedRect(thumb_rect, 5, 5)
+            path.addRoundedRect(thumb_rect, ROUNDED_RADIUS, ROUNDED_RADIUS)
             painter.fillPath(path, thumb_color)
 
             painter.restore()
