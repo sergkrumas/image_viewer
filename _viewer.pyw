@@ -4225,7 +4225,7 @@ class MainWindow(QMainWindow,
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        for lang_code, (lang_flag_pixmap, lang_name) in langs.items():
+        for lang_code, (lang_name, lang_flag_pixmap) in langs.items():
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
             self.draw_startpage_langflag_radiobutton(painter,
                 rect,

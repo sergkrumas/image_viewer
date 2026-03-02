@@ -767,12 +767,12 @@ class Settings(SettingsWindow):
     @classmethod
     def langs_data(cls):
         return {
-            'en': (cls.globals.lang_en_pixmap, _('English')),
-            'ru': (cls.globals.lang_ru_pixmap, _("Russian")),
-            'de': (cls.globals.lang_de_pixmap, _('German')),
-            'fr': (cls.globals.lang_fr_pixmap, _('French')),
-            'it': (cls.globals.lang_it_pixmap, _('Italian')),
-            'es': (cls.globals.lang_es_pixmap, _('Spanish')),
+            'en': (_('English'), cls.globals.lang_en_pixmap, ),
+            'ru': (_("Russian"), cls.globals.lang_ru_pixmap, ),
+            'de': (_('German'), cls.globals.lang_de_pixmap, ),
+            'fr': (_('French'), cls.globals.lang_fr_pixmap, ),
+            'it': (_('Italian'), cls.globals.lang_it_pixmap, ),
+            'es': (_('Spanish'), cls.globals.lang_es_pixmap, ),
         }
 
     @classmethod
