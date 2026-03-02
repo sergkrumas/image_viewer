@@ -3456,18 +3456,17 @@ class MainWindow(QMainWindow,
             return False
 
     def scroll_setting_value(self, event, scroll_value, setting_id):
-        setting_attr_name = f'STNG.{setting_id}'
         if scroll_value > 0:
             n = 1.0
         else:
             n = -1.0
-        value = getattr(self, setting_attr_name)
+        value = getattr(self.STNG, setting_id)
         value += n
         value = self.apply_min_max_clamping(
             value,
             *Settings.get_setting_span(setting_id)
         )
-        setattr(self, setting_attr_name, float(value))
+        setattr(self.STNG, setting_id, float(value))
         Settings.set(setting_id, float(value))
         return float(value)
 
