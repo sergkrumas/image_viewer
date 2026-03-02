@@ -4216,33 +4216,38 @@ class MainWindow(QMainWindow,
 
         painter.drawText(rect2, Qt.TextWordWrap | Qt.AlignHCenter | Qt.AlignTop, start_text)
 
-        langs = ['en', 'ru', 'de', 'fr', 'it', 'es']
+        langs = (
+            ('en', Globals.lang_en_pixmap, _('English')),
+            ('ru', Globals.lang_ru_pixmap, _("Russian")),
+            ('de', Globals.lang_de_pixmap, _('German')),
+            ('fr', Globals.lang_fr_pixmap, _('French')),
+            ('it', Globals.lang_it_pixmap, _('Italian')),
+            ('es', Globals.lang_es_pixmap, _('Spanish')),
+        )
+
         SPAN_WIDTH = 30
         LANG_BTN_WIDTH = 100
         langs_count = len(langs)
         top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
+        current_lang = Settings.matrix['ui_lang'][0]
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        for n, lang in enumerate(langs):
+        for n, (lang_code, lang_flag_pixmap, lang_name) in enumerate(langs):
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
-            self.draw_startpage_langflag(painter, rect, cursor_pos, lang)
-            self.start_page_lang_btns.append((lang, QRectF(rect)))
+            self.draw_startpage_langflag_radiobutton(painter, rect, cursor_pos, lang_flag_pixmap, lang_name, current_lang == lang_code)
+            self.start_page_lang_btns.append((lang_code, QRectF(rect)))
             left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
 
-    def draw_startpage_langflag(self, painter, rect, cursor_pos, lang):
+    def draw_startpage_langflag_radiobutton(self, painter, rect, cursor_pos, lang_flag_pixmap, lang_name, selected):
         painter.save()
 
-        cur_lang = Settings.matrix['ui_lang'][0]
-
         is_cursor_over = rect.contains(cursor_pos)
-        is_cur_lang = cur_lang == lang
 
-
-        if is_cur_lang or is_cursor_over:
+        if selected or is_cursor_over:
             painter.setPen(Qt.NoPen)
             painter.setBrush(Qt.NoBrush)
-            if is_cursor_over and not is_cur_lang:
+            if is_cursor_over and not selected:
                 alpha = 10
             else:
                 alpha = 20
@@ -4252,45 +4257,15 @@ class MainWindow(QMainWindow,
             painter.drawPath(path)
 
             if is_cursor_over:
-                if lang == '':
-                    pass
-                elif lang == 'ru':
-                    lang_name = _("Russian")
-                elif lang == 'en':
-                    lang_name = _('English')
-                elif lang == 'fr':
-                    lang_name = _('French')
-                elif lang == 'de':
-                    lang_name = _('German')
-                elif lang == 'es':
-                    lang_name = _('Spanish')
-                elif lang == 'it':
-                    lang_name = _('Italian')
-
                 painter.setPen(QPen(Qt.white, 1))
                 lang_name_rect = QRectF(rect).adjusted(-50, -50, 50, 50)
                 painter.drawText(lang_name_rect, Qt.AlignTop | Qt.AlignHCenter, lang_name)
-
 
         painter.setPen(QPen(Qt.gray, 1))
         lang_rect = rect.adjusted(20, 20, -20, -20)
         painter.drawRect(lang_rect)
 
-        if lang == '':
-            pass
-
-        elif lang == 'en':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_en_pixmap)
-        elif lang == 'ru':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_ru_pixmap)
-        elif lang == 'de':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_de_pixmap)
-        elif lang == 'fr':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_fr_pixmap)
-        elif lang == 'it':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_it_pixmap)
-        elif lang == 'es':
-            painter.drawPixmap(lang_rect.topLeft(), Globals.lang_es_pixmap)
+        painter.drawPixmap(lang_rect.topLeft(), lang_flag_pixmap)
 
         painter.restore()
 
