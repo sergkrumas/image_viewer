@@ -4219,22 +4219,22 @@ class MainWindow(QMainWindow,
         SPAN_WIDTH = 30
         LANG_BTN_WIDTH = 100
         current_lang = Settings.matrix['ui_lang'][0]
-        langs = Settings.langs_data()
+        langs = Settings.langs()
         langs_count = len(langs)
         top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5
         left_offset = (self.rect().width() - (langs_count*LANG_BTN_WIDTH + SPAN_WIDTH*(langs_count-1)))/2
         self.start_page_lang_btns = []
         cursor_pos = self.mapFromGlobal(QCursor().pos())
-        for lang_code, (lang_name, lang_flag_pixmap) in langs.items():
+        for code, (name, pixmap, icon) in langs.items():
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
             self.draw_startpage_langflag_radiobutton(painter,
                 rect,
-                lang_flag_pixmap,
-                lang_name,
-                current_lang == lang_code,
+                pixmap,
+                name,
+                current_lang == code,
                 rect.contains(cursor_pos),
             )
-            self.start_page_lang_btns.append((lang_code, QRectF(rect)))
+            self.start_page_lang_btns.append((code, QRectF(rect)))
             left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
 
     def draw_startpage_langflag_radiobutton(self, painter, rect, lang_flag_pixmap, lang_name, selected, hover):

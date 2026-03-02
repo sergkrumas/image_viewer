@@ -483,11 +483,10 @@ class SettingsWindow(QWidget):
                 lang_combo_box = QComboBox()
 
                 current_lang_key = Settings.matrix['ui_lang'][0]
-                for n, (lang_key, lang_name) in enumerate(self.langs().items()):
-                    icon = getattr(self.globals, f'lang_{lang_key}_icon')
-                    lang_combo_box.addItem(icon, lang_name)
-                    lang_combo_box.setItemData(n, lang_key)
-                    if lang_key == current_lang_key:
+                for n, (key, (name, pixmap, icon)) in enumerate(self.langs().items()):
+                    lang_combo_box.addItem(icon, name)
+                    lang_combo_box.setItemData(n, key)
+                    if key == current_lang_key:
                         lang_combo_box.setCurrentIndex(n)
 
                 lang_combo_box.setStyleSheet(combobox_style)
@@ -513,7 +512,7 @@ class SettingsWindow(QWidget):
 
                 def lang_combobox_index_changed_callback(index):
                     new_lang = lang_combo_box.itemData(index)
-                    Setting.set_new_lang_across_entire_app(new_lang)
+                    Settings.set_new_lang_across_entire_app(new_lang)
                     warn_label.setVisible(True)
 
                 lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed_callback)
@@ -765,32 +764,20 @@ class Settings(SettingsWindow):
             raise Exception('no setting with such ID', setting_id)
 
     @classmethod
-    def langs_data(cls):
-        return {
-            'en': (_('English'), cls.globals.lang_en_pixmap, ),
-            'ru': (_("Russian"), cls.globals.lang_ru_pixmap, ),
-            'de': (_('German'), cls.globals.lang_de_pixmap, ),
-            'fr': (_('French'), cls.globals.lang_fr_pixmap, ),
-            'it': (_('Italian'), cls.globals.lang_it_pixmap, ),
-            'es': (_('Spanish'), cls.globals.lang_es_pixmap, ),
-        }
-
-    @classmethod
     def langs(cls):
         return {
-            'en': _('English'),
-            'ru': _('Russian'),
-
-            'de': _('German'),
-            'fr': _('French'),
-            'it': _('Italian'),
-            'es': _('Spanish'),
+            'en': (_('English'), cls.globals.lang_en_pixmap, cls.globals.lang_en_icon),
+            'ru': (_("Russian"), cls.globals.lang_ru_pixmap, cls.globals.lang_ru_icon),
+            'de': (_('German'), cls.globals.lang_de_pixmap, cls.globals.lang_de_icon),
+            'fr': (_('French'), cls.globals.lang_fr_pixmap, cls.globals.lang_fr_icon),
+            'it': (_('Italian'), cls.globals.lang_it_pixmap, cls.globals.lang_it_icon),
+            'es': (_('Spanish'), cls.globals.lang_es_pixmap, cls.globals.lang_es_icon),
         }
 
     @classmethod
     def set_ui_language(cls):
         lang = cls.matrix['ui_lang'][0]
-        allowed_langs = [ 
+        allowed_langs = [
             'en', #no special EN-locale
 
             # according to /locales folder
@@ -810,10 +797,6 @@ class Settings(SettingsWindow):
             el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
             el.install() # copies el.gettext as _ to builtins for all app modules
             # SettingsWindow.actualize_matrix_data()
-
-    @classmethod
-    def langs_list(cls, lang_id):
-        return cls.langs().get(lang_id)
 
     @classmethod
     def load_from_disk(cls):
