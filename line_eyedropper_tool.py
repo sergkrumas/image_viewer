@@ -31,97 +31,100 @@ class LineEyedropperToolMixin():
         """
             initializing Line EyeDropper tool
         """
-        self.let_tool_activated = False
-        self.let_tool_input_points = []
-        self.let_tool_line_points = []
-        self.let_tool_pixels_colors = []
 
-        self.let_input_point_dragging = False
-        self.let_input_point_dragging_INDEX = -1
+        self.LET = type('LET', (), {})()
 
-        self.let_input_point_dragging_START_CURSOR_POS = QPoint()
-        self.let_input_point_dragging_START_INPUT_POS = QPoint()
-        self.let_input_point_dragging_START_LINE = QLineF()
+        self.LET.tool_activated = False
+        self.LET.tool_input_points = []
+        self.LET.tool_line_points = []
+        self.LET.tool_pixels_colors = []
 
-        self.let_input_point_rect_side_width = 51
+        self.LET.input_point_dragging = False
+        self.LET.input_point_dragging_INDEX = -1
 
-        self.let_plots_pos = QPoint()
+        self.LET.input_point_dragging_START_CURSOR_POS = QPoint()
+        self.LET.input_point_dragging_START_INPUT_POS = QPoint()
+        self.LET.input_point_dragging_START_LINE = QLineF()
 
-        self.let_show_red = True
-        self.let_show_green = True
-        self.let_show_blue = True
+        self.LET.input_point_rect_side_width = 51
 
-        self.let_show_hue = True
-        self.let_show_saturation = True
-        self.let_show_lightness = True
+        self.LET.plots_pos = QPoint()
 
-        self.let_plot1_rect = QRect()
-        self.let_plot2_rect = QRect()
+        self.LET.show_red = True
+        self.LET.show_green = True
+        self.LET.show_blue = True
 
-        self.let_draw_plp_index = -1
+        self.LET.show_hue = True
+        self.LET.show_saturation = True
+        self.LET.show_lightness = True
 
-        self.let_pretty_plots = True
+        self.LET.plot1_rect = QRect()
+        self.LET.plot2_rect = QRect()
 
-        self.let_hor_scale_factor = 1
+        self.LET.draw_plp_index = -1
 
-        self.let_catch_input_data = False
+        self.LET.pretty_plots = True
 
-        self.let_placing_plots_mode = False
+        self.LET.hor_scale_factor = 1
+
+        self.LET.catch_input_data = False
+
+        self.LET.placing_plots_mode = False
 
         self.LET_hover_init()
 
     def LET_tool_activated(self):
-        return self.let_tool_activated
+        return self.LET.tool_activated
 
     def LET_cycle_toggle_scale_factor_value(self):
-        if self.let_tool_activated:
+        if self.LET.tool_activated:
             values = [1, 2, 3, 4, 5]
-            current_value = self.let_hor_scale_factor
+            current_value = self.LET.hor_scale_factor
             cycled_values = itertools.cycle(values)
             for value in cycled_values:
                 if current_value == value:
                     break
-            self.let_hor_scale_factor = next(cycled_values)
-            self.show_center_label(_('Plot scale factor is {0}x').format(self.let_hor_scale_factor))
+            self.LET.hor_scale_factor = next(cycled_values)
+            self.show_center_label(_('Plot scale factor is {0}x').format(self.LET.hor_scale_factor))
             self.update()
 
     def LET_update(self):
-        if self.let_tool_activated:
+        if self.LET.tool_activated:
             self._LET_update_plot()
             self.update()
         else:
             self.show_center_label(_('Line EyeDropper tool is not activated!'), error=True)
 
     def LET_build_input_point_rect(self, pos):
-        rsw = self.let_input_point_rect_side_width
+        rsw = self.LET.input_point_rect_side_width
         r = QRect(0, 0, rsw, rsw)
         r.moveCenter(pos)
         return r
 
     def LET_check_mouse_event_inside_input_point(self, event, set_mode=True):
-        rsw = self.let_input_point_rect_side_width
-        for n, pos in enumerate(self.let_tool_input_points):
+        rsw = self.LET.input_point_rect_side_width
+        for n, pos in enumerate(self.LET.tool_input_points):
             area = self.LET_build_input_point_rect(pos)
             if area.contains(event.pos()):
                 if set_mode:
-                    self.let_input_point_dragging_INDEX = n
-                    self.let_input_point_dragging = True
+                    self.LET.input_point_dragging_INDEX = n
+                    self.LET.input_point_dragging = True
                 return True
         if set_mode:
-            self.let_input_point_dragging_INDEX = -1
-            self.let_input_point_dragging = False
+            self.LET.input_point_dragging_INDEX = -1
+            self.LET.input_point_dragging = False
         return False
 
     def LET_is_let_tool_activated(self):
-        return self.let_tool_activated or self.let_catch_input_data
+        return self.LET.tool_activated or self.LET.catch_input_data
 
     def LET_set_cursor(self):
-        if self.let_tool_activated:
+        if self.LET.tool_activated:
             if any((self.LET_hover_ends, self.LET_hover_line, self.LET_hover_plots)):
                 self.setCursor(Qt.PointingHandCursor)
             else:
                 self.setCursor(Qt.ArrowCursor)
-        elif self.let_catch_input_data:
+        elif self.LET.catch_input_data:
             self.setCursor(Qt.ArrowCursor)
 
     def LET_find_point_perp_intersection(self, line, point):
@@ -131,55 +134,55 @@ class LineEyedropperToolMixin():
         return result[1].toPoint()
 
     def LET_mousePressDragging(self, event):
-        if self.let_input_point_dragging:
-            self.let_input_point_dragging_START_CURSOR_POS = QPoint(event.pos())
-            self.let_input_point_dragging_START_INPUT_POS = QPoint(self.let_tool_input_points[self.let_input_point_dragging_INDEX])
-            self.let_input_point_dragging_START_LINE = QLineF(*self.let_tool_input_points)
+        if self.LET.input_point_dragging:
+            self.LET.input_point_dragging_START_CURSOR_POS = QPoint(event.pos())
+            self.LET.input_point_dragging_START_INPUT_POS = QPoint(self.LET.tool_input_points[self.LET.input_point_dragging_INDEX])
+            self.LET.input_point_dragging_START_LINE = QLineF(*self.LET.tool_input_points)
             self.update()
 
     def LET_mouseMoveDragging(self, event):
-        if self.let_input_point_dragging and self.let_input_point_dragging_INDEX > -1:
-            _index = self.let_input_point_dragging_INDEX
-            scp = self.let_input_point_dragging_START_CURSOR_POS
-            sip = self.let_input_point_dragging_START_INPUT_POS
+        if self.LET.input_point_dragging and self.LET.input_point_dragging_INDEX > -1:
+            _index = self.LET.input_point_dragging_INDEX
+            scp = self.LET.input_point_dragging_START_CURSOR_POS
+            sip = self.LET.input_point_dragging_START_INPUT_POS
 
             cursor_pos = QPoint(event.pos())
-            line_mapped_cursor_pos = self.LET_find_point_perp_intersection(self.let_input_point_dragging_START_LINE, cursor_pos)
+            line_mapped_cursor_pos = self.LET_find_point_perp_intersection(self.LET.input_point_dragging_START_LINE, cursor_pos)
 
             modifiers = QApplication.queryKeyboardModifiers()
             if modifiers == Qt.ControlModifier:
                 cursor_pos = line_mapped_cursor_pos
 
-            self.let_tool_input_points[_index] = sip + (cursor_pos - scp)
+            self.LET.tool_input_points[_index] = sip + (cursor_pos - scp)
             self._LET_update_plot()
             self.update()
 
     def LET_mouseReleaseDragging(self, event):
-        if self.let_input_point_dragging:
-            self.let_input_point_dragging_INDEX = -1
-            self.let_input_point_dragging = False
+        if self.LET.input_point_dragging:
+            self.LET.input_point_dragging_INDEX = -1
+            self.LET.input_point_dragging = False
 
     def LET_entry_point(self):
-        if self.let_tool_input_points or self.let_tool_activated:
-            self.let_tool_input_points = []
-            self.let_tool_activated = False
-            self.let_tool_line_points = []
-            self.let_catch_input_data = False
-            self.let_tool_pixels_colors = []
+        if self.LET.tool_input_points or self.LET.tool_activated:
+            self.LET.tool_input_points = []
+            self.LET.tool_activated = False
+            self.LET.tool_line_points = []
+            self.LET.catch_input_data = False
+            self.LET.tool_pixels_colors = []
             self.show_center_label(_('Line EyeDropper disactivated!'), error=True)
         else:
-            self.let_catch_input_data = True
+            self.LET.catch_input_data = True
 
     def LET_input_data_catcher(self):
         cursor_pos = self.mapped_cursor_pos()
-        input_points_count = len(self.let_tool_input_points)
+        input_points_count = len(self.LET.tool_input_points)
         if input_points_count < 2:
-            self.let_tool_input_points.append(cursor_pos)
-            self.let_tool_activated = True
-            if len(self.let_tool_input_points) == 2:
-                p1 = self.let_tool_input_points[0]
-                p2 = self.let_tool_input_points[1]
-                self.let_catch_input_data = False
+            self.LET.tool_input_points.append(cursor_pos)
+            self.LET.tool_activated = True
+            if len(self.LET.tool_input_points) == 2:
+                p1 = self.LET.tool_input_points[0]
+                p2 = self.LET.tool_input_points[1]
+                self.LET.catch_input_data = False
                 if QVector2D(p1 - p2).length() < 40:
                     self.LET_entry_point() # desactivation branch
                     self.show_center_label(_('Distance is too short!'), error=True)
@@ -188,26 +191,26 @@ class LineEyedropperToolMixin():
         self.update()
 
     def LET_mousePressEvent(self, event):
-        if self.let_catch_input_data:
+        if self.LET.catch_input_data:
             self.LET_input_data_catcher()
             return True
         elif self.LET_check_mouse_event_inside_input_point(event):
             self.LET_mousePressDragging(event)
             return True
-        elif self.let_placing_plots_mode:
+        elif self.LET.placing_plots_mode:
             self.update()
             return True
         else:
             return False
 
     def LET_mouseMoveEvent(self, event):
-        if self.let_catch_input_data:
+        if self.LET.catch_input_data:
             self.update()
             return True
-        elif self.let_input_point_dragging:
+        elif self.LET.input_point_dragging:
             self.LET_mouseMoveDragging(event)
             return True
-        elif self.let_placing_plots_mode:
+        elif self.LET.placing_plots_mode:
             self.LET_set_plots_position()
             self.update()
             return True
@@ -215,12 +218,12 @@ class LineEyedropperToolMixin():
             return False
 
     def LET_mouseReleaseEvent(self, event):
-        if self.let_catch_input_data:
+        if self.LET.catch_input_data:
             return True
-        elif self.let_input_point_dragging:
+        elif self.LET.input_point_dragging:
             self.LET_mouseReleaseDragging(event)
             return True
-        elif self.let_placing_plots_mode:
+        elif self.LET.placing_plots_mode:
             self.LET_set_plots_position()
             self.LET_leave_placing_plots()
             self.update()
@@ -229,30 +232,30 @@ class LineEyedropperToolMixin():
             return False
 
     def _LET_update_plot(self, new=False):
-        p1 = self.let_tool_input_points[0]
-        p2 = self.let_tool_input_points[1]
-        self.let_tool_line_points = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
+        p1 = self.LET.tool_input_points[0]
+        p2 = self.LET.tool_input_points[1]
+        self.LET.tool_line_points = bresenhamsLineAlgorithm(p1.x(), p1.y(), p2.x(), p2.y())
         image = self.LET_generate_test_image()
-        self.let_tool_pixels_colors = list()
-        for pixel_coord in self.let_tool_line_points:
+        self.LET.tool_pixels_colors = list()
+        for pixel_coord in self.LET.tool_line_points:
             color = image.pixelColor(pixel_coord)
-            self.let_tool_pixels_colors.append(color)
+            self.LET.tool_pixels_colors.append(color)
         if new:
-            p1, p2 = self.let_tool_input_points
-            self.let_plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
+            p1, p2 = self.LET.tool_input_points
+            self.LET.plots_pos = build_valid_rect(p1, p2).topRight() + QPoint(50, 50)
 
     def LET_enter_placing_plots(self):
-        self.let_placing_plots_mode = True
+        self.LET.placing_plots_mode = True
 
     def LET_leave_placing_plots(self):
-        self.let_placing_plots_mode = False
+        self.LET.placing_plots_mode = False
 
     def LET_set_plots_position(self):
-        self.let_plots_pos = self.mapFromGlobal(QCursor().pos())
+        self.LET.plots_pos = self.mapFromGlobal(QCursor().pos())
 
     def LET_copy_current_color_to_clipboard(self):
-        if self.let_tool_activated:
-            color = self.let_tool_pixels_colors[self.let_draw_plp_index]
+        if self.LET.tool_activated:
+            color = self.LET.tool_pixels_colors[self.LET.draw_plp_index]
             _hex = color.name()
             _r = color.red()
             _g = color.green()
@@ -274,10 +277,10 @@ class LineEyedropperToolMixin():
         image = QImage(rect.size(), QImage.Format_ARGB32)
         painter = QPainter()
         painter.begin(image)
-        let_tool_status = self.let_tool_activated
-        self.let_tool_activated = False
+        let_tool_status = self.LET.tool_activated
+        self.LET.tool_activated = False
         self._paintEvent(event, painter)
-        self.let_tool_activated = let_tool_status
+        self.LET.tool_activated = let_tool_status
         painter.end()
         return image
 
@@ -298,11 +301,11 @@ class LineEyedropperToolMixin():
         painter.restore()
 
     def LET_is_context_menu_allowed(self):
-        if self.let_tool_activated:
+        if self.LET.tool_activated:
             cursor_pos = self.mapFromGlobal(QCursor().pos())
-            if self.let_plot1_rect.contains(cursor_pos):
+            if self.LET.plot1_rect.contains(cursor_pos):
                 return True
-            if self.let_plot2_rect.contains(cursor_pos):
+            if self.LET.plot2_rect.contains(cursor_pos):
                 return True
         return False
 
@@ -316,15 +319,15 @@ class LineEyedropperToolMixin():
             self.update()
 
         checkboxes = [
-            (_("show red"), self.let_show_red, partial(toggle_boolean_var_generic, self, "let_show_red")),
-            (_("show green"), self.let_show_green, partial(toggle_boolean_var_generic, self, "let_show_green")),
-            (_("show blue"), self.let_show_blue, partial(toggle_boolean_var_generic, self, "let_show_blue")),
+            (_("show red"), self.LET.show_red, partial(toggle_boolean_var_generic, self.LET, "show_red")),
+            (_("show green"), self.LET.show_green, partial(toggle_boolean_var_generic, self.LET, "show_green")),
+            (_("show blue"), self.LET.show_blue, partial(toggle_boolean_var_generic, self.LET, "show_blue")),
 
-            (_("show hue"), self.let_show_hue, partial(toggle_boolean_var_generic, self, "let_show_hue")),
-            (_("show saturation"), self.let_show_saturation, partial(toggle_boolean_var_generic, self, "let_show_saturation")),
-            (_("show lightness"), self.let_show_lightness, partial(toggle_boolean_var_generic, self, "let_show_lightness")),
+            (_("show hue"), self.LET.show_hue, partial(toggle_boolean_var_generic, self.LET, "show_hue")),
+            (_("show saturation"), self.LET.show_saturation, partial(toggle_boolean_var_generic, self.LET, "show_saturation")),
+            (_("show lightness"), self.LET.show_lightness, partial(toggle_boolean_var_generic, self.LET, "show_lightness")),
 
-            (_("prettify plots"), self.let_pretty_plots, partial(toggle_boolean_var_generic, self, "let_pretty_plots")),
+            (_("prettify plots"), self.LET.pretty_plots, partial(toggle_boolean_var_generic, self.LET, "pretty_plots")),
         ]
 
         def addItem(*args):
@@ -365,7 +368,7 @@ class LineEyedropperToolMixin():
 
     def LET_draw_info(self, painter):
         cursor_pos = self.mapped_cursor_pos()
-        if self.let_catch_input_data and not self.let_tool_activated:
+        if self.LET.catch_input_data and not self.LET.tool_activated:
 
             painter.setPen(QPen(QColor(100, 100, 100), 1))
             painter.setBrush(Qt.NoBrush)
@@ -375,18 +378,18 @@ class LineEyedropperToolMixin():
             painter.drawEllipse(r)
             painter.drawText(r.bottomRight()+QPoint(10, 0), _("Make two left-clicks to begin"))
 
-        if self.let_tool_activated and len(self.let_tool_input_points) > 0:
+        if self.LET.tool_activated and len(self.LET.tool_input_points) > 0:
             self.LET_hover_init()
 
-            if len(self.let_tool_input_points) < 2:
+            if len(self.LET.tool_input_points) < 2:
                 p2 = cursor_pos
-                p1 = self.let_tool_input_points[0]
+                p1 = self.LET.tool_input_points[0]
             else:
-                p1, p2 = self.let_tool_input_points
+                p1, p2 = self.LET.tool_input_points
 
-            PLOTS_POS = self.let_plots_pos
+            PLOTS_POS = self.LET.plots_pos
 
-            WIDTH = len(self.let_tool_pixels_colors)*self.let_hor_scale_factor-1
+            WIDTH = len(self.LET.tool_pixels_colors)*self.LET.hor_scale_factor-1
             HEIGHT = 256
             plot1_pos = QPoint(PLOTS_POS)
             plot2_pos = PLOTS_POS + QPoint(0, HEIGHT+5)
@@ -399,19 +402,19 @@ class LineEyedropperToolMixin():
             backplate_rect2 = QRect(0, 0, WIDTH, HEIGHT)
             backplate_rect2.moveBottomLeft(plot2_pos)
 
-            self.let_plot1_rect = backplate_rect1
-            self.let_plot2_rect = backplate_rect2
+            self.LET.plot1_rect = backplate_rect1
+            self.LET.plot2_rect = backplate_rect2
 
             if backplate_rect1.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect1.bottomLeft()
-                plp_index = int(delta.x()/self.let_hor_scale_factor)
+                plp_index = int(delta.x()/self.LET.hor_scale_factor)
                 self.LET_hover_plots = True
             elif backplate_rect2.contains(cursor_pos):
                 delta = cursor_pos - backplate_rect2.bottomLeft()
-                plp_index = int(delta.x()/self.let_hor_scale_factor)
+                plp_index = int(delta.x()/self.LET.hor_scale_factor)
                 self.LET_hover_plots = True
 
-            if self.let_placing_plots_mode:
+            if self.LET.placing_plots_mode:
                 plp_index = -1
 
             painter.save()
@@ -433,17 +436,17 @@ class LineEyedropperToolMixin():
             painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
 
 
-            if self.let_tool_line_points:
+            if self.LET.tool_line_points:
                 sp_case = False
                 if plp_index == -1:
-                    line_points = sorted(enumerate(self.let_tool_line_points), key=calc_distance_to_cursor_tuple)
+                    line_points = sorted(enumerate(self.LET.tool_line_points), key=calc_distance_to_cursor_tuple)
                     plp_index, plp = line_points[0]
                     if calc_distance_to_cursor(plp) < 30.0:
                         sp_case = True
                     else:
                         plp_index = -1
                 else:
-                    plp = self.let_tool_line_points[plp_index]
+                    plp = self.LET.tool_line_points[plp_index]
                     sp_case = True
                 if plp is not None and sp_case:
                     self.LET_hover_line = True
@@ -451,14 +454,14 @@ class LineEyedropperToolMixin():
                     r.adjust(15, 15, -15, -15)
                     painter.drawEllipse(r)
 
-            self.let_draw_plp_index = plp_index
+            self.LET.draw_plp_index = plp_index
 
             # drawing pipette line
             painter.drawLine(p1, p2)
 
 
             # draw line ends hovers
-            for i_pos in self.let_tool_input_points:
+            for i_pos in self.LET.tool_input_points:
                 r = self.LET_build_input_point_rect(i_pos)
                 if r.contains(self.mapped_cursor_pos()):
                     painter.drawEllipse(r)
@@ -481,22 +484,22 @@ class LineEyedropperToolMixin():
 
             def draw_plot_line(pos, hue_level=False):
                 if plp_index > -1:
-                    _x = pos + QPoint(plp_index*self.let_hor_scale_factor, 0)
+                    _x = pos + QPoint(plp_index*self.LET.hor_scale_factor, 0)
                     painter.setPen(QColor(200, 200, 200))
                     painter.drawLine(_x, _x+QPoint(0, -255))
                     if hue_level:
-                        pc = self.let_tool_pixels_colors[plp_index]
+                        pc = self.LET.tool_pixels_colors[plp_index]
                         hue = pc.hslHueF()
                         hue = max(0.0, hue) # hue будет -1.0 для чисто белого и чёрного цветов
                         value = int(hue*255)
                         hue_offset = QPoint(0, -value)
-                        painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.let_tool_pixels_colors)*self.let_hor_scale_factor, 0))
+                        painter.drawLine(pos+hue_offset, pos+hue_offset+QPoint(len(self.LET.tool_pixels_colors)*self.LET.hor_scale_factor, 0))
 
 
             plot_black = QColor(10, 10, 10)
 
             # draw plots
-            if len(self.let_tool_input_points) > 1:
+            if len(self.LET.tool_input_points) > 1:
 
                 # снимаем модификаторы, чтобы линия шириной 1px не размывалась на несколько пикселей
                 painter.setRenderHint(QPainter.Antialiasing, False)
@@ -509,28 +512,28 @@ class LineEyedropperToolMixin():
 
                 # RGB plot
                 prev_pc_pos = [None, None, None]
-                for n, pc in enumerate(self.let_tool_pixels_colors):
+                for n, pc in enumerate(self.LET.tool_pixels_colors):
 
                     for color_num, color in enumerate([Qt.red, Qt.green, Qt.blue]):
                         if color == Qt.red:
-                            if not self.let_show_red:
+                            if not self.LET.show_red:
                                 continue
                             value = pc.red()
                         elif color == Qt.green:
-                            if not self.let_show_green:
+                            if not self.LET.show_green:
                                 continue
                             value = pc.green()
                         elif color == Qt.blue:
-                            if not self.let_show_blue:
+                            if not self.LET.show_blue:
                                 continue
                             value = pc.blue()
-                        plot_pos = QPoint(plot1_pos.x() + n*self.let_hor_scale_factor, plot1_pos.y() - value)
+                        plot_pos = QPoint(plot1_pos.x() + n*self.LET.hor_scale_factor, plot1_pos.y() - value)
                         painter.setPen(QPen(color, 1))
 
                         # draw plot point
                         painter.drawPoint(plot_pos)
 
-                        if self.let_pretty_plots:
+                        if self.LET.pretty_plots:
                             # draw lines between plot points
                             _pos = prev_pc_pos[color_num]
                             if _pos is not None:
@@ -560,14 +563,14 @@ class LineEyedropperToolMixin():
 
                 if plp_index > -1:
 
-                    color = self.let_tool_pixels_colors[plp_index]
+                    color = self.LET.tool_pixels_colors[plp_index]
                     SEP = "  "
                     text1 = f'RGB:{SEP}{color.redF():.05f}{SEP}{color.greenF():.05f}{SEP}{color.blueF():.05f}'
                     text2 = f'HSL:{SEP}{color.hslHueF():.05f}{SEP}{color.hslSaturationF():.05f}{SEP}{color.lightnessF():.05f}'
                     all_text = f'{text1}\n{text2}'
                     rect = calc_string_rect(all_text)
 
-                    rect.moveTopLeft(plot2_pos + QPoint(plp_index*self.let_hor_scale_factor, 0) + QPoint(0, 10))
+                    rect.moveTopLeft(plot2_pos + QPoint(plp_index*self.LET.hor_scale_factor, 0) + QPoint(0, 10))
 
                     painter.setPen(Qt.white)
 
@@ -599,27 +602,27 @@ class LineEyedropperToolMixin():
 
                 # HSL plot
                 prev_pc_pos = [None, None, None]
-                for n, pc in enumerate(self.let_tool_pixels_colors):
+                for n, pc in enumerate(self.LET.tool_pixels_colors):
 
                     for component in [0, 1, 2]:
                         hue = pc.hslHueF()
                         saturation = pc.hslSaturationF()
                         lightness = pc.lightnessF()
                         if component == 0:
-                            if not self.let_show_hue:
+                            if not self.LET.show_hue:
                                 continue
                             value = max(0.0, hue)  # hue будет -1.0 для чисто белого и чёрного цветов
                         elif component == 1:
-                            if not self.let_show_saturation:
+                            if not self.LET.show_saturation:
                                 continue
                             value = saturation
                         elif component == 2:
-                            if not self.let_show_lightness:
+                            if not self.LET.show_lightness:
                                 continue
                             value = lightness
 
                         value = int(value*255)
-                        plot_pos = QPoint(plot2_pos.x() + n*self.let_hor_scale_factor, plot2_pos.y() - value)
+                        plot_pos = QPoint(plot2_pos.x() + n*self.LET.hor_scale_factor, plot2_pos.y() - value)
                         if component == 0:
                             # color = pc
                             color = Qt.white
@@ -632,7 +635,7 @@ class LineEyedropperToolMixin():
                         # draw plot point
                         painter.drawPoint(plot_pos)
 
-                        if self.let_pretty_plots:
+                        if self.LET.pretty_plots:
                             # draw lines between plot points
                             _pos = prev_pc_pos[component]
                             if _pos is not None:
