@@ -32,44 +32,44 @@ class LineEyedropperToolMixin():
             initializing Line EyeDropper tool
         """
 
-        self.LET = type('LET', (), {})()
+        LET = self.LET = type('LET', (), {})()
 
-        self.LET.tool_activated = False
-        self.LET.tool_input_points = []
-        self.LET.tool_line_points = []
-        self.LET.tool_pixels_colors = []
+        LET.tool_activated = False
+        LET.tool_input_points = []
+        LET.tool_line_points = []
+        LET.tool_pixels_colors = []
 
-        self.LET.input_point_dragging = False
-        self.LET.input_point_dragging_INDEX = -1
+        LET.input_point_dragging = False
+        LET.input_point_dragging_INDEX = -1
 
-        self.LET.input_point_dragging_START_CURSOR_POS = QPoint()
-        self.LET.input_point_dragging_START_INPUT_POS = QPoint()
-        self.LET.input_point_dragging_START_LINE = QLineF()
+        LET.input_point_dragging_START_CURSOR_POS = QPoint()
+        LET.input_point_dragging_START_INPUT_POS = QPoint()
+        LET.input_point_dragging_START_LINE = QLineF()
 
-        self.LET.input_point_rect_side_width = 51
+        LET.input_point_rect_side_width = 51
 
-        self.LET.plots_pos = QPoint()
+        LET.plots_pos = QPoint()
 
-        self.LET.show_red = True
-        self.LET.show_green = True
-        self.LET.show_blue = True
+        LET.show_red = True
+        LET.show_green = True
+        LET.show_blue = True
 
-        self.LET.show_hue = True
-        self.LET.show_saturation = True
-        self.LET.show_lightness = True
+        LET.show_hue = True
+        LET.show_saturation = True
+        LET.show_lightness = True
 
-        self.LET.plot1_rect = QRect()
-        self.LET.plot2_rect = QRect()
+        LET.plot1_rect = QRect()
+        LET.plot2_rect = QRect()
 
-        self.LET.draw_plp_index = -1
+        LET.draw_plp_index = -1
 
-        self.LET.pretty_plots = True
+        LET.pretty_plots = True
 
-        self.LET.hor_scale_factor = 1
+        LET.hor_scale_factor = 1
 
-        self.LET.catch_input_data = False
+        LET.catch_input_data = False
 
-        self.LET.placing_plots_mode = False
+        LET.placing_plots_mode = False
 
         self.LET_hover_init()
 
