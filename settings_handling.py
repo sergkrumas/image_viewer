@@ -779,10 +779,11 @@ class Settings(SettingsWindow):
     @classmethod
     def set_ui_language(cls):
         lang = cls.matrix['ui_lang'][0]
-        allowed_langs = [ # according to /locales folder
-            'en',
-            'ru',
+        allowed_langs = [ 
+            'en', #no special EN-locale
 
+            # according to /locales folder
+            'ru',
             'de',
             'fr',
             'it',
