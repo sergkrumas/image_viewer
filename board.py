@@ -881,7 +881,7 @@ class BoardMixin(BoardTextEditItemMixin):
         dialog.setFileMode(QFileDialog.ExistingFile)
         title = ""
         filter_data = _("Board File (*.board)")
-        folder_path = self.SettingsWindow.get_setting_value("inframed_folderpath")
+        folder_path = self.Settings.get_setting_value("inframed_folderpath")
         if not os.path.exists(folder_path):
             folder_path = self.set_path_for_saved_pictures(folder_path)
         data = dialog.getOpenFileName(self, title, folder_path, filter_data)
@@ -1233,7 +1233,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if cf.virtual:
             filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-            folder_path = self.SettingsWindow.get_setting_value("inframed_folderpath")
+            folder_path = self.Settings.get_setting_value("inframed_folderpath")
             if not os.path.exists(folder_path):
                 folder_path = self.set_path_for_saved_pictures(folder_path)
             save_folderpath = folder_path
@@ -1942,7 +1942,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def boards_save_expo_to_app_settings(self):
         def callback():
             # TODO: так ничего на самом деле не сохраняется, ибо надо вызывать set_setting_value! Это баг!
-            self.SettingsWindow.store_to_disk()
+            self.Settings.store_to_disk()
             self.show_center_label('easeInExpo saved to settings file!')
 
         if self._expo_save_timer is not None:

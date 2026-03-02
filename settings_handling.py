@@ -317,343 +317,10 @@ class SettingsWindow(QWidget):
     }
     """
 
-    def is_on(self, id):
-        return self.checkboxes_widgets[id].isChecked()
-
-    def get_value(self, id):
-        return self.values_widgets[id].get_value()
-
-    def on_change_handler(self):
-        MW = self.globals.main_window
-        cp = self.globals.control_panel
-        cls = self.__class__
-        for setting_id, params in cls.matrix.items():
-            current_val = params[0]
-            text = params[-1]
-            if isinstance(current_val, bool):
-                setattr(MW.STNG, setting_id, self.is_on(setting_id))
-                cls.matrix[setting_id] = (self.is_on(setting_id), text)
-            elif isinstance(current_val, float):
-                range = params[1]
-                setattr(MW.STNG, setting_id, self.get_value(setting_id))
-                cls.matrix[setting_id] = (self.get_value(setting_id), range, text)
-            elif isinstance(current_val, str):
-                pass
-
-        # page_transparency
-        MW.update_current_page_transparency_value()
-
-        self.load_settings_to_globals()
-        MW.update_thumbnails_row_relative_offset(None, only_set=True)
-        MW.update()
-
-        # когда окно настроек открывается на стартовой странице cp будет None
-        if cp is not None:
-            cp.update()
-
-    @classmethod
-    def load_settings_to_globals(cls):
-        cls.globals.THUMBNAIL_WIDTH = int(cls.get_setting_value('thumbnail_width'))
-        cls.globals.USE_GLOBAL_LIST_VIEW_HISTORY = cls.get_setting_value('use_global_view_history')
-
-    @classmethod
-    def settings_init(cls, main_window):
-        main_window.STNG = type('STNG', (), {})()
-        for setting_id, (current_value, *_) in cls.matrix.items():
-            setattr(main_window.STNG, setting_id, current_value)
-
-    @classmethod
-    def filepath(cls):
-        filepath = os.path.join(os.path.dirname(__file__), 'user_data', "settings.json")
-        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
-        return filepath
-
-    @classmethod
-    def get_setting_value(cls, setting_id):
-        if setting_id in cls.matrix.keys():
-            return cls.matrix[setting_id][0]
-        raise Exception('no setting with such ID', setting_id)
-
-    @classmethod
-    def set_setting_value(cls, setting_id, setting_value):
-        valid = False
-        if setting_id in cls.matrix.keys():
-            setting_data = list(cls.matrix[setting_id])
-            setting_data[0] = setting_value
-            cls.matrix[setting_id] = tuple(setting_data)
-            valid = True
-        if valid:
-            cls.store_to_disk()
-        else:
-            raise Exception('no setting with such ID', setting_id)
-
-    @classmethod
-    def langs(cls):
-        return {
-            'en': _('English'),
-            'ru': _('Russian'),
-
-            'de': _('German'),
-            'fr': _('French'),
-            'it': _('Italian'),
-            'es': _('Spanish'),
-        }
-
-    @classmethod
-    def set_ui_language(cls):
-        lang = cls.matrix['ui_lang'][0]
-        allowed_langs = [ # according to /locales folder
-            'en',
-            'ru',
-
-            'de',
-            'fr',
-            'it',
-            'es',
-        ]
-        if lang not in allowed_langs:
-            lang = 'en'
-
-        if lang == 'en':
-            # there's no special EN-locale, here we're using module `gettext` instead object class one
-            __import__('builtins').__dict__['_'] = __import__('gettext').gettext
-        else:
-            el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
-            el.install() # copies el.gettext as _ to builtins for all app modules
-            # SettingsWindow.actualize_matrix_data()
-
-    @classmethod
-    def langs_list(cls, lang_id):
-        return cls.langs().get(lang_id)
-
-    @classmethod
-    def load_from_disk(cls):
-        if not os.path.exists(cls.filepath()):
-            data = {}
-        else:
-            with open(cls.filepath(), "r", encoding="utf8") as file:
-                try:
-                    data = json.load(file)
-                except:
-                    data = {}
-        if data:
-            cls.matrix.update(data['settings'])
-
-            cls.set_ui_language()
-
-            # convert tuples to lists because tuples don't support item assignment
-            for key in cls.matrix.keys():
-                if key.startswith('---'):
-                    cls.matrix[key] = ''.join(cls.matrix[key])
-                else:
-                    cls.matrix[key] = list(cls.matrix[key])
-
-            SettingsWindow.actualize_matrix_data()
-
-            # apply settings to global variables
-            cls.load_settings_to_globals()
-
-    @classmethod
-    def actualize_matrix_data(cls):
-        actual_settings_matrix = cls.generate_localized_matrix()
-        # удаляем старые неактуальные ключи настроек
-        for setting_key in list(cls.matrix.keys()):
-            if setting_key not in actual_settings_matrix.keys():
-                cls.matrix.pop(setting_key)
-        # копирем актуальные переводы описаний настроек
-        for setting_key in cls.matrix.keys():
-            if setting_key in actual_settings_matrix.keys():
-                if setting_key.startswith('---'):
-                    cls.matrix[setting_key] = actual_settings_matrix[setting_key]
-                else:
-                    description = actual_settings_matrix[setting_key][-1]
-                    data = cls.matrix[setting_key]
-                    data[-1] = description
-                    cls.matrix[setting_key] = data
-        # обновляем минимально и максимально допустимые значения настроек типа float
-        for setting_key, setting_data in cls.matrix.items():
-            if setting_key in actual_settings_matrix.keys():
-                default_value = setting_data[0]
-                if isinstance(default_value, float):
-                    stored_matrix_span = setting_data[1]
-                    actual_matrix_span = list(actual_settings_matrix[setting_key][1])
-                    if stored_matrix_span != actual_matrix_span:
-
-                        s_data = cls.matrix[setting_key]
-                        s_data[1] = actual_matrix_span
-                        cls.matrix[setting_key] = s_data
-                        msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
-                        print(msg)
-
-    @classmethod
-    def store_to_disk(cls):
-        data = {
-            'settings': cls.matrix,
-        }
-        if os.path.exists(cls.filepath()):
-            os.remove(cls.filepath())
-        with open(cls.filepath(), 'w+', encoding="utf8") as file:
-            json.dump(data, file, indent=True, ensure_ascii=False)
-
-    @staticmethod
-    def generate_localized_matrix():
-
-        matrix = {
-            '---general': _('General'),
-            'ui_lang': ('en', _('UI language')),
-            'run_on_windows_startup': (True, _('Run on Windows Startup')),
-            'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
-            'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
-            'show_fullscreen': (True, _('Full-screen mode on application start')),
-            'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
-            'hide_to_tray_on_close': (True, _('Hide to tray on close')),
-            'hide_on_app_start': (False, _('Hide to tray on app start')),
-            'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
-            'show_console_output': (True, _('Show standard (console) output overlay')),
-            'effects': (True, _('Animated effects')),
-            'show_noise_cells': (True, _('Show animated cells overlay')),
-
-
-            '---gamepad': _('Gamepad'),
-            'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
-            'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
-            'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),
-            'gamepad_move_stick_speed': (20.0, (1.0, 50.0), _('Gamepad move stick speed')),
-
-
-            '---viewerpage': _('Viewer page'),
-            'animated_zoom': (False, _('Animated zoom')),
-            'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
-            'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
-            'zoom_on_mousewheel': (True, _('Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list')),
-            'draw_default_thumbnail': (True, _('Show dummy-default thumbnail while generated one is not ready')),
-            'show_thirds': (False, _('Show thirds')),
-            'show_cyberpunk': (False, _('Cyberpunk frame')),
-            'show_image_center': (False, _('Show image center')),
-            'show_deep_secrets_at_zoom': (True, _('Show random secret when approaching high zoom level')),
-            'autohide_control_panel': (True, _('Autohide control panel')),
-            'use_global_view_history': (False, _('Enable global viewing history instead per-folder one')),
-            'show_image_metadata': (True, _('Show image metadata')),
-            'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
-            'browse_images_only': (False, _('Allow browsing image filetypes only')),
-            'small_images_fit_factor': (0.0, (0.0, 1.0), _('Relative scale factor for small images')),
-            'draw_shadow_and_checkerboard_backplate': (True, _('Draw shadow and checkerboard backplate')),
-
-
-            '---librarypage': _('Library page'),
-            'library_corner_radius': (10.0, (0.0, 250.0), _('Library page rounded corner radius')),
-
-
-            '---waterfallpage': _('Waterfall page'),
-            'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
-            'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
-            'waterfall_corner_radius': (20.0, (0.0, 250.0), _('Waterfall page rounded corner radius')),
-
-
-            '---boardpage': _('Board page'),
-            'board_load_plugins_at_startup': (False, _("Load board plugins at startup")),
-            'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
-            'board_draw_canvas_origin': (False, _('Show board origin')),
-            'board_vertical_items_layout': (False, _('Vertical items layout')),
-            'board_draw_grid': (False, _('Show board grid')),
-            'board_unloading': (False, _('Unload high-resolution data for items not visible in the board viewport')),
-            'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
-            'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
-            'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
-            'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
-
-
-            '---pagestransparent': _('Pages transparent setting for full-screen mode'),
-            'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
-            'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
-            'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
-            'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
-            'waterfall_page_transparency': (0.9, (0.0, 1.0), _('Waterfall page transparent value')),
-
-
-            '---viewerpageslideshow': _('Slideshow for Viewer page'),
-            'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
-            'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
-
-
-            '---paths': _('Paths'),
-            'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
-        }
-        return matrix
-
-    matrix = generate_localized_matrix()
-
     isWindowVisible = False
 
     is_initialized = False
 
-    STARTUP_CONFIG = (
-        'ImageViewerLauncher',
-        os.path.join(os.path.dirname(__file__), "viewer.pyw")
-    )
-
-    @classmethod
-    def get_setting_span(cls, setting_id):
-        data = cls.matrix[setting_id]
-        value = data[0]
-        if isinstance(value, (int, float)):
-            span = data[1]
-            return span
-        else:
-            return None
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(SettingsWindow, cls).__new__(cls, *args, **kwargs)
-        return cls.instance
-
-    @classmethod
-    def center_if_on_screen(cls):
-        if hasattr(cls, "instance"):
-            window = cls.instance
-            if window.isVisible():
-                cls.pos_at_center(window)
-
-    @classmethod
-    def pos_at_center(cls, self):
-        MW = self.globals.main_window
-        cp = QDesktopWidget().availableGeometry().center()
-        cp = MW.rect().center()
-        qr = self.frameGeometry()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft() + QPoint(0, -50))
-        self.activateWindow()
-
-    def handle_windows_startup_chbx(self, sender):
-        if sender.isChecked():
-            add_to_startup(*self.STARTUP_CONFIG)
-        else:
-            remove_from_startup(self.STARTUP_CONFIG[0])
-
-    @classmethod
-    def set_new_lang_across_entire_app(cls, new_lang):
-        # записываем в настройки
-        cls.matrix['ui_lang'][0] = new_lang
-        # задаём выбранную локаль по всему приложению
-        cls.set_ui_language()
-        # обновляем описания настроек в соответствии с языком
-        cls.actualize_matrix_data()
-        cls.store_to_disk()
-
-        # пересоздаём элементы панели управления, чтобы подсказки обновились
-        MW = cls.globals.main_window
-        MW.recreate_control_panel(requested_page=MW.current_page)
-        # пересоздаём окно настроек, чтобы обновился интерфейс
-        def callback():
-            if hasattr(SettingsWindow, 'instance') and SettingsWindow.isWindowVisible:
-                SettingsWindow.isWindowVisible = False
-                SettingsWindow.instance.close()
-                del SettingsWindow.instance
-                MW.open_settings_window()
-                del cls.globals._timer
-
-        millisecs_delay = 1
-        cls.globals._timer = timer = QTimer.singleShot(millisecs_delay, callback)
 
     def __init__(self, parent):
         if self.is_initialized:
@@ -815,7 +482,7 @@ class SettingsWindow(QWidget):
             elif id == 'ui_lang':
                 lang_combo_box = QComboBox()
 
-                current_lang_key = SettingsWindow.matrix['ui_lang'][0]
+                current_lang_key = Settings.matrix['ui_lang'][0]
                 for n, (lang_key, lang_name) in enumerate(self.langs().items()):
                     icon = getattr(self.globals, f'lang_{lang_key}_icon')
                     lang_combo_box.addItem(icon, lang_name)
@@ -846,7 +513,7 @@ class SettingsWindow(QWidget):
 
                 def lang_combobox_index_changed_callback(index):
                     new_lang = lang_combo_box.itemData(index)
-                    SettingsWindow.set_new_lang_across_entire_app(new_lang)
+                    Setting.set_new_lang_across_entire_app(new_lang)
                     warn_label.setVisible(True)
 
                 lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed_callback)
@@ -981,7 +648,7 @@ class SettingsWindow(QWidget):
         self.hide()
 
     def save_button_handler(self):
-        SettingsWindow.store_to_disk()
+        Settings.store_to_disk()
         self.hide()
 
     def hide(self):
@@ -1014,7 +681,344 @@ class SettingsWindow(QWidget):
         if event.nativeScanCode() == 0x29:
             self.hide()
 
+    @classmethod
+    def pos_at_center(cls, self):
+        MW = self.globals.main_window
+        cp = QDesktopWidget().availableGeometry().center()
+        cp = MW.rect().center()
+        qr = self.frameGeometry()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft() + QPoint(0, -50))
+        self.activateWindow()
 
+
+class Settings(SettingsWindow):
+
+    def is_on(self, id):
+        return self.checkboxes_widgets[id].isChecked()
+
+    def get_value(self, id):
+        return self.values_widgets[id].get_value()
+
+    def on_change_handler(self):
+        MW = self.globals.main_window
+        cp = self.globals.control_panel
+        cls = self.__class__
+        for setting_id, params in cls.matrix.items():
+            current_val = params[0]
+            text = params[-1]
+            if isinstance(current_val, bool):
+                setattr(MW.STNG, setting_id, self.is_on(setting_id))
+                cls.matrix[setting_id] = (self.is_on(setting_id), text)
+            elif isinstance(current_val, float):
+                range = params[1]
+                setattr(MW.STNG, setting_id, self.get_value(setting_id))
+                cls.matrix[setting_id] = (self.get_value(setting_id), range, text)
+            elif isinstance(current_val, str):
+                pass
+
+        # page_transparency
+        MW.update_current_page_transparency_value()
+
+        self.load_settings_to_globals()
+        MW.update_thumbnails_row_relative_offset(None, only_set=True)
+        MW.update()
+
+        # когда окно настроек открывается на стартовой странице cp будет None
+        if cp is not None:
+            cp.update()
+
+    @classmethod
+    def load_settings_to_globals(cls):
+        cls.globals.THUMBNAIL_WIDTH = int(cls.get_setting_value('thumbnail_width'))
+        cls.globals.USE_GLOBAL_LIST_VIEW_HISTORY = cls.get_setting_value('use_global_view_history')
+
+    @classmethod
+    def settings_init(cls, main_window):
+        main_window.STNG = type('STNG', (), {})()
+        for setting_id, (current_value, *_) in cls.matrix.items():
+            setattr(main_window.STNG, setting_id, current_value)
+
+    @classmethod
+    def filepath(cls):
+        filepath = os.path.join(os.path.dirname(__file__), 'user_data', "settings.json")
+        create_pathsubfolders_if_not_exist(os.path.dirname(filepath))
+        return filepath
+
+    @classmethod
+    def get_setting_value(cls, setting_id):
+        if setting_id in cls.matrix.keys():
+            return cls.matrix[setting_id][0]
+        raise Exception('no setting with such ID', setting_id)
+
+    @classmethod
+    def set_setting_value(cls, setting_id, setting_value):
+        valid = False
+        if setting_id in cls.matrix.keys():
+            setting_data = list(cls.matrix[setting_id])
+            setting_data[0] = setting_value
+            cls.matrix[setting_id] = tuple(setting_data)
+            valid = True
+        if valid:
+            cls.store_to_disk()
+        else:
+            raise Exception('no setting with such ID', setting_id)
+
+    @classmethod
+    def langs(cls):
+        return {
+            'en': _('English'),
+            'ru': _('Russian'),
+
+            'de': _('German'),
+            'fr': _('French'),
+            'it': _('Italian'),
+            'es': _('Spanish'),
+        }
+
+    @classmethod
+    def set_ui_language(cls):
+        lang = cls.matrix['ui_lang'][0]
+        allowed_langs = [ # according to /locales folder
+            'en',
+            'ru',
+
+            'de',
+            'fr',
+            'it',
+            'es',
+        ]
+        if lang not in allowed_langs:
+            lang = 'en'
+
+        if lang == 'en':
+            # there's no special EN-locale, here we're using module `gettext` instead object class one
+            __import__('builtins').__dict__['_'] = __import__('gettext').gettext
+        else:
+            el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
+            el.install() # copies el.gettext as _ to builtins for all app modules
+            # SettingsWindow.actualize_matrix_data()
+
+    @classmethod
+    def langs_list(cls, lang_id):
+        return cls.langs().get(lang_id)
+
+    @classmethod
+    def load_from_disk(cls):
+        if not os.path.exists(cls.filepath()):
+            data = {}
+        else:
+            with open(cls.filepath(), "r", encoding="utf8") as file:
+                try:
+                    data = json.load(file)
+                except:
+                    data = {}
+        if data:
+            cls.matrix.update(data['settings'])
+
+            cls.set_ui_language()
+
+            # convert tuples to lists because tuples don't support item assignment
+            for key in cls.matrix.keys():
+                if key.startswith('---'):
+                    cls.matrix[key] = ''.join(cls.matrix[key])
+                else:
+                    cls.matrix[key] = list(cls.matrix[key])
+
+            cls.actualize_matrix_data()
+
+            # apply settings to global variables
+            cls.load_settings_to_globals()
+
+    @classmethod
+    def actualize_matrix_data(cls):
+        actual_settings_matrix = cls.generate_localized_matrix()
+        # удаляем старые неактуальные ключи настроек
+        for setting_key in list(cls.matrix.keys()):
+            if setting_key not in actual_settings_matrix.keys():
+                cls.matrix.pop(setting_key)
+        # копирем актуальные переводы описаний настроек
+        for setting_key in cls.matrix.keys():
+            if setting_key in actual_settings_matrix.keys():
+                if setting_key.startswith('---'):
+                    cls.matrix[setting_key] = actual_settings_matrix[setting_key]
+                else:
+                    description = actual_settings_matrix[setting_key][-1]
+                    data = cls.matrix[setting_key]
+                    data[-1] = description
+                    cls.matrix[setting_key] = data
+        # обновляем минимально и максимально допустимые значения настроек типа float
+        for setting_key, setting_data in cls.matrix.items():
+            if setting_key in actual_settings_matrix.keys():
+                default_value = setting_data[0]
+                if isinstance(default_value, float):
+                    stored_matrix_span = setting_data[1]
+                    actual_matrix_span = list(actual_settings_matrix[setting_key][1])
+                    if stored_matrix_span != actual_matrix_span:
+
+                        s_data = cls.matrix[setting_key]
+                        s_data[1] = actual_matrix_span
+                        cls.matrix[setting_key] = s_data
+                        msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
+                        print(msg)
+
+    @classmethod
+    def store_to_disk(cls):
+        data = {
+            'settings': cls.matrix,
+        }
+        if os.path.exists(cls.filepath()):
+            os.remove(cls.filepath())
+        with open(cls.filepath(), 'w+', encoding="utf8") as file:
+            json.dump(data, file, indent=True, ensure_ascii=False)
+
+    @staticmethod
+    def generate_localized_matrix():
+
+        matrix = {
+            '---general': _('General'),
+            'ui_lang': ('en', _('UI language')),
+            'run_on_windows_startup': (True, _('Run on Windows Startup')),
+            'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
+            'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
+            'show_fullscreen': (True, _('Full-screen mode on application start')),
+            'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
+            'hide_to_tray_on_close': (True, _('Hide to tray on close')),
+            'hide_on_app_start': (False, _('Hide to tray on app start')),
+            'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
+            'show_console_output': (True, _('Show standard (console) output overlay')),
+            'effects': (True, _('Animated effects')),
+            'show_noise_cells': (True, _('Show animated cells overlay')),
+
+
+            '---gamepad': _('Gamepad'),
+            'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
+            'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
+            'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),
+            'gamepad_move_stick_speed': (20.0, (1.0, 50.0), _('Gamepad move stick speed')),
+
+
+            '---viewerpage': _('Viewer page'),
+            'animated_zoom': (False, _('Animated zoom')),
+            'draw_control_panel_backplate': (False, _('Draw backplate for control panel')),
+            'thumbnail_width': (50.0, (30.0, 100.0), _('Thumbnails size')),
+            'zoom_on_mousewheel': (True, _('Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list')),
+            'draw_default_thumbnail': (True, _('Show dummy-default thumbnail while generated one is not ready')),
+            'show_thirds': (False, _('Show thirds')),
+            'show_cyberpunk': (False, _('Cyberpunk frame')),
+            'show_image_center': (False, _('Show image center')),
+            'show_deep_secrets_at_zoom': (True, _('Show random secret when approaching high zoom level')),
+            'autohide_control_panel': (True, _('Autohide control panel')),
+            'use_global_view_history': (False, _('Enable global viewing history instead per-folder one')),
+            'show_image_metadata': (True, _('Show image metadata')),
+            'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
+            'browse_images_only': (False, _('Allow browsing image filetypes only')),
+            'small_images_fit_factor': (0.0, (0.0, 1.0), _('Relative scale factor for small images')),
+            'draw_shadow_and_checkerboard_backplate': (True, _('Draw shadow and checkerboard backplate')),
+
+
+            '---librarypage': _('Library page'),
+            'library_corner_radius': (10.0, (0.0, 250.0), _('Library page rounded corner radius')),
+
+
+            '---waterfallpage': _('Waterfall page'),
+            'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
+            'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
+            'waterfall_corner_radius': (20.0, (0.0, 250.0), _('Waterfall page rounded corner radius')),
+
+
+            '---boardpage': _('Board page'),
+            'board_load_plugins_at_startup': (False, _("Load board plugins at startup")),
+            'board_draw_origin_compass': (False, _('Show origin compass and zoom level')),
+            'board_draw_canvas_origin': (False, _('Show board origin')),
+            'board_vertical_items_layout': (False, _('Vertical items layout')),
+            'board_draw_grid': (False, _('Show board grid')),
+            'board_unloading': (False, _('Unload high-resolution data for items not visible in the board viewport')),
+            'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
+            'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
+            'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
+            'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
+
+
+            '---pagestransparent': _('Pages transparent setting for full-screen mode'),
+            'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
+            'library_page_transparency': (0.9, (0.0, 1.0), _('Library page transparent value')),
+            'board_page_transparency': (0.7, (0.0, 1.0), _('Board page transparent value')),
+            'start_page_transparency': (0.9, (0.0, 1.0), _('Start page transparent value')),
+            'waterfall_page_transparency': (0.9, (0.0, 1.0), _('Waterfall page transparent value')),
+
+
+            '---viewerpageslideshow': _('Slideshow for Viewer page'),
+            'slides_transition_duration': (1.0, (0.1, 10.0), _('Transition duration in seconds')),
+            'slides_delay_duration': (2.0, (0.1, 240.0), _('Delay duration in seconds')),
+
+
+            '---paths': _('Paths'),
+            'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
+        }
+        return matrix
+
+    matrix = generate_localized_matrix()
+
+
+    STARTUP_CONFIG = (
+        'ImageViewerLauncher',
+        os.path.join(os.path.dirname(__file__), "viewer.pyw")
+    )
+
+    @classmethod
+    def get_setting_span(cls, setting_id):
+        data = cls.matrix[setting_id]
+        value = data[0]
+        if isinstance(value, (int, float)):
+            span = data[1]
+            return span
+        else:
+            return None
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(SettingsWindow, cls).__new__(cls, *args, **kwargs)
+        return cls.instance
+
+    @classmethod
+    def center_if_on_screen(cls):
+        if hasattr(cls, "instance"):
+            window = cls.instance
+            if window.isVisible():
+                cls.pos_at_center(window)
+
+
+    def handle_windows_startup_chbx(self, sender):
+        if sender.isChecked():
+            add_to_startup(*self.STARTUP_CONFIG)
+        else:
+            remove_from_startup(self.STARTUP_CONFIG[0])
+
+    @classmethod
+    def set_new_lang_across_entire_app(cls, new_lang):
+        # записываем в настройки
+        cls.matrix['ui_lang'][0] = new_lang
+        # задаём выбранную локаль по всему приложению
+        cls.set_ui_language()
+        # обновляем описания настроек в соответствии с языком
+        cls.actualize_matrix_data()
+        cls.store_to_disk()
+
+        # пересоздаём элементы панели управления, чтобы подсказки обновились
+        MW = cls.globals.main_window
+        MW.recreate_control_panel(requested_page=MW.current_page)
+        # пересоздаём окно настроек, чтобы обновился интерфейс
+        def callback():
+            if hasattr(SettingsWindow, 'instance') and SettingsWindow.isWindowVisible:
+                SettingsWindow.isWindowVisible = False
+                SettingsWindow.instance.close()
+                del SettingsWindow.instance
+                MW.open_settings_window()
+                del cls.globals._timer
+
+        millisecs_delay = 1
+        cls.globals._timer = timer = QTimer.singleShot(millisecs_delay, callback)
 
 
 # для запуска программы прямо из этого файла при разработке и отладке

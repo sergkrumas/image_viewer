@@ -31,7 +31,7 @@ from line_eyedropper_tool import LineEyedropperToolMixin
 from xyz_dispatcher import XYZMixin
 
 from pixmaps_generation import generate_pixmaps
-from settings_handling import SettingsWindow
+from settings_handling import Settings
 from control_panel import ControlPanel
 from app_copy_prevention import IPC
 
@@ -232,10 +232,10 @@ class AppMixin():
 
         path = cls.APP_get_predefined_path_if_started_from_sublimeText()
 
-        SettingsWindow.globals = Globals
-        SettingsWindow.load_from_disk()
+        Settings.globals = Globals
+        Settings.load_from_disk()
 
-        Globals.do_not_show_start_dialog = SettingsWindow.get_setting_value("do_not_show_start_dialog")
+        Globals.do_not_show_start_dialog = Settings.get_setting_value("do_not_show_start_dialog")
 
         app = QApplication(sys.argv)
         app.aboutToQuit.connect(cls.APP_exit_threads)
@@ -255,7 +255,7 @@ class AppMixin():
         else:
             Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
 
-        frameless_mode = True and SettingsWindow.get_setting_value("show_fullscreen")
+        frameless_mode = True and Settings.get_setting_value("show_fullscreen")
         # разбор аргументов
         parser = argparse.ArgumentParser()
         parser.add_argument('path', nargs='?', default=None)
@@ -309,7 +309,7 @@ class AppMixin():
 
         Globals.is_path_exists = os.path.exists(path)
 
-        generate_pixmaps(Globals, SettingsWindow)
+        generate_pixmaps(Globals, Settings)
 
         # создание иконки в трее
         sti = None
@@ -327,7 +327,7 @@ class AppMixin():
         MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
         if frameless_mode:
             MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown
-            if not SettingsWindow.get_setting_value("hide_on_app_start"):
+            if not Settings.get_setting_value("hide_on_app_start"):
                 MW.showMaximized()
         else:
             MW.show()
@@ -337,7 +337,7 @@ class AppMixin():
         # создание панели управления
         ControlPanel.globals = Globals
         ControlPanel.LibraryData = LibraryData
-        ControlPanel.SettingsWindow = SettingsWindow
+        ControlPanel.Settings = Settings
         # CP = MW.recreate_control_panel()
 
         legacy_viewer_page_branch = True
@@ -364,7 +364,7 @@ class AppMixin():
                 legacy_viewer_page_branch = False
 
         else:
-            waterfall_page_needed = SettingsWindow.get_setting_value("open_app_on_waterfall_page")
+            waterfall_page_needed = Settings.get_setting_value("open_app_on_waterfall_page")
             if waterfall_page_needed:
                 MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
 
@@ -864,7 +864,7 @@ class MainWindow(QMainWindow,
         self.BoardData = BoardData
         self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
 
-        if SettingsWindow.get_setting_value("hide_on_app_start"):
+        if Settings.get_setting_value("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
         else:
             self.need_for_init_after_call_from_tray = False
@@ -923,8 +923,8 @@ class MainWindow(QMainWindow,
         self.gamepad = None
         self.gamepad_timer = None
 
-        self.SettingsWindow = SettingsWindow
-        SettingsWindow.settings_init(self)
+        self.Settings = Settings
+        Settings.settings_init(self)
 
         self.board_init()
         self.tagging_init()
@@ -2207,7 +2207,7 @@ class MainWindow(QMainWindow,
 
     def read_image_metadata(self, image_data):
         if not image_data.image_metadata:
-            if SettingsWindow.get_setting_value('show_image_metadata'):
+            if Settings.get_setting_value('show_image_metadata'):
                 image_data.image_metadata = read_meta_info(image_data.filepath)
                 out = []
                 for key, data in dict(image_data.image_metadata).items():
@@ -2304,7 +2304,7 @@ class MainWindow(QMainWindow,
             LibraryData().update_current_folder_columns()
             self.render_waterfall_backplate()
 
-        SettingsWindow.center_if_on_screen()
+        Settings.center_if_on_screen()
 
         # здесь по возможности ещё должен быть и скейл относительно центра.
         self.update()
@@ -2497,7 +2497,7 @@ class MainWindow(QMainWindow,
             for lang, rect in self.start_page_lang_btns:
                 if rect.contains(event.pos()):
                     lang_button_pressed = True
-                    SettingsWindow.set_new_lang_across_entire_app(lang)
+                    Settings.set_new_lang_across_entire_app(lang)
                     self.show_center_label(lang.upper())
                     self.update()
                     break
@@ -3465,10 +3465,10 @@ class MainWindow(QMainWindow,
         value += n
         value = self.apply_min_max_clamping(
             value,
-            *SettingsWindow.get_setting_span(setting_id)
+            *Settings.get_setting_span(setting_id)
         )
         setattr(self, setting_attr_name, float(value))
-        SettingsWindow.set_setting_value(setting_id, float(value))
+        Settings.set_setting_value(setting_id, float(value))
         return float(value)
 
     def library_change_rounded_rect_radius(self, event, scroll_value):
@@ -3492,7 +3492,7 @@ class MainWindow(QMainWindow,
         return max(min_value, min(max_value, value))
 
     def waterfall_change_number_of_columns(self, event, scroll_value):
-        min_value, max_value = SettingsWindow.get_setting_span('waterfall_columns_number')
+        min_value, max_value = Settings.get_setting_span('waterfall_columns_number')
         if scroll_value > 0:
             n = 1
         else:
@@ -3517,7 +3517,7 @@ class MainWindow(QMainWindow,
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
         self.STNG.waterfall_columns_number = float(value)
-        SettingsWindow.set_setting_value('waterfall_columns_number', float(value))
+        Settings.set_setting_value('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
             msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
@@ -4234,7 +4234,7 @@ class MainWindow(QMainWindow,
     def draw_startpage_langflag(self, painter, rect, cursor_pos, lang):
         painter.save()
 
-        cur_lang = SettingsWindow.matrix['ui_lang'][0]
+        cur_lang = Settings.matrix['ui_lang'][0]
 
         is_cursor_over = rect.contains(cursor_pos)
         is_cur_lang = cur_lang == lang
@@ -4322,7 +4322,7 @@ class MainWindow(QMainWindow,
         painter.setFont(font)
         painter.setBrush(QBrush(Qt.black))
 
-        if SettingsWindow.get_setting_value('show_console_output'):
+        if Settings.get_setting_value('show_console_output'):
             n = 0
             for number, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
                 _message = message.strip()
@@ -4886,7 +4886,7 @@ class MainWindow(QMainWindow,
         cf = LibraryData().current_folder()
         ci = cf.current_image()
         out = []
-        if SettingsWindow.get_setting_value('show_image_metadata') and ci.image_metadata:
+        if Settings.get_setting_value('show_image_metadata') and ci.image_metadata:
             output_rect = self.rect()
             h2 = int(self.rect().height()*3/4)
             output_rect.setTop(h2)
@@ -4963,7 +4963,7 @@ class MainWindow(QMainWindow,
             self.animated_or_not_animated_close(QApplication.instance().quit)
         elif Globals.FORCE_STANDARD_DEBUG and Globals.DEBUG:
             QApplication.instance().quit()
-        elif SettingsWindow.get_setting_value('hide_to_tray_on_close'):
+        elif Settings.get_setting_value('hide_to_tray_on_close'):
             self.hide()
         else:
             self.animated_or_not_animated_close(QApplication.instance().quit)
@@ -5245,8 +5245,8 @@ class MainWindow(QMainWindow,
                 self.board_region_zoom_do_cancel()
             elif self.is_board_page_active() and self.board_TextElementDeactivateEditMode():
                 return
-            elif SettingsWindow.isWindowVisible:
-                SettingsWindow.instance.hide()
+            elif Settings.isWindowVisible:
+                Settings.instance.hide()
             elif HookConsoleOutput.check_messages():
                 HookConsoleOutput.clear_messages_list()
             else:
@@ -5424,7 +5424,7 @@ class MainWindow(QMainWindow,
         if not ext.lower().endswith((".png", ".jpg", ".jpeg",)):
             ext = ".png"
         formated_datetime = datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-        rootpath = SettingsWindow.get_setting_value("inframed_folderpath")
+        rootpath = Settings.get_setting_value("inframed_folderpath")
         if reset_path:
             _path = self.set_path_for_saved_pictures(rootpath)
             if _path:
@@ -5445,7 +5445,7 @@ class MainWindow(QMainWindow,
         path = QFileDialog.getExistingDirectory(None, msg, init_path)
         if os.path.exists(path):
             rootpath = str(path)
-            SettingsWindow.set_setting_value('inframed_folderpath', rootpath)
+            Settings.set_setting_value('inframed_folderpath', rootpath)
             return rootpath
         return None
 
@@ -5872,7 +5872,7 @@ class MainWindow(QMainWindow,
             self.hide()
 
     def open_settings_window(self):
-        window = SettingsWindow(self)
+        window = Settings(self)
         if window.isVisible():
             window.hide()
         else:

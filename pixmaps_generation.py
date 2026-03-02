@@ -21,7 +21,7 @@
 from _utils import *
 
 
-def default_thumbnail(Globals, SettingsWindow):
+def default_thumbnail(Globals, Settings):
 
     THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
     DEFAULT_THUMBNAIL = QPixmap(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
@@ -36,7 +36,7 @@ def default_thumbnail(Globals, SettingsWindow):
     painter.drawText(QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH), Qt.AlignCenter, "⧖") #hourglass
     painter.end()
 
-    if SettingsWindow.get_setting_value('draw_default_thumbnail'):
+    if Settings.get_setting_value('draw_default_thumbnail'):
         Globals.DEFAULT_THUMBNAIL = DEFAULT_THUMBNAIL
 
 def error_preview_pixmap(Globals):
@@ -400,12 +400,12 @@ def lang_icons(Globals):
     Globals.lang_it_icon = QIcon(Globals.lang_it_pixmap)
     Globals.lang_es_icon = QIcon(Globals.lang_es_pixmap)
 
-def generate_pixmaps(Globals, SettingsWindow):
+def generate_pixmaps(Globals, Settings):
 
     print('start generating pixmaps')
 
     null_pixmap(Globals)
-    default_thumbnail(Globals, SettingsWindow)
+    default_thumbnail(Globals, Settings)
     error_preview_pixmap(Globals)
     not_supported_pixmap(Globals)
     fav_big_icon(Globals)
