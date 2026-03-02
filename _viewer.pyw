@@ -28,6 +28,7 @@ from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
 from tagging import TaggingMixing
 from line_eyedropper_tool import LineEyedropperToolMixin
+from autoscroll import AutoscrollMixin
 from xyz_dispatcher import XYZMixin
 
 from pixmaps_generation import generate_pixmaps
@@ -751,6 +752,7 @@ class MainWindow(QMainWindow,
                     TaggingMixing,
                     LineEyedropperToolMixin,
                     XYZMixin,
+                    AutoscrollMixin,
         ):
 
     UPPER_SCALE_LIMIT = 100.0
@@ -5870,205 +5872,6 @@ class MainWindow(QMainWindow,
 
     def get_user_data_folder(self):
         return os.path.join(os.path.dirname(__file__), "user_data")
-
-    def autoscroll_init(self):
-        self._autoscroll_timer = QTimer()
-        self._autoscroll_timer.setInterval(10)
-        self._autoscroll_timer.timeout.connect(self.autoscroll_timer)
-        self._autoscroll_inside_activation_zone = False
-
-        self._autoscroll_desactivation_pass = False
-
-    def autoscroll_set_current_page_indicator(self):
-        self._autoscroll_draw_vertical = False
-        self._autoscroll_draw_horizontal = False
-        if self.is_board_page_active():
-            self._autoscroll_draw_vertical = True
-            self._autoscroll_draw_horizontal = True
-        elif self.is_library_page_active():
-            self._autoscroll_draw_vertical = True
-        elif self.is_waterfall_page_active():
-            self._autoscroll_draw_vertical = True
-
-    def autoscroll_is_scrollbar_available(self):
-        vs = self.vertical_scrollbars
-        if self.is_library_page_active():
-            if self.library_page_is_inside_left_part():
-                # если видно скроллбар, значит есть что прокручивать!
-                if vs.data[vs.LIBRARY_PAGE_FOLDERS_LIST].visible:
-                    return vs.LIBRARY_PAGE_FOLDERS_LIST
-            else:
-                if vs.data[vs.LIBRARY_PAGE_PREVIEWS_LIST].visible:
-                    return vs.LIBRARY_PAGE_PREVIEWS_LIST
-        elif self.is_waterfall_page_active():
-            # по идее, не важно - левый или правый, но пусть будет левый
-            if vs.data[vs.WATERFALL_PAGE_LEFT].visible:
-                return vs.WATERFALL_PAGE_LEFT
-        return vs.NO_SCROLLBAR
-
-    def autoscroll_timer(self):
-        OUTER_ZONE_ACTIVATION_RADIUS = 30.0
-        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
-        diff_l = QVector2D(cursor_offset).length()
-        self._autoscroll_inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
-        if not self._autoscroll_inside_activation_zone:
-            # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
-            diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
-            vec = QVector2D(cursor_offset).normalized()*diff_l
-            velocity_vec = vec.toPointF()
-            if self.is_board_page_active():
-                self.canvas_origin -= velocity_vec/25.0
-                self.update_selection_bouding_box()
-            elif self.is_library_page_active() or self.is_waterfall_page_active():
-                vs = self.vertical_scrollbars
-                sb_index = self.autoscroll_is_scrollbar_available()
-                if sb_index == vs.NO_SCROLLBAR:
-                    self.autoscroll_finish()
-                else:
-                    self.autoscroll_do_for_LibraryWaterfall_pages(velocity_vec.y()/8.0)
-        self.update()
-
-    def autoscroll_intro_for_LibraryWaterfall_pages(self, scrollbar_index):
-        vs = self.vertical_scrollbars
-        sb_data = vs.data[scrollbar_index]
-        vs.capture_index = scrollbar_index
-        vs.captured_thumb_rect_at_start = QRectF(sb_data.thumb_rect)
-        if scrollbar_index == vs.LIBRARY_PAGE_FOLDERS_LIST:
-            vs.captured_scroll_offset = LibraryData().folderslist_scroll_offset
-        elif scrollbar_index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
-            cf = LibraryData().current_folder()
-            vs.captured_scroll_offset = cf.library_previews_scroll_offset
-
-    def autoscroll_do_for_LibraryWaterfall_pages(self, velocity_y):
-        vs = self.vertical_scrollbars
-        index = vs.capture_index
-        LIBRARY_VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
-        WATERFALL_VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
-        if index != vs.NO_SCROLLBAR:
-            sb_data = vs.data[index]
-
-            if index == vs.LIBRARY_PAGE_FOLDERS_LIST:
-                LibraryData().folderslist_scroll_offset -= velocity_y
-                content_height = self.library_page_folders_content_height()
-                LibraryData().folderslist_scroll_offset = self.apply_scroll_and_limits(
-                                                            LibraryData().folderslist_scroll_offset,
-                                                            0,
-                                                            content_height,
-                                                            LIBRARY_VIEWFRAME_HEIGHT,
-                                                        )
-
-            elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
-                cf = LibraryData().current_folder()
-                cf.library_previews_scroll_offset -= velocity_y
-                content_height = self.library_page_previews_columns_content_height(cf)
-                cf.library_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.library_previews_scroll_offset,
-                                                            0,
-                                                            content_height,
-                                                            LIBRARY_VIEWFRAME_HEIGHT,
-                                                        )
-
-
-            elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
-                cf = LibraryData().current_folder()
-                cf.waterfall_previews_scroll_offset -= velocity_y
-                content_height = self.waterfall_page_previews_columns_content_height(cf)
-                cf.waterfall_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.waterfall_previews_scroll_offset,
-                                                            0,
-                                                            content_height,
-                                                            WATERFALL_VIEWFRAME_HEIGHT,
-                                                        )
-
-            self.update()
-
-    def autoscroll_outro_for_LibraryWaterfall_pages(self):
-        vs = self.vertical_scrollbars
-        vs.capture_index = vs.NO_SCROLLBAR
-
-    def autoscroll_start(self):
-        self._autoscroll_inside_activation_zone = False
-        self.autoscroll_set_current_page_indicator()
-        if self.is_library_page_active() or self.is_waterfall_page_active():
-            sb_index = self.autoscroll_is_scrollbar_available()
-            if sb_index != self.vertical_scrollbars.NO_SCROLLBAR:
-                self.autoscroll_intro_for_LibraryWaterfall_pages(sb_index)
-                self._autoscroll_timer.start()
-        else:
-            self._autoscroll_timer.start()
-
-    def autoscroll_finish(self):
-        if self.is_library_page_active() or self.is_waterfall_page_active():
-            self.autoscroll_outro_for_LibraryWaterfall_pages()
-        self._autoscroll_timer.stop()
-
-    def autoscroll_middleMousePressEvent(self, event):
-        self._autoscroll_is_moved_while_middle_button_pressed = False
-        if self._autoscroll_timer.isActive():
-            self._autoscroll_desactivation_pass = True
-            self.autoscroll_finish()
-        else:
-            self._autoscroll_desactivation_pass = False
-            self._autoscroll_startpos = event.pos()
-
-    def autoscroll_middleMouseMoveEvent(self):
-        self._autoscroll_is_moved_while_middle_button_pressed = True
-
-    def autoscroll_middleMouseReleaseEvent(self):
-        if self.is_board_page_active():
-            if not self._autoscroll_desactivation_pass:
-                if not self._autoscroll_is_moved_while_middle_button_pressed:
-                    self.autoscroll_start()
-        elif self.is_library_page_active() or self.is_waterfall_page_active():
-            if not self._autoscroll_desactivation_pass:
-                self.autoscroll_start()
-        self._autoscroll_is_moved_while_middle_button_pressed = False
-
-    def autoscroll_draw(self, painter):
-        if self._autoscroll_timer.isActive():
-            if self._autoscroll_inside_activation_zone:
-                painter.save()
-
-                painter.setOpacity(0.7)
-                gray = QColor(100, 100, 100)
-                painter.setPen(gray)
-                painter.setBrush(QBrush(Qt.white))
-                el_rect = QRectF(0, 0, 6, 6)
-                el_rect.moveCenter(self._autoscroll_startpos)
-                painter.drawEllipse(el_rect)
-
-                o = self._autoscroll_startpos
-                if int(time.time()*4) % 2 == 0:
-                    f = 18
-                else:
-                    f = 32
-
-                points = [
-                    QPointF(0, f),
-                    QPointF(-7, f-10),
-                    QPointF(7, f-10),
-                ]
-
-                if self._autoscroll_draw_vertical:
-                    painter.drawPolygon([p + o for p in points])
-                    painter.drawPolygon([QPointF(p.x(), -p.y()) + o for p in points])
-                if self._autoscroll_draw_horizontal:
-                    painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
-                    painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
-
-                painter.setBrush(Qt.NoBrush)
-
-                painter.setPen(QPen(gray, 2))
-                el_rect = QRectF(0, 0, 39, 39)
-                el_rect.moveCenter(self._autoscroll_startpos)
-                painter.drawEllipse(el_rect)
-
-                painter.setPen(QPen(Qt.white, 1))
-                el_rect = QRectF(0, 0, 38, 38)
-                el_rect.moveCenter(self._autoscroll_startpos)
-                painter.drawEllipse(el_rect)
-
-                painter.restore()
 
     def start_slideshow_for_current_folder(self):
         if LibraryData().current_folder().images_list:
