@@ -823,7 +823,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def list_interest_files(folder_path, deep_scan=False, all_allowed=None, check_windows_explorer_window=False):
         filepaths = []
         if all_allowed is None:
-            all_allowed = not settings_handling.Settings.get_setting_value("browse_images_only")
+            all_allowed = not settings_handling.Settings.get("browse_images_only")
         if os.path.exists(folder_path):
             if check_windows_explorer_window:
                 for filepath in LibraryData.globals.explorer_paths:
@@ -1321,7 +1321,7 @@ class FolderData():
 
         self.sort_type = 'reordered'
 
-        if settings_handling.Settings.get_setting_value("autosave_on_reordering"):
+        if settings_handling.Settings.get("autosave_on_reordering"):
             self.save_images_order()
 
 

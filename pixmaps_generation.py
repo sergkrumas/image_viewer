@@ -36,7 +36,7 @@ def default_thumbnail(Globals, Settings):
     painter.drawText(QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH), Qt.AlignCenter, "⧖") #hourglass
     painter.end()
 
-    if Settings.get_setting_value('draw_default_thumbnail'):
+    if Settings.get('draw_default_thumbnail'):
         Globals.DEFAULT_THUMBNAIL = DEFAULT_THUMBNAIL
 
 def error_preview_pixmap(Globals):

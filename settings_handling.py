@@ -720,7 +720,7 @@ class Settings(SettingsWindow):
         # page_transparency
         MW.update_current_page_transparency_value()
 
-        self.load_settings_to_globals()
+        self.copy_settings_to_globals()
         MW.update_thumbnails_row_relative_offset(None, only_set=True)
         MW.update()
 
@@ -729,9 +729,9 @@ class Settings(SettingsWindow):
             cp.update()
 
     @classmethod
-    def load_settings_to_globals(cls):
-        cls.globals.THUMBNAIL_WIDTH = int(cls.get_setting_value('thumbnail_width'))
-        cls.globals.USE_GLOBAL_LIST_VIEW_HISTORY = cls.get_setting_value('use_global_view_history')
+    def copy_settings_to_globals(cls):
+        cls.globals.THUMBNAIL_WIDTH = int(cls.get('thumbnail_width'))
+        cls.globals.USE_GLOBAL_LIST_VIEW_HISTORY = cls.get('use_global_view_history')
 
     @classmethod
     def settings_init(cls, main_window):
@@ -746,7 +746,7 @@ class Settings(SettingsWindow):
         return filepath
 
     @classmethod
-    def get_setting_value(cls, setting_id):
+    def get(cls, setting_id):
         if setting_id in cls.matrix.keys():
             return cls.matrix[setting_id][0]
         raise Exception('no setting with such ID', setting_id)
@@ -828,7 +828,7 @@ class Settings(SettingsWindow):
             cls.actualize_matrix_data()
 
             # apply settings to global variables
-            cls.load_settings_to_globals()
+            cls.copy_settings_to_globals()
 
     @classmethod
     def actualize_matrix_data(cls):

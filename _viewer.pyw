@@ -235,7 +235,7 @@ class AppMixin():
         Settings.globals = Globals
         Settings.load_from_disk()
 
-        Globals.do_not_show_start_dialog = Settings.get_setting_value("do_not_show_start_dialog")
+        Globals.do_not_show_start_dialog = Settings.get("do_not_show_start_dialog")
 
         app = QApplication(sys.argv)
         app.aboutToQuit.connect(cls.APP_exit_threads)
@@ -255,7 +255,7 @@ class AppMixin():
         else:
             Globals.explorer_paths = viewer_dll.getFileListFromExplorerWindow(fullpaths=True)
 
-        frameless_mode = True and Settings.get_setting_value("show_fullscreen")
+        frameless_mode = True and Settings.get("show_fullscreen")
         # разбор аргументов
         parser = argparse.ArgumentParser()
         parser.add_argument('path', nargs='?', default=None)
@@ -327,7 +327,7 @@ class AppMixin():
         MW = Globals.main_window = MainWindow(frameless_mode=frameless_mode)
         if frameless_mode:
             MW.resize(800, 540) # размеры для случая, когда оно будет минимизировано через Win+KeyDown
-            if not Settings.get_setting_value("hide_on_app_start"):
+            if not Settings.get("hide_on_app_start"):
                 MW.showMaximized()
         else:
             MW.show()
@@ -364,7 +364,7 @@ class AppMixin():
                 legacy_viewer_page_branch = False
 
         else:
-            waterfall_page_needed = Settings.get_setting_value("open_app_on_waterfall_page")
+            waterfall_page_needed = Settings.get("open_app_on_waterfall_page")
             if waterfall_page_needed:
                 MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
 
@@ -864,7 +864,7 @@ class MainWindow(QMainWindow,
         self.BoardData = BoardData
         self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
 
-        if Settings.get_setting_value("hide_on_app_start"):
+        if Settings.get("hide_on_app_start"):
             self.need_for_init_after_call_from_tray = True
         else:
             self.need_for_init_after_call_from_tray = False
@@ -2207,7 +2207,7 @@ class MainWindow(QMainWindow,
 
     def read_image_metadata(self, image_data):
         if not image_data.image_metadata:
-            if Settings.get_setting_value('show_image_metadata'):
+            if Settings.get('show_image_metadata'):
                 image_data.image_metadata = read_meta_info(image_data.filepath)
                 out = []
                 for key, data in dict(image_data.image_metadata).items():
@@ -4322,7 +4322,7 @@ class MainWindow(QMainWindow,
         painter.setFont(font)
         painter.setBrush(QBrush(Qt.black))
 
-        if Settings.get_setting_value('show_console_output'):
+        if Settings.get('show_console_output'):
             n = 0
             for number, (timestamp, message) in enumerate(HookConsoleOutput.get_messages()):
                 _message = message.strip()
@@ -4886,7 +4886,7 @@ class MainWindow(QMainWindow,
         cf = LibraryData().current_folder()
         ci = cf.current_image()
         out = []
-        if Settings.get_setting_value('show_image_metadata') and ci.image_metadata:
+        if Settings.get('show_image_metadata') and ci.image_metadata:
             output_rect = self.rect()
             h2 = int(self.rect().height()*3/4)
             output_rect.setTop(h2)
@@ -4963,7 +4963,7 @@ class MainWindow(QMainWindow,
             self.animated_or_not_animated_close(QApplication.instance().quit)
         elif Globals.FORCE_STANDARD_DEBUG and Globals.DEBUG:
             QApplication.instance().quit()
-        elif Settings.get_setting_value('hide_to_tray_on_close'):
+        elif Settings.get('hide_to_tray_on_close'):
             self.hide()
         else:
             self.animated_or_not_animated_close(QApplication.instance().quit)
@@ -5424,7 +5424,7 @@ class MainWindow(QMainWindow,
         if not ext.lower().endswith((".png", ".jpg", ".jpeg",)):
             ext = ".png"
         formated_datetime = datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-        rootpath = Settings.get_setting_value("inframed_folderpath")
+        rootpath = Settings.get("inframed_folderpath")
         if reset_path:
             _path = self.set_path_for_saved_pictures(rootpath)
             if _path:
