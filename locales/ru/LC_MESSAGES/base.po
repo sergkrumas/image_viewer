@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-03-01 18:40+0300\n"
-"PO-Revision-Date: 2026-03-01 18:45+0300\n"
+"POT-Creation-Date: 2026-03-02 22:28+0300\n"
+"PO-Revision-Date: 2026-03-02 22:33+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -24,35 +24,35 @@ msgstr ""
 "Невозможно выполнить команду,\n"
 "сначала надо запустить браузер Google Chrome!"
 
-#: _utils.py:309 _viewer.pyw:4461 library_data.py:1105
+#: _utils.py:309 _viewer.pyw:4473 library_data.py:1105
 msgid "Error"
 msgstr "Ошибка"
 
-#: _viewer.pyw:104
+#: _viewer.pyw:105
 msgid "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
 msgstr "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
 
-#: _viewer.pyw:105
+#: _viewer.pyw:106
 msgid "https://github.com/sergkrumas/image_viewer"
 msgstr "https://github.com/sergkrumas/image_viewer"
 
-#: _viewer.pyw:786
+#: _viewer.pyw:796
 msgid "START"
 msgstr "START"
 
-#: _viewer.pyw:787
+#: _viewer.pyw:797
 msgid "VIEWER"
 msgstr "VIEWER"
 
-#: _viewer.pyw:788
+#: _viewer.pyw:798
 msgid "BOARD"
 msgstr "BOARD"
 
-#: _viewer.pyw:789
+#: _viewer.pyw:799
 msgid "LIBRARY"
 msgstr "LIBRARY"
 
-#: _viewer.pyw:2074 _viewer.pyw:2135
+#: _viewer.pyw:2086 _viewer.pyw:2147
 msgid ""
 "Unable\n"
 "to display"
@@ -60,39 +60,39 @@ msgstr ""
 "Невозможно\n"
 "отобразить"
 
-#: _viewer.pyw:2074 _viewer.pyw:2148
+#: _viewer.pyw:2086 _viewer.pyw:2160
 msgid "The file is corrupted"
 msgstr "Файл повреждён"
 
-#: _viewer.pyw:2130 _viewer.pyw:4557
+#: _viewer.pyw:2142 _viewer.pyw:4569
 msgid "No images"
 msgstr "Нет изображений"
 
-#: _viewer.pyw:2134
+#: _viewer.pyw:2146
 msgid "The file is not supported"
 msgstr "Этот файл не поддерживается"
 
-#: _viewer.pyw:2194
+#: _viewer.pyw:2206
 msgid "LOADING"
 msgstr "ЗАГРУЗКА"
 
-#: _viewer.pyw:2227
+#: _viewer.pyw:2239
 msgid "broken file"
 msgstr "файл повреждён"
 
-#: _viewer.pyw:2230 _viewer.pyw:4555
+#: _viewer.pyw:2242 _viewer.pyw:4567
 msgid "Loading"
 msgstr "Загрузка"
 
-#: _viewer.pyw:4194
+#: _viewer.pyw:4206
 msgid "DRAG AND DROP A FILE OR A FOLDER"
 msgstr "ПЕРЕТАЩИ СЮДА ФАЙЛ ИЛИ ПАПКУ С ФАЙЛАМИ"
 
-#: _viewer.pyw:4198
+#: _viewer.pyw:4210
 msgid "or left mouse click to open Explorer dialog."
 msgstr "или кликни левой кнопкой мыши, чтобы открыть диалог."
 
-#: _viewer.pyw:4199
+#: _viewer.pyw:4211
 msgid ""
 "\n"
 "\n"
@@ -102,7 +102,7 @@ msgstr ""
 "\n"
 "Клик правой кнопкой — открыть окно настроек."
 
-#: _viewer.pyw:4202
+#: _viewer.pyw:4214
 msgid ""
 "\n"
 "\n"
@@ -112,7 +112,7 @@ msgstr ""
 "\n"
 "[программа запущена в лайтовом (упрощённом) режиме]"
 
-#: _viewer.pyw:4204
+#: _viewer.pyw:4216
 msgid ""
 "\n"
 "\n"
@@ -126,7 +126,7 @@ msgstr ""
 "\n"
 "[программа запущена в обычном режиме]"
 
-#: _viewer.pyw:4288
+#: _viewer.pyw:4300
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -138,23 +138,23 @@ msgstr ""
 "и рискует зависнуть при подходе значения потребляемой памяти к 1.5GB.\n"
 "Для увеличения доступной памяти надо запуститься из 64bit-го интерпретатора."
 
-#: _viewer.pyw:4550
+#: _viewer.pyw:4562
 msgid "Please wait"
 msgstr "Подождите"
 
-#: _viewer.pyw:4855
+#: _viewer.pyw:4871
 msgid "speed"
 msgstr "скорость"
 
-#: _viewer.pyw:4860
+#: _viewer.pyw:4876
 msgid "frame"
 msgstr "кадр"
 
-#: _viewer.pyw:4911
+#: _viewer.pyw:4927
 msgid "viewing history"
 msgstr "история просмотра"
 
-#: _viewer.pyw:5371
+#: _viewer.pyw:5387
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
@@ -162,43 +162,43 @@ msgstr ""
 "Отмена!\n"
 "Анимационные эффекты отключены в настройках"
 
-#: _viewer.pyw:5390
+#: _viewer.pyw:5406
 msgid "Unable to save: no source file or source file is not found"
 msgstr "Невозможно сохранить: отсутствует исходный файл или исходный файл не найден на диске"
 
-#: _viewer.pyw:5417
+#: _viewer.pyw:5433
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr "Путь к папке не задан или сама заданная папка не найдена на диске"
 
-#: _viewer.pyw:5424
+#: _viewer.pyw:5440
 msgid "The image is saved in file"
 msgstr "Изображение сохранено в файл"
 
-#: _viewer.pyw:5428
+#: _viewer.pyw:5444
 msgid "Choose folder to put images in"
 msgstr "Выберите папку, в которую будут складываться картинки"
 
-#: _viewer.pyw:5454
+#: _viewer.pyw:5470
 msgid "Save file"
 msgstr "Сохранить файл"
 
-#: _viewer.pyw:5518
+#: _viewer.pyw:5534
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr "Отмена! Фича пока не реализована для анимированных изображений"
 
-#: _viewer.pyw:5529
+#: _viewer.pyw:5545
 msgid "pasted!"
 msgstr "вставлено!"
 
-#: _viewer.pyw:5625
+#: _viewer.pyw:5645
 msgid "Minimize"
 msgstr "Свернуть"
 
-#: _viewer.pyw:5637
+#: _viewer.pyw:5657
 msgid "DEBUG"
 msgstr "ОТЛАДКА"
 
-#: _viewer.pyw:5647
+#: _viewer.pyw:5667
 msgid "Antialiasing and pixmap smoothing"
 msgstr "Антиальясинг и сглаживание пиксмапов"
 
@@ -206,87 +206,87 @@ msgstr "Антиальясинг и сглаживание пиксмапов"
 msgid "Use pixmap-proxy for text items"
 msgstr "Pixmap-прокси для пометок типа «Текст»"
 
-#: _viewer.pyw:5672
+#: _viewer.pyw:5692
 msgid "Make program crash intentionally (for dev purposes only)..."
 msgstr "Крашнуть приложение (для дебага)..."
 
-#: _viewer.pyw:5677
+#: _viewer.pyw:5697
 msgid "Settings..."
 msgstr "Настройки..."
 
-#: _viewer.pyw:5705
+#: _viewer.pyw:5725
 msgid "Narrow window back to monitor frame"
 msgstr "Вернуть окно в монитор"
 
-#: _viewer.pyw:5707
+#: _viewer.pyw:5727
 msgid "Expand window to two monitors frame"
 msgstr "Развернуть окно на два монитора"
 
-#: _viewer.pyw:5718
+#: _viewer.pyw:5738
 msgid "Restart app in standard mode"
 msgstr "Перезапустить в обычном режиме"
 
-#: _viewer.pyw:5720
+#: _viewer.pyw:5740
 msgid "Restart app (to purge unused data in memory)"
 msgstr "Перезапуск (для сброса лишней памяти)"
 
-#: _viewer.pyw:5722
+#: _viewer.pyw:5742
 msgid "Open in separate app instance"
 msgstr "Открыть в отдельной копии приложения"
 
-#: _viewer.pyw:5746
+#: _viewer.pyw:5766
 msgid "Open unsupported file..."
 msgstr "Открыть неподдерживаемый файл..."
 
-#: _viewer.pyw:5766
+#: _viewer.pyw:5786
 msgid "Copy metadata to clipboard"
 msgstr "Скопировать метаданные в буфер обмена"
 
-#: _viewer.pyw:5771
+#: _viewer.pyw:5791
 msgid "Find on disk"
 msgstr "Найти на диске"
 
-#: _viewer.pyw:5772 board.py:861
+#: _viewer.pyw:5792 board.py:861
 msgid "Open in Google Chrome"
 msgstr "Открыть в Google Chrome"
 
-#: _viewer.pyw:5773
+#: _viewer.pyw:5793
 msgid "Place image in window center"
 msgstr "Вернуть картинку в центр окна"
 
-#: _viewer.pyw:5778
+#: _viewer.pyw:5798
 msgid "Change SVG rasterization resolution..."
 msgstr "Изменить разрешение растеризации SVG-файла..."
 
-#: _viewer.pyw:5782
+#: _viewer.pyw:5802
 msgid "Save .png file..."
 msgstr "Сохранить в .png..."
 
-#: _viewer.pyw:5783
+#: _viewer.pyw:5803
 msgid "Save .jpg file..."
 msgstr "Сохранить в .jpg..."
 
-#: _viewer.pyw:5785
+#: _viewer.pyw:5805
 msgid "Copy to clipboard"
 msgstr "Копировать в буфер обмена"
 
-#: _viewer.pyw:5786
+#: _viewer.pyw:5806
 msgid "Paste from clipboard"
 msgstr "Вставить из буфера обмена"
 
-#: _viewer.pyw:5790
+#: _viewer.pyw:5810
 msgid "Switch from fovorites folder to actual image folder"
 msgstr "Перейти из избранного в папку с этим изображением"
 
-#: _viewer.pyw:5840
+#: _viewer.pyw:5860
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr "Теперь переопределите границы комментария через Ctrl+Shift+LMB"
 
-#: _viewer.pyw:497
+#: _viewer.pyw:498
 msgid "Question"
 msgstr "Вопрос"
 
-#: _viewer.pyw:498
+#: _viewer.pyw:499
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
@@ -294,33 +294,33 @@ msgstr ""
 "Не обнаружено запущенной копии приложения.\n"
 "Запуститься в лайтовом (упрощённом) режиме?"
 
-#: _viewer.pyw:476
+#: _viewer.pyw:477
 msgid "Choose folder with pictures in it"
 msgstr "Выбери папку с пикчами"
 
-#: _viewer.pyw:478
+#: _viewer.pyw:479
 msgid "Error-error"
 msgstr "Ошибочка"
 
-#: _viewer.pyw:478
+#: _viewer.pyw:479
 msgid "Nothing to show, exit..."
 msgstr ""
 "Ну раз ничего не выбрал, то я закрываюсь.\n"
 "Пака..."
 
-#: _viewer.pyw:453
+#: _viewer.pyw:454
 msgid "Memory allocated"
 msgstr "Выделенная память"
 
-#: _viewer.pyw:463
+#: _viewer.pyw:464
 msgid "Purge unused objects"
 msgstr "Удалить ненужные объекты из памяти"
 
-#: _viewer.pyw:630
+#: _viewer.pyw:631
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr "Ни изображение, ни папка, в которой оно находится, не существуют"
 
-#: _viewer.pyw:299
+#: _viewer.pyw:300
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
@@ -328,7 +328,7 @@ msgstr ""
 "Информация о краше сохранена в файл\n"
 "\t{0}"
 
-#: _viewer.pyw:300
+#: _viewer.pyw:301
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -340,7 +340,7 @@ msgstr ""
 "\n"
 "Перезапустить приложение?"
 
-#: _viewer.pyw:301
+#: _viewer.pyw:302
 msgid "Fatal Error!"
 msgstr "Это фиаско, мои чюваки!"
 
@@ -695,11 +695,11 @@ msgid "Save"
 msgstr "Сохранить"
 
 #: commenting.py:507 help_text.py:211 library_data.py:1919
-#: settings_handling.py:931
+#: settings_handling.py:934
 msgid "Close"
 msgstr "Закрыть"
 
-#: _viewer.pyw:6077
+#: _viewer.pyw:6097
 msgid "No images to show"
 msgstr "Нет изображений для показа"
 
@@ -747,12 +747,12 @@ msgstr "Уменьшить"
 msgid "Image zoom in"
 msgstr "Увеличить"
 
-#: _viewer.pyw:5678 control_panel.py:504 control_panel.py:522
+#: _viewer.pyw:5698 control_panel.py:504 control_panel.py:522
 msgid "Help"
 msgstr "Справка"
 
 #: control_panel.py:505 control_panel.py:521 control_panel.py:1478
-#: settings_handling.py:920
+#: settings_handling.py:923
 msgid "Settings"
 msgstr "Настройки"
 
@@ -1034,27 +1034,27 @@ msgstr "Файлы из неактуальных записей избранно
 msgid "Outdated records in tags database ({0}):"
 msgstr "Файлы из неактуальных записей тегов ({0}):"
 
-#: _viewer.pyw:4249 settings_handling.py:392
+#: _viewer.pyw:4261 settings_handling.py:392
 msgid "English"
 msgstr "Английский"
 
-#: _viewer.pyw:4247 settings_handling.py:393
+#: _viewer.pyw:4259 settings_handling.py:393
 msgid "Russian"
 msgstr "Русский"
 
-#: _viewer.pyw:4253 settings_handling.py:395
+#: _viewer.pyw:4265 settings_handling.py:395
 msgid "German"
 msgstr "Немецкий"
 
-#: _viewer.pyw:4251 settings_handling.py:396
+#: _viewer.pyw:4263 settings_handling.py:396
 msgid "French"
 msgstr "Французский"
 
-#: _viewer.pyw:4257 settings_handling.py:397
+#: _viewer.pyw:4269 settings_handling.py:397
 msgid "Italian"
 msgstr "Итальянский"
 
-#: _viewer.pyw:4255 settings_handling.py:398
+#: _viewer.pyw:4267 settings_handling.py:398
 msgid "Spanish"
 msgstr "Испанский"
 
@@ -1062,27 +1062,27 @@ msgstr "Испанский"
 msgid "General"
 msgstr "Общее"
 
-#: settings_handling.py:504
+#: settings_handling.py:503
 msgid "Run on Windows Startup"
 msgstr "Запускать приложение при старте Windows"
 
-#: settings_handling.py:506
+#: settings_handling.py:505
 msgid "Supress start dialog and run lite mode"
 msgstr "Запускать лайтовый (упрощённый) режим сразу, то есть без диалога"
 
-#: settings_handling.py:507
+#: settings_handling.py:506
 msgid "Full-screen mode on application start"
 msgstr "Открываться в полноэкранном режиме"
 
-#: settings_handling.py:508
+#: settings_handling.py:507
 msgid "Toggle between full-screen and window mode via double click"
 msgstr "Переключение между оконным и полноэкранным режимом через двойной клик"
 
-#: settings_handling.py:509
+#: settings_handling.py:508
 msgid "Hide to tray on close"
 msgstr "Прятаться в трей при закрытии окна"
 
-#: settings_handling.py:510
+#: settings_handling.py:509
 msgid "Hide to tray on app start"
 msgstr "Прятать окно в трей на старте"
 
@@ -1098,139 +1098,135 @@ msgstr "Анимационные эффекты"
 msgid "Show animated cells overlay"
 msgstr "Показывать анимированнные ячейки поверх всего"
 
-#: settings_handling.py:520
+#: settings_handling.py:523
 msgid "Viewer page"
 msgstr "Страница VIEWER"
 
-#: settings_handling.py:521
+#: settings_handling.py:524
 msgid "Animated zoom"
 msgstr "Анимированный зум изображения"
 
-#: settings_handling.py:522
+#: settings_handling.py:525
 msgid "Draw backplate for control panel"
 msgstr "Монотонная подложка под панель миниатюр и кнопок"
 
-#: settings_handling.py:523
+#: settings_handling.py:526
 msgid "Thumbnails size"
 msgstr "Размер миниатюр в панели управления вьювера"
 
-#: settings_handling.py:524
+#: settings_handling.py:527
 msgid "Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list"
 msgstr "Зум с помощью колёсика мыши (для навигации по списку изображений удерживать Ctrl)"
 
-#: settings_handling.py:525
+#: settings_handling.py:528
 msgid "Show dummy-default thumbnail while generated one is not ready"
 msgstr "Рисовать дефолтную мелкую превьюшку, пока не сгенерировалась настоящая"
 
-#: settings_handling.py:526
+#: settings_handling.py:529
 msgid "Show thirds"
 msgstr "Показывать трети"
 
-#: settings_handling.py:527
+#: settings_handling.py:530
 msgid "Cyberpunk frame"
 msgstr "Кибирпунк"
 
-#: settings_handling.py:528
+#: settings_handling.py:531
 msgid "Show image center"
 msgstr "Показывать центр изображения точкой"
 
-#: settings_handling.py:529
+#: settings_handling.py:532
 msgid "Show random secret when approaching high zoom level"
 msgstr "Показывать рандомную вселенскую истину при сильном увеличении"
 
-#: settings_handling.py:530
+#: settings_handling.py:533
 msgid "Autohide control panel"
 msgstr "Автоматически скрывать панель миниатюр и кнопок"
 
-#: settings_handling.py:531
+#: settings_handling.py:534
 msgid "Enable global viewing history instead per-folder one"
 msgstr "Выключить историю просмотра для каждой папки отдельно и включить глобальную"
 
-#: settings_handling.py:532
+#: settings_handling.py:535
 msgid "Show image metadata"
 msgstr "Показывать метаданные изображения"
 
-#: settings_handling.py:533
+#: settings_handling.py:536
 msgid "Autosave thumbnails order to disk on reordering ones"
 msgstr "Автоматически сохранять в файл задаваемый порядок изображений через панель миниатюр"
 
-#: settings_handling.py:534
+#: settings_handling.py:537
 msgid "Allow browsing image filetypes only"
 msgstr "Показывать только изображения"
 
-#: settings_handling.py:549
+#: settings_handling.py:552
 msgid "Board page"
 msgstr "Страница BOARD"
 
-#: settings_handling.py:551
+#: settings_handling.py:554
 msgid "Show origin compass and zoom level"
 msgstr "Показывать компас и уровень зума камеры"
 
-#: settings_handling.py:552
+#: settings_handling.py:555
 msgid "Show board origin"
 msgstr "Показывать координаты начала осей доски"
 
-#: settings_handling.py:554
+#: settings_handling.py:557
 msgid "Show board grid"
 msgstr "Показывать сетку"
 
-#: settings_handling.py:555
-msgid "Do unloading for images not shown in the viewer at the momoment"
-msgstr "Оперативно выгружать картинки, если они не просматриваются в данный момент"
-
-#: settings_handling.py:556
+#: settings_handling.py:559
 msgid "Focus board viewport on the current image when board is first time opened"
 msgstr "При первом открытии доски из вьювера центрировать вьюпорт доски на текущей картинке"
 
-#: settings_handling.py:557
+#: settings_handling.py:560
 msgid "Scaling and rotating activation-spot size"
 msgstr "Размер зон активации скейла или вращения"
 
-#: settings_handling.py:558
+#: settings_handling.py:561
 msgid "Enable CBOR2 instead JSON for writing board data"
 msgstr "Использовать CBOR2 вместо JSON для записи данных досок"
 
-#: settings_handling.py:562
+#: settings_handling.py:565
 msgid "Pages transparent setting for full-screen mode"
 msgstr "Прозрачность страниц при отображении в полноэкранном режиме"
 
-#: settings_handling.py:563
+#: settings_handling.py:566
 msgid "Viewer page transparent value"
 msgstr "Прозрачность страницы VIEWER"
 
-#: settings_handling.py:564
+#: settings_handling.py:567
 msgid "Library page transparent value"
 msgstr "Прозрачность страницы LIBRARY"
 
-#: settings_handling.py:565
+#: settings_handling.py:568
 msgid "Board page transparent value"
 msgstr "Прозрачность страницы BOARD"
 
-#: settings_handling.py:566
+#: settings_handling.py:569
 msgid "Start page transparent value"
 msgstr "Прозрачность страницы START"
 
-#: settings_handling.py:570
+#: settings_handling.py:573
 msgid "Slideshow for Viewer page"
 msgstr "Слайдшоу на странице VIEWER"
 
-#: settings_handling.py:571
+#: settings_handling.py:574
 msgid "Transition duration in seconds"
 msgstr "Длительность анимации перехода в секундах"
 
-#: settings_handling.py:572
+#: settings_handling.py:575
 msgid "Delay duration in seconds"
 msgstr "Длительность удержания изображения в секундах"
 
-#: settings_handling.py:575
+#: settings_handling.py:578
 msgid "Paths"
 msgstr "Пути"
 
-#: settings_handling.py:576
+#: settings_handling.py:579
 msgid "Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)"
 msgstr "Папка для сохранения кадрированных картинок (изменяется только через Ctrl+R вне окна настроек)"
 
-#: settings_handling.py:928
+#: settings_handling.py:931
 msgid "Save and close"
 msgstr "Сохранить и закрыть"
 
@@ -1302,11 +1298,11 @@ msgstr "Отмена"
 msgid "Delete (no confirmation)"
 msgstr "Удалить (подтверждение не требуется)"
 
-#: settings_handling.py:828
+#: settings_handling.py:831
 msgid "Restart app to take effect across the entire app!"
 msgstr "Перезапустите приложение, чтобы новый язык активировался!"
 
-#: settings_handling.py:502 settings_handling.py:825
+#: settings_handling.py:502 settings_handling.py:828
 msgid "UI language"
 msgstr "Язык интерфейса"
 
@@ -1357,59 +1353,55 @@ msgstr "Папки не выбраны!"
 msgid "Loading images to the board"
 msgstr "Загрузка изображений на доску"
 
-#: settings_handling.py:514
+#: settings_handling.py:517
 msgid "Gamepad dead zone radius"
 msgstr "Радиус мёртвой зоны геймпада (для неисправных стиков)"
 
-#: settings_handling.py:515
+#: settings_handling.py:518
 msgid "Show gamepad monitor (for setting dead zone radius)"
 msgstr "Показывать монитор геймпада (для задания радиуса мёртвой зоны)"
 
-#: settings_handling.py:535
-msgid "Fit factor for small images"
-msgstr "Степень увеличения мелких изображений"
-
-#: settings_handling.py:559
+#: settings_handling.py:562
 msgid "Diagonal factor for one-key selected items scaling (in screen pixels)"
 msgstr "Шаг масштабирования выделенных айтемов по диагонали (в пикселях) для клавиш нампада: *, / и -"
 
-#: _viewer.pyw:790
+#: _viewer.pyw:800
 msgid "WATERFALL"
 msgstr ""
 
-#: _viewer.pyw:2621
+#: _viewer.pyw:2633
 msgid "No active item!"
 msgstr "Не определён активный айтем!"
 
-#: _viewer.pyw:3464 _viewer.pyw:3469
+#: _viewer.pyw:3476 _viewer.pyw:3481
 msgid "Preview corner radius: {0}"
 msgstr "Радиус скругления углов у превьюшек: {0}"
 
-#: _viewer.pyw:3511
+#: _viewer.pyw:3523
 msgid "You've set 0 columns, so the number of columns depends only on the window width."
 msgstr "Задано НОЛЬ столбцов, значит их число будет определятся автоматически по ширине окна."
 
-#: _viewer.pyw:3513
+#: _viewer.pyw:3525
 msgid "You've set {0} columns. This is the maximum!"
 msgstr "Задано {0} столбцов. Больше выставить нельзя!"
 
-#: _viewer.pyw:3515
+#: _viewer.pyw:3527
 msgid "You've set {0} columns"
 msgstr "Задано {0} столбцов"
 
-#: _viewer.pyw:5033
+#: _viewer.pyw:5049
 msgid "Cursor scrubbing mode activated"
 msgstr "Прокрутка с помощью курсора активирована"
 
-#: _viewer.pyw:5035
+#: _viewer.pyw:5051
 msgid "Cursor scrubbing mode disactivated"
 msgstr "Дезактивирована прокрутка с помощью курсора"
 
-#: _viewer.pyw:5642
+#: _viewer.pyw:5662
 msgid "Show FPS"
 msgstr "Показать количество кадров в секунду (FPS)"
 
-#: _viewer.pyw:5656
+#: _viewer.pyw:5676
 msgid "Rounded previews"
 msgstr "Скруглённые превьюшки"
 
@@ -1440,111 +1432,111 @@ msgid ""
 "    not set\n"
 msgstr ""
 
-#: settings_handling.py:503
+#: settings_handling.py:510
 msgid "Desaturated corner buttons and corner menus"
 msgstr "Обесцветить угловые кнопки и угловые меню"
 
-#: settings_handling.py:505
+#: settings_handling.py:504
 msgid "Open application on Waterfall page"
 msgstr "Открывать приложение на странице Waterfall"
 
-#: settings_handling.py:516
+#: settings_handling.py:519
 msgid "Gamepad move stick easeInExpro parameter"
 msgstr "Параметр плавности начальной скорости перемещения по доске"
 
-#: settings_handling.py:517
+#: settings_handling.py:520
 msgid "Gamepad move stick speed"
 msgstr "Скорость перемещения по доске для геймпада"
 
-#: settings_handling.py:536
+#: settings_handling.py:539
 msgid "Draw shadow and checkerboard backplate"
 msgstr "Рисовать тень и шахматный узор под изображением"
 
-#: settings_handling.py:539
+#: settings_handling.py:542
 msgid "Library page"
 msgstr "Страница LIBRARY"
 
-#: settings_handling.py:540
+#: settings_handling.py:543
 msgid "Library page rounded corner radius"
 msgstr "Радиус скругления для страницы LIBRARY"
 
-#: settings_handling.py:543
+#: settings_handling.py:546
 msgid "Waterfall page"
 msgstr "Страница WATERFALL"
 
-#: settings_handling.py:544
+#: settings_handling.py:547
 msgid "Desired number of Waterfall page columns"
 msgstr "Желаемое кол-во столбцов в сетке на странице WATERFALL"
 
-#: settings_handling.py:545
+#: settings_handling.py:548
 msgid "Waterfall page grid spacing"
 msgstr "Расстояние между превьюшками в сетке на странице WATERFALL"
 
-#: settings_handling.py:546
+#: settings_handling.py:549
 msgid "Waterfall page rounded corner radius"
 msgstr "Радиус скругления для страницы WATERFALL"
 
-#: settings_handling.py:550
+#: settings_handling.py:553
 msgid "Load board plugins at startup"
 msgstr "Загружать board-планигы на старте приложения"
 
-#: settings_handling.py:553
+#: settings_handling.py:556
 msgid "Vertical items layout"
 msgstr "Располагать айтемы вертикально, а не горизонтально"
 
-#: settings_handling.py:567
+#: settings_handling.py:570
 msgid "Waterfall page transparent value"
 msgstr "Прозрачность страницы WATERFALL"
 
-#: _viewer.pyw:5605
+#: _viewer.pyw:5625
 msgid "Open folder \"{0}\" in separate app instance"
 msgstr "Открыть папку \"{0}\" в копии приложения"
 
-#: _viewer.pyw:5665
+#: _viewer.pyw:5685
 msgid "Cursor scrubbing for animation files"
 msgstr "Перематывание курсором мыши для анимированных изображений"
 
-#: _viewer.pyw:5691
+#: _viewer.pyw:5711
 msgid "Show window frame"
 msgstr "Показать рамку окна"
 
-#: _viewer.pyw:5693
+#: _viewer.pyw:5713
 msgid "Hide window frame and maximize"
 msgstr "Скрыть рамку окна и максимально развернуть окно"
 
-#: _viewer.pyw:5697
+#: _viewer.pyw:5717
 msgid "Leave full-screen mode"
 msgstr "Выйти из полноэкранного режима"
 
-#: _viewer.pyw:5699
+#: _viewer.pyw:5719
 msgid "Go full screen"
 msgstr "Перейти в полноэкранный режим"
 
-#: _viewer.pyw:5710
+#: _viewer.pyw:5730
 msgid "Switch the window to the monitor on the right"
 msgstr "Перенести окно приложения на монитор справа"
 
-#: _viewer.pyw:5711
+#: _viewer.pyw:5731
 msgid "Switch the window to the monitor on the left"
 msgstr "Перенести окно приложения на монитор слева"
 
-#: _viewer.pyw:5713
+#: _viewer.pyw:5733
 msgid "Next grayscale filter state"
 msgstr "Переключить фильтр отображения на следующий режим"
 
-#: _viewer.pyw:5753
+#: _viewer.pyw:5773
 msgid "Edit comment text {0}"
 msgstr "Редактировать текст комента {0}"
 
-#: _viewer.pyw:5756
+#: _viewer.pyw:5776
 msgid "Redefine comment borders {0}"
 msgstr "Переопределить границы комента {0}"
 
-#: _viewer.pyw:5759
+#: _viewer.pyw:5779
 msgid "Delete comment {0}"
 msgstr "Удалить комент {0}"
 
-#: _viewer.pyw:5804 line_eyedropper_tool.py:337
+#: _viewer.pyw:5824 line_eyedropper_tool.py:350
 msgid "Hide this menu"
 msgstr "Скрыть это меню"
 
@@ -1552,23 +1544,23 @@ msgstr "Скрыть это меню"
 msgid "prettify plots"
 msgstr "намарафетить графики"
 
-#: _viewer.pyw:5671
+#: _viewer.pyw:5691
 msgid "DEBUG tools..."
-msgstr "Дебаг-тулзы"
+msgstr "Дебаг-тулзы.."
 
-#: _viewer.pyw:5679
+#: _viewer.pyw:5699
 msgid "Message the developer"
 msgstr "Написать разработчику"
 
-#: _viewer.pyw:5685
+#: _viewer.pyw:5705
 msgid "Always on top"
 msgstr "Поверх всех окон"
 
-#: _viewer.pyw:5687
+#: _viewer.pyw:5707
 msgid "Disable \"Always on top\""
 msgstr "Отключить \"Поверх всех окон\""
 
-#: _viewer.pyw:5726
+#: _viewer.pyw:5746
 msgid "Line EyeDropper Tool..."
 msgstr "Пипетка-растяжка..."
 
@@ -1588,22 +1580,34 @@ msgstr "Пипетка-растяжка выключена!"
 msgid "Update the plots"
 msgstr "Обновить графики"
 
-#: line_eyedropper_tool.py:331
+#: line_eyedropper_tool.py:354
 msgid "Exit the tool mode"
 msgstr "Выйти из режима пипетки-растяжки"
 
-#: line_eyedropper_tool.py:332
+#: line_eyedropper_tool.py:331
 msgid "Increase the plots width"
 msgstr "Увеличить площадь графиков"
 
-#: line_eyedropper_tool.py:333
+#: line_eyedropper_tool.py:332
 msgid "Place the plots using mouse cursor..."
-msgstr "Разместить графики на новом месте с помощью курсора мыши"
+msgstr "Разместить графики на новом месте с помощью курсора мыши..."
 
-#: line_eyedropper_tool.py:367
+#: line_eyedropper_tool.py:373
 msgid "Make two left-clicks to begin"
 msgstr "Чтобы начать, надо сделать два клика левой кнопкой в разных местах"
 
-#: line_eyedropper_tool.py:541
+#: line_eyedropper_tool.py:547
 msgid "Use the context menu of the plots"
 msgstr "Не забывайте пользоваться контекстным меню графиков"
+
+#: settings_handling.py:516
+msgid "Gamepad"
+msgstr "Геймпад"
+
+#: settings_handling.py:538
+msgid "Relative scale factor for small images"
+msgstr "Степень увеличения мелких изображений относительно размеров окна"
+
+#: settings_handling.py:558
+msgid "Unload high-resolution data for items not visible in the board viewport"
+msgstr "Выгружать хайрезные картинки для айтемов, если их не видно во вьюпорте доски"

@@ -500,7 +500,6 @@ class SettingsWindow(QWidget):
         matrix = {
             '---general': _('General'),
             'ui_lang': ('en', _('UI language')),
-            'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
@@ -508,9 +507,13 @@ class SettingsWindow(QWidget):
             'doubleclick_toggle': (True, _('Toggle between full-screen and window mode via double click')),
             'hide_to_tray_on_close': (True, _('Hide to tray on close')),
             'hide_on_app_start': (False, _('Hide to tray on app start')),
+            'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'show_console_output': (True, _('Show standard (console) output overlay')),
             'effects': (True, _('Animated effects')),
             'show_noise_cells': (True, _('Show animated cells overlay')),
+
+
+            '---gamepad': _('Gamepad'),
             'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
             'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
             'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),
@@ -532,7 +535,7 @@ class SettingsWindow(QWidget):
             'show_image_metadata': (True, _('Show image metadata')),
             'autosave_on_reordering': (True, _('Autosave thumbnails order to disk on reordering ones')),
             'browse_images_only': (False, _('Allow browsing image filetypes only')),
-            'small_images_fit_factor': (0.0, (0.0, 1.0), _('Fit factor for small images')),
+            'small_images_fit_factor': (0.0, (0.0, 1.0), _('Relative scale factor for small images')),
             'draw_shadow_and_checkerboard_backplate': (True, _('Draw shadow and checkerboard backplate')),
 
 
@@ -552,7 +555,7 @@ class SettingsWindow(QWidget):
             'board_draw_canvas_origin': (False, _('Show board origin')),
             'board_vertical_items_layout': (False, _('Vertical items layout')),
             'board_draw_grid': (False, _('Show board grid')),
-            'board_unloading': (False, _('Do unloading for images not shown in the viewer at the momoment')),
+            'board_unloading': (False, _('Unload high-resolution data for items not visible in the board viewport')),
             'board_move_to_current_on_first_open': (True, _('Focus board viewport on the current image when board is first time opened')),
             'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
             'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
