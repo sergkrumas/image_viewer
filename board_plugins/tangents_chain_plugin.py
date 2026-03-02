@@ -28,7 +28,7 @@ def paintEvent(self, painter, event):
     painter.drawRect(self.rect())
     painter.setBrush(Qt.NoBrush)
 
-    if self.Globals.DEBUG or self.STNG_board_draw_canvas_origin:
+    if self.Globals.DEBUG or self.STNG.board_draw_canvas_origin:
         self.board_draw_canvas_origin(painter)
 
     pen = QPen(QColor(255, 0, 0), 10)

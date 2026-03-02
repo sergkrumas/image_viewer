@@ -199,10 +199,10 @@ class ListenThread(QThread):
         self.gamepad = gamepad
 
         # exp от 1.0 до 4.0
-        self.easeInExpo = obj.STNG_gamepad_move_stick_ease_in_expo_param
+        self.easeInExpo = obj.STNG.gamepad_move_stick_ease_in_expo_param
 
-        self.dead_zone_radius = obj.STNG_gamepad_dead_zone_radius
-        self.pass_deadzone_values = obj.STNG_show_gamepad_monitor
+        self.dead_zone_radius = obj.STNG.gamepad_dead_zone_radius
+        self.pass_deadzone_values = obj.STNG.show_gamepad_monitor
 
         manufacturer_string = gamepad_device['manufacturer_string']
 
@@ -414,7 +414,7 @@ def update_board_viewer(MainWindowObj, thread, data):
     if key == SignalConstants.BOARD_OFFSET_DATA:
         offset = data[1]
         if offset:
-            offset *= MainWindowObj.STNG_gamepad_move_stick_speed
+            offset *= MainWindowObj.STNG.gamepad_move_stick_speed
             MainWindowObj.canvas_origin -= offset
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
 
@@ -459,7 +459,7 @@ def update_board_viewer(MainWindowObj, thread, data):
                     else:
                         reset_scale()
             elif button in [SignalConstants.BUTTON_L1, SignalConstants.BUTTON_R1]:
-                MainWindowObj.STNG_gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
+                MainWindowObj.STNG.gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
                 MainWindowObj.show_easeInExpo_monitor = True
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
@@ -560,7 +560,7 @@ def draw_gamepad_easing_monitor(self, painter, event):
     font.setWeight(1900)
     painter.setFont(font)
     painter.setPen(QPen(Qt.red, 1))
-    exp = self.STNG_gamepad_move_stick_ease_in_expo_param
+    exp = self.STNG.gamepad_move_stick_ease_in_expo_param
     painter.drawText(graph_rect.topLeft()+QPoint(50, 70), f'{exp:.02}')
 
     if exp > 1.0:
@@ -625,7 +625,7 @@ def draw_gamepad_monitor(self, painter, event):
 
 
     # sticks dead zones
-    DZ_D = int(self.STNG_gamepad_dead_zone_radius*stick_pixel_radius) * 2
+    DZ_D = int(self.STNG.gamepad_dead_zone_radius*stick_pixel_radius) * 2
     left_stick_dead_zone_rect = QRect(0, 0, DZ_D, DZ_D)
     right_stick_dead_zone_rect = QRect(0, 0, DZ_D, DZ_D)
 

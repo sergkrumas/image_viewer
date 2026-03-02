@@ -971,7 +971,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 Globals.PREVIEW_WIDTH,
             )
 
-            desired_number = int(MW.STNG_waterfall_columns_number)
+            desired_number = int(MW.STNG.waterfall_columns_number)
             calc_number = get_columns_number_based_on_width(waterfall_width, waterfall=True)
             if desired_number == 0:
                 number = calc_number

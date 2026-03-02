@@ -672,7 +672,7 @@ class ControlPanel(QWidget, UtilsMixin):
             setOpacity(self.window_opacity)
             return
 
-        if not main_window.STNG_autohide_control_panel:
+        if not main_window.STNG.autohide_control_panel:
             self.window_opacity = 1.0
             setOpacity(self.window_opacity)
             return
@@ -776,7 +776,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
             if self.fullscreen_flag:
                 painter.fillRect(self.rect(), QBrush(QColor(10, 10, 10)))
-            elif main_window.STNG_draw_control_panel_backplate or self.group_selecting:
+            elif main_window.STNG.draw_control_panel_backplate or self.group_selecting:
                 painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20)))
 
             painter.setRenderHint(QPainter.Antialiasing, True)

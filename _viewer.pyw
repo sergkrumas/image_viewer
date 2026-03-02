@@ -694,8 +694,8 @@ class Slideshow(QWidget):
         self.p2 = None
         self.set_pics()
         main_window = Globals.main_window
-        self.TRANSITION_DURATION = main_window.STNG_slides_transition_duration
-        self.DELAY_DURATION = main_window.STNG_slides_delay_duration
+        self.TRANSITION_DURATION = main_window.STNG.slides_transition_duration
+        self.DELAY_DURATION = main_window.STNG.slides_delay_duration
 
     def load_pixmap(self, filepath):
         return load_image_respect_orientation(filepath, highres_svg=LibraryData().is_svg_file(filepath))
@@ -1210,7 +1210,7 @@ class MainWindow(QMainWindow,
         else:
             painter.setOpacity(.3)
 
-        if self.STNG_desaturated_corner_buttons_and_corner_menus:
+        if self.STNG.desaturated_corner_buttons_and_corner_menus:
             brush_color = QColor(50, 50, 50)
         else:
             brush_color = Qt.red
@@ -1267,7 +1267,7 @@ class MainWindow(QMainWindow,
         painter.setOpacity(.5)
 
         if window_corner_id == self.InteractiveCorners.TOPLEFT:
-            if self.STNG_desaturated_corner_buttons_and_corner_menus:
+            if self.STNG.desaturated_corner_buttons_and_corner_menus:
                 brush_color = QColor(50, 50, 50)
             else:
                 brush_color = Qt.red
@@ -1378,7 +1378,7 @@ class MainWindow(QMainWindow,
         if not self.secret_hints_list:
             return # raise Exception("no data")
 
-        if not self.STNG_show_deep_secrets_at_zoom:
+        if not self.STNG.show_deep_secrets_at_zoom:
             return
 
         if self.image_scale > self.START_HINT_AT_SCALE_VALUE:
@@ -2043,7 +2043,7 @@ class MainWindow(QMainWindow,
         max_scale_to_fit = projected_rect.width()/size_rect.width()
         if (size_rect.width() < viewer_target_rect.width()) and (size_rect.height() < viewer_target_rect.height()):
             # мелкие картинки
-            self.image_scale = fit(self.STNG_small_images_fit_factor, 0.0, 1.0, 1.0, max_scale_to_fit)
+            self.image_scale = fit(self.STNG.small_images_fit_factor, 0.0, 1.0, 1.0, max_scale_to_fit)
         else:
             # остальные; ранее этот код обрабатывал и мелкие и большие
             self.image_scale = max_scale_to_fit
@@ -2322,7 +2322,7 @@ class MainWindow(QMainWindow,
                 ThumbnailsPreviewsThread.threads_pool.remove(thread)
 
     def animate_noise_cells_effect(self):
-        if self.STNG_show_noise_cells and noise:
+        if self.STNG.show_noise_cells and noise:
             self.noise_time += 0.005
             self.update()
 
@@ -2771,7 +2771,7 @@ class MainWindow(QMainWindow,
                 ready_to_view,
                 cursor_not_over_image,
                 self.frameless_mode,
-                self.STNG_doubleclick_toggle,
+                self.STNG.doubleclick_toggle,
                 not self.isLeftClickAndCtrl(event),
             )
             if all(conditions):
@@ -3020,7 +3020,7 @@ class MainWindow(QMainWindow,
             if self.is_cursor_over_image():
                 if self.frameless_mode:
                     self.toggle_image_pos_and_scale()
-                elif self.STNG_doubleclick_toggle:
+                elif self.STNG.doubleclick_toggle:
                     self.toggle_to_frameless_mode()
 
     def eventFilter(self, obj, event):
@@ -3300,10 +3300,10 @@ class MainWindow(QMainWindow,
         return self.rect().height()
 
     def waterfall_grid_get_vertical_spacing(self):
-        return self.STNG_waterfall_grid_spacing
+        return self.STNG.waterfall_grid_spacing
 
     def waterfall_grid_get_horizontal_spacing(self):
-        return self.STNG_waterfall_grid_spacing
+        return self.STNG.waterfall_grid_spacing
 
     def library_page_scroll_autoset_or_reset(self):
         content_height = self.library_page_folders_content_height()
@@ -3449,14 +3449,14 @@ class MainWindow(QMainWindow,
             self.do_scroll_playspeed(scroll_value)
             self.show_center_label(self.label_type.PLAYSPEED)
             return True
-        if no_mod and self.STNG_zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
+        if no_mod and self.STNG.zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
             self.do_scale_image(scroll_value)
             return True
         else:
             return False
 
     def scroll_setting_value(self, event, scroll_value, setting_id):
-        setting_attr_name = f'STNG_{setting_id}'
+        setting_attr_name = f'STNG.{setting_id}'
         if scroll_value > 0:
             n = 1.0
         else:
@@ -3498,9 +3498,9 @@ class MainWindow(QMainWindow,
         else:
             n = -1
         cf = LibraryData().current_folder()
-        setting_value = self.STNG_waterfall_columns_number
+        setting_value = self.STNG.waterfall_columns_number
         # пока закоментил, потому что не очень интуитивно получается
-        # setting_value = self.STNG_waterfall_columns_number
+        # setting_value = self.STNG.waterfall_columns_number
         if setting_value > cf.waterfall_number_of_columns:
             value = setting_value
         else:
@@ -3516,7 +3516,7 @@ class MainWindow(QMainWindow,
         # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
-        self.STNG_waterfall_columns_number = float(value)
+        self.STNG.waterfall_columns_number = float(value)
         SettingsWindow.set_setting_value('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
@@ -3578,7 +3578,7 @@ class MainWindow(QMainWindow,
                 self.tagging_main_wheelEvent(self, event)
                 return
 
-            if ctrl and (not shift) and self.STNG_zoom_on_mousewheel:
+            if ctrl and (not shift) and self.STNG.zoom_on_mousewheel:
                 self.do_scroll_images_list(scroll_value)
             if self.viewer_wheelEvent(event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse):
                 pass #обработка внутри функции в условии
@@ -3645,7 +3645,7 @@ class MainWindow(QMainWindow,
             if scroll_value < 0.0:
                 return
 
-        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG_animated_zoom and not self._key_pressed
+        animated_zoom_enabled = self.isAnimationEffectsAllowed() and self.STNG.animated_zoom and not self._key_pressed
 
         if override_factor:
             factor = override_factor
@@ -4018,23 +4018,23 @@ class MainWindow(QMainWindow,
 
     def set_page_transparency_and_draw_callback(self, page_type):
         if page_type == self.pages.START_PAGE:
-            self.current_page_transparency_value = self.STNG_start_page_transparency
+            self.current_page_transparency_value = self.STNG.start_page_transparency
             self.current_page_draw_callback = self.startpage_draw_callback
 
         elif page_type == self.pages.VIEWER_PAGE:
-            self.current_page_transparency_value = self.STNG_viewer_page_transparency
+            self.current_page_transparency_value = self.STNG.viewer_page_transparency
             self.current_page_draw_callback = self.viewerpage_draw_callback
 
         elif page_type == self.pages.LIBRARY_PAGE:
-            self.current_page_transparency_value = self.STNG_library_page_transparency
+            self.current_page_transparency_value = self.STNG.library_page_transparency
             self.current_page_draw_callback = self.librarypage_draw_callback
 
         elif page_type == self.pages.BOARD_PAGE:
-            self.current_page_transparency_value = self.STNG_board_page_transparency
+            self.current_page_transparency_value = self.STNG.board_page_transparency
             self.current_page_draw_callback = self.boardpage_draw_callback
 
         elif page_type == self.pages.WATERFALL_PAGE:
-            self.current_page_transparency_value = self.STNG_waterfall_page_transparency
+            self.current_page_transparency_value = self.STNG.waterfall_page_transparency
             self.current_page_draw_callback = self.waterfallpage_draw_callback
 
     def _paintEvent(self, event, painter):
@@ -4094,7 +4094,7 @@ class MainWindow(QMainWindow,
         self.draw_noise_cells(painter)
 
     def draw_noise_cells(self, painter):
-        if noise and self.STNG_show_noise_cells:
+        if noise and self.STNG.show_noise_cells:
             SIZE = 150
             x_num = math.ceil(self.rect().width() / SIZE)
             y_num = math.ceil(self.rect().height() / SIZE)
@@ -4176,7 +4176,7 @@ class MainWindow(QMainWindow,
                                         render_as_blackplate,
                                         hor_gap=self.waterfall_grid_get_horizontal_spacing(),
                                         ver_gap=self.waterfall_grid_get_vertical_spacing(),
-                                        corner_radius=self.STNG_waterfall_corner_radius,
+                                        corner_radius=self.STNG.waterfall_corner_radius,
                                     )
 
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
@@ -4441,7 +4441,7 @@ class MainWindow(QMainWindow,
                                         right_col_check_rect,
                                         cf.column_width, cf.library_previews_scroll_offset,
                                         bool(cf.images_list),
-                                        corner_radius=self.STNG_library_corner_radius,
+                                        corner_radius=self.STNG.library_corner_radius,
                                     )
 
         if columns and active_item:
@@ -4750,7 +4750,7 @@ class MainWindow(QMainWindow,
         if self.pixmap or self.invalid_movie:
             im_rect = self.get_image_viewport_rect()
 
-            if self.STNG_draw_shadow_and_checkerboard_backplate:
+            if self.STNG.draw_shadow_and_checkerboard_backplate:
                 # 1. DRAW SHADOW
                 OFFSET = 15
                 shadow_rect = QRectF(im_rect)
@@ -4807,13 +4807,13 @@ class MainWindow(QMainWindow,
             # 4. DRAW OVERLAYS
             if self.is_not_modal_viewer_mode():
                 # draw cyberpunk
-                if self.STNG_show_cyberpunk:
+                if self.STNG.show_cyberpunk:
                     draw_cyberpunk_corners(self, painter, im_rect)
                 # draw thirds
-                if self.STNG_show_thirds:
+                if self.STNG.show_thirds:
                     draw_thirds(self, painter, im_rect)
                 # draw image center
-                if self.STNG_show_image_center:
+                if self.STNG.show_image_center:
                     self.draw_center_point(painter, self.image_center_position)
 
                 self.draw_secret_hint(painter)
@@ -5007,7 +5007,7 @@ class MainWindow(QMainWindow,
             # print('отмена анимации', time.time())
             return False
         # print('продолжение анимации')
-        return self.STNG_effects
+        return self.STNG.effects
 
     def isBlockedByAnimation(self):
         return self.isAnimationEffectsAllowed() and self.block_paginating
@@ -5354,9 +5354,9 @@ class MainWindow(QMainWindow,
             elif check_scancode_for(event, "F"):
                 Globals.control_panel.manage_favorite_list()
             elif check_scancode_for(event, "C"):
-                self.STNG_show_image_center = not self.STNG_show_image_center
+                self.STNG.show_image_center = not self.STNG.show_image_center
             elif check_scancode_for(event, "D"):
-                self.STNG_show_thirds = not self.STNG_show_thirds
+                self.STNG.show_thirds = not self.STNG.show_thirds
             elif check_scancode_for(event, "T"):
                 self.toggle_tags_overlay()
             elif check_scancode_for(event, "I"):

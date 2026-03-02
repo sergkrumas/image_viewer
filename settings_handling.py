@@ -327,16 +327,16 @@ class SettingsWindow(QWidget):
         MW = self.globals.main_window
         cp = self.globals.control_panel
         cls = self.__class__
-        for id, params in cls.matrix.items():
+        for setting_id, params in cls.matrix.items():
             current_val = params[0]
             text = params[-1]
             if isinstance(current_val, bool):
-                setattr(MW, f'STNG_{id}', self.is_on(id))
-                cls.matrix[id] = (self.is_on(id), text)
+                setattr(MW.STNG, setting_id, self.is_on(setting_id))
+                cls.matrix[setting_id] = (self.is_on(setting_id), text)
             elif isinstance(current_val, float):
                 range = params[1]
-                setattr(MW, f'STNG_{id}', self.get_value(id))
-                cls.matrix[id] = (self.get_value(id), range, text)
+                setattr(MW.STNG, setting_id, self.get_value(setting_id))
+                cls.matrix[setting_id] = (self.get_value(setting_id), range, text)
             elif isinstance(current_val, str):
                 pass
 
@@ -358,8 +358,9 @@ class SettingsWindow(QWidget):
 
     @classmethod
     def settings_init(cls, main_window):
-        for id, (current_value, *_) in cls.matrix.items():
-            setattr(main_window, f'STNG_{id}', current_value)
+        main_window.STNG = type('STNG', (), {})()
+        for setting_id, (current_value, *_) in cls.matrix.items():
+            setattr(main_window.STNG, setting_id, current_value)
 
     @classmethod
     def filepath(cls):

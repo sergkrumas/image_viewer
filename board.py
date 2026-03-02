@@ -431,7 +431,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.active_plugin = None
         self.board_plugins_loaded = False
-        if self.STNG_board_load_plugins_at_startup:
+        if self.STNG.board_load_plugins_at_startup:
             self.board_LoadPlugins()
 
         self.debug_file_io_filepath = _("[variable self.debug_file_io_filepath is not set!]")
@@ -500,7 +500,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_main(self, painter, event):
         self.board_draw_mainBoardCallback(painter, event)
 
-        if self.STNG_show_gamepad_monitor:
+        if self.STNG.show_gamepad_monitor:
             draw_gamepad_monitor(self, painter, event)
 
         if self.show_easeInExpo_monitor:
@@ -1208,7 +1208,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return board_base
 
     def board_BuildBoardFilename(self, folder_path, filename):
-        if self.STNG_use_cbor2_instead_of_json:
+        if self.STNG.use_cbor2_instead_of_json:
             file_format = 'cbor2'
         else:
             file_format = 'json'
@@ -1271,7 +1271,7 @@ class BoardMixin(BoardTextEditItemMixin):
         data_base['main_board'] = self.board_data_to_dict(cf)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
-        if self.STNG_use_cbor2_instead_of_json:
+        if self.STNG.use_cbor2_instead_of_json:
             data_to_write = cbor2.dumps(data_base)
             with open(board_filepath, "wb") as file:
                 file.write(data_to_write)
@@ -1553,7 +1553,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.board_index = self.retrieve_new_board_item_index()
                 board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
                 self.board_save_layout_transforms(board_item)
-                if self.STNG_board_vertical_items_layout:
+                if self.STNG.board_vertical_items_layout:
                     offset += QPointF(0, image_data.source_height)
                 else:
                     offset += QPointF(image_data.source_width, 0)
@@ -1567,7 +1567,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board.ready = True
 
         # UX: viewport positioning and scaling
-        if self.STNG_board_move_to_current_on_first_open:
+        if self.STNG.board_move_to_current_on_first_open:
             if folder_data.current_image().board_item is not None:
                 self.board_fit_content_on_screen(folder_data.current_image())
         self.update()
@@ -1726,7 +1726,7 @@ class BoardMixin(BoardTextEditItemMixin):
                                                             selection_area.boundingRect().toRect()
                                                                                                 ):
 
-                if self.STNG_board_unloading:
+                if self.STNG.board_unloading:
                     self.trigger_board_item_pixmap_unloading(board_item)
 
             else:
@@ -1930,7 +1930,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.pixmap = QPixmap()
 
     def boards_generate_expo_values(self):
-        exp = self.STNG_gamepad_move_stick_ease_in_expo_param
+        exp = self.STNG.gamepad_move_stick_ease_in_expo_param
         SAMPLES = 50
         values = []
         for n in range(SAMPLES+1):
@@ -1984,14 +1984,14 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
         if cf.previews_done:
-            if self.Globals.DEBUG or self.STNG_board_draw_grid:
+            if self.Globals.DEBUG or self.STNG.board_draw_grid:
                 self.board_draw_grid(painter)
             self.board_draw_content(painter, cf)
         else:
             self.board_draw_wait_label(painter)
 
 
-        if self.Globals.DEBUG or self.STNG_board_draw_canvas_origin:
+        if self.Globals.DEBUG or self.STNG.board_draw_canvas_origin:
             self.board_draw_canvas_origin(painter)
 
         self.board_draw_user_points(painter, cf)
@@ -2000,7 +2000,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_selection_transform_box(painter)
         self.board_region_zoom_in_draw(painter)
 
-        if self.Globals.DEBUG or self.STNG_board_draw_origin_compass:
+        if self.Globals.DEBUG or self.STNG.board_draw_origin_compass:
             self.board_draw_origin_compass(painter)
 
         self.board_draw_cursor_text(painter)
@@ -2119,8 +2119,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 a = QVector2D(point - prev_point).normalized().toPointF()
                 b = QVector2D(point - next_point).normalized().toPointF()
-                a *= self.STNG_transform_widget_activation_area_size*2
-                b *= self.STNG_transform_widget_activation_area_size*2
+                a *= self.STNG.transform_widget_activation_area_size*2
+                b *= self.STNG.transform_widget_activation_area_size*2
                 points = [
                     point,
                     point + a,
@@ -2134,7 +2134,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.rotation_activation_areas.append((index, raa))
 
             # scale activation areas
-            default_pen.setWidthF(self.STNG_transform_widget_activation_area_size)
+            default_pen.setWidthF(self.STNG.transform_widget_activation_area_size)
             default_pen.setCapStyle(Qt.RoundCap)
             painter.setPen(default_pen)
 
@@ -3082,7 +3082,7 @@ class BoardMixin(BoardTextEditItemMixin):
             enumerated.insert(0, enumerated.pop(2))
             for index, point in enumerated:
                 diff = point - QPointF(position)
-                if QVector2D(diff).length() < self.STNG_transform_widget_activation_area_size:
+                if QVector2D(diff).length() < self.STNG.transform_widget_activation_area_size:
                     self.scaling_active_point_index = index
                     self.widget_active_point_index = index
                     return True
@@ -3370,7 +3370,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if (up or down):
 
             # in screen pixels
-            VECTOR_LENGTH_FACTOR = self.STNG_one_key_selected_items_scaling_factor
+            VECTOR_LENGTH_FACTOR = self.STNG.one_key_selected_items_scaling_factor
 
             if up:
                 pass
