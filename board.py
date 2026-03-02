@@ -1941,7 +1941,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def boards_save_expo_to_app_settings(self):
         def callback():
-            # TODO: так ничего на самом деле не сохраняется, ибо надо вызывать set_setting_value! Это баг!
+            # TODO: так ничего на самом деле не сохраняется, ибо надо вызывать self.Settings.set()! Это баг!
             self.Settings.store_to_disk()
             self.show_center_label('easeInExpo saved to settings file!')
 

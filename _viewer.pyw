@@ -3468,7 +3468,7 @@ class MainWindow(QMainWindow,
             *Settings.get_setting_span(setting_id)
         )
         setattr(self, setting_attr_name, float(value))
-        Settings.set_setting_value(setting_id, float(value))
+        Settings.set(setting_id, float(value))
         return float(value)
 
     def library_change_rounded_rect_radius(self, event, scroll_value):
@@ -3517,7 +3517,7 @@ class MainWindow(QMainWindow,
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
         self.STNG.waterfall_columns_number = float(value)
-        Settings.set_setting_value('waterfall_columns_number', float(value))
+        Settings.set('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
             msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
@@ -5445,7 +5445,7 @@ class MainWindow(QMainWindow,
         path = QFileDialog.getExistingDirectory(None, msg, init_path)
         if os.path.exists(path):
             rootpath = str(path)
-            Settings.set_setting_value('inframed_folderpath', rootpath)
+            Settings.set('inframed_folderpath', rootpath)
             return rootpath
         return None
 

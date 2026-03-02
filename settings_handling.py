@@ -752,7 +752,7 @@ class Settings(SettingsWindow):
         raise Exception('no setting with such ID', setting_id)
 
     @classmethod
-    def set_setting_value(cls, setting_id, setting_value):
+    def set(cls, setting_id, setting_value):
         valid = False
         if setting_id in cls.matrix.keys():
             setting_data = list(cls.matrix[setting_id])
