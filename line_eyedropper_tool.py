@@ -58,7 +58,7 @@ class LineEyedropperToolMixin():
         self.let_plot1_rect = QRect()
         self.let_plot2_rect = QRect()
 
-        self.draw_plp_index = -1
+        self.let_draw_plp_index = -1
 
         self.let_pretty_plots = True
 
@@ -249,7 +249,7 @@ class LineEyedropperToolMixin():
 
     def LET_copy_current_color_to_clipboard(self):
         if self.let_tool_activated:
-            color = self.let_tool_pixels_colors[self.draw_plp_index]
+            color = self.let_tool_pixels_colors[self.let_draw_plp_index]
             _hex = color.name()
             _r = color.red()
             _g = color.green()
@@ -448,7 +448,7 @@ class LineEyedropperToolMixin():
                     r.adjust(15, 15, -15, -15)
                     painter.drawEllipse(r)
 
-            self.draw_plp_index = plp_index
+            self.let_draw_plp_index = plp_index
 
             # drawing pipette line
             painter.drawLine(p1, p2)
