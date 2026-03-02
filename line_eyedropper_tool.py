@@ -70,6 +70,9 @@ class LineEyedropperToolMixin():
 
         self.LET_hover_init()
 
+    def LET_tool_activated(self):
+        return self.let_tool_activated
+
     def LET_cycle_toggle_scale_factor_value(self):
         if self.let_tool_activated:
             values = [1, 2, 3, 4, 5]

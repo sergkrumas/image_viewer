@@ -5105,7 +5105,7 @@ class MainWindow(QMainWindow,
             if key == Qt.Key_F12:
                 self.do_toggle_two_monitors_wide()
 
-            if self.let_tool_activated:
+            if self.LET_tool_activated():
                 if check_scancode_for(event, 'C') and ctrl_only:
                     self.LET_copy_current_color_to_clipboard()
 
