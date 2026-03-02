@@ -4235,19 +4235,23 @@ class MainWindow(QMainWindow,
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         for n, (lang_code, lang_flag_pixmap, lang_name) in enumerate(langs):
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
-            self.draw_startpage_langflag_radiobutton(painter, rect, cursor_pos, lang_flag_pixmap, lang_name, current_lang == lang_code)
+            self.draw_startpage_langflag_radiobutton(painter,
+                rect,
+                rect.contains(cursor_pos),
+                lang_flag_pixmap,
+                lang_name,
+                current_lang == lang_code
+            )
             self.start_page_lang_btns.append((lang_code, QRectF(rect)))
             left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
 
-    def draw_startpage_langflag_radiobutton(self, painter, rect, cursor_pos, lang_flag_pixmap, lang_name, selected):
+    def draw_startpage_langflag_radiobutton(self, painter, rect, hover, lang_flag_pixmap, lang_name, selected):
         painter.save()
 
-        is_cursor_over = rect.contains(cursor_pos)
-
-        if selected or is_cursor_over:
+        if selected or hover:
             painter.setPen(Qt.NoPen)
             painter.setBrush(Qt.NoBrush)
-            if is_cursor_over and not selected:
+            if hover and not selected:
                 alpha = 10
             else:
                 alpha = 20
@@ -4256,7 +4260,7 @@ class MainWindow(QMainWindow,
             path.addRoundedRect(rect, 20, 20)
             painter.drawPath(path)
 
-            if is_cursor_over:
+            if hover:
                 painter.setPen(QPen(Qt.white, 1))
                 lang_name_rect = QRectF(rect).adjusted(-50, -50, 50, 50)
                 painter.drawText(lang_name_rect, Qt.AlignTop | Qt.AlignHCenter, lang_name)
