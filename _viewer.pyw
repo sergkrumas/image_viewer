@@ -4376,6 +4376,10 @@ class MainWindow(QMainWindow,
 
         cf = LibraryData().current_folder()
 
+        corner_radius = self.STNG.library_corner_radius
+
+        rounded_previews = self.rounded_previews and corner_radius > 0.0
+
         # left column begin
         scroll_offset = LibraryData().folderslist_scroll_offset
         scroll_offset += 70
@@ -4390,11 +4394,17 @@ class MainWindow(QMainWindow,
                 LEFT_COL_WIDTH, int(thumb_ui_size+20)
             )
             self.folders_list.append((item_rect, folder_data))
+
+            # selection rect backplate
             if cf == folder_data:
-                painter.setOpacity(0.3)
-                painter.setBrush(QBrush(QColor(0xFF, 0xA0, 0x00)))
-                painter.drawRect(item_rect)
-                painter.setOpacity(1.0)
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(QBrush(QColor(0xFF, 0xA0, 0x00, 77)))
+                if rounded_previews or True:
+                    path = QPainterPath()
+                    path.addRoundedRect(QRectF(item_rect), corner_radius, corner_radius)
+                    painter.drawPath(path)
+                else:
+                    painter.drawRect(item_rect)
 
             painter.setPen(QPen(QColor(Qt.white)))
             left = 50 + thumb_ui_size
