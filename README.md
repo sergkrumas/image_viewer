@@ -85,7 +85,7 @@ The Board Page has been in development since mid 2023 and was originally inspire
 
 ![](docs/boards.png)
 
-You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad.
+You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad. Activate the gamepad via the context menu.
 
 ![](docs/supported_gamepads_march_2025.png)
 

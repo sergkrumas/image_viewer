@@ -88,7 +88,7 @@ Krumassan Image Viewer разрабатывается на замену почи
 [![Comment](https://img.youtube.com/vi/cWVgUz3I5Po/0.jpg)](https://www.youtube.com/watch?v=cWVgUz3I5Po "Презентация Board Page")
 
 
-В целях навигации по доске можно пользоваться геймпадом Playstation 4 DualShock или его дешёвым аналогом - ShanWan PC/PS3/Android. Читайте справку F1 для того, чтобы активировать управление с геймпада в программе.
+В целях навигации по доске можно пользоваться геймпадом Playstation 4 DualShock или его дешёвым аналогом - ShanWan PC/PS3/Android. **Управление с геймпада активируется через контекстное меню.** Читайте справку F1 для того, чтобы активировать управление с геймпада в программе.
 
 ![](docs/supported_gamepads_march_2025.png)
 
