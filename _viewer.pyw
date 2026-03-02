@@ -4237,15 +4237,15 @@ class MainWindow(QMainWindow,
             rect = QRectF(left_offset, top_offset, LANG_BTN_WIDTH, LANG_BTN_WIDTH)
             self.draw_startpage_langflag_radiobutton(painter,
                 rect,
-                rect.contains(cursor_pos),
                 lang_flag_pixmap,
                 lang_name,
-                current_lang == lang_code
+                current_lang == lang_code,
+                rect.contains(cursor_pos),
             )
             self.start_page_lang_btns.append((lang_code, QRectF(rect)))
             left_offset += (LANG_BTN_WIDTH + SPAN_WIDTH)
 
-    def draw_startpage_langflag_radiobutton(self, painter, rect, hover, lang_flag_pixmap, lang_name, selected):
+    def draw_startpage_langflag_radiobutton(self, painter, rect, lang_flag_pixmap, lang_name, selected, hover):
         painter.save()
 
         if selected or hover:
