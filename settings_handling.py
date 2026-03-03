@@ -863,7 +863,7 @@ class Settings(SettingsWindow):
         for setting_key in list(cls.matrix.keys()):
             if setting_key not in actual_settings_matrix.keys():
                 cls.matrix.pop(setting_key)
-        # копирем актуальные переводы описаний настроек
+        # копируем описания настроек на заданном языке интерфейса
         for setting_key in cls.matrix.keys():
             if setting_key in actual_settings_matrix.keys():
                 if setting_key.startswith('---'):
