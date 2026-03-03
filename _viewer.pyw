@@ -2306,7 +2306,7 @@ class MainWindow(QMainWindow,
             LibraryData().update_current_folder_columns()
             self.render_waterfall_backplate()
 
-        Settings.center_if_on_screen()
+        Settings.center_window()
 
         # здесь по возможности ещё должен быть и скейл относительно центра.
         self.update()

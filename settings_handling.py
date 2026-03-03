@@ -976,12 +976,11 @@ class Settings(SettingsWindow):
         return cls.instance
 
     @classmethod
-    def center_if_on_screen(cls):
+    def center_window(cls):
         if hasattr(cls, "instance"):
             window = cls.instance
             if window.isVisible():
                 cls.pos_at_center(window)
-
 
     def handle_windows_startup_chbx(self, sender):
         if sender.isChecked():
