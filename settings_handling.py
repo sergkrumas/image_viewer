@@ -495,7 +495,7 @@ class SettingsWindow(QWidget):
             elif id == UI_LANG_SETTING_ID:
                 lang_combo_box = QComboBox()
 
-                current_lang_key = Settings.matrix[UI_LANG_SETTING_ID][0]
+                current_lang_key = Settings.current_lang_code()
                 for n, (key, (name, pixmap, icon)) in enumerate(self.langs().items()):
                     lang_combo_box.addItem(icon, name)
                     lang_combo_box.setItemData(n, key)
@@ -824,7 +824,7 @@ class Settings(SettingsWindow):
 
     @classmethod
     def set_ui_language(cls):
-        lang = cls.matrix[UI_LANG_SETTING_ID][0]
+        lang = cls.current_lang_code()
         if lang not in cls.langs().keys():
             lang = 'en'
 
