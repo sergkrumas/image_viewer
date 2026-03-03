@@ -317,15 +317,13 @@ class SettingsWindow(QWidget):
     }
     """
 
-    isWindowVisible = False
-
     is_initialized = False
 
 
-    def __init__(self, parent):
+    def __init__(self):
         if self.is_initialized:
             return
-        super().__init__(parent)
+        super().__init__(self.globals.main_window)
         self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setWindowModality(Qt.WindowModal)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
@@ -494,28 +492,21 @@ class SettingsWindow(QWidget):
                 label = QLabel()
                 label.setText(_("UI language"))
                 label.setStyleSheet(style)
-                warn_label = QLabel()
-                warn_label.setText(_("Restart app to take effect across the entire app!"))
-                warn_label.setStyleSheet(warn_style)
-                warn_label.setVisible(False)
-                # warn_label.setAlignment(Qt.AlignRight)
 
                 layout = QHBoxLayout()
                 layout.addWidget(label)
                 layout.addWidget(lang_combo_box)
                 layout_main = QVBoxLayout()
                 layout_main.addLayout(layout)
-                layout_main.addWidget(warn_label)
 
                 central_widget_layout.addWidget(add_line_widget(layout_main))
                 central_widget_layout.addSpacing(10)
 
-                def lang_combobox_index_changed_callback(index):
+                def lang_changed_callback(index):
                     new_lang = lang_combo_box.itemData(index)
                     Settings.set_new_lang_across_entire_app(new_lang)
-                    warn_label.setVisible(True)
 
-                lang_combo_box.currentIndexChanged.connect(lang_combobox_index_changed_callback)
+                lang_combo_box.currentIndexChanged.connect(lang_changed_callback)
 
             elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
@@ -619,8 +610,6 @@ class SettingsWindow(QWidget):
         # Иначе в случае ниже - не становится модальной.
         # self.setParent(self.globals.main_window)
 
-        SettingsWindow.isWindowVisible = True
-
         self.is_initialized = True
 
     def on_small_images_fit_factor_change(self):
@@ -650,8 +639,10 @@ class SettingsWindow(QWidget):
         Settings.store_to_disk()
         self.hide()
 
+    def close(self):
+        super().close()
+
     def hide(self):
-        SettingsWindow.isWindowVisible = False
         super().hide()
 
     def paintEvent(self, event):
@@ -664,6 +655,14 @@ class SettingsWindow(QWidget):
         path.addRoundedRect(QRectF(self.rect()), 10, 10)
         painter.drawPath(path)
         painter.end()
+
+    @classmethod
+    def isWindowVisible(cls):
+        return hasattr(cls, 'instance') and cls.instance.isVisible()
+
+    def hideWindow(cls):
+        if hasattr(cls, 'instance'):
+            cls.instance.hide()
 
     # pass для того, чтобы метод предка не вызывался
     # и событие не ушло в родительское окно
@@ -991,6 +990,15 @@ class Settings(SettingsWindow):
             remove_from_startup(self.STARTUP_CONFIG[0])
 
     @classmethod
+    def toggle_window(cls):
+        window = Settings()
+        if window.isVisible():
+            window.hide()
+        else:
+            window.show()
+            window.activateWindow()
+
+    @classmethod
     def set_new_lang_across_entire_app(cls, new_lang):
         # записываем в настройки
         cls.matrix['ui_lang'][0] = new_lang
@@ -1005,15 +1013,16 @@ class Settings(SettingsWindow):
         MW.recreate_control_panel(requested_page=MW.current_page)
         # пересоздаём окно настроек, чтобы обновился интерфейс
         def callback():
-            if hasattr(SettingsWindow, 'instance') and SettingsWindow.isWindowVisible:
-                SettingsWindow.isWindowVisible = False
-                SettingsWindow.instance.close()
-                del SettingsWindow.instance
-                MW.open_settings_window()
+            print('callback')
+            if hasattr(cls, 'instance') and cls.instance.isVisible():
+                print('second callback')
+                cls.instance.close()
+                del cls.instance
+                cls.toggle_window()
                 del cls.globals._timer
 
         millisecs_delay = 1
-        cls.globals._timer = timer = QTimer.singleShot(millisecs_delay, callback)
+        cls.globals._timer = QTimer.singleShot(millisecs_delay, callback)
 
 
 # для запуска программы прямо из этого файла при разработке и отладке

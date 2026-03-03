@@ -2510,7 +2510,7 @@ class MainWindow(QMainWindow,
                     LibraryData().handle_input_data(path)
                     self.update()
         elif event.button() == Qt.RightButton:
-            self.open_settings_window()
+            self.toggle_settings_window()
 
     def ui_check_mouse_over_corners(self, event):
         if event.button() == Qt.LeftButton:
@@ -5227,8 +5227,8 @@ class MainWindow(QMainWindow,
                 self.board_region_zoom_do_cancel()
             elif self.is_board_page_active() and self.board_TextElementDeactivateEditMode():
                 return
-            elif Settings.isWindowVisible:
-                Settings.instance.hide()
+            elif Settings.isWindowVisible():
+                Settings.hideWindow()
             elif HookConsoleOutput.check_messages():
                 HookConsoleOutput.clear_messages_list()
             else:
@@ -5236,7 +5236,7 @@ class MainWindow(QMainWindow,
         elif key == Qt.Key_F1:
             self.toggle_infopanel()
         elif event.nativeScanCode() == 0x29:
-            self.open_settings_window()
+            self.toggle_settings_window()
 
 
 
@@ -5676,7 +5676,7 @@ class MainWindow(QMainWindow,
 
         sep()
 
-        addItem(_("Settings..."), self.open_settings_window)
+        addItem(_("Settings..."), self.toggle_settings_window)
         addItem(_("Help"), self.toggle_infopanel)
         addItem(_("Message the developer"), partial(execute_clickable_text, 'https://github.com/sergkrumas/image_viewer/issues'))
 
@@ -5853,13 +5853,8 @@ class MainWindow(QMainWindow,
             event.ignore()
             self.hide()
 
-    def open_settings_window(self):
-        window = Settings(self)
-        if window.isVisible():
-            window.hide()
-        else:
-            window.show()
-            window.activateWindow()
+    def toggle_settings_window(self):
+        Settings.toggle_window()
 
     def get_boards_user_data_filepath(self, filename):
         return os.path.join(self.LibraryData().get_boards_data_root(), filename)
