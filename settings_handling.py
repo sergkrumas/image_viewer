@@ -978,7 +978,7 @@ class Settings(SettingsWindow):
             'desaturated_corner_buttons_and_corner_menus': (False, _('Desaturated corner buttons and corner menus')),
             'show_console_output': (True, _('Show standard (console) output overlay')),
             'effects': (True, _('Animated effects')),
-            'show_noise_cells': (True, _('Show animated cells overlay')),
+            'show_noise_cells': (False, _('Show animated cells overlay')),
 
 
             '---gamepad': _('Gamepad'),
