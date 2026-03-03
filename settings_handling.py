@@ -702,21 +702,21 @@ class Settings(SettingsWindow):
         MW = self.globals.main_window
         cls = self.__class__
         for setting_id, params in cls.matrix.items():
-            current_val = params[0]
-            text = params[-1]
-            setting_value = ...
-            if isinstance(current_val, bool):
-                setting_value = self.get_bool_setting_value_from_ui(setting_id)
-                matrix_row = (setting_value, text)
-            elif isinstance(current_val, float):
-                setting_value = self.get_float_setting_value_from_ui(setting_id)
+            current_value = params[0]
+            setting_description = params[-1]
+            new_value = ...
+            if isinstance(current_value, bool):
+                new_value = self.get_bool_setting_value_from_ui(setting_id)
+                matrix_row = (new_value, setting_description)
+            elif isinstance(current_value, float):
+                new_value = self.get_float_setting_value_from_ui(setting_id)
                 setting_range = params[1]
-                matrix_row = (setting_value, setting_range, text)
-            elif isinstance(current_val, str):
+                matrix_row = (new_value, setting_range, setting_description)
+            elif isinstance(current_value, str):
                 pass
 
-            if setting_value is not Ellipsis:
-                self.update_STNG(MW, setting_id, setting_value)
+            if new_value is not Ellipsis:
+                self.update_STNG(MW, setting_id, new_value)
                 cls.matrix[setting_id] = matrix_row
 
         # page_transparency
