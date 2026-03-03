@@ -701,23 +701,18 @@ class Settings(SettingsWindow):
     def on_setting_change_handler(self):
         MW = self.globals.main_window
         cls = self.__class__
-        for setting_id, params in cls.matrix.items():
-            current_value = params[0]
-            setting_description = params[-1]
+        for setting_id, (current_value, *_params) in cls.matrix.items():
             new_value = ...
             if isinstance(current_value, bool):
                 new_value = self.get_bool_setting_value_from_ui(setting_id)
-                matrix_row = (new_value, setting_description)
             elif isinstance(current_value, float):
                 new_value = self.get_float_setting_value_from_ui(setting_id)
-                setting_range = params[1]
-                matrix_row = (new_value, setting_range, setting_description)
             elif isinstance(current_value, str):
                 pass
 
             if new_value is not Ellipsis:
                 self.update_STNG(MW, setting_id, new_value)
-                cls.matrix[setting_id] = matrix_row
+                cls.update_matrix_value(setting_id, new_value)
 
         # page_transparency
         MW.update_current_page_transparency_value()
@@ -753,21 +748,23 @@ class Settings(SettingsWindow):
         return filepath
 
     @classmethod
-    def get(cls, setting_id):
-        if setting_id in cls.matrix.keys():
-            return cls.matrix[setting_id][0]
-        raise Exception('no setting with such ID', setting_id)
+    def update_matrix_value(cls, setting_id, setting_value):
+        setting_data = list(cls.matrix[setting_id])
+        setting_data[0] = setting_value
+        cls.matrix[setting_id] = tuple(setting_data)
 
     @classmethod
     def set(cls, setting_id, setting_value):
-        valid = False
         if setting_id in cls.matrix.keys():
-            setting_data = list(cls.matrix[setting_id])
-            setting_data[0] = setting_value
-            cls.matrix[setting_id] = tuple(setting_data)
-            valid = True
-        if valid:
+            cls.update_matrix_value(setting_id, setting_value)
             cls.store_to_disk()
+        else:
+            raise Exception('no setting with such ID', setting_id)
+
+    @classmethod
+    def get(cls, setting_id):
+        if setting_id in cls.matrix.keys():
+            return cls.matrix[setting_id][0]
         else:
             raise Exception('no setting with such ID', setting_id)
 
