@@ -517,7 +517,7 @@ class SettingsWindow(QWidget):
                     chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
                 else:
                     chb.setChecked(current_val)
-                    chb.stateChanged.connect(self.on_change_handler)
+                    chb.stateChanged.connect(self.on_setting_change_handler)
 
                 layout = QHBoxLayout()
                 layout.addWidget(chb)
@@ -542,7 +542,7 @@ class SettingsWindow(QWidget):
                 sb.setFixedHeight(20)
                 sb.setRange(*range_)
                 self.values_widgets[id] = sb
-                sb.value_changed.connect(self.on_change_handler)
+                sb.value_changed.connect(self.on_setting_change_handler)
                 label = QLabel()
                 label.setText(f"{text}:")
                 label.setStyleSheet(style)
@@ -692,28 +692,32 @@ class SettingsWindow(QWidget):
 
 class Settings(SettingsWindow):
 
-    def is_on(self, id):
+    def get_bool_setting_value_from_ui(self, id):
         return self.checkboxes_widgets[id].isChecked()
 
-    def get_value(self, id):
+    def get_float_setting_value_from_ui(self, id):
         return self.values_widgets[id].get_value()
 
-    def on_change_handler(self):
+    def on_setting_change_handler(self):
         MW = self.globals.main_window
-        cp = self.globals.control_panel
         cls = self.__class__
         for setting_id, params in cls.matrix.items():
             current_val = params[0]
             text = params[-1]
+            setting_value = ...
             if isinstance(current_val, bool):
-                setattr(MW.STNG, setting_id, self.is_on(setting_id))
-                cls.matrix[setting_id] = (self.is_on(setting_id), text)
+                setting_value = self.get_bool_setting_value_from_ui(setting_id)
+                matrix_row = (setting_value, text)
             elif isinstance(current_val, float):
-                range = params[1]
-                setattr(MW.STNG, setting_id, self.get_value(setting_id))
-                cls.matrix[setting_id] = (self.get_value(setting_id), range, text)
+                setting_value = self.get_float_setting_value_from_ui(setting_id)
+                setting_range = params[1]
+                matrix_row = (setting_value, setting_range, text)
             elif isinstance(current_val, str):
                 pass
+
+            if setting_value is not Ellipsis:
+                self.update_STNG(MW, setting_id, setting_value)
+                cls.matrix[setting_id] = matrix_row
 
         # page_transparency
         MW.update_current_page_transparency_value()
@@ -723,8 +727,9 @@ class Settings(SettingsWindow):
         MW.update()
 
         # когда окно настроек открывается на стартовой странице cp будет None
-        if cp is not None:
-            cp.update()
+        CP = self.globals.control_panel
+        if CP is not None:
+            CP.update()
 
     @classmethod
     def copy_settings_to_globals(cls):
@@ -732,10 +737,14 @@ class Settings(SettingsWindow):
         cls.globals.USE_GLOBAL_LIST_VIEW_HISTORY = cls.get('use_global_view_history')
 
     @classmethod
-    def settings_init(cls, main_window):
+    def init_STNG(cls, main_window):
         main_window.STNG = type('STNG', (), {})()
         for setting_id, (current_value, *_) in cls.matrix.items():
-            setattr(main_window.STNG, setting_id, current_value)
+            cls.update_STNG(main_window, setting_id, current_value)
+
+    @classmethod
+    def update_STNG(cls, main_window, setting_id, setting_value):
+        setattr(main_window.STNG, setting_id, setting_value)
 
     @classmethod
     def filepath(cls):

@@ -926,7 +926,7 @@ class MainWindow(QMainWindow,
         self.gamepad_timer = None
 
         self.Settings = Settings
-        Settings.settings_init(self)
+        Settings.init_STNG(self)
 
         self.board_init()
         self.tagging_init()
