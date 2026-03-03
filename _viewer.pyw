@@ -808,14 +808,18 @@ class MainWindow(QMainWindow,
             ]
 
         @classmethod
-        def name(cls, page_id):
+        def pages_names(cls):
             return {
-                  cls.START_PAGE: _('START')
-                , cls.VIEWER_PAGE: _('VIEWER')
-                , cls.BOARD_PAGE: _('BOARD')
-                , cls.LIBRARY_PAGE: _('LIBRARY')
-                , cls.WATERFALL_PAGE: _('WATERFALL')
-            }.get(page_id)
+                  cls.START_PAGE:       _('START')
+                , cls.VIEWER_PAGE:      _('VIEWER')
+                , cls.BOARD_PAGE:       _('BOARD')
+                , cls.LIBRARY_PAGE:     _('LIBRARY')
+                , cls.WATERFALL_PAGE:   _('WATERFALL')
+            }
+
+        @classmethod
+        def name(cls, page_id):
+            return cls.pages_names().get(page_id)
 
     pages.count = len(pages.all())
 
