@@ -4234,7 +4234,7 @@ class MainWindow(QMainWindow,
 
         SPAN_WIDTH = 30
         LANG_BTN_WIDTH = 100
-        current_lang = Settings.matrix['ui_lang'][0]
+        current_lang = Settings.current_lang_code()
         langs = Settings.langs()
         langs_count = len(langs)
         top_offset = self.rect().bottom() - LANG_BTN_WIDTH * 2.5

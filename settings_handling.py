@@ -273,6 +273,7 @@ class CustomSlider(QWidget):
 
 
 
+UI_LANG_SETTING_ID = 'ui_lang'
 
 
 class SettingsWindow(QWidget):
@@ -477,10 +478,10 @@ class SettingsWindow(QWidget):
                 central_widget_layout.addLayout(layout)
                 central_widget_layout.addSpacing(10)
 
-            elif id == 'ui_lang':
+            elif id == UI_LANG_SETTING_ID:
                 lang_combo_box = QComboBox()
 
-                current_lang_key = Settings.matrix['ui_lang'][0]
+                current_lang_key = Settings.matrix[UI_LANG_SETTING_ID][0]
                 for n, (key, (name, pixmap, icon)) in enumerate(self.langs().items()):
                     lang_combo_box.addItem(icon, name)
                     lang_combo_box.setItemData(n, key)
@@ -769,6 +770,10 @@ class Settings(SettingsWindow):
             raise Exception('no setting with such ID', setting_id)
 
     @classmethod
+    def current_lang_code(cls):
+        return cls.get(UI_LANG_SETTING_ID)
+
+    @classmethod
     def langs(cls):
         return {
             'en': (_('English'), cls.globals.lang_en_pixmap, cls.globals.lang_en_icon),
@@ -782,7 +787,7 @@ class Settings(SettingsWindow):
     @classmethod
     def set_new_lang_across_entire_app(cls, new_lang):
         # записываем в настройки
-        cls.matrix['ui_lang'][0] = new_lang
+        cls.matrix[UI_LANG_SETTING_ID][0] = new_lang
         # задаём выбранную локаль по всему приложению
         cls.set_ui_language()
         # обновляем описания настроек в соответствии с языком
@@ -807,7 +812,7 @@ class Settings(SettingsWindow):
 
     @classmethod
     def set_ui_language(cls):
-        lang = cls.matrix['ui_lang'][0]
+        lang = cls.matrix[UI_LANG_SETTING_ID][0]
         if lang not in cls.langs().keys():
             lang = 'en'
 
@@ -888,12 +893,13 @@ class Settings(SettingsWindow):
                         msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
                         print(msg)
 
+
     @staticmethod
     def generate_localized_matrix():
 
         matrix = {
             '---general': _('General'),
-            'ui_lang': ('en', _('UI language')),
+            UI_LANG_SETTING_ID: ('en', _('UI language')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
