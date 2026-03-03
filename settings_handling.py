@@ -318,6 +318,125 @@ class SettingsWindow(QWidget):
     }
     """
 
+    partition_label_style = """
+    QLabel {
+        color: black;
+        background-color: gray;
+        padding-left: 20px;
+        font-size: 11pt;
+    }
+    """
+ 
+    warn_style = """
+    QLabel{
+        color: rgb(200, 40, 40);
+        font-weight: 900;
+        font-size: 11pt;
+    }
+    """
+
+    combobox_style = """
+        QComboBox {
+            font-size: 11pt;
+            font-family: 'Consolas';
+            font-weight: bold;
+            color: white;
+            background-color: transparent;
+            border: none;
+        }
+        QComboBox::drop-down {
+            color: white;
+            font-weight: normal;
+        }
+        QComboBox QAbstractItemView {
+            background-color: #101010;
+            color: white;
+            font-weight: normal;
+            selection-color: black;
+            border: 1px solid #101010;
+            selection-background-color: white;
+
+        }
+        QComboBox:on{
+            padding-left: 10px;
+        }
+    """
+
+    checkbox_style = """
+        QCheckBox {
+            font-size: 11pt;
+            color: white;
+            font-weight: normal;
+        }
+        QCheckBox::indicator {
+            width: 40px;
+            height: 20px;
+        }
+        QCheckBox::indicator:unchecked {
+            /*background: gray;*/
+            image: url(resources/switch_off.png);
+        }
+        QCheckBox::indicator:checked {
+            /*background: green;*/
+            image: url(resources/switch_on.png);
+        }
+        QCheckBox:checked {
+            /* background-color: rgba(150, 150, 150, 50);*/
+            color: rgb(100, 255, 100);
+        }
+        QCheckBox:unchecked {
+            color: white;
+        }
+        QCheckBox:disabled {
+            background: rgba(127, 127, 127, 10);
+            color: rgba(127, 127, 127, 127);
+        }
+        QCheckBox::indicator:disabled {
+            background: black;
+        }
+    """
+
+    scroll_area_style  = """
+        QScrollArea:vertical {
+            height: 15px;
+            background-color: transparent;
+            border: none;
+        }
+        """
+
+    scroll_area_vertical_scrollbars_style = """
+        QScrollBar {
+            border-radius: 5px;
+            background: rgb(40, 50, 60);
+        }
+        QScrollBar:vertical {
+            width: 10px;
+            border-radius: 5px;
+        }
+        QScrollBar::handle {
+            background: rgb(210, 210, 210);
+            border-radius: 5px;
+        }
+        QScrollBar::handle:vertical {
+            width: 10px;
+            min-height: 10px;
+            border-radius: 5px;
+        }
+        QScrollBar::add-line:vertical {
+             background: transparent;
+        }
+        QScrollBar::sub-line:vertical {
+             background: transparent;
+        }
+        QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+             background: transparent;
+        }
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+             background: transparent;
+        }
+
+    """
+
     is_initialized = False
 
 
@@ -333,120 +452,15 @@ class SettingsWindow(QWidget):
         # show at center
         SettingsWindow.pos_at_center(self)
         # ui init
-        main_style = "font-size: 11pt; font-family: 'Consolas';"
-        style = "color: white; " + main_style
-        style_partition_label = "color: black; background-color: gray; padding-left: 20px; " + main_style
-        main_style_button = "font-size: 13pt; padding: 5px 0px;"
-        combobox_style = """
-            QComboBox {
-                font-size: 11pt;
-                font-family: 'Consolas';
-                font-weight: bold;
-                color: white;
-                background-color: transparent;
-                border: none;
-            }
-            QComboBox::drop-down {
-                color: white;
-                font-weight: normal;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #101010;
-                color: white;
-                font-weight: normal;
-                selection-color: black;
-                border: 1px solid #101010;
-                selection-background-color: white;
-
-            }
-            QComboBox:on{
-                padding-left: 10px;
-            }
-        """
-        checkbox_style = """
-            QCheckBox {
-                font-size: 11pt;
-                font-family: 'Consolas';
-                color: white;
-                font-weight: normal;
-            }
-            QCheckBox::indicator {
-                width: 40px;
-                height: 20px;
-            }
-            QCheckBox::indicator:unchecked {
-                /*background: gray;*/
-                image: url(resources/switch_off.png);
-            }
-            QCheckBox::indicator:checked {
-                /*background: green;*/
-                image: url(resources/switch_on.png);
-            }
-            QCheckBox:checked {
-                /* background-color: rgba(150, 150, 150, 50);*/
-                color: rgb(100, 255, 100);
-            }
-            QCheckBox:unchecked {
-                color: white;
-            }
-            QCheckBox:disabled {
-                background: rgba(127, 127, 127, 10);
-                color: rgba(127, 127, 127, 127);
-            }
-            QCheckBox::indicator:disabled {
-                background: black;
-            }
-        """
-        warn_style = """
-                color: rgb(200, 40, 40);
-                font-weight: 900;
-                font-size: 11pt;
-        """
+        main_style = "color: white; font-size: 11pt;"
+        main_style_bold = main_style + 'font-weight: bold;'
 
         self.checkboxes = {}
         self.sliders = {}
 
         self.scroll_area = QScrollArea()
-        self.scroll_area.verticalScrollBar().setStyleSheet("""
-            QScrollBar {
-                border-radius: 5px;
-                background: rgb(40, 50, 60);
-            }
-            QScrollBar:vertical {
-                width: 10px;
-                border-radius: 5px;
-            }
-            QScrollBar::handle {
-                background: rgb(210, 210, 210);
-                border-radius: 5px;
-            }
-            QScrollBar::handle:vertical {
-                width: 10px;
-                min-height: 10px;
-                border-radius: 5px;
-            }
-            QScrollBar::add-line:vertical {
-                 background: transparent;
-            }
-            QScrollBar::sub-line:vertical {
-                 background: transparent;
-            }
-            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-                 background: transparent;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                 background: transparent;
-            }
-
-            """)
-
-        self.scroll_area.setStyleSheet("""
-            QScrollArea:vertical {
-                height: 15px;
-                background-color: transparent;
-                border: none;
-            }
-            """)
+        self.scroll_area.verticalScrollBar().setStyleSheet(self.scroll_area_vertical_scrollbars_style)
+        self.scroll_area.setStyleSheet(self.scroll_area_style)
 
         self.central_widget = QWidget()
         self.central_widget.setStyleSheet("QWidget#central {background-color: transparent;}")
@@ -470,7 +484,7 @@ class SettingsWindow(QWidget):
                 label = QLabel()
                 text = ''.join(params).upper()
                 label.setText(f"<b>{text}</b>")
-                label.setStyleSheet(style_partition_label)
+                label.setStyleSheet(self.partition_label_style)
                 layout = QVBoxLayout()
                 layout.addWidget(label)
                 if index != 0:
@@ -488,11 +502,11 @@ class SettingsWindow(QWidget):
                     if key == current_lang_key:
                         lang_combo_box.setCurrentIndex(n)
 
-                lang_combo_box.setStyleSheet(combobox_style)
+                lang_combo_box.setStyleSheet(self.combobox_style)
 
                 label = QLabel()
                 label.setText(_("UI language"))
-                label.setStyleSheet(style)
+                label.setStyleSheet(main_style)
 
                 layout = QHBoxLayout()
                 layout.addWidget(label)
@@ -512,7 +526,7 @@ class SettingsWindow(QWidget):
             elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
                 self.checkboxes[id] = chb
-                chb.setStyleSheet(checkbox_style)
+                chb.setStyleSheet(self.checkbox_style)
                 if id == 'run_on_windows_startup':
                     chb.setChecked(is_app_in_startup(self.STARTUP_CONFIG[0]))
                     chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
@@ -531,7 +545,7 @@ class SettingsWindow(QWidget):
                 #     chb.stateChanged.connect(lambda state, x=chb: self.handle_child_checkboxes(state, x))
 
                 # if id == 'enter_modal_viewer_mode_on_app_start':
-                #     # на старте надо определится с видом чекбокса в зависимости от значения радителя
+                #     # на старте надо определится с видом чекбокса в зависимости от значения родителя
                 #     self.handle_child_checkboxes(None, self.checkboxes['open_app_on_waterfall_page'])
 
 
@@ -546,7 +560,7 @@ class SettingsWindow(QWidget):
                 sb.value_changed.connect(self.on_setting_change_handler)
                 label = QLabel()
                 label.setText(f"{text}:")
-                label.setStyleSheet(style)
+                label.setStyleSheet(main_style)
                 layout = QHBoxLayout()
                 layout.addWidget(label)
                 layout.addWidget(sb)
@@ -561,7 +575,7 @@ class SettingsWindow(QWidget):
             elif isinstance(current_val, str):
                 label = QLabel()
                 label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
-                label.setStyleSheet(style)
+                label.setStyleSheet(main_style)
                 layout = QHBoxLayout()
                 layout.addWidget(label)
                 central_widget_layout.addWidget(add_line_widget(layout))
@@ -582,17 +596,15 @@ class SettingsWindow(QWidget):
         head_label.setText(_("Settings"))
         head_label.setFixedHeight(50)
         head_label.setAlignment(Qt.AlignCenter)
-        head_label.setStyleSheet(style + '; font-weight: bold;')
+        head_label.setStyleSheet(main_style_bold)
         main_layout.addWidget(head_label)
 
         main_layout.addWidget(self.scroll_area)
 
         save_button = QPushButton(_("Save and close"))
         save_button.clicked.connect(self.save_button_handler)
-        save_button.setStyleSheet(main_style_button)
         exit_button = QPushButton(_("Close"))
         exit_button.clicked.connect(self.exit_button_handler)
-        exit_button.setStyleSheet(main_style_button)
 
         save_button.setObjectName("save")
         exit_button.setObjectName("exit")
