@@ -402,8 +402,8 @@ class SettingsWindow(QWidget):
                 font-size: 11pt;
         """
 
-        self.checkboxes_widgets = {}
-        self.values_widgets = {}
+        self.checkboxes = {}
+        self.sliders = {}
 
         self.scroll_area = QScrollArea()
         self.scroll_area.verticalScrollBar().setStyleSheet("""
@@ -510,7 +510,7 @@ class SettingsWindow(QWidget):
 
             elif isinstance(current_val, bool):
                 chb = QCheckBox(text)
-                self.checkboxes_widgets[id] = chb
+                self.checkboxes[id] = chb
                 chb.setStyleSheet(checkbox_style)
                 if id == 'run_on_windows_startup':
                     chb.setChecked(is_app_in_startup(self.STARTUP_CONFIG[0]))
@@ -531,7 +531,7 @@ class SettingsWindow(QWidget):
 
                 # if id == 'enter_modal_viewer_mode_on_app_start':
                 #     # на старте надо определится с видом чекбокса в зависимости от значения радителя
-                #     self.handle_child_checkboxes(None, self.checkboxes_widgets['open_app_on_waterfall_page'])
+                #     self.handle_child_checkboxes(None, self.checkboxes['open_app_on_waterfall_page'])
 
 
             elif isinstance(current_val, float):
@@ -541,7 +541,7 @@ class SettingsWindow(QWidget):
                 sb = CustomSlider(CustomSlider.TYPE_SCALAR, 400, val)
                 sb.setFixedHeight(20)
                 sb.setRange(*range_)
-                self.values_widgets[id] = sb
+                self.sliders[id] = sb
                 sb.value_changed.connect(self.on_setting_change_handler)
                 label = QLabel()
                 label.setText(f"{text}:")
@@ -629,7 +629,7 @@ class SettingsWindow(QWidget):
 
     def handle_child_checkboxes(self, state, chb):
         MW = type(self).globals.main_window
-        self.checkboxes_widgets['enter_modal_viewer_mode_on_app_start'].setEnabled(chb.isChecked())
+        self.checkboxes['enter_modal_viewer_mode_on_app_start'].setEnabled(chb.isChecked())
         self.update()
 
     def exit_button_handler(self):
@@ -693,10 +693,10 @@ class SettingsWindow(QWidget):
 class Settings(SettingsWindow):
 
     def get_bool_setting_value_from_ui(self, id):
-        return self.checkboxes_widgets[id].isChecked()
+        return self.checkboxes[id].isChecked()
 
     def get_float_setting_value_from_ui(self, id):
-        return self.values_widgets[id].get_value()
+        return self.sliders[id].get_value()
 
     def on_setting_change_handler(self):
         MW = self.globals.main_window
