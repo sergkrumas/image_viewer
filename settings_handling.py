@@ -661,7 +661,7 @@ class SettingsWindow(QWidget):
 
     def lang_changed_callback(self):
         new_lang_code = self.lang_cb.itemData(self.lang_cb.currentIndex())
-        Settings.set_new_lang_across_entire_app(new_lang_code)
+        Settings.set_lang_across_entire_app(new_lang_code)
 
     def on_small_images_fit_factor_change(self):
         MW = type(self).globals.main_window
@@ -843,7 +843,7 @@ class Settings(SettingsWindow):
         }
 
     @classmethod
-    def set_new_lang_across_entire_app(cls, new_lang):
+    def set_lang_across_entire_app(cls, new_lang):
         # записываем в настройки
         cls.matrix[UI_LANG_SETTING_ID][0] = new_lang
         # задаём выбранную локаль по всему приложению

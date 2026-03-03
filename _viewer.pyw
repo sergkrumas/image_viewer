@@ -2518,7 +2518,7 @@ class MainWindow(QMainWindow,
             for lang, rect in self.start_page_lang_btns:
                 if rect.contains(event.pos()):
                     lang_button_pressed = True
-                    Settings.set_new_lang_across_entire_app(lang)
+                    Settings.set_lang_across_entire_app(lang)
                     self.show_center_label(lang.upper())
                     self.update()
                     break
