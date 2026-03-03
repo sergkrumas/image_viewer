@@ -3460,6 +3460,10 @@ class MainWindow(QMainWindow,
                     return True
         return False
 
+    def viewer_scrollplayspeed(self, scroll_value):
+        self.do_scroll_playspeed(scroll_value)
+        self.show_center_label(self.label_type.PLAYSPEED)
+
     def viewer_wheelEvent(self, event, scroll_value, ctrl, shift, no_mod, control_panel_undermouse):
 
         if self.left_button_pressed and self.animated:
@@ -3467,8 +3471,7 @@ class MainWindow(QMainWindow,
             self.show_center_label(self.label_type.FRAME_NUMBER)
             return True
         if shift and ctrl and self.animated:
-            self.do_scroll_playspeed(scroll_value)
-            self.show_center_label(self.label_type.PLAYSPEED)
+            self.viewer_scrollplayspeed(scroll_value)
             return True
         if no_mod and self.STNG.zoom_on_mousewheel and (not self.left_button_pressed) and (not control_panel_undermouse):
             self.do_scale_image(scroll_value)
@@ -5056,6 +5059,7 @@ class MainWindow(QMainWindow,
         key = event.key()
 
         ctrl_only = event.modifiers() == Qt.ControlModifier
+        shift_only = event.modifiers() == Qt.ShiftModifier
 
         if self.is_board_text_input_event:
             if not event.isAutoRepeat():
@@ -5109,6 +5113,17 @@ class MainWindow(QMainWindow,
             if self.LET_tool_activated():
                 if check_scancode_for(event, 'C') and ctrl_only:
                     self.LET_copy_current_color_to_clipboard()
+
+        if self.is_waterfall_page_active() or self.is_viewer_page_active():
+            if shift_only:
+                GREATER_KEY_SCANCODE = 52
+                LESS_KEY_SCANCODE = 51
+                scan_code = event.nativeScanCode()
+                if scan_code == GREATER_KEY_SCANCODE:
+                    self.viewer_scrollplayspeed(1)
+                elif scan_code == LESS_KEY_SCANCODE:
+                    self.viewer_scrollplayspeed(-1)
+
 
         if key == Qt.Key_Tab:
             self.cycle_change_page()
@@ -5176,6 +5191,8 @@ class MainWindow(QMainWindow,
                     LibraryData().show_viewed_image_prev()
                 elif event.modifiers() in [Qt.NoModifier, Qt.KeypadModifier]:
                     LibraryData().show_previous_image()
+
+
 
         self.update()
 
