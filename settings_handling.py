@@ -780,19 +780,35 @@ class Settings(SettingsWindow):
         }
 
     @classmethod
+    def set_new_lang_across_entire_app(cls, new_lang):
+        # записываем в настройки
+        cls.matrix['ui_lang'][0] = new_lang
+        # задаём выбранную локаль по всему приложению
+        cls.set_ui_language()
+        # обновляем описания настроек в соответствии с языком
+        cls.actualize_matrix_data()
+        cls.store_to_disk()
+
+        # пересоздаём элементы панели управления, чтобы подсказки обновились
+        MW = cls.globals.main_window
+        MW.recreate_control_panel(requested_page=MW.current_page)
+        # пересоздаём окно настроек, чтобы обновился интерфейс
+        def callback():
+            print('callback')
+            if hasattr(cls, 'instance') and cls.instance.isVisible():
+                print('second callback')
+                cls.instance.close()
+                del cls.instance
+                cls.toggle_window()
+                del cls.globals._timer
+
+        millisecs_delay = 1
+        cls.globals._timer = QTimer.singleShot(millisecs_delay, callback)
+
+    @classmethod
     def set_ui_language(cls):
         lang = cls.matrix['ui_lang'][0]
-        allowed_langs = [
-            'en', #no special EN-locale
-
-            # according to /locales folder
-            'ru',
-            'de',
-            'fr',
-            'it',
-            'es',
-        ]
-        if lang not in allowed_langs:
+        if lang not in cls.langs().keys():
             lang = 'en'
 
         if lang == 'en':
@@ -802,6 +818,16 @@ class Settings(SettingsWindow):
             el = __import__('gettext').translation('base', localedir='locales', languages=[lang])
             el.install() # copies el.gettext as _ to builtins for all app modules
             # SettingsWindow.actualize_matrix_data()
+
+    @classmethod
+    def store_to_disk(cls):
+        data = {
+            'settings': cls.matrix,
+        }
+        if os.path.exists(cls.filepath()):
+            os.remove(cls.filepath())
+        with open(cls.filepath(), 'w+', encoding="utf8") as file:
+            json.dump(data, file, indent=True, ensure_ascii=False)
 
     @classmethod
     def load_from_disk(cls):
@@ -861,16 +887,6 @@ class Settings(SettingsWindow):
                         cls.matrix[setting_key] = s_data
                         msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
                         print(msg)
-
-    @classmethod
-    def store_to_disk(cls):
-        data = {
-            'settings': cls.matrix,
-        }
-        if os.path.exists(cls.filepath()):
-            os.remove(cls.filepath())
-        with open(cls.filepath(), 'w+', encoding="utf8") as file:
-            json.dump(data, file, indent=True, ensure_ascii=False)
 
     @staticmethod
     def generate_localized_matrix():
@@ -1002,33 +1018,6 @@ class Settings(SettingsWindow):
         else:
             window.show()
             window.activateWindow()
-
-    @classmethod
-    def set_new_lang_across_entire_app(cls, new_lang):
-        # записываем в настройки
-        cls.matrix['ui_lang'][0] = new_lang
-        # задаём выбранную локаль по всему приложению
-        cls.set_ui_language()
-        # обновляем описания настроек в соответствии с языком
-        cls.actualize_matrix_data()
-        cls.store_to_disk()
-
-        # пересоздаём элементы панели управления, чтобы подсказки обновились
-        MW = cls.globals.main_window
-        MW.recreate_control_panel(requested_page=MW.current_page)
-        # пересоздаём окно настроек, чтобы обновился интерфейс
-        def callback():
-            print('callback')
-            if hasattr(cls, 'instance') and cls.instance.isVisible():
-                print('second callback')
-                cls.instance.close()
-                del cls.instance
-                cls.toggle_window()
-                del cls.globals._timer
-
-        millisecs_delay = 1
-        cls.globals._timer = QTimer.singleShot(millisecs_delay, callback)
-
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

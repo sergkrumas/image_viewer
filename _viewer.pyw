@@ -57,6 +57,20 @@ else:
     viewer_dll = None
 
 class Globals():
+
+    lang_en_pixmap = None
+    lang_en_icon = None
+    lang_ru_pixmap = None
+    lang_ru_icon = None
+    lang_de_pixmap = None
+    lang_de_icon = None
+    lang_fr_pixmap = None
+    lang_fr_icon = None
+    lang_it_pixmap = None
+    lang_it_icon = None
+    lang_es_pixmap = None
+    lang_es_icon = None
+
     is_32bit_exe = platform.architecture()[0] == '32bit'
     main_window = None
     control_panel = None
