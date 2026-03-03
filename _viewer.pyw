@@ -5671,7 +5671,7 @@ class MainWindow(QMainWindow,
             )
 
         menu = cM.addMenu(_("DEBUG tools..."))
-        self.addItemToMenu(menu, _("Make program crash intentionally (for dev purposes only)..."), lambda: 1/0)
+        self.addItemToMenu(menu, "Make program crash intentionally (for dev purposes only)...", lambda: 1/0)
         self.addItemToMenu(menu, 'Create virtual folder list', self.debug_populate_data_to_test_library_page)
 
         sep()
