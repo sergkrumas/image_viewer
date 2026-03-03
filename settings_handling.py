@@ -455,8 +455,9 @@ class SettingsWindow(QWidget):
         main_style = "color: white; font-size: 11pt;"
         main_style_bold = main_style + 'font-weight: bold;'
 
-        self.checkboxes = {}
-        self.sliders = {}
+        self.checkboxes = dict()
+        self.sliders = dict()
+        self.comboboxes = dict()
 
         self.scroll_area = QScrollArea()
         self.scroll_area.verticalScrollBar().setStyleSheet(self.scroll_area_vertical_scrollbars_style)
@@ -481,6 +482,7 @@ class SettingsWindow(QWidget):
             text = params[-1]
 
             if id.startswith('---'):
+
                 label = QLabel()
                 text = ''.join(params).upper()
                 label.setText(f"<b>{text}</b>")
@@ -492,38 +494,75 @@ class SettingsWindow(QWidget):
                 central_widget_layout.addLayout(layout)
                 central_widget_layout.addSpacing(10)
 
-            elif id == UI_LANG_SETTING_ID:
-                lang_combo_box = QComboBox()
 
-                current_lang_key = Settings.current_lang_code()
-                for n, (key, (name, pixmap, icon)) in enumerate(self.langs().items()):
-                    lang_combo_box.addItem(icon, name)
-                    lang_combo_box.setItemData(n, key)
-                    if key == current_lang_key:
-                        lang_combo_box.setCurrentIndex(n)
+            elif isinstance(current_val, int) and len(params) == 3:
 
-                lang_combo_box.setStyleSheet(self.combobox_style)
+                cb = QComboBox()
+                self.comboboxes[id] = cb
+                for n, (page_id, page_name) in enumerate(params[-2]):
+                    cb.addItem(page_name)
+                    cb.setItemData(n, page_id)
+                    if page_id == current_val:
+                        cb.setCurrentIndex(n)
+
+                cb.setStyleSheet(self.combobox_style)
 
                 label = QLabel()
-                label.setText(_("UI language"))
+                label.setText(text)
                 label.setStyleSheet(main_style)
 
                 layout = QHBoxLayout()
                 layout.addWidget(label)
-                layout.addWidget(lang_combo_box)
+                layout.addWidget(cb)
                 layout_main = QVBoxLayout()
                 layout_main.addLayout(layout)
 
                 central_widget_layout.addWidget(add_line_widget(layout_main))
                 central_widget_layout.addSpacing(10)
 
-                def lang_changed_callback(index):
-                    new_lang = lang_combo_box.itemData(index)
-                    Settings.set_new_lang_across_entire_app(new_lang)
+                cb.currentIndexChanged.connect(lambda: self.on_setting_change_handler())
 
-                lang_combo_box.currentIndexChanged.connect(lang_changed_callback)
+            elif id == UI_LANG_SETTING_ID:
+
+                cb = QComboBox()
+
+                for n, (key, (name, pixmap, icon)) in enumerate(self.langs().items()):
+                    cb.addItem(icon, name)
+                    cb.setItemData(n, key)
+                    if key == current_val:
+                        cb.setCurrentIndex(n)
+
+                cb.setStyleSheet(self.combobox_style)
+
+                label = QLabel()
+                label.setText(text)
+                label.setStyleSheet(main_style)
+
+                layout = QHBoxLayout()
+                layout.addWidget(label)
+                layout.addWidget(cb)
+                layout_main = QVBoxLayout()
+                layout_main.addLayout(layout)
+
+                central_widget_layout.addWidget(add_line_widget(layout_main))
+                central_widget_layout.addSpacing(10)
+                self.lang_cb = cb
+
+                cb.currentIndexChanged.connect(lambda: self.lang_changed_callback())
+
+
+            elif isinstance(current_val, str) and len(params) == 2:
+
+                label = QLabel()
+                label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
+                label.setStyleSheet(main_style)
+                layout = QHBoxLayout()
+                layout.addWidget(label)
+                central_widget_layout.addWidget(add_line_widget(layout))
+
 
             elif isinstance(current_val, bool):
+
                 chb = QCheckBox(text)
                 self.checkboxes[id] = chb
                 chb.setStyleSheet(self.checkbox_style)
@@ -532,7 +571,7 @@ class SettingsWindow(QWidget):
                     chb.stateChanged.connect(lambda: self.handle_windows_startup_chbx(chb))
                 else:
                     chb.setChecked(current_val)
-                    chb.stateChanged.connect(self.on_setting_change_handler)
+                    chb.stateChanged.connect(lambda: self.on_setting_change_handler())
 
                 layout = QHBoxLayout()
                 layout.addWidget(chb)
@@ -550,6 +589,7 @@ class SettingsWindow(QWidget):
 
 
             elif isinstance(current_val, float):
+
                 range_ = params[1]
                 a, b = range_
                 val = (current_val-a)/(b-a)
@@ -572,13 +612,7 @@ class SettingsWindow(QWidget):
                 elif id == 'gamepad_dead_zone_radius':
                     sb.value_changed.connect(lambda x=sb: self.on_gamepad_dead_zone_radius_change(x))
 
-            elif isinstance(current_val, str):
-                label = QLabel()
-                label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
-                label.setStyleSheet(main_style)
-                layout = QHBoxLayout()
-                layout.addWidget(label)
-                central_widget_layout.addWidget(add_line_widget(layout))
+
 
 
         self.central_widget.setLayout(central_widget_layout)
@@ -624,6 +658,10 @@ class SettingsWindow(QWidget):
         # self.setParent(self.globals.main_window)
 
         self.is_initialized = True
+
+    def lang_changed_callback(self):
+        new_lang_code = self.lang_cb.itemData(self.lang_cb.currentIndex())
+        Settings.set_new_lang_across_entire_app(new_lang_code)
 
     def on_small_images_fit_factor_change(self):
         MW = type(self).globals.main_window
@@ -711,15 +749,23 @@ class Settings(SettingsWindow):
     def get_float_setting_value_from_ui(self, id):
         return self.sliders[id].get_value()
 
+    def get_selecteditem_setting_value_from_ui(self, id):
+        cb = self.comboboxes[id]
+        return cb.itemData(cb.currentIndex())
+
     def on_setting_change_handler(self):
         MW = self.globals.main_window
         cls = self.__class__
         for setting_id, (current_value, *_params) in cls.matrix.items():
             new_value = ...
-            if isinstance(current_value, bool):
+            if setting_id in [UI_LANG_SETTING_ID, 'inframed_folderpath']:
+                pass
+            elif isinstance(current_value, bool):
                 new_value = self.get_bool_setting_value_from_ui(setting_id)
             elif isinstance(current_value, float):
                 new_value = self.get_float_setting_value_from_ui(setting_id)
+            elif isinstance(current_value, int):
+                new_value = self.get_selecteditem_setting_value_from_ui(setting_id)
             elif isinstance(current_value, str):
                 pass
 
@@ -811,9 +857,7 @@ class Settings(SettingsWindow):
         MW.recreate_control_panel(requested_page=MW.current_page)
         # пересоздаём окно настроек, чтобы обновился интерфейс
         def callback():
-            print('callback')
             if hasattr(cls, 'instance') and cls.instance.isVisible():
-                print('second callback')
                 cls.instance.close()
                 del cls.instance
                 cls.toggle_window()
@@ -923,6 +967,7 @@ class Settings(SettingsWindow):
         matrix = {
             '---general': _('General'),
             UI_LANG_SETTING_ID: ('en', _('UI language')),
+            'page_on_app_launch_from_explorer': (cls.pages.VIEWER_PAGE, pages, _('Page on App Launch from Windows Exporer')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'open_app_on_waterfall_page': (False, _('Open application on Waterfall page')),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
