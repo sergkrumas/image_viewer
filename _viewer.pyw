@@ -248,6 +248,7 @@ class AppMixin():
         path = cls.APP_get_predefined_path_if_started_from_sublimeText()
 
         Settings.globals = Globals
+        Settings.init_matrix(MainWindow.pages)
         Settings.load_from_disk()
 
         Globals.do_not_show_start_dialog = Settings.get("do_not_show_start_dialog")

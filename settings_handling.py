@@ -906,8 +906,19 @@ class Settings(SettingsWindow):
                         print(msg)
 
 
-    @staticmethod
-    def generate_localized_matrix():
+    @classmethod
+    def init_matrix(cls, pages):
+        cls.pages = pages
+        cls.matrix = cls.generate_localized_matrix()
+
+    @classmethod
+    def get_all_pages_but_start(cls):
+        return list(cls.pages.pages_names().items())[1:] # all but start page
+
+    @classmethod
+    def generate_localized_matrix(cls):
+
+        pages = cls.get_all_pages_but_start()
 
         matrix = {
             '---general': _('General'),
@@ -991,9 +1002,6 @@ class Settings(SettingsWindow):
             'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
         }
         return matrix
-
-    matrix = generate_localized_matrix()
-
 
     STARTUP_CONFIG = (
         'ImageViewerLauncher',
