@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-02 22:28+0300\n"
+"POT-Creation-Date: 2026-03-04 20:22+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,25 +21,25 @@ msgid ""
 "first open Google Chrome browser!"
 msgstr ""
 
-#: _utils.py:309 _viewer.pyw:4473 library_data.py:1105
+#: _utils.py:309 _viewer.pyw:4497 library_data.py:1105
 msgid "Error"
 msgstr ""
 
-#: _viewer.pyw:105
+#: _viewer.pyw:122
 msgid "Krumassan Image Viewer v0.90 Alpha by Sergei Krumas"
 msgstr ""
 
-#: _viewer.pyw:106
+#: _viewer.pyw:123
 msgid "https://github.com/sergkrumas/image_viewer"
 msgstr ""
 
-#: _viewer.pyw:300
+#: _viewer.pyw:318
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
 msgstr ""
 
-#: _viewer.pyw:301
+#: _viewer.pyw:319
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -47,137 +47,137 @@ msgid ""
 "Restart app?"
 msgstr ""
 
-#: _viewer.pyw:302
+#: _viewer.pyw:320
 msgid "Fatal Error!"
 msgstr ""
 
-#: _viewer.pyw:454
+#: _viewer.pyw:476
 msgid "Memory allocated"
 msgstr ""
 
-#: _viewer.pyw:464
+#: _viewer.pyw:486
 msgid "Purge unused objects"
 msgstr ""
 
-#: _viewer.pyw:477
+#: _viewer.pyw:499
 msgid "Choose folder with pictures in it"
 msgstr ""
 
-#: _viewer.pyw:479
+#: _viewer.pyw:501
 msgid "Error-error"
 msgstr ""
 
-#: _viewer.pyw:479
+#: _viewer.pyw:501
 msgid "Nothing to show, exit..."
 msgstr ""
 
-#: _viewer.pyw:498
+#: _viewer.pyw:520
 msgid "Question"
 msgstr ""
 
-#: _viewer.pyw:499
+#: _viewer.pyw:521
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
 msgstr ""
 
-#: _viewer.pyw:631
+#: _viewer.pyw:653
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr ""
 
-#: _viewer.pyw:796
+#: _viewer.pyw:819
 msgid "START"
 msgstr ""
 
-#: _viewer.pyw:797
+#: _viewer.pyw:820
 msgid "VIEWER"
 msgstr ""
 
-#: _viewer.pyw:798
+#: _viewer.pyw:821
 msgid "BOARD"
 msgstr ""
 
-#: _viewer.pyw:799
+#: _viewer.pyw:822
 msgid "LIBRARY"
 msgstr ""
 
-#: _viewer.pyw:800
+#: _viewer.pyw:823
 msgid "WATERFALL"
 msgstr ""
 
-#: _viewer.pyw:2086 _viewer.pyw:2147
+#: _viewer.pyw:2114 _viewer.pyw:2175
 msgid ""
 "Unable\n"
 "to display"
 msgstr ""
 
-#: _viewer.pyw:2086 _viewer.pyw:2160
+#: _viewer.pyw:2114 _viewer.pyw:2188
 msgid "The file is corrupted"
 msgstr ""
 
-#: _viewer.pyw:2142 _viewer.pyw:4569
+#: _viewer.pyw:2170 _viewer.pyw:4593
 msgid "No images"
 msgstr ""
 
-#: _viewer.pyw:2146
+#: _viewer.pyw:2174
 msgid "The file is not supported"
 msgstr ""
 
-#: _viewer.pyw:2206
+#: _viewer.pyw:2234
 msgid "LOADING"
 msgstr ""
 
-#: _viewer.pyw:2239
+#: _viewer.pyw:2267
 msgid "broken file"
 msgstr ""
 
-#: _viewer.pyw:2242 _viewer.pyw:4567
+#: _viewer.pyw:2270 _viewer.pyw:4591
 msgid "Loading"
 msgstr ""
 
-#: _viewer.pyw:2633
+#: _viewer.pyw:2661
 msgid "No active item!"
 msgstr ""
 
-#: _viewer.pyw:3476 _viewer.pyw:3481
+#: _viewer.pyw:3506 _viewer.pyw:3511
 msgid "Preview corner radius: {0}"
 msgstr ""
 
-#: _viewer.pyw:3523
+#: _viewer.pyw:3553
 msgid "You've set 0 columns, so the number of columns depends only on the window width."
 msgstr ""
 
-#: _viewer.pyw:3525
+#: _viewer.pyw:3555
 msgid "You've set {0} columns. This is the maximum!"
 msgstr ""
 
-#: _viewer.pyw:3527
+#: _viewer.pyw:3557
 msgid "You've set {0} columns"
 msgstr ""
 
-#: _viewer.pyw:4206
+#: _viewer.pyw:4249
 msgid "DRAG AND DROP A FILE OR A FOLDER"
 msgstr ""
 
-#: _viewer.pyw:4210
+#: _viewer.pyw:4253
 msgid "or left mouse click to open Explorer dialog."
 msgstr ""
 
-#: _viewer.pyw:4211
+#: _viewer.pyw:4254
 msgid ""
 "\n"
 "\n"
 "Right mouse click to open settings window."
 msgstr ""
 
-#: _viewer.pyw:4214
+#: _viewer.pyw:4257
 msgid ""
 "\n"
 "\n"
 "[the program is running in lite mode]"
 msgstr ""
 
-#: _viewer.pyw:4216
+#: _viewer.pyw:4259
 msgid ""
 "\n"
 "\n"
@@ -186,31 +186,7 @@ msgid ""
 "[the program is running in standard mode]"
 msgstr ""
 
-#: _viewer.pyw:4259 settings_handling.py:393
-msgid "Russian"
-msgstr ""
-
-#: _viewer.pyw:4261 settings_handling.py:392
-msgid "English"
-msgstr ""
-
-#: _viewer.pyw:4263 settings_handling.py:396
-msgid "French"
-msgstr ""
-
-#: _viewer.pyw:4265 settings_handling.py:395
-msgid "German"
-msgstr ""
-
-#: _viewer.pyw:4267 settings_handling.py:398
-msgid "Spanish"
-msgstr ""
-
-#: _viewer.pyw:4269 settings_handling.py:397
-msgid "Italian"
-msgstr ""
-
-#: _viewer.pyw:4300
+#: _viewer.pyw:4314
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -218,237 +194,233 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:4562
+#: _viewer.pyw:4586
 msgid "Please wait"
 msgstr ""
 
-#: _viewer.pyw:4871
+#: _viewer.pyw:4895
 msgid "speed"
 msgstr ""
 
-#: _viewer.pyw:4876
+#: _viewer.pyw:4900
 msgid "frame"
 msgstr ""
 
-#: _viewer.pyw:4927
+#: _viewer.pyw:4951
 msgid "viewing history"
 msgstr ""
 
-#: _viewer.pyw:5049
+#: _viewer.pyw:5073
 msgid "Cursor scrubbing mode activated"
 msgstr ""
 
-#: _viewer.pyw:5051
+#: _viewer.pyw:5075
 msgid "Cursor scrubbing mode disactivated"
 msgstr ""
 
-#: _viewer.pyw:5387
+#: _viewer.pyw:5425
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
 msgstr ""
 
-#: _viewer.pyw:5406
+#: _viewer.pyw:5444
 msgid "Unable to save: no source file or source file is not found"
 msgstr ""
 
-#: _viewer.pyw:5433
+#: _viewer.pyw:5471
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr ""
 
-#: _viewer.pyw:5440
+#: _viewer.pyw:5478
 msgid "The image is saved in file"
 msgstr ""
 
-#: _viewer.pyw:5444
+#: _viewer.pyw:5482
 msgid "Choose folder to put images in"
 msgstr ""
 
-#: _viewer.pyw:5470
+#: _viewer.pyw:5508
 msgid "Save file"
 msgstr ""
 
-#: _viewer.pyw:5534
+#: _viewer.pyw:5572
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr ""
 
-#: _viewer.pyw:5545
+#: _viewer.pyw:5583
 msgid "pasted!"
 msgstr ""
 
-#: _viewer.pyw:5625
+#: _viewer.pyw:5663
 msgid "Open folder \"{0}\" in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5645
+#: _viewer.pyw:5683
 msgid "Minimize"
 msgstr ""
 
-#: _viewer.pyw:5657
+#: _viewer.pyw:5695
 msgid "DEBUG"
 msgstr ""
 
-#: _viewer.pyw:5662
+#: _viewer.pyw:5700
 msgid "Show FPS"
 msgstr ""
 
-#: _viewer.pyw:5667
+#: _viewer.pyw:5705
 msgid "Antialiasing and pixmap smoothing"
 msgstr ""
 
-#: _viewer.pyw:5676
+#: _viewer.pyw:5714
 msgid "Rounded previews"
 msgstr ""
 
-#: _viewer.pyw:5685
+#: _viewer.pyw:5723
 msgid "Cursor scrubbing for animation files"
 msgstr ""
 
-#: _viewer.pyw:5691
+#: _viewer.pyw:5729
 msgid "DEBUG tools..."
 msgstr ""
 
-#: _viewer.pyw:5692
-msgid "Make program crash intentionally (for dev purposes only)..."
-msgstr ""
-
-#: _viewer.pyw:5697
+#: _viewer.pyw:5735
 msgid "Settings..."
 msgstr ""
 
-#: _viewer.pyw:5698 control_panel.py:504 control_panel.py:522
+#: _viewer.pyw:5736 control_panel.py:504 control_panel.py:522
 msgid "Help"
 msgstr ""
 
-#: _viewer.pyw:5699
+#: _viewer.pyw:5737
 msgid "Message the developer"
 msgstr ""
 
-#: _viewer.pyw:5705
+#: _viewer.pyw:5743
 msgid "Always on top"
 msgstr ""
 
-#: _viewer.pyw:5707
+#: _viewer.pyw:5745
 msgid "Disable \"Always on top\""
 msgstr ""
 
-#: _viewer.pyw:5711
+#: _viewer.pyw:5749
 msgid "Show window frame"
 msgstr ""
 
-#: _viewer.pyw:5713
+#: _viewer.pyw:5751
 msgid "Hide window frame and maximize"
 msgstr ""
 
-#: _viewer.pyw:5717
+#: _viewer.pyw:5755
 msgid "Leave full-screen mode"
 msgstr ""
 
-#: _viewer.pyw:5719
+#: _viewer.pyw:5757
 msgid "Go full screen"
 msgstr ""
 
-#: _viewer.pyw:5725
+#: _viewer.pyw:5763
 msgid "Narrow window back to monitor frame"
 msgstr ""
 
-#: _viewer.pyw:5727
+#: _viewer.pyw:5765
 msgid "Expand window to two monitors frame"
 msgstr ""
 
-#: _viewer.pyw:5730
+#: _viewer.pyw:5768
 msgid "Switch the window to the monitor on the right"
 msgstr ""
 
-#: _viewer.pyw:5731
+#: _viewer.pyw:5769
 msgid "Switch the window to the monitor on the left"
 msgstr ""
 
-#: _viewer.pyw:5733
+#: _viewer.pyw:5771
 msgid "Next grayscale filter state"
 msgstr ""
 
-#: _viewer.pyw:5738
+#: _viewer.pyw:5776
 msgid "Restart app in standard mode"
 msgstr ""
 
-#: _viewer.pyw:5740
+#: _viewer.pyw:5778
 msgid "Restart app (to purge unused data in memory)"
 msgstr ""
 
-#: _viewer.pyw:5742
+#: _viewer.pyw:5780
 msgid "Open in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5746
+#: _viewer.pyw:5784
 msgid "Line EyeDropper Tool..."
 msgstr ""
 
-#: _viewer.pyw:5766
+#: _viewer.pyw:5804
 msgid "Open unsupported file..."
 msgstr ""
 
-#: _viewer.pyw:5773
+#: _viewer.pyw:5811
 msgid "Edit comment text {0}"
 msgstr ""
 
-#: _viewer.pyw:5776
+#: _viewer.pyw:5814
 msgid "Redefine comment borders {0}"
 msgstr ""
 
-#: _viewer.pyw:5779
+#: _viewer.pyw:5817
 msgid "Delete comment {0}"
 msgstr ""
 
-#: _viewer.pyw:5786
+#: _viewer.pyw:5824
 msgid "Copy metadata to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5791
+#: _viewer.pyw:5829
 msgid "Find on disk"
 msgstr ""
 
-#: _viewer.pyw:5792 board.py:861
+#: _viewer.pyw:5830 board.py:863
 msgid "Open in Google Chrome"
 msgstr ""
 
-#: _viewer.pyw:5793
+#: _viewer.pyw:5831
 msgid "Place image in window center"
 msgstr ""
 
-#: _viewer.pyw:5798
+#: _viewer.pyw:5836
 msgid "Change SVG rasterization resolution..."
 msgstr ""
 
-#: _viewer.pyw:5802
+#: _viewer.pyw:5840
 msgid "Save .png file..."
 msgstr ""
 
-#: _viewer.pyw:5803
+#: _viewer.pyw:5841
 msgid "Save .jpg file..."
 msgstr ""
 
-#: _viewer.pyw:5805
+#: _viewer.pyw:5843
 msgid "Copy to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5806
+#: _viewer.pyw:5844
 msgid "Paste from clipboard"
 msgstr ""
 
-#: _viewer.pyw:5810
+#: _viewer.pyw:5848
 msgid "Switch from fovorites folder to actual image folder"
 msgstr ""
 
-#: _viewer.pyw:5824 line_eyedropper_tool.py:350
+#: _viewer.pyw:5862 line_eyedropper_tool.py:356
 msgid "Hide this menu"
 msgstr ""
 
-#: _viewer.pyw:5860
+#: _viewer.pyw:5898
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr ""
 
-#: _viewer.pyw:6097
+#: _viewer.pyw:5931
 msgid "No images to show"
 msgstr ""
 
@@ -488,316 +460,316 @@ msgstr ""
 msgid "request processing"
 msgstr ""
 
-#: board.py:473
+#: board.py:475
 msgid "plugin {0} is not found in \\boards_plugins folder!"
 msgstr ""
 
-#: board.py:549
+#: board.py:551
 msgid "{0} activated"
 msgstr ""
 
-#: board.py:608
+#: board.py:610
 msgid "You're on viewer page now"
 msgstr ""
 
-#: board.py:733
+#: board.py:735
 msgid "No files, only folders supported"
 msgstr ""
 
-#: board.py:750
+#: board.py:752
 msgid "Plugin Boards"
 msgstr ""
 
-#: board.py:758 board.py:770
+#: board.py:760 board.py:772
 msgid "No plugins found"
 msgstr ""
 
-#: board.py:768
+#: board.py:770
 msgid "Load Plugins..."
 msgstr ""
 
-#: board.py:785
+#: board.py:787
 msgid "Change frame item label"
 msgstr ""
 
-#: board.py:786
+#: board.py:788
 msgid "Label Text:"
 msgstr ""
 
-#: board.py:799
+#: board.py:801
 msgid "Show debug graphics for transformation widget"
 msgstr ""
 
-#: board.py:804
+#: board.py:806
 msgid "Use pixmap-proxy for text items"
 msgstr ""
 
-#: board.py:809
+#: board.py:811
 msgid "Cursor scrubbing optimizer"
 msgstr ""
 
-#: board.py:814
+#: board.py:816
 msgid "Сontrol with a gamepad"
 msgstr ""
 
-#: board.py:827
+#: board.py:829
 msgid "Multifolder board..."
 msgstr ""
 
-#: board.py:829
+#: board.py:831
 msgid "Go to the link in the note (Explorer or Browser)"
 msgstr ""
 
-#: board.py:831
+#: board.py:833
 msgid "Folder..."
 msgstr ""
 
-#: board.py:833
+#: board.py:835
 msgid "Group"
 msgstr ""
 
-#: board.py:836
+#: board.py:838
 msgid "{0} (add selected items to it: {1})"
 msgstr ""
 
-#: board.py:839
+#: board.py:841
 msgid "Frame"
 msgstr ""
 
-#: board.py:841 board_note_item.py:404
+#: board.py:843 board_note_item.py:404
 msgid "Note"
 msgstr ""
 
-#: board.py:843
+#: board.py:845
 msgid "Force highres loading of all items right now (may take some time)"
 msgstr ""
 
-#: board.py:845
+#: board.py:847
 msgid "Place items in column"
 msgstr ""
 
-#: board.py:847
+#: board.py:849
 msgid "Reset item(s) to layout position, scale, rotation"
 msgstr ""
 
-#: board.py:852
+#: board.py:854
 msgid "Change frame title '{0}'"
 msgstr ""
 
-#: board.py:855
+#: board.py:857
 msgid "Take current image from group and place nearby"
 msgstr ""
 
-#: board.py:859
+#: board.py:861
 msgid "Open in viewer in separated app copy running in lite mode"
 msgstr ""
 
-#: board.py:866
+#: board.py:868
 msgid "{0} Virtual Folder"
 msgstr ""
 
-#: board.py:872
+#: board.py:874
 msgid "Board loading"
 msgstr ""
 
-#: board.py:876
+#: board.py:878
 msgid "Board saving"
 msgstr ""
 
-#: board.py:883
+#: board.py:885
 msgid "Board File (*.board)"
 msgstr ""
 
-#: board.py:905
+#: board.py:907
 msgid ""
 "Error: either the file does not exist or the extension is wrong.\n"
 "Abort!\n"
 "{0}"
 msgstr ""
 
-#: board.py:926
+#: board.py:928
 msgid "Reading error: neither cbor2 nor json could be read. Abort!"
 msgstr ""
 
-#: board.py:932
+#: board.py:934
 msgid "Board has been loaded from file {0} of format {1}"
 msgstr ""
 
-#: board.py:1284
+#: board.py:1286
 msgid "Project is saved to {0}"
 msgstr ""
 
-#: board.py:1301
+#: board.py:1303
 msgid "You cannot dive inside item when board operation is not finished!"
 msgstr ""
 
-#: board.py:1323
+#: board.py:1325
 msgid "You can dive inside groups, folders and animated items only!"
 msgstr ""
 
-#: board.py:1329
+#: board.py:1331
 msgid "ANIMATED FILE Virtual Folder"
 msgstr ""
 
-#: board.py:1363
+#: board.py:1365
 msgid "Place cursor above a group item!"
 msgstr ""
 
-#: board.py:1371
+#: board.py:1373
 msgid "No place to return"
 msgstr ""
 
-#: board.py:1420
+#: board.py:1422
 msgid ""
 "WELCOME TO\n"
 "BOARDS"
 msgstr ""
 
-#: board.py:1432
+#: board.py:1434
 msgid "WAITING"
 msgstr ""
 
-#: board.py:1433
+#: board.py:1435
 msgid "creating previews"
 msgstr ""
 
-#: board.py:1623
+#: board.py:1625
 msgid "perfomance status: {0} images drawn"
 msgstr ""
 
-#: board.py:2023
+#: board.py:2025
 msgid "Virtual folder board: {}"
 msgstr ""
 
-#: board.py:2025
+#: board.py:2027
 msgid "Board folder: {}"
 msgstr ""
 
-#: board.py:2027
+#: board.py:2029
 msgid "File-plugin name: {}"
 msgstr ""
 
-#: board.py:2029
+#: board.py:2031
 msgid "This board has no plugin attached"
 msgstr ""
 
-#: board.py:2030
+#: board.py:2032
 msgid "Current item index: {}"
 msgstr ""
 
-#: board.py:2031
+#: board.py:2033
 msgid "Current item-group index: {}"
 msgstr ""
 
-#: board.py:2032
+#: board.py:2034
 msgid "Board bounding rect: {}"
 msgstr ""
 
-#: board.py:2037
+#: board.py:2039
 msgid "You've entered this board from the board of folder {}"
 msgstr ""
 
-#: board.py:2039
+#: board.py:2041
 msgid "Parent folder of this board {}"
 msgstr ""
 
-#: board.py:2041
+#: board.py:2043
 msgid "This board parent item title {}"
 msgstr ""
 
-#: board.py:2062
+#: board.py:2064
 msgid "Pressing Backspace key returns to board of the folder {0}"
 msgstr ""
 
-#: board.py:2080
+#: board.py:2082
 msgid "Add to the group ({})"
 msgstr ""
 
-#: board.py:2250
+#: board.py:2252
 msgid "AXES"
 msgstr ""
 
-#: board.py:2255
+#: board.py:2257
 msgid "ORIGIN"
 msgstr ""
 
-#: board.py:2366
+#: board.py:2368
 msgid "The camera has been moved"
 msgstr ""
 
-#: board.py:2368
+#: board.py:2370
 msgid "Out of the map frame!"
 msgstr ""
 
-#: board.py:2495
+#: board.py:2497
 msgid "Loading hires images"
 msgstr ""
 
-#: board.py:2506
+#: board.py:2508
 msgid "You cannot delete items from animated file board"
 msgstr ""
 
-#: board.py:2541 board.py:2599
+#: board.py:2543 board.py:2601
 msgid "GROUP Virtual Folder"
 msgstr ""
 
-#: board.py:2563
+#: board.py:2565
 msgid "Nothing to delete, the group is empty"
 msgstr ""
 
-#: board.py:2585
+#: board.py:2587
 msgid "Group-item not found"
 msgstr ""
 
-#: board.py:2597
+#: board.py:2599
 msgid "You cannot create group-item inside virtual folder board"
 msgstr ""
 
-#: board.py:2624
+#: board.py:2626
 msgid "You cannot create note-item inside virtual folder board"
 msgstr ""
 
-#: board.py:2636
+#: board.py:2638
 msgid "Choose folder with images in it"
 msgstr ""
 
-#: board.py:2638
+#: board.py:2640
 msgid "Loading folder to the board"
 msgstr ""
 
-#: board.py:2709 board.py:3975
+#: board.py:2711 board.py:3987
 msgid "No items selected!"
 msgstr ""
 
-#: board.py:2722
+#: board.py:2724
 msgid "FRAME ITEM"
 msgstr ""
 
-#: board.py:3920
+#: board.py:3932
 msgid "Loading image to the board"
 msgstr ""
 
-#: board.py:3969
+#: board.py:3981
 msgid "This element is not presented on the board"
 msgstr ""
 
-#: board.py:4051
+#: board.py:4063
 msgid "No items on the board! Abort!"
 msgstr ""
 
-#: board.py:4559
+#: board.py:4571
 msgid "Choose Directories"
 msgstr ""
 
-#: board.py:4590
+#: board.py:4602
 msgid "No folders selected!"
 msgstr ""
 
-#: board.py:4615
+#: board.py:4627
 msgid "No images found in selected folders!"
 msgstr ""
 
-#: board.py:4621
+#: board.py:4633
 msgid "Loading images to the board"
 msgstr ""
 
@@ -842,7 +814,7 @@ msgid "Save"
 msgstr ""
 
 #: commenting.py:507 help_text.py:211 library_data.py:1919
-#: settings_handling.py:934
+#: settings_handling.py:639
 msgid "Close"
 msgstr ""
 
@@ -889,7 +861,7 @@ msgid "Image zoom in"
 msgstr ""
 
 #: control_panel.py:505 control_panel.py:521 control_panel.py:1478
-#: settings_handling.py:923
+#: settings_handling.py:629
 msgid "Settings"
 msgstr ""
 
@@ -1032,27 +1004,27 @@ msgid ""
 "    not set\n"
 msgstr ""
 
-#: hidapi_adapter.py:440
+#: hidapi_adapter.py:452
 msgid "The left and right sticks exchange"
 msgstr ""
 
-#: hidapi_adapter.py:442
+#: hidapi_adapter.py:454
 msgid "The left and right sticks exchange back"
 msgstr ""
 
-#: hidapi_adapter.py:694
+#: hidapi_adapter.py:719
 msgid "Gamepad control activated!"
 msgstr ""
 
-#: hidapi_adapter.py:700
-msgid "Gamepad not found!"
+#: hidapi_adapter.py:728
+msgid "Supported gamepad not found!"
 msgstr ""
 
-#: hidapi_adapter.py:711
+#: hidapi_adapter.py:739
 msgid "Gamepad control deactivated!"
 msgstr ""
 
-#: hidapi_adapter.py:903
+#: hidapi_adapter.py:931
 msgid "Reading error. Feels like the gamepad is off"
 msgstr ""
 
@@ -1145,336 +1117,368 @@ msgstr ""
 msgid "Outdated records in tags database ({0}):"
 msgstr ""
 
-#: line_eyedropper_tool.py:82
+#: line_eyedropper_tool.py:88
 msgid "Plot scale factor is {0}x"
 msgstr ""
 
-#: line_eyedropper_tool.py:90 line_eyedropper_tool.py:266
+#: line_eyedropper_tool.py:96 line_eyedropper_tool.py:272
 msgid "Line EyeDropper tool is not activated!"
 msgstr ""
 
-#: line_eyedropper_tool.py:166
+#: line_eyedropper_tool.py:172
 msgid "Line EyeDropper disactivated!"
 msgstr ""
 
-#: line_eyedropper_tool.py:182
+#: line_eyedropper_tool.py:188
 msgid "Distance is too short!"
 msgstr ""
 
-#: line_eyedropper_tool.py:263
+#: line_eyedropper_tool.py:269
 msgid "Color {0} has been copied to clipboard!"
 msgstr ""
 
-#: line_eyedropper_tool.py:316
+#: line_eyedropper_tool.py:322
 msgid "show red"
 msgstr ""
 
-#: line_eyedropper_tool.py:317
+#: line_eyedropper_tool.py:323
 msgid "show green"
 msgstr ""
 
-#: line_eyedropper_tool.py:318
+#: line_eyedropper_tool.py:324
 msgid "show blue"
 msgstr ""
 
-#: line_eyedropper_tool.py:320
+#: line_eyedropper_tool.py:326
 msgid "show hue"
 msgstr ""
 
-#: line_eyedropper_tool.py:321
+#: line_eyedropper_tool.py:327
 msgid "show saturation"
 msgstr ""
 
-#: line_eyedropper_tool.py:322
+#: line_eyedropper_tool.py:328
 msgid "show lightness"
 msgstr ""
 
-#: line_eyedropper_tool.py:324
+#: line_eyedropper_tool.py:330
 msgid "prettify plots"
 msgstr ""
 
-#: line_eyedropper_tool.py:330
+#: line_eyedropper_tool.py:336
 msgid "Update the plots"
 msgstr ""
 
-#: line_eyedropper_tool.py:331
+#: line_eyedropper_tool.py:337
 msgid "Increase the plots width"
 msgstr ""
 
-#: line_eyedropper_tool.py:332
+#: line_eyedropper_tool.py:338
 msgid "Place the plots using mouse cursor..."
 msgstr ""
 
-#: line_eyedropper_tool.py:354
+#: line_eyedropper_tool.py:360
 msgid "Exit the tool mode"
 msgstr ""
 
-#: line_eyedropper_tool.py:373
+#: line_eyedropper_tool.py:379
 msgid "Make two left-clicks to begin"
 msgstr ""
 
-#: line_eyedropper_tool.py:547
+#: line_eyedropper_tool.py:553
 msgid "Use the context menu of the plots"
 msgstr ""
 
-#: settings_handling.py:501
+#: settings_handling.py:637
+msgid "Save and close"
+msgstr ""
+
+#: settings_handling.py:836
+msgid "English"
+msgstr ""
+
+#: settings_handling.py:837
+msgid "Russian"
+msgstr ""
+
+#: settings_handling.py:838
+msgid "German"
+msgstr ""
+
+#: settings_handling.py:839
+msgid "French"
+msgstr ""
+
+#: settings_handling.py:840
+msgid "Italian"
+msgstr ""
+
+#: settings_handling.py:841
+msgid "Spanish"
+msgstr ""
+
+#: settings_handling.py:967
 msgid "General"
 msgstr ""
 
-#: settings_handling.py:502 settings_handling.py:828
+#: settings_handling.py:968
 msgid "UI language"
 msgstr ""
 
-#: settings_handling.py:503
+#: settings_handling.py:969
+msgid "Page on App Launch (when opened from Explorer)"
+msgstr ""
+
+#: settings_handling.py:970
 msgid "Run on Windows Startup"
 msgstr ""
 
-#: settings_handling.py:504
+#: settings_handling.py:971
 msgid "Open application on Waterfall page"
 msgstr ""
 
-#: settings_handling.py:505
+#: settings_handling.py:972
 msgid "Supress start dialog and run lite mode"
 msgstr ""
 
-#: settings_handling.py:506
+#: settings_handling.py:973
 msgid "Full-screen mode on application start"
 msgstr ""
 
-#: settings_handling.py:507
+#: settings_handling.py:974
 msgid "Toggle between full-screen and window mode via double click"
 msgstr ""
 
-#: settings_handling.py:508
+#: settings_handling.py:975
 msgid "Hide to tray on close"
 msgstr ""
 
-#: settings_handling.py:509
+#: settings_handling.py:976
 msgid "Hide to tray on app start"
 msgstr ""
 
-#: settings_handling.py:510
+#: settings_handling.py:977
 msgid "Desaturated corner buttons and corner menus"
 msgstr ""
 
-#: settings_handling.py:511
+#: settings_handling.py:978
 msgid "Show standard (console) output overlay"
 msgstr ""
 
-#: settings_handling.py:512
+#: settings_handling.py:979
 msgid "Animated effects"
 msgstr ""
 
-#: settings_handling.py:513
+#: settings_handling.py:980
 msgid "Show animated cells overlay"
 msgstr ""
 
-#: settings_handling.py:516
+#: settings_handling.py:983
 msgid "Gamepad"
 msgstr ""
 
-#: settings_handling.py:517
+#: settings_handling.py:984
+msgid "Start with gamepad enabled"
+msgstr ""
+
+#: settings_handling.py:985
+msgid "Gamepad Input Requires Focus"
+msgstr ""
+
+#: settings_handling.py:986
 msgid "Gamepad dead zone radius"
 msgstr ""
 
-#: settings_handling.py:518
+#: settings_handling.py:987
 msgid "Show gamepad monitor (for setting dead zone radius)"
 msgstr ""
 
-#: settings_handling.py:519
+#: settings_handling.py:988
 msgid "Gamepad move stick easeInExpro parameter"
 msgstr ""
 
-#: settings_handling.py:520
+#: settings_handling.py:989
 msgid "Gamepad move stick speed"
 msgstr ""
 
-#: settings_handling.py:523
+#: settings_handling.py:992
 msgid "Viewer page"
 msgstr ""
 
-#: settings_handling.py:524
+#: settings_handling.py:993
 msgid "Animated zoom"
 msgstr ""
 
-#: settings_handling.py:525
+#: settings_handling.py:994
 msgid "Draw backplate for control panel"
 msgstr ""
 
-#: settings_handling.py:526
+#: settings_handling.py:995
 msgid "Thumbnails size"
 msgstr ""
 
-#: settings_handling.py:527
+#: settings_handling.py:996
 msgid "Enable mouse wheel to zoom and Ctrl+mouse wheel to navigate through image list"
 msgstr ""
 
-#: settings_handling.py:528
+#: settings_handling.py:997
 msgid "Show dummy-default thumbnail while generated one is not ready"
 msgstr ""
 
-#: settings_handling.py:529
+#: settings_handling.py:998
 msgid "Show thirds"
 msgstr ""
 
-#: settings_handling.py:530
+#: settings_handling.py:999
 msgid "Cyberpunk frame"
 msgstr ""
 
-#: settings_handling.py:531
+#: settings_handling.py:1000
 msgid "Show image center"
 msgstr ""
 
-#: settings_handling.py:532
+#: settings_handling.py:1001
 msgid "Show random secret when approaching high zoom level"
 msgstr ""
 
-#: settings_handling.py:533
+#: settings_handling.py:1002
 msgid "Autohide control panel"
 msgstr ""
 
-#: settings_handling.py:534
+#: settings_handling.py:1003
 msgid "Enable global viewing history instead per-folder one"
 msgstr ""
 
-#: settings_handling.py:535
+#: settings_handling.py:1004
 msgid "Show image metadata"
 msgstr ""
 
-#: settings_handling.py:536
+#: settings_handling.py:1005
 msgid "Autosave thumbnails order to disk on reordering ones"
 msgstr ""
 
-#: settings_handling.py:537
+#: settings_handling.py:1006
 msgid "Allow browsing image filetypes only"
 msgstr ""
 
-#: settings_handling.py:538
+#: settings_handling.py:1007
 msgid "Relative scale factor for small images"
 msgstr ""
 
-#: settings_handling.py:539
+#: settings_handling.py:1008
 msgid "Draw shadow and checkerboard backplate"
 msgstr ""
 
-#: settings_handling.py:542
+#: settings_handling.py:1011
 msgid "Library page"
 msgstr ""
 
-#: settings_handling.py:543
+#: settings_handling.py:1012
 msgid "Library page rounded corner radius"
 msgstr ""
 
-#: settings_handling.py:546
+#: settings_handling.py:1015
 msgid "Waterfall page"
 msgstr ""
 
-#: settings_handling.py:547
+#: settings_handling.py:1016
 msgid "Desired number of Waterfall page columns"
 msgstr ""
 
-#: settings_handling.py:548
+#: settings_handling.py:1017
 msgid "Waterfall page grid spacing"
 msgstr ""
 
-#: settings_handling.py:549
+#: settings_handling.py:1018
 msgid "Waterfall page rounded corner radius"
 msgstr ""
 
-#: settings_handling.py:552
+#: settings_handling.py:1021
 msgid "Board page"
 msgstr ""
 
-#: settings_handling.py:553
+#: settings_handling.py:1022
 msgid "Load board plugins at startup"
 msgstr ""
 
-#: settings_handling.py:554
+#: settings_handling.py:1023
 msgid "Show origin compass and zoom level"
 msgstr ""
 
-#: settings_handling.py:555
+#: settings_handling.py:1024
 msgid "Show board origin"
 msgstr ""
 
-#: settings_handling.py:556
+#: settings_handling.py:1025
 msgid "Vertical items layout"
 msgstr ""
 
-#: settings_handling.py:557
+#: settings_handling.py:1026
 msgid "Show board grid"
 msgstr ""
 
-#: settings_handling.py:558
+#: settings_handling.py:1027
 msgid "Unload high-resolution data for items not visible in the board viewport"
 msgstr ""
 
-#: settings_handling.py:559
+#: settings_handling.py:1028
 msgid "Focus board viewport on the current image when board is first time opened"
 msgstr ""
 
-#: settings_handling.py:560
+#: settings_handling.py:1029
 msgid "Scaling and rotating activation-spot size"
 msgstr ""
 
-#: settings_handling.py:561
+#: settings_handling.py:1030
 msgid "Enable CBOR2 instead JSON for writing board data"
 msgstr ""
 
-#: settings_handling.py:562
+#: settings_handling.py:1031
 msgid "Diagonal factor for one-key selected items scaling (in screen pixels)"
 msgstr ""
 
-#: settings_handling.py:565
+#: settings_handling.py:1034
 msgid "Pages transparent setting for full-screen mode"
 msgstr ""
 
-#: settings_handling.py:566
+#: settings_handling.py:1035
 msgid "Viewer page transparent value"
 msgstr ""
 
-#: settings_handling.py:567
+#: settings_handling.py:1036
 msgid "Library page transparent value"
 msgstr ""
 
-#: settings_handling.py:568
+#: settings_handling.py:1037
 msgid "Board page transparent value"
 msgstr ""
 
-#: settings_handling.py:569
+#: settings_handling.py:1038
 msgid "Start page transparent value"
 msgstr ""
 
-#: settings_handling.py:570
+#: settings_handling.py:1039
 msgid "Waterfall page transparent value"
 msgstr ""
 
-#: settings_handling.py:573
+#: settings_handling.py:1042
 msgid "Slideshow for Viewer page"
 msgstr ""
 
-#: settings_handling.py:574
+#: settings_handling.py:1043
 msgid "Transition duration in seconds"
 msgstr ""
 
-#: settings_handling.py:575
+#: settings_handling.py:1044
 msgid "Delay duration in seconds"
 msgstr ""
 
-#: settings_handling.py:578
+#: settings_handling.py:1047
 msgid "Paths"
 msgstr ""
 
-#: settings_handling.py:579
+#: settings_handling.py:1048
 msgid "Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)"
-msgstr ""
-
-#: settings_handling.py:831
-msgid "Restart app to take effect across the entire app!"
-msgstr ""
-
-#: settings_handling.py:931
-msgid "Save and close"
 msgstr ""
 
 #: tagging.py:380
