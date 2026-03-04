@@ -274,6 +274,7 @@ class CustomSlider(QWidget):
 
 
 UI_LANG_SETTING_ID = 'ui_lang'
+INFRAMED_FOLDERPATH_SETTING_ID = 'inframed_folderpath'
 
 
 class SettingsWindow(QWidget):
@@ -285,7 +286,6 @@ class SettingsWindow(QWidget):
         text-align: center;
         border-radius: 5px;
         background: rgb(220, 220, 220);
-        font-family: 'Consolas';
         font-weight: bold;
         border: 3px dashed #303940;
         padding: 5px;
@@ -338,7 +338,6 @@ class SettingsWindow(QWidget):
     combobox_style = """
         QComboBox {
             font-size: 11pt;
-            font-family: 'Consolas';
             font-weight: bold;
             color: white;
             background-color: transparent;
@@ -758,7 +757,7 @@ class Settings(SettingsWindow):
         cls = self.__class__
         for setting_id, (current_value, *_params) in cls.matrix.items():
             new_value = ...
-            if setting_id in [UI_LANG_SETTING_ID, 'inframed_folderpath']:
+            if setting_id in [UI_LANG_SETTING_ID, INFRAMED_FOLDERPATH_SETTING_ID]:
                 pass
             elif isinstance(current_value, bool):
                 new_value = self.get_bool_setting_value_from_ui(setting_id)
@@ -1044,7 +1043,7 @@ class Settings(SettingsWindow):
 
 
             '---paths': _('Paths'),
-            'inframed_folderpath': ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
+            INFRAMED_FOLDERPATH_SETTING_ID: ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
         }
         return matrix
 
