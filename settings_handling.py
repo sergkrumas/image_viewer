@@ -982,6 +982,7 @@ class Settings(SettingsWindow):
 
             '---gamepad': _('Gamepad'),
             'start_with_gamepad_enabled': (False, _('Start with gamepad enabled')),
+            'gamepad_input_requires_focus': (False, _('Gamepad Input Requires Focus')),
             'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
             'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
             'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),

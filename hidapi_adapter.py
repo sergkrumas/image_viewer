@@ -408,7 +408,18 @@ class ListenThread(QThread):
 
         self.exec_()
 
-def update_board_viewer(MainWindowObj, thread, data):
+def gamepad_reading_dispatcher(MainWindowObj, thread, data):
+    if MainWindowObj.STNG.gamepad_input_requires_focus:
+        if MainWindowObj.isActiveWindow():
+            allowed = True
+        else:
+            allowed = False
+    else:
+        allowed = True
+    if allowed:
+        update_board_viewer(MainWindowObj, thread, data)
+
+def update_board_viewer(MainWindowObj, thread_instance, data):
 
     key = data[0]
     if key == SignalConstants.BOARD_OFFSET_DATA:
@@ -688,7 +699,7 @@ def toggle_gamepad_inputs(obj, silent=False):
             # timer.timeout.connect(partial(read_sticks_to_obj, obj))
             # timer.start()
             obj.gamepad_thread_instance = ListenThread(obj.gamepad, gamepad_device, obj)
-            obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj, obj.gamepad_thread_instance))
+            obj.gamepad_thread_instance.update_signal.connect(partial(gamepad_reading_dispatcher, obj, obj.gamepad_thread_instance))
             obj.gamepad_thread_instance.start()
             if silent:
                 obj.gamepad_startup_activation_result = True
