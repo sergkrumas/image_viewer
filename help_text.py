@@ -49,7 +49,7 @@ def retrieve_pages_help_text():
     W, A, S, D - image move
     Home - show first image in current folder
     End - show last image in currend folder
-    Shift+Tab - switch to next folder in library
+    Shift+Tab - switch to next folder in session
     Y - toggle between window and full-screen mode
     T - show/hide tags form
     D - show/hide thirds
@@ -78,13 +78,15 @@ def retrieve_pages_help_text():
     INFO_BOARD_PAGE = _("""
 ➜ BOARD PAGE
     left mouse click - select picture items & rectangle select
-    middle mouse click - camera moving
+    dragging while holding MMB - moves camera
     mouse wheel - camera zooming
-    F12 - activate/desactivate gamepad control
+    draging LMB while holding Ctrl+Alt - region zoom in
+    Gamepad control activation via context menu 
         Playstation 4 Dualshock Gamepad & ShanWan Gamepad supported
-        left stick - camera moving
-        right stick (vertical) - camera zooming
-        X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock
+        left stick - moves camera
+        right stick (vertical) - changes scale level
+        X - the left and right sticks exchange/exchange back for Playstation 4 Dualshock
+        D-Pad →/← - scrubbes frames of animated items and folder/group items 
 """)
 
     INFO_START_PAGE = _("""
