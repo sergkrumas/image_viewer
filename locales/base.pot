@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-04 20:22+0300\n"
+"POT-Creation-Date: 2026-03-04 21:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid ""
 "first open Google Chrome browser!"
 msgstr ""
 
-#: _utils.py:309 _viewer.pyw:4497 library_data.py:1105
+#: _utils.py:309 _viewer.pyw:4509 library_data.py:1105
 msgid "Error"
 msgstr ""
 
@@ -115,7 +115,7 @@ msgstr ""
 msgid "The file is corrupted"
 msgstr ""
 
-#: _viewer.pyw:2170 _viewer.pyw:4593
+#: _viewer.pyw:2170 _viewer.pyw:4605
 msgid "No images"
 msgstr ""
 
@@ -131,7 +131,7 @@ msgstr ""
 msgid "broken file"
 msgstr ""
 
-#: _viewer.pyw:2270 _viewer.pyw:4591
+#: _viewer.pyw:2270 _viewer.pyw:4603
 msgid "Loading"
 msgstr ""
 
@@ -155,29 +155,37 @@ msgstr ""
 msgid "You've set {0} columns"
 msgstr ""
 
-#: _viewer.pyw:4249
+#: _viewer.pyw:4136 hidapi_adapter.py:719
+msgid "Gamepad control activated!"
+msgstr ""
+
+#: _viewer.pyw:4140 hidapi_adapter.py:728
+msgid "Supported gamepad not found!"
+msgstr ""
+
+#: _viewer.pyw:4261
 msgid "DRAG AND DROP A FILE OR A FOLDER"
 msgstr ""
 
-#: _viewer.pyw:4253
+#: _viewer.pyw:4265
 msgid "or left mouse click to open Explorer dialog."
 msgstr ""
 
-#: _viewer.pyw:4254
+#: _viewer.pyw:4266
 msgid ""
 "\n"
 "\n"
 "Right mouse click to open settings window."
 msgstr ""
 
-#: _viewer.pyw:4257
+#: _viewer.pyw:4269
 msgid ""
 "\n"
 "\n"
 "[the program is running in lite mode]"
 msgstr ""
 
-#: _viewer.pyw:4259
+#: _viewer.pyw:4271
 msgid ""
 "\n"
 "\n"
@@ -186,7 +194,7 @@ msgid ""
 "[the program is running in standard mode]"
 msgstr ""
 
-#: _viewer.pyw:4314
+#: _viewer.pyw:4326
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -194,233 +202,233 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:4586
+#: _viewer.pyw:4598
 msgid "Please wait"
 msgstr ""
 
-#: _viewer.pyw:4895
+#: _viewer.pyw:4907
 msgid "speed"
 msgstr ""
 
-#: _viewer.pyw:4900
+#: _viewer.pyw:4912
 msgid "frame"
 msgstr ""
 
-#: _viewer.pyw:4951
+#: _viewer.pyw:4963
 msgid "viewing history"
 msgstr ""
 
-#: _viewer.pyw:5073
+#: _viewer.pyw:5085
 msgid "Cursor scrubbing mode activated"
 msgstr ""
 
-#: _viewer.pyw:5075
+#: _viewer.pyw:5087
 msgid "Cursor scrubbing mode disactivated"
 msgstr ""
 
-#: _viewer.pyw:5425
+#: _viewer.pyw:5437
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
 msgstr ""
 
-#: _viewer.pyw:5444
+#: _viewer.pyw:5456
 msgid "Unable to save: no source file or source file is not found"
 msgstr ""
 
-#: _viewer.pyw:5471
+#: _viewer.pyw:5483
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr ""
 
-#: _viewer.pyw:5478
+#: _viewer.pyw:5490
 msgid "The image is saved in file"
 msgstr ""
 
-#: _viewer.pyw:5482
+#: _viewer.pyw:5494
 msgid "Choose folder to put images in"
 msgstr ""
 
-#: _viewer.pyw:5508
+#: _viewer.pyw:5520
 msgid "Save file"
 msgstr ""
 
-#: _viewer.pyw:5572
+#: _viewer.pyw:5584
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr ""
 
-#: _viewer.pyw:5583
+#: _viewer.pyw:5595
 msgid "pasted!"
 msgstr ""
 
-#: _viewer.pyw:5663
+#: _viewer.pyw:5675
 msgid "Open folder \"{0}\" in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5683
+#: _viewer.pyw:5695
 msgid "Minimize"
 msgstr ""
 
-#: _viewer.pyw:5695
+#: _viewer.pyw:5707
 msgid "DEBUG"
 msgstr ""
 
-#: _viewer.pyw:5700
+#: _viewer.pyw:5712
 msgid "Show FPS"
 msgstr ""
 
-#: _viewer.pyw:5705
+#: _viewer.pyw:5717
 msgid "Antialiasing and pixmap smoothing"
 msgstr ""
 
-#: _viewer.pyw:5714
+#: _viewer.pyw:5726
 msgid "Rounded previews"
 msgstr ""
 
-#: _viewer.pyw:5723
+#: _viewer.pyw:5735
 msgid "Cursor scrubbing for animation files"
 msgstr ""
 
-#: _viewer.pyw:5729
+#: _viewer.pyw:5741
 msgid "DEBUG tools..."
 msgstr ""
 
-#: _viewer.pyw:5735
+#: _viewer.pyw:5747
 msgid "Settings..."
 msgstr ""
 
-#: _viewer.pyw:5736 control_panel.py:504 control_panel.py:522
+#: _viewer.pyw:5748 control_panel.py:504 control_panel.py:522
 msgid "Help"
 msgstr ""
 
-#: _viewer.pyw:5737
+#: _viewer.pyw:5749
 msgid "Message the developer"
 msgstr ""
 
-#: _viewer.pyw:5743
+#: _viewer.pyw:5755
 msgid "Always on top"
 msgstr ""
 
-#: _viewer.pyw:5745
+#: _viewer.pyw:5757
 msgid "Disable \"Always on top\""
 msgstr ""
 
-#: _viewer.pyw:5749
+#: _viewer.pyw:5761
 msgid "Show window frame"
 msgstr ""
 
-#: _viewer.pyw:5751
+#: _viewer.pyw:5763
 msgid "Hide window frame and maximize"
 msgstr ""
 
-#: _viewer.pyw:5755
+#: _viewer.pyw:5767
 msgid "Leave full-screen mode"
 msgstr ""
 
-#: _viewer.pyw:5757
+#: _viewer.pyw:5769
 msgid "Go full screen"
 msgstr ""
 
-#: _viewer.pyw:5763
+#: _viewer.pyw:5775
 msgid "Narrow window back to monitor frame"
 msgstr ""
 
-#: _viewer.pyw:5765
+#: _viewer.pyw:5777
 msgid "Expand window to two monitors frame"
 msgstr ""
 
-#: _viewer.pyw:5768
+#: _viewer.pyw:5780
 msgid "Switch the window to the monitor on the right"
 msgstr ""
 
-#: _viewer.pyw:5769
+#: _viewer.pyw:5781
 msgid "Switch the window to the monitor on the left"
 msgstr ""
 
-#: _viewer.pyw:5771
+#: _viewer.pyw:5783
 msgid "Next grayscale filter state"
 msgstr ""
 
-#: _viewer.pyw:5776
+#: _viewer.pyw:5788
 msgid "Restart app in standard mode"
 msgstr ""
 
-#: _viewer.pyw:5778
+#: _viewer.pyw:5790
 msgid "Restart app (to purge unused data in memory)"
 msgstr ""
 
-#: _viewer.pyw:5780
+#: _viewer.pyw:5792
 msgid "Open in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5784
+#: _viewer.pyw:5796
 msgid "Line EyeDropper Tool..."
 msgstr ""
 
-#: _viewer.pyw:5804
+#: _viewer.pyw:5816
 msgid "Open unsupported file..."
 msgstr ""
 
-#: _viewer.pyw:5811
+#: _viewer.pyw:5823
 msgid "Edit comment text {0}"
 msgstr ""
 
-#: _viewer.pyw:5814
+#: _viewer.pyw:5826
 msgid "Redefine comment borders {0}"
 msgstr ""
 
-#: _viewer.pyw:5817
+#: _viewer.pyw:5829
 msgid "Delete comment {0}"
 msgstr ""
 
-#: _viewer.pyw:5824
+#: _viewer.pyw:5836
 msgid "Copy metadata to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5829
+#: _viewer.pyw:5841
 msgid "Find on disk"
 msgstr ""
 
-#: _viewer.pyw:5830 board.py:863
+#: _viewer.pyw:5842 board.py:863
 msgid "Open in Google Chrome"
 msgstr ""
 
-#: _viewer.pyw:5831
+#: _viewer.pyw:5843
 msgid "Place image in window center"
 msgstr ""
 
-#: _viewer.pyw:5836
+#: _viewer.pyw:5848
 msgid "Change SVG rasterization resolution..."
 msgstr ""
 
-#: _viewer.pyw:5840
+#: _viewer.pyw:5852
 msgid "Save .png file..."
 msgstr ""
 
-#: _viewer.pyw:5841
+#: _viewer.pyw:5853
 msgid "Save .jpg file..."
 msgstr ""
 
-#: _viewer.pyw:5843
+#: _viewer.pyw:5855
 msgid "Copy to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5844
+#: _viewer.pyw:5856
 msgid "Paste from clipboard"
 msgstr ""
 
-#: _viewer.pyw:5848
+#: _viewer.pyw:5860
 msgid "Switch from fovorites folder to actual image folder"
 msgstr ""
 
-#: _viewer.pyw:5862 line_eyedropper_tool.py:356
+#: _viewer.pyw:5874 line_eyedropper_tool.py:356
 msgid "Hide this menu"
 msgstr ""
 
-#: _viewer.pyw:5898
+#: _viewer.pyw:5910
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr ""
 
-#: _viewer.pyw:5931
+#: _viewer.pyw:5943
 msgid "No images to show"
 msgstr ""
 
@@ -813,7 +821,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: commenting.py:507 help_text.py:211 library_data.py:1919
+#: commenting.py:507 help_text.py:213 library_data.py:1919
 #: settings_handling.py:639
 msgid "Close"
 msgstr ""
@@ -948,7 +956,7 @@ msgid ""
 "    W, A, S, D - image move\n"
 "    Home - show first image in current folder\n"
 "    End - show last image in currend folder\n"
-"    Shift+Tab - switch to next folder in library\n"
+"    Shift+Tab - switch to next folder in session\n"
 "    Y - toggle between window and full-screen mode\n"
 "    T - show/hide tags form\n"
 "    D - show/hide thirds\n"
@@ -981,23 +989,25 @@ msgid ""
 "\n"
 "➜ BOARD PAGE\n"
 "    left mouse click - select picture items & rectangle select\n"
-"    middle mouse click - camera moving\n"
+"    dragging while holding MMB - moves camera\n"
 "    mouse wheel - camera zooming\n"
-"    F12 - activate/desactivate gamepad control\n"
+"    draging LMB while holding Ctrl+Alt - region zoom in\n"
+"    Gamepad control activation via context menu \n"
 "        Playstation 4 Dualshock Gamepad & ShanWan Gamepad supported\n"
-"        left stick - camera moving\n"
-"        right stick (vertical) - camera zooming\n"
-"        X gamepad button - the left and right sticks exchange/exchange back for Playstation 4 Dualshock\n"
+"        left stick - moves camera\n"
+"        right stick (vertical) - changes scale level\n"
+"        X - the left and right sticks exchange/exchange back for Playstation 4 Dualshock\n"
+"        D-Pad →/← - scrubbes frames of animated items and folder/group items \n"
 msgstr ""
 
-#: help_text.py:90
+#: help_text.py:92
 msgid ""
 "\n"
 "➜ START PAGE\n"
 "    not set\n"
 msgstr ""
 
-#: help_text.py:95
+#: help_text.py:97
 msgid ""
 "\n"
 "➜ WATERFALL PAGE\n"
@@ -1010,14 +1020,6 @@ msgstr ""
 
 #: hidapi_adapter.py:454
 msgid "The left and right sticks exchange back"
-msgstr ""
-
-#: hidapi_adapter.py:719
-msgid "Gamepad control activated!"
-msgstr ""
-
-#: hidapi_adapter.py:728
-msgid "Supported gamepad not found!"
 msgstr ""
 
 #: hidapi_adapter.py:739
