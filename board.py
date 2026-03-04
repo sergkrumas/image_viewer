@@ -3800,7 +3800,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return
         elif self.board_camera_translation_ongoing:
             return
-        elif self._autoscroll_timer.isActive():
+        elif self.AUTOSCROLL.timer.isActive():
             self.board_autoscroll_wheelEventHandler(scroll_value)
             return
         elif self.board_item_under_mouse is not None and event.buttons() == Qt.RightButton:
