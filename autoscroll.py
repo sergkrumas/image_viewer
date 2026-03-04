@@ -28,23 +28,25 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 class AutoscrollMixin():
 
     def autoscroll_init(self):
-        self._autoscroll_timer = QTimer()
-        self._autoscroll_timer.setInterval(10)
-        self._autoscroll_timer.timeout.connect(self.autoscroll_timer)
-        self._autoscroll_inside_activation_zone = False
+        self.AUTOSCROLL = AUTOSCROLL = type("AUTOSCROLL", (), {})()
 
-        self._autoscroll_desactivation_pass = False
+        AUTOSCROLL.timer = QTimer()
+        AUTOSCROLL.timer.setInterval(10)
+        AUTOSCROLL.timer.timeout.connect(self.autoscroll_timer)
+        AUTOSCROLL.inside_activation_zone = False
+
+        AUTOSCROLL.desactivation_pass = False
 
     def autoscroll_set_current_page_indicator(self):
-        self._autoscroll_draw_vertical = False
-        self._autoscroll_draw_horizontal = False
+        self.AUTOSCROLL.draw_vertical = False
+        self.AUTOSCROLL.draw_horizontal = False
         if self.is_board_page_active():
-            self._autoscroll_draw_vertical = True
-            self._autoscroll_draw_horizontal = True
+            self.AUTOSCROLL.draw_vertical = True
+            self.AUTOSCROLL.draw_horizontal = True
         elif self.is_library_page_active():
-            self._autoscroll_draw_vertical = True
+            self.AUTOSCROLL.draw_vertical = True
         elif self.is_waterfall_page_active():
-            self._autoscroll_draw_vertical = True
+            self.AUTOSCROLL.draw_vertical = True
 
     def autoscroll_is_scrollbar_available(self):
         vs = self.vertical_scrollbars
@@ -64,10 +66,10 @@ class AutoscrollMixin():
 
     def autoscroll_timer(self):
         OUTER_ZONE_ACTIVATION_RADIUS = 30.0
-        cursor_offset = self.mapped_cursor_pos() - self._autoscroll_startpos
+        cursor_offset = self.mapped_cursor_pos() - self.AUTOSCROLL.startpos
         diff_l = QVector2D(cursor_offset).length()
-        self._autoscroll_inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
-        if not self._autoscroll_inside_activation_zone:
+        self.AUTOSCROLL.inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
+        if not self.AUTOSCROLL.inside_activation_zone:
             # fixing velocity, because it should be 0.0 at the radius border, not greater than 0.0
             diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
             vec = QVector2D(cursor_offset).normalized()*diff_l
@@ -143,46 +145,46 @@ class AutoscrollMixin():
         vs.capture_index = vs.NO_SCROLLBAR
 
     def autoscroll_start(self):
-        self._autoscroll_inside_activation_zone = False
+        self.AUTOSCROLL.inside_activation_zone = False
         self.autoscroll_set_current_page_indicator()
         if self.is_library_page_active() or self.is_waterfall_page_active():
             sb_index = self.autoscroll_is_scrollbar_available()
             if sb_index != self.vertical_scrollbars.NO_SCROLLBAR:
                 self.autoscroll_intro_for_LibraryWaterfall_pages(sb_index)
-                self._autoscroll_timer.start()
+                self.AUTOSCROLL.timer.start()
         else:
-            self._autoscroll_timer.start()
+            self.AUTOSCROLL.timer.start()
 
     def autoscroll_finish(self):
         if self.is_library_page_active() or self.is_waterfall_page_active():
             self.autoscroll_outro_for_LibraryWaterfall_pages()
-        self._autoscroll_timer.stop()
+        self.AUTOSCROLL.timer.stop()
 
     def autoscroll_middleMousePressEvent(self, event):
-        self._autoscroll_is_moved_while_middle_button_pressed = False
-        if self._autoscroll_timer.isActive():
-            self._autoscroll_desactivation_pass = True
+        self.AUTOSCROLL.is_moved_while_middle_button_pressed = False
+        if self.AUTOSCROLL.timer.isActive():
+            self.AUTOSCROLL.desactivation_pass = True
             self.autoscroll_finish()
         else:
-            self._autoscroll_desactivation_pass = False
-            self._autoscroll_startpos = event.pos()
+            self.AUTOSCROLL.desactivation_pass = False
+            self.AUTOSCROLL.startpos = event.pos()
 
     def autoscroll_middleMouseMoveEvent(self):
-        self._autoscroll_is_moved_while_middle_button_pressed = True
+        self.AUTOSCROLL.is_moved_while_middle_button_pressed = True
 
     def autoscroll_middleMouseReleaseEvent(self):
         if self.is_board_page_active():
-            if not self._autoscroll_desactivation_pass:
-                if not self._autoscroll_is_moved_while_middle_button_pressed:
+            if not self.AUTOSCROLL.desactivation_pass:
+                if not self.AUTOSCROLL.is_moved_while_middle_button_pressed:
                     self.autoscroll_start()
         elif self.is_library_page_active() or self.is_waterfall_page_active():
-            if not self._autoscroll_desactivation_pass:
+            if not self.AUTOSCROLL.desactivation_pass:
                 self.autoscroll_start()
-        self._autoscroll_is_moved_while_middle_button_pressed = False
+        self.AUTOSCROLL.is_moved_while_middle_button_pressed = False
 
     def autoscroll_draw(self, painter):
-        if self._autoscroll_timer.isActive():
-            if self._autoscroll_inside_activation_zone:
+        if self.AUTOSCROLL.timer.isActive():
+            if self.AUTOSCROLL.inside_activation_zone:
                 painter.save()
 
                 painter.setOpacity(0.7)
@@ -190,10 +192,10 @@ class AutoscrollMixin():
                 painter.setPen(gray)
                 painter.setBrush(QBrush(Qt.white))
                 el_rect = QRectF(0, 0, 6, 6)
-                el_rect.moveCenter(self._autoscroll_startpos)
+                el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.drawEllipse(el_rect)
 
-                o = self._autoscroll_startpos
+                o = self.AUTOSCROLL.startpos
                 if int(time.time()*4) % 2 == 0:
                     f = 18
                 else:
@@ -205,10 +207,10 @@ class AutoscrollMixin():
                     QPointF(7, f-10),
                 ]
 
-                if self._autoscroll_draw_vertical:
+                if self.AUTOSCROLL.draw_vertical:
                     painter.drawPolygon([p + o for p in points])
                     painter.drawPolygon([QPointF(p.x(), -p.y()) + o for p in points])
-                if self._autoscroll_draw_horizontal:
+                if self.AUTOSCROLL.draw_horizontal:
                     painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
                     painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
 
@@ -216,12 +218,12 @@ class AutoscrollMixin():
 
                 painter.setPen(QPen(gray, 2))
                 el_rect = QRectF(0, 0, 39, 39)
-                el_rect.moveCenter(self._autoscroll_startpos)
+                el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.drawEllipse(el_rect)
 
                 painter.setPen(QPen(Qt.white, 1))
                 el_rect = QRectF(0, 0, 38, 38)
-                el_rect.moveCenter(self._autoscroll_startpos)
+                el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.drawEllipse(el_rect)
 
                 painter.restore()
