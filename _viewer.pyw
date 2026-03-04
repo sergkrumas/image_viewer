@@ -4131,7 +4131,7 @@ class MainWindow(QMainWindow,
             if r is not None and time.time() - self.gamepad_startup_activation_request_timestamp < 5:
                 s = Globals.GAMEPAD_GREEN_PIXMAP.size()
                 pos = RectHelper(self.rect()).right_center() - QPoint(s.width()+50, s.height())
-                if r: 
+                if r:
                     painter.drawPixmap(pos, Globals.GAMEPAD_GREEN_PIXMAP)
                 else:
                     painter.drawPixmap(pos, Globals.GAMEPAD_RED_PIXMAP)

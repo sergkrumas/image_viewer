@@ -326,7 +326,7 @@ class SettingsWindow(QWidget):
         font-size: 11pt;
     }
     """
- 
+
     warn_style = """
     QLabel{
         color: rgb(200, 40, 40);
