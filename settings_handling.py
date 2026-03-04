@@ -20,6 +20,7 @@
 
 from _utils import *
 
+from functools import partial
 
 from on_windows_startup import (is_app_in_startup, add_to_startup, remove_from_startup)
 
@@ -810,6 +811,38 @@ class Settings(SettingsWindow):
         setting_data = list(cls.matrix[setting_id])
         setting_data[0] = setting_value
         cls.matrix[setting_id] = tuple(setting_data)
+
+    postponed_set_timers = dict()
+
+    @classmethod
+    def set_callback(cls, setting_id, setting_value):
+        cls.set(setting_id, setting_value)
+        localized_setting_description = cls.matrix[setting_id][-1]
+        cls.globals.main_window.show_notification_on_setting_saved(localized_setting_description)
+
+    @classmethod
+    def set_singleshot_timer(cls, millisecs_delay, callback):
+        timer = QTimer()
+        timer.setInterval(millisecs_delay)
+        timer.timeout.connect(callback)
+        timer.setSingleShot(True)
+        timer.start()
+        return timer
+
+    @classmethod
+    def postponed_set(cls, setting_id, setting_value):
+        if setting_id in cls.matrix.keys():
+            # cleaning inactive timers
+            for key, timer in list(cls.postponed_set_timers.items())[:]:
+                if timer and not timer.isActive():
+                    cls.postponed_set_timers[key] = None
+            # stop if exists
+            is_timer_set_yet = cls.postponed_set_timers.get(setting_id, None)
+            if is_timer_set_yet:
+                is_timer_set_yet.stop()
+            cls.postponed_set_timers[setting_id] = cls.set_singleshot_timer(5000, partial(cls.set_callback, setting_id, setting_value))
+        else:
+            raise Exception('no setting with such ID', setting_id)
 
     @classmethod
     def set(cls, setting_id, setting_value):

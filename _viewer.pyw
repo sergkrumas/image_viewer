@@ -953,6 +953,7 @@ class MainWindow(QMainWindow,
 
         self.Settings = Settings
         Settings.init_STNG(self)
+        self.settings_notification_time = 0.0
 
         self.board_init()
         self.tagging_init()
@@ -3498,7 +3499,7 @@ class MainWindow(QMainWindow,
             *Settings.get_setting_span(setting_id)
         )
         setattr(self.STNG, setting_id, float(value))
-        Settings.set(setting_id, float(value))
+        Settings.postponed_set(setting_id, float(value))
         return float(value)
 
     def library_change_rounded_rect_radius(self, event, scroll_value):
@@ -3547,7 +3548,7 @@ class MainWindow(QMainWindow,
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
         self.STNG.waterfall_columns_number = float(value)
-        Settings.set('waterfall_columns_number', float(value))
+        Settings.postponed_set('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
             msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
@@ -4124,6 +4125,12 @@ class MainWindow(QMainWindow,
         self.draw_noise_cells(painter)
 
         self.draw_gamepad_status(painter)
+
+        self.draw_setting_notification(painter)
+
+    def draw_setting_notification(self, painter):
+        if time.time() - self.settings_notification_time < 5.0:
+            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter, self.settings_notification_text)
 
     def draw_gamepad_status(self, painter):
         if self.STNG.start_with_gamepad_enabled:
@@ -5003,6 +5010,10 @@ class MainWindow(QMainWindow,
             self.hide()
         else:
             self.animated_or_not_animated_close(QApplication.instance().quit)
+
+    def show_notification_on_setting_saved(self, localized_setting_description):
+        self.settings_notification_time = time.time()
+        self.settings_notification_text = _("Setting «{}»\n saved to memory").format(localized_setting_description)
 
     def show_center_label(self, info_type, error=False, duration=0.0):
         self.center_label_error = error
