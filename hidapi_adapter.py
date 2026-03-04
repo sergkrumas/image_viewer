@@ -486,6 +486,12 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
                 elif button == SignalConstants.BUTTON_ARROW_WEST:
                     directon = -1
                 MainWindowObj.board_scroll_visible_board_items(directon)
+            if button in [SignalConstants.BUTTON_ARROW_NORTH, SignalConstants.BUTTON_ARROW_SOUTH]:
+                if button == SignalConstants.BUTTON_ARROW_NORTH:
+                    set_first_frame = False
+                elif button == SignalConstants.BUTTON_ARROW_SOUTH:
+                    set_first_frame = True
+                MainWindowObj.board_set_start_or_end_for_animation_board_items(set_first_frame)
 
     elif key == SignalConstants.TRIGGER_STATE_DATA:
         trigger = data[1]

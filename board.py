@@ -3725,7 +3725,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_do_scale(self, scroll_value):
         self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
 
-    def board_item_scroll_animation_file(self, board_item, scroll_value):
+    def board_item_scroll_animation_file(self, board_item, scroll_value, set_first_frame=None):
         if board_item.movie is None:
             # такое случается, когда доска загружена из файла
             self.trigger_board_item_pixmap_loading(board_item)
@@ -3733,9 +3733,14 @@ class BoardMixin(BoardTextEditItemMixin):
             inc = 1
         else:
             inc = -1
-        current_frame = board_item.movie.currentFrameNumber()
-        current_frame += inc
-        current_frame %= board_item.movie.frameCount()
+        if set_first_frame is None:
+            current_frame = board_item.movie.currentFrameNumber()
+            current_frame += inc
+            current_frame %= board_item.movie.frameCount()
+        elif set_first_frame:
+            current_frame = 0
+        else:
+            current_frame = board_item.movie.frameCount()-1
         self.board_item_animation_file_set_frame(board_item, current_frame)
         self.update()
 
@@ -3784,6 +3789,14 @@ class BoardMixin(BoardTextEditItemMixin):
         elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             self.board_item_scroll_folder(board_item, scroll_value)
         self.update()
+
+    def board_set_start_or_end_for_animation_board_items(self, set_first_frame):
+        current_time = time.time()
+        if current_time - self.scroll_items_timestamp > 0.2:
+            self.scroll_items_timestamp = current_time
+            for bi in self.board_get_selected_or_visible_items(visible=True):
+                if bi.type == bi.types.ITEM_IMAGE and bi.animated:
+                    self.board_item_scroll_animation_file(bi, 0, set_first_frame=set_first_frame)
 
     def board_scroll_visible_board_items(self, scroll_value):
         current_time = time.time()
