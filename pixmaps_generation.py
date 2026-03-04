@@ -400,6 +400,75 @@ def lang_icons(Globals):
     Globals.lang_it_icon = QIcon(Globals.lang_it_pixmap)
     Globals.lang_es_icon = QIcon(Globals.lang_es_pixmap)
 
+def gamepad_pixmap(Globals, scale_factor=0.1, color=Qt.white):
+
+    GAMEPAD_PIXMAP = QPixmap(int(1050*scale_factor), int(700*scale_factor))
+    GAMEPAD_PIXMAP.fill(Qt.transparent)
+    painter = QPainter()
+    painter.begin(GAMEPAD_PIXMAP)
+
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+    painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+    offset = 50*scale_factor
+    v_offset = -80*scale_factor
+    rect1 = QRectF(0, 0, 400*scale_factor, 400*scale_factor)
+    rect1.moveCenter(QPointF(800*scale_factor, 400*scale_factor))
+
+    rect2 = QRectF(rect1)
+    rect2.moveCenter(QPointF(400*scale_factor-offset*3, 400*scale_factor))
+
+    # painter.setPen(Qt.red)
+    # painter.drawEllipse(rect1)
+    # painter.drawEllipse(rect2)
+
+    rh1 = RectHelper(rect1)
+    rh2 = RectHelper(rect2)
+    path = QPainterPath()
+    path.moveTo(rh1.top_center())
+    path.cubicTo(rect1.topRight(), rh1.right_center(), rh1.right_center())
+    path.cubicTo(rect1.bottomRight(), rh1.bottom_center(), rh1.bottom_center())
+    middle_p = rh1.left_center()-QPointF(offset, v_offset)
+    path.cubicTo(rect1.bottomLeft(), rh1.left_center()-QPointF(0, v_offset), middle_p)
+    path.lineTo(middle_p-QPointF(offset, 0))
+    path.lineTo(middle_p-QPointF(offset, 0))
+
+    path.cubicTo(rh2.right_center()-QPointF(0, v_offset), rect2.bottomRight(), rh2.bottom_center())
+    path.cubicTo(rect2.bottomLeft(), rh2.left_center(), rh2.left_center())
+    path.cubicTo(rect2.topLeft(), rh2.top_center(), rh2.top_center())
+    path.lineTo(rh1.top_center())
+
+    r1 = RectHelper(rect1.adjusted(120*scale_factor, 120*scale_factor, -120*scale_factor, -120*scale_factor))
+    r2 = RectHelper(rect2.adjusted(120*scale_factor, 120*scale_factor, -120*scale_factor, -120*scale_factor))
+
+    pen = QPen(color, 70*scale_factor)
+    painter.setPen(pen)
+    painter.drawLine(r2.top_center(), r2.bottom_center())
+    painter.drawLine(r2.left_center(), r2.right_center())
+
+    pen = QPen(color, 80*scale_factor)
+    pen.setCapStyle(Qt.RoundCap)
+    painter.setPen(pen)
+    painter.drawPoint(r1.top_center())
+    painter.drawPoint(r1.left_center())
+    painter.drawPoint(r1.right_center())
+    painter.drawPoint(r1.bottom_center())
+
+    top_center = (rect1.topLeft()+rect2.topRight())/2
+    path.moveTo(top_center+QPointF(0, -5*scale_factor))
+    path.lineTo(top_center+QPointF(0, -40*scale_factor))
+
+    path.cubicTo(top_center+QPointF(0, -150*scale_factor), top_center+QPointF(140*scale_factor, 0), top_center+QPointF(140*scale_factor, -100*scale_factor))
+
+    pen = QPen(color, 30*scale_factor)
+    pen.setCapStyle(Qt.RoundCap)
+    painter.setPen(pen)
+    painter.drawPath(path)
+
+    painter.end()
+    return GAMEPAD_PIXMAP
+
 def generate_pixmaps(Globals, Settings):
 
     print('start generating pixmaps')
@@ -422,5 +491,8 @@ def generate_pixmaps(Globals, Settings):
     lang_es_pixmap(Globals, QRectF(lang_rect))
 
     lang_icons(Globals)
+
+    Globals.GAMEPAD_GREEN_PIXMAP = gamepad_pixmap(Globals, color=QColor(100, 255, 100, 200))
+    Globals.GAMEPAD_RED_PIXMAP = gamepad_pixmap(Globals, color=QColor(255, 100, 100, 200))
 
     print('finish generating pixmaps')

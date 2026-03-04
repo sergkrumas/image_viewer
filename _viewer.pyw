@@ -42,6 +42,8 @@ from ctypes import windll
 import itertools
 from functools import partial
 
+import hidapi_adapter
+
 from collections import defaultdict
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
@@ -349,6 +351,9 @@ class AppMixin():
             MW.show()
             MW.resize(800, 540)
         MW.setWindowIcon(app_icon)
+
+        if MW.STNG.start_with_gamepad_enabled:
+            hidapi_adapter.toggle_gamepad_inputs(MW, silent=True)
 
         # создание панели управления
         ControlPanel.globals = Globals
@@ -944,6 +949,7 @@ class MainWindow(QMainWindow,
 
         self.gamepad = None
         self.gamepad_timer = None
+        self.gamepad_startup_activation_result = None
 
         self.Settings = Settings
         Settings.init_STNG(self)
@@ -4116,6 +4122,19 @@ class MainWindow(QMainWindow,
         # painter.drawLine(self.rect().bottomLeft(), self.rect().topRight())
 
         self.draw_noise_cells(painter)
+
+        self.draw_gamepad_status(painter)
+
+    def draw_gamepad_status(self, painter):
+        if self.STNG.start_with_gamepad_enabled:
+            r = self.gamepad_startup_activation_result
+            if r is not None and time.time() - self.gamepad_startup_activation_request_timestamp < 5:
+                s = Globals.GAMEPAD_GREEN_PIXMAP.size()
+                pos = RectHelper(self.rect()).right_center() - QPoint(s.width()+50, s.height())
+                if r: 
+                    painter.drawPixmap(pos, Globals.GAMEPAD_GREEN_PIXMAP)
+                else:
+                    painter.drawPixmap(pos, Globals.GAMEPAD_RED_PIXMAP)
 
     def draw_noise_cells(self, painter):
         if noise and self.STNG.show_noise_cells:

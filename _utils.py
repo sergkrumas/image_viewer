@@ -833,3 +833,21 @@ def rect_to_string(rect):
         return f"[w:{width:.02f}, h:{height:.02f}, ({x0:.02f}, {y0:.02f}), ({x1:.02f}, {y1:.02f})]"
     else:
         return "[None]"
+
+class RectHelper():
+
+    def __init__(self, rect):
+        self.r = QRectF(rect)
+        self.c = rect.center()
+
+    def top_center(self):
+        return QPointF(self.c.x(), self.r.top())
+
+    def bottom_center(self):
+        return QPointF(self.c.x(), self.r.bottom())
+
+    def left_center(self):
+        return QPointF(self.r.left(), self.c.y())
+
+    def right_center(self):
+        return QPointF(self.r.right(), self.c.y())

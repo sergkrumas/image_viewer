@@ -675,29 +675,35 @@ def open_device(device):
 def is_gamepad_input_ready(obj):
     return bool(obj.gamepad)
 
-def toggle_gamepad_inputs(obj):
+def toggle_gamepad_inputs(obj, silent=False):
     if obj.gamepad:
         deactivate_listening(obj)
     else:
         gamepad_device = find_gamepad()
+        obj.gamepad_startup_activation_request_timestamp = time.time()
         if gamepad_device:
             obj.gamepad = open_device(gamepad_device)
-            obj.gamepad_timer = timer = QTimer()
+            # obj.gamepad_timer = timer = QTimer()
             # timer.setInterval(10)
             # timer.timeout.connect(partial(read_sticks_to_obj, obj))
             # timer.start()
             obj.gamepad_thread_instance = ListenThread(obj.gamepad, gamepad_device, obj)
             obj.gamepad_thread_instance.update_signal.connect(partial(update_board_viewer, obj, obj.gamepad_thread_instance))
             obj.gamepad_thread_instance.start()
-
-            dev = gamepad_device
-            info_str = _('Gamepad control activated!')
-            info_str = f'{info_str}\n{dev["product_string"]} ({dev["manufacturer_string"].strip()})'
-            obj.show_center_label(info_str)
+            if silent:
+                obj.gamepad_startup_activation_result = True
+            else:
+                dev = gamepad_device
+                info_str = _('Gamepad control activated!')
+                info_str = f'{info_str}\n{dev["product_string"]} ({dev["manufacturer_string"].strip()})'
+                obj.show_center_label(info_str)
         else:
             obj.gamepad = None
             # obj.timer = None
-            obj.show_center_label(_('Gamepad not found!'), error=True)
+            if silent:
+                obj.gamepad_startup_activation_result = False
+            else:
+                obj.show_center_label(_('Supported gamepad not found!'), error=True)
 
 def deactivate_listening(obj):
     obj.gamepad = None
