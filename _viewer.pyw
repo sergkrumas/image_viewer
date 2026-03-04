@@ -4130,7 +4130,7 @@ class MainWindow(QMainWindow,
 
     def draw_setting_notification(self, painter):
         if time.time() - self.settings_notification_time < 5.0:
-            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter, self.settings_notification_text)
+            painter.drawText(self.rect().adjusted(20, 20, -20, -20), Qt.AlignVCenter | Qt.AlignRight, self.settings_notification_text)
 
     def draw_gamepad_status(self, painter):
         if self.STNG.start_with_gamepad_enabled:
@@ -5014,6 +5014,7 @@ class MainWindow(QMainWindow,
     def show_notification_on_setting_saved(self, localized_setting_description):
         self.settings_notification_time = time.time()
         self.settings_notification_text = _("Setting «{}»\n saved to memory").format(localized_setting_description)
+        self.update()
 
     def show_center_label(self, info_type, error=False, duration=0.0):
         self.center_label_error = error
