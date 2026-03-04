@@ -933,21 +933,25 @@ class Settings(SettingsWindow):
                     data = cls.matrix[setting_key]
                     data[-1] = description
                     cls.matrix[setting_key] = data
-        # обновляем минимально и максимально допустимые значения настроек типа float
+        # обновление всего остального, далее подробней
         for setting_key, setting_data in cls.matrix.items():
             if setting_key in actual_settings_matrix.keys():
                 default_value = setting_data[0]
+                # обновляем минимально и максимально допустимые значения настроек типа float
                 if isinstance(default_value, float):
                     stored_matrix_span = setting_data[1]
                     actual_matrix_span = list(actual_settings_matrix[setting_key][1])
                     if stored_matrix_span != actual_matrix_span:
-
                         s_data = cls.matrix[setting_key]
                         s_data[1] = actual_matrix_span
                         cls.matrix[setting_key] = s_data
                         msg = f"setting span mismatch fixed for {setting_key}, span loaded from file: {stored_matrix_span} --> actual span: {actual_matrix_span}"
                         print(msg)
-
+                # обновление настроек с выпадающими списками
+                elif isinstance(default_value, int):
+                    s_data = cls.matrix[setting_key]
+                    s_data[1] = actual_settings_matrix[setting_key][1]
+                    cls.matrix[setting_key] = s_data
 
     @classmethod
     def init_matrix(cls, pages):
