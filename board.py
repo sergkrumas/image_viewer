@@ -457,6 +457,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_item_ctrl_z_data = defaultdict(list)
 
+        self.scroll_items_timestamp = time.time()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1474,11 +1476,11 @@ class BoardMixin(BoardTextEditItemMixin):
         cf.board.current_item_group_index += 1
         return cf.board.current_item_group_index
 
-    def board_get_selected_or_visible_items(self):
+    def board_get_selected_or_visible_items(self, visible=False):
         cf = self.LibraryData().current_folder()
         items_to_reset = []
         viewport_rect = self.rect()
-        if self.selected_items:
+        if self.selected_items and not visible:
             items_to_reset = self.selected_items[:]
         else:
             for bi in cf.board.items_list:
@@ -3740,15 +3742,14 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.movie is None:
             # такое случается, когда доска загружена из файла
             self.trigger_board_item_pixmap_loading(board_item)
-        frames_list = list(range(0, board_item.movie.frameCount()))
         if scroll_value > 0:
-            pass
+            inc = 1
         else:
-            frames_list = list(reversed(frames_list))
-        frames_list.append(0)
-        i = frames_list.index(board_item.movie.currentFrameNumber()) + 1
-        frameIndex = frames_list[i]
-        self.board_item_animation_file_set_frame(board_item, frameIndex)
+            inc = -1
+        current_frame = board_item.movie.currentFrameNumber()
+        current_frame += inc
+        current_frame %= board_item.movie.frameCount()
+        self.board_item_animation_file_set_frame(board_item, current_frame)
         self.update()
 
     def board_item_animation_file_set_frame(self, board_item, frame_index):
@@ -3789,6 +3790,21 @@ class BoardMixin(BoardTextEditItemMixin):
             self.autoscroll_zoom_timer_dir = scroll_value
             self.autoscroll_zoom_timer.start()
 
+    def board_scroll_board_item(self, scroll_value, board_item):
+        if board_item.type == board_item.types.ITEM_IMAGE:
+            if board_item.animated:
+                self.board_item_scroll_animation_file(board_item, scroll_value)
+        elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
+            self.board_item_scroll_folder(board_item, scroll_value)
+        self.update()
+
+    def board_scroll_visible_board_items(self, scroll_value):
+        current_time = time.time()
+        if current_time - self.scroll_items_timestamp > 0.2:
+            self.scroll_items_timestamp = current_time
+            for bi in self.board_get_selected_or_visible_items(visible=True):
+                self.board_scroll_board_item(scroll_value, bi)
+
     def board_wheelEventDefault(self, event):
         scroll_value = event.angleDelta().y()/240
         ctrl = event.modifiers() & Qt.ControlModifier
@@ -3806,11 +3822,7 @@ class BoardMixin(BoardTextEditItemMixin):
         elif self.board_item_under_mouse is not None and event.buttons() == Qt.RightButton:
             board_item = self.board_item_under_mouse
             self.context_menu_allowed = False
-            if board_item.type == board_item.types.ITEM_IMAGE:
-                if board_item.animated:
-                    self.board_item_scroll_animation_file(board_item, scroll_value)
-            elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                self.board_item_scroll_folder(board_item, scroll_value)
+            self.board_scroll_board_item(scroll_value, board_item)
         elif no_mod:
             self.do_scale_board(scroll_value, ctrl, shift, no_mod)
         elif ctrl:

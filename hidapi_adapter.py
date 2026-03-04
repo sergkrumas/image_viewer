@@ -479,6 +479,14 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
                 MainWindowObj.boards_generate_expo_values()
                 MainWindowObj.boards_save_expo_to_app_settings()
 
+        if True: # no matter the button state
+            if button in [SignalConstants.BUTTON_ARROW_EAST, SignalConstants.BUTTON_ARROW_WEST]:
+                if button == SignalConstants.BUTTON_ARROW_EAST:
+                    directon = 1
+                elif button == SignalConstants.BUTTON_ARROW_WEST:
+                    directon = -1
+                MainWindowObj.board_scroll_visible_board_items(directon)
+
     elif key == SignalConstants.TRIGGER_STATE_DATA:
         trigger = data[1]
         trigger_factor = data[2]
