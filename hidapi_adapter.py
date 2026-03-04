@@ -477,7 +477,7 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
                 MainWindowObj.show_easeInExpo_monitor = True
                 MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
-                MainWindowObj.boards_save_expo_to_app_settings()
+                MainWindowObj.boards_postponed_set_expo('gamepad_move_stick_ease_in_expo_param', thread.easeInExpo)
 
         if True: # no matter the button state
             if button in [SignalConstants.BUTTON_ARROW_EAST, SignalConstants.BUTTON_ARROW_WEST]:

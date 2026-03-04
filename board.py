@@ -1941,21 +1941,8 @@ class BoardMixin(BoardTextEditItemMixin):
             values.append((x, y))
         self.expo_values = values
 
-    def boards_save_expo_to_app_settings(self):
-        def callback():
-            # TODO: так ничего на самом деле не сохраняется, ибо надо вызывать self.Settings.set()! Это баг!
-            self.Settings.store_to_disk()
-            self.show_center_label('easeInExpo saved to settings file!')
-
-        if self._expo_save_timer is not None:
-            self._expo_save_timer.stop()
-
-        millisecs_delay = 2000
-        self._expo_save_timer = timer = QTimer(self)
-        timer.setInterval(millisecs_delay)
-        timer.timeout.connect(callback)
-        timer.setSingleShot(True)
-        timer.start()
+    def boards_postponed_set_expo(self, setting_id, setting_value):
+        self.Settings.postponed_set(setting_id, setting_value)
 
     def board_draw_grid(self, painter):
         LINES_INTERVAL_X = 300 * self.canvas_scale_x
