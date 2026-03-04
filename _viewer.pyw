@@ -4131,10 +4131,22 @@ class MainWindow(QMainWindow,
             if r is not None and time.time() - self.gamepad_startup_activation_request_timestamp < 5:
                 s = Globals.GAMEPAD_GREEN_PIXMAP.size()
                 pos = RectHelper(self.rect()).right_center() - QPoint(s.width()+50, s.height())
+                painter.save()
                 if r:
+                    text = _('Gamepad control activated!')
+                    color = QColor(100, 255, 100, 200)
                     painter.drawPixmap(pos, Globals.GAMEPAD_GREEN_PIXMAP)
                 else:
+                    text = _('Supported gamepad not found!')
+                    color = QColor(255, 100, 100, 200)
                     painter.drawPixmap(pos, Globals.GAMEPAD_RED_PIXMAP)
+                alignment = Qt.AlignHCenter | Qt.AlignVCenter
+                text_rect = painter.boundingRect(QRect(), alignment, text)
+                text_rect.setHeight(s.height())
+                text_rect.moveTopRight(pos.toPoint() - QPoint(25, 0))
+                painter.setPen(QPen(color, 1))
+                painter.drawText(text_rect, alignment, text)
+                painter.restore()
 
     def draw_noise_cells(self, painter):
         if noise and self.STNG.show_noise_cells:
