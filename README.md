@@ -85,9 +85,11 @@ The Board Page has been in development since mid 2023 and was originally inspire
 
 ![](docs/boards.png)
 
-You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad. Activate the gamepad via the context menu.
+You can navigate via Playstation 4 DualShock gamepad or ShanWan PC/PS3/Android gamepad. 
 
 ![](docs/supported_gamepads_march_2025.png)
+
+Activate the gamepad via the context menu. See the gamepad section in the settings window. Press `F1` for help info.
 
 If you don’t have a gamepad (or you have a Xbox-gamepad that unsupported by the app at the moment), for a better experience press the middle mouse button to toggle auto-scroll. Auto-scroll works the same way as in most desktop web browsers. *To match a gamepad experience, smooth scaling via the mouse wheel is available during auto-scrolling.*
 
