@@ -1536,14 +1536,13 @@ class FolderData():
 
         @classmethod
         def get_columns_number(cls, page):
-            MW = LibraryData.globals.main_window
-
+            MW = LibraryData().globals.main_window
             if page == MW.pages.WATERFALL_PAGE:
 
                 SCROLLBAR_WIDTH = MW.SCROLLBAR_WIDTH
                 # вычитаем место для скроллбаров, чтобы они всегда помещались
                 waterfall_width = MW.rect().width() - SCROLLBAR_WIDTH*10
-                calc_number = cls.calc_columns_number(MW, waterfall_width, waterfall_page=True)
+                calc_number = cls.calc_columns_number(waterfall_width, waterfall_page=True)
                 desired_number = int(MW.STNG.waterfall_columns_number)
                 if desired_number == 0:
                     number = calc_number
@@ -1555,10 +1554,11 @@ class FolderData():
 
                 library_width = MW.rect().width()
                 library_width /= 2
-                return cls.calc_columns_number(MW, library_width)
+                return cls.calc_columns_number(library_width)
 
         @classmethod
-        def calc_columns_number(cls, MW, columns_horizontal_space, waterfall_page=False):
+        def calc_columns_number(cls, columns_horizontal_space, waterfall_page=False):
+            MW = LibraryData().globals.main_window
             count = int(columns_horizontal_space/LibraryData.globals.PREVIEW_WIDTH)
             count = max(count, 1)
             if waterfall_page and count > 1:
