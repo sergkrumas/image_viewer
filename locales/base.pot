@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-05 13:08+0300\n"
+"POT-Creation-Date: 2026-03-05 15:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgid ""
 "first open Google Chrome browser!"
 msgstr ""
 
-#: _utils.py:309 _viewer.pyw:4519 library_data.py:1105
+#: _utils.py:309 _viewer.pyw:4526 library_data.py:1105
 msgid "Error"
 msgstr ""
 
@@ -33,13 +33,13 @@ msgstr ""
 msgid "https://github.com/sergkrumas/image_viewer"
 msgstr ""
 
-#: _viewer.pyw:318
+#: _viewer.pyw:325
 msgid ""
 "Crash info save to file\n"
 "\t{0}"
 msgstr ""
 
-#: _viewer.pyw:319
+#: _viewer.pyw:326
 msgid ""
 "Application crash!\n"
 "{0}\n"
@@ -47,145 +47,145 @@ msgid ""
 "Restart app?"
 msgstr ""
 
-#: _viewer.pyw:320
+#: _viewer.pyw:327
 msgid "Fatal Error!"
 msgstr ""
 
-#: _viewer.pyw:476
+#: _viewer.pyw:483
 msgid "Memory allocated"
 msgstr ""
 
-#: _viewer.pyw:486
+#: _viewer.pyw:493
 msgid "Purge unused objects"
 msgstr ""
 
-#: _viewer.pyw:499
+#: _viewer.pyw:506
 msgid "Choose folder with pictures in it"
 msgstr ""
 
-#: _viewer.pyw:501
+#: _viewer.pyw:508
 msgid "Error-error"
 msgstr ""
 
-#: _viewer.pyw:501
+#: _viewer.pyw:508
 msgid "Nothing to show, exit..."
 msgstr ""
 
-#: _viewer.pyw:520
+#: _viewer.pyw:527
 msgid "Question"
 msgstr ""
 
-#: _viewer.pyw:521
+#: _viewer.pyw:528
 msgid ""
 "No running app instance at the moment.\n"
 "Start app in lite mode?"
 msgstr ""
 
-#: _viewer.pyw:653
+#: _viewer.pyw:660
 msgid "Neither the image nor the folder it is in don't exist"
 msgstr ""
 
-#: _viewer.pyw:819
+#: _viewer.pyw:826
 msgid "START"
 msgstr ""
 
-#: _viewer.pyw:820
+#: _viewer.pyw:827
 msgid "VIEWER"
 msgstr ""
 
-#: _viewer.pyw:821
+#: _viewer.pyw:828
 msgid "BOARD"
 msgstr ""
 
-#: _viewer.pyw:822
+#: _viewer.pyw:829
 msgid "LIBRARY"
 msgstr ""
 
-#: _viewer.pyw:823
+#: _viewer.pyw:830
 msgid "WATERFALL"
 msgstr ""
 
-#: _viewer.pyw:2115 _viewer.pyw:2176
+#: _viewer.pyw:2122 _viewer.pyw:2183
 msgid ""
 "Unable\n"
 "to display"
 msgstr ""
 
-#: _viewer.pyw:2115 _viewer.pyw:2189
+#: _viewer.pyw:2122 _viewer.pyw:2196
 msgid "The file is corrupted"
 msgstr ""
 
-#: _viewer.pyw:2171 _viewer.pyw:4615
+#: _viewer.pyw:2178 _viewer.pyw:4622
 msgid "No images"
 msgstr ""
 
-#: _viewer.pyw:2175
+#: _viewer.pyw:2182
 msgid "The file is not supported"
 msgstr ""
 
-#: _viewer.pyw:2235
+#: _viewer.pyw:2242
 msgid "LOADING"
 msgstr ""
 
-#: _viewer.pyw:2268
+#: _viewer.pyw:2275
 msgid "broken file"
 msgstr ""
 
-#: _viewer.pyw:2271 _viewer.pyw:4613
+#: _viewer.pyw:2278 _viewer.pyw:4620
 msgid "Loading"
 msgstr ""
 
-#: _viewer.pyw:2662
+#: _viewer.pyw:2669
 msgid "No active item!"
 msgstr ""
 
-#: _viewer.pyw:3507 _viewer.pyw:3512
+#: _viewer.pyw:3514 _viewer.pyw:3519
 msgid "Preview corner radius: {0}"
 msgstr ""
 
-#: _viewer.pyw:3554
+#: _viewer.pyw:3561
 msgid "You've set 0 columns, so the number of columns depends only on the window width."
 msgstr ""
 
-#: _viewer.pyw:3556
+#: _viewer.pyw:3563
 msgid "You've set {0} columns. This is the maximum!"
 msgstr ""
 
-#: _viewer.pyw:3558
+#: _viewer.pyw:3565
 msgid "You've set {0} columns"
 msgstr ""
 
-#: _viewer.pyw:4146 hidapi_adapter.py:725
+#: _viewer.pyw:4153 hidapi_adapter.py:725
 msgid "Gamepad control activated!"
 msgstr ""
 
-#: _viewer.pyw:4150 hidapi_adapter.py:734
+#: _viewer.pyw:4157 hidapi_adapter.py:734
 msgid "Supported gamepad not found!"
 msgstr ""
 
-#: _viewer.pyw:4271
+#: _viewer.pyw:4278
 msgid "DRAG AND DROP A FILE OR A FOLDER"
 msgstr ""
 
-#: _viewer.pyw:4275
+#: _viewer.pyw:4282
 msgid "or left mouse click to open Explorer dialog."
 msgstr ""
 
-#: _viewer.pyw:4276
+#: _viewer.pyw:4283
 msgid ""
 "\n"
 "\n"
 "Right mouse click to open settings window."
 msgstr ""
 
-#: _viewer.pyw:4279
+#: _viewer.pyw:4286
 msgid ""
 "\n"
 "\n"
 "[the program is running in lite mode]"
 msgstr ""
 
-#: _viewer.pyw:4281
+#: _viewer.pyw:4288
 msgid ""
 "\n"
 "\n"
@@ -194,7 +194,7 @@ msgid ""
 "[the program is running in standard mode]"
 msgstr ""
 
-#: _viewer.pyw:4336
+#: _viewer.pyw:4343
 msgid ""
 "The program is running under 32-bit Python interpreter,\n"
 "so the memory limit is 1.5GB which is not enough.\n"
@@ -202,240 +202,244 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:4608
+#: _viewer.pyw:4615
 msgid "Please wait"
 msgstr ""
 
-#: _viewer.pyw:4917
+#: _viewer.pyw:4924
 msgid "speed"
 msgstr ""
 
-#: _viewer.pyw:4922
+#: _viewer.pyw:4929
 msgid "frame"
 msgstr ""
 
-#: _viewer.pyw:4973
+#: _viewer.pyw:4980
 msgid "viewing history"
 msgstr ""
 
-#: _viewer.pyw:5019
+#: _viewer.pyw:5026
 msgid ""
 "Setting «{}»\n"
 " saved to memory"
 msgstr ""
 
-#: _viewer.pyw:5100
+#: _viewer.pyw:5107
 msgid "Cursor scrubbing mode activated"
 msgstr ""
 
-#: _viewer.pyw:5102
+#: _viewer.pyw:5109
 msgid "Cursor scrubbing mode disactivated"
 msgstr ""
 
-#: _viewer.pyw:5452
+#: _viewer.pyw:5459
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
 msgstr ""
 
-#: _viewer.pyw:5471
+#: _viewer.pyw:5478
 msgid "Unable to save: no source file or source file is not found"
 msgstr ""
 
-#: _viewer.pyw:5498
+#: _viewer.pyw:5505
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr ""
 
-#: _viewer.pyw:5505
+#: _viewer.pyw:5512
 msgid "The image is saved in file"
 msgstr ""
 
-#: _viewer.pyw:5509
+#: _viewer.pyw:5516
 msgid "Choose folder to put images in"
 msgstr ""
 
-#: _viewer.pyw:5535
+#: _viewer.pyw:5542
 msgid "Save file"
 msgstr ""
 
-#: _viewer.pyw:5599
+#: _viewer.pyw:5606
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr ""
 
-#: _viewer.pyw:5610
+#: _viewer.pyw:5617
 msgid "pasted!"
 msgstr ""
 
-#: _viewer.pyw:5690
+#: _viewer.pyw:5697
 msgid "Open folder \"{0}\" in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5710
+#: _viewer.pyw:5717
 msgid "Minimize"
 msgstr ""
 
-#: _viewer.pyw:5722
+#: _viewer.pyw:5729
 msgid "DEBUG"
 msgstr ""
 
-#: _viewer.pyw:5727
+#: _viewer.pyw:5734
 msgid "Show FPS"
 msgstr ""
 
-#: _viewer.pyw:5732
+#: _viewer.pyw:5739
 msgid "Antialiasing and pixmap smoothing"
 msgstr ""
 
-#: _viewer.pyw:5741
+#: _viewer.pyw:5748
 msgid "Rounded previews"
 msgstr ""
 
-#: _viewer.pyw:5750
+#: _viewer.pyw:5757
 msgid "Cursor scrubbing for animation files"
 msgstr ""
 
-#: _viewer.pyw:5756
+#: _viewer.pyw:5763
 msgid "DEBUG tools..."
 msgstr ""
 
-#: _viewer.pyw:5762
+#: _viewer.pyw:5769
 msgid "Settings..."
 msgstr ""
 
-#: _viewer.pyw:5763 control_panel.py:504 control_panel.py:522
+#: _viewer.pyw:5770 control_panel.py:504 control_panel.py:522
 msgid "Help"
 msgstr ""
 
-#: _viewer.pyw:5764
+#: _viewer.pyw:5771
 msgid "Message the developer"
 msgstr ""
 
-#: _viewer.pyw:5770
+#: _viewer.pyw:5777
 msgid "Always on top"
 msgstr ""
 
-#: _viewer.pyw:5772
+#: _viewer.pyw:5779
 msgid "Disable \"Always on top\""
 msgstr ""
 
-#: _viewer.pyw:5776
+#: _viewer.pyw:5783
 msgid "Show window frame"
 msgstr ""
 
-#: _viewer.pyw:5778
+#: _viewer.pyw:5785
 msgid "Hide window frame and maximize"
 msgstr ""
 
-#: _viewer.pyw:5782
+#: _viewer.pyw:5789
 msgid "Leave full-screen mode"
 msgstr ""
 
-#: _viewer.pyw:5784
+#: _viewer.pyw:5791
 msgid "Go full screen"
 msgstr ""
 
-#: _viewer.pyw:5790
+#: _viewer.pyw:5797
 msgid "Narrow window back to monitor frame"
 msgstr ""
 
-#: _viewer.pyw:5792
+#: _viewer.pyw:5799
 msgid "Expand window to two monitors frame"
 msgstr ""
 
-#: _viewer.pyw:5795
+#: _viewer.pyw:5802
 msgid "Switch the window to the monitor on the right"
 msgstr ""
 
-#: _viewer.pyw:5796
+#: _viewer.pyw:5803
 msgid "Switch the window to the monitor on the left"
 msgstr ""
 
-#: _viewer.pyw:5798
+#: _viewer.pyw:5805
 msgid "Next grayscale filter state"
 msgstr ""
 
-#: _viewer.pyw:5803
+#: _viewer.pyw:5810
 msgid "Restart app in standard mode"
 msgstr ""
 
-#: _viewer.pyw:5805
+#: _viewer.pyw:5812
 msgid "Restart app (to purge unused data in memory)"
 msgstr ""
 
-#: _viewer.pyw:5807
+#: _viewer.pyw:5814
 msgid "Open in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5811
+#: _viewer.pyw:5818
 msgid "Line EyeDropper Tool..."
 msgstr ""
 
-#: _viewer.pyw:5831
+#: _viewer.pyw:5838
 msgid "Open unsupported file..."
 msgstr ""
 
-#: _viewer.pyw:5838
+#: _viewer.pyw:5845
 msgid "Edit comment text {0}"
 msgstr ""
 
-#: _viewer.pyw:5841
+#: _viewer.pyw:5848
 msgid "Redefine comment borders {0}"
 msgstr ""
 
-#: _viewer.pyw:5844
+#: _viewer.pyw:5851
 msgid "Delete comment {0}"
 msgstr ""
 
-#: _viewer.pyw:5851
+#: _viewer.pyw:5858
 msgid "Copy metadata to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5856
+#: _viewer.pyw:5863
 msgid "Find on disk"
 msgstr ""
 
-#: _viewer.pyw:5857 board.py:863
+#: _viewer.pyw:5864 board.py:863
 msgid "Open in Google Chrome"
 msgstr ""
 
-#: _viewer.pyw:5858
+#: _viewer.pyw:5865
 msgid "Place image in window center"
 msgstr ""
 
-#: _viewer.pyw:5863
+#: _viewer.pyw:5870
 msgid "Change SVG rasterization resolution..."
 msgstr ""
 
-#: _viewer.pyw:5867
+#: _viewer.pyw:5874
 msgid "Save .png file..."
 msgstr ""
 
-#: _viewer.pyw:5868
+#: _viewer.pyw:5875
 msgid "Save .jpg file..."
 msgstr ""
 
-#: _viewer.pyw:5870
+#: _viewer.pyw:5877
 msgid "Copy to clipboard"
 msgstr ""
 
-#: _viewer.pyw:5871
+#: _viewer.pyw:5878
 msgid "Paste from clipboard"
 msgstr ""
 
-#: _viewer.pyw:5875
+#: _viewer.pyw:5882
 msgid "Switch from fovorites folder to actual image folder"
 msgstr ""
 
-#: _viewer.pyw:5889 line_eyedropper_tool.py:356
+#: _viewer.pyw:5896 line_eyedropper_tool.py:356
 msgid "Hide this menu"
 msgstr ""
 
-#: _viewer.pyw:5925
+#: _viewer.pyw:5932
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr ""
 
-#: _viewer.pyw:5958
+#: _viewer.pyw:5965
 msgid "No images to show"
+msgstr ""
+
+#: autoscroll.py:66
+msgid "autoscroll speed {0}"
 msgstr ""
 
 #: board.py:178

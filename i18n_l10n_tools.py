@@ -80,6 +80,7 @@ files_to_parse = [
     'hidapi_adapter.py', #DONE
     'colorpicker.py', #DONE
     'line_eyedropper_tool.py', #DONE
+    'autoscroll.py', #DONE
 ]
 
 def get_locales(this_folder):
