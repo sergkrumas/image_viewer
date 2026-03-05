@@ -227,3 +227,11 @@ class AutoscrollMixin():
                 painter.drawEllipse(el_rect)
 
                 painter.restore()
+
+
+if __name__ == '__main__':
+
+    # для запуска программы прямо из этого файла при разработке и отладке
+    import subprocess
+    subprocess.Popen([sys.executable, "-u", "_viewer.pyw"])
+    sys.exit()
