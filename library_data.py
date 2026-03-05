@@ -953,45 +953,17 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def update_folder_columns(cls, folder_data):
         Globals = LibraryData().globals
         MW = Globals.main_window
-        library_width = MW.rect().width()
-        SCROLLBAR_WIDTH = MW.SCROLLBAR_WIDTH
-        # вычитаем место для скроллбаров, чтобы они всегда помещались
-        waterfall_width = MW.rect().width() - SCROLLBAR_WIDTH*10
 
-        def get_columns_number_based_on_width(columns_space, waterfall=False):
-            count = int(columns_space/Globals.PREVIEW_WIDTH)
-            count = max(count, 1)
-            if waterfall and count > 1:
-                gap = MW.waterfall_grid_get_horizontal_spacing()
-                # gap добавляется и к columns_space, чтобы не возиться с лишними ветвлениями
-                count = int((columns_space+gap)/(Globals.PREVIEW_WIDTH+gap))
-                count = max(count, 1)
-            return count
+        PreviewsGrid = FolderData.PreviewsGrid
+        if folder_data and folder_data.previews_done:
+            folder_data.library_previews = PreviewsGrid.create_grid_after_previews_done(folder_data)
+            folder_data.waterfall_previews = PreviewsGrid.create_grid_after_previews_done(folder_data, waterfall=True)
 
-        if folder_data and folder_data.previews_done and folder_data.images_list:
-            folder_data.library_previews = FolderData.PreviewsGrid.create_grid_after_previews_done(
-                folder_data,
-                get_columns_number_based_on_width(library_width/2),
-                Globals.PREVIEW_WIDTH,
-            )
-            desired_number = int(MW.STNG.waterfall_columns_number)
-            calc_number = get_columns_number_based_on_width(waterfall_width, waterfall=True)
-            if desired_number == 0:
-                number = calc_number
-            else:
-                number = min(desired_number, calc_number)
-            folder_data.waterfall_previews = FolderData.PreviewsGrid.create_grid_after_previews_done(
-                folder_data,
-                number,
-                Globals.PREVIEW_WIDTH,
-                waterfall=True,
-            )
             if MW.waterfall_appstart:
                 MW.waterfall_appstart = False
                 MW.waterfall_update_waterfall_on_app_start()
 
-            LibraryData().globals.main_window.update()
-
+            MW.update()
 
     @classmethod
     def update_current_folder_columns(cls):
@@ -1562,6 +1534,36 @@ class FolderData():
             self.create_columns()
             self._images_data_in_layout = []
 
+        @classmethod
+        def get_columns_number(cls, waterfall=False):
+            MW = LibraryData.globals.main_window
+            if waterfall:
+                SCROLLBAR_WIDTH = MW.SCROLLBAR_WIDTH
+                # вычитаем место для скроллбаров, чтобы они всегда помещались
+                waterfall_width = MW.rect().width() - SCROLLBAR_WIDTH*10
+                calc_number = cls.calc_columns_number(MW, waterfall_width, waterfall=True)
+                desired_number = int(MW.STNG.waterfall_columns_number)
+                if desired_number == 0:
+                    number = calc_number
+                else:
+                    number = min(desired_number, calc_number)
+                return number
+            else:
+                library_width = MW.rect().width()
+                library_width /= 2
+                return cls.calc_columns_number(MW, library_width)
+
+        @classmethod
+        def calc_columns_number(cls, MW, columns_horizontal_space, waterfall=False):
+            count = int(columns_horizontal_space/LibraryData.globals.PREVIEW_WIDTH)
+            count = max(count, 1)
+            if waterfall and count > 1:
+                gap = MW.waterfall_grid_get_horizontal_spacing()
+                # gap добавляется и к columns_horizontal_space, чтобы не возиться с лишними ветвлениями
+                count = int((columns_horizontal_space+gap)/(LibraryData.globals.PREVIEW_WIDTH+gap))
+                count = max(count, 1)
+            return count
+
         def create_columns(self):
             self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
 
@@ -1593,15 +1595,16 @@ class FolderData():
             # ну и потом уже добавлять текущую превьюшку в image_data
 
         @classmethod
-        def create_grid_after_previews_done(cls, folder_data, number_of_columns, preview_width, waterfall=False):
+        def create_grid_after_previews_done(cls, folder_data, waterfall=False):
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
             # но при этом содержимое, то есть высота каждой превьюшки - вполне. Так что no fancy crap, ok.
 
+            number_of_columns = cls.get_columns_number(waterfall=waterfall)
             pg = folder_data.PreviewsGrid(number_of_columns)
             pg.create_columns()
-            pg.set_column_width(preview_width)
+            pg.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
 
             if waterfall:
                 MW = LibraryData().globals.main_window
