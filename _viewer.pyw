@@ -279,11 +279,18 @@ class AppMixin():
         parser.add_argument('path', nargs='?', default=None)
         parser.add_argument('-lite', help="", action="store_true")
         parser.add_argument('-standard', help="", action="store_true")
+
         parser.add_argument('-frame', help="", action="store_true")
-        parser.add_argument('-library', help="", action="store_true")
+
         parser.add_argument('-rerun', help="", action="store_true")
         parser.add_argument('-aftercrash', help="", action="store_true")
+
         parser.add_argument('-board', help='', action='store_true')
+        parser.add_argument('-library', help="", action="store_true")
+        parser.add_argument('-viewer', help="", action="store_true")
+        parser.add_argument('-waterfall', help="", action="store_true")
+        parser.add_argument('-startpage', help="", action="store_true")
+
         args = parser.parse_args(sys.argv[1:])
         # print(args)
         Globals.args = args
