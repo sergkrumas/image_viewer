@@ -966,7 +966,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             return count
 
         if folder_data and folder_data.previews_done:
-            folder_data.create_previews_columns(
+            folder_data.create_preview_grids(
                 get_columns_number_based_on_width(library_width/2),
                 Globals.PREVIEW_WIDTH,
             )
@@ -977,7 +977,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 number = calc_number
             else:
                 number = min(desired_number, calc_number)
-            folder_data.create_previews_columns(
+            folder_data.create_preview_grids(
                 number,
                 Globals.PREVIEW_WIDTH,
                 waterfall=True,
@@ -1570,7 +1570,7 @@ class FolderData():
         def set_filter(self, value):
             self.filter = value
 
-    def create_previews_columns(self, number_of_columns, preview_width, waterfall=False):
+    def create_preview_grids(self, number_of_columns, preview_width, waterfall=False):
         if self.images_list:
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
