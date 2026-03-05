@@ -173,10 +173,10 @@ class AutoscrollMixin():
 
             elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
                 cf = LibraryData().current_folder()
-                cf.waterfall_previews_scroll_offset -= velocity_y
+                cf.waterfall_previews.scroll_offset -= velocity_y
                 content_height = self.waterfall_page_previews_columns_content_height(cf)
-                cf.waterfall_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.waterfall_previews_scroll_offset,
+                cf.waterfall_previews.scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.waterfall_previews.scroll_offset,
                                                             0,
                                                             content_height,
                                                             WATERFALL_VIEWFRAME_HEIGHT,

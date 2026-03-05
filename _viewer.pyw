@@ -2711,7 +2711,7 @@ class MainWindow(QMainWindow,
 
         # клампим для валидности
         VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
-        if cf.waterfall_columns:
+        if cf.waterfall_previews.columns:
             content_height = self.waterfall_page_previews_columns_content_height(cf)
             if content_height > VIEWFRAME_HEIGHT:
                 offset = self.apply_scroll_and_limits(offset, 0, content_height, VIEWFRAME_HEIGHT)
@@ -2720,7 +2720,7 @@ class MainWindow(QMainWindow,
         else:
             offset = 0
 
-        cf.waterfall_previews_scroll_offset = offset
+        cf.waterfall_previews.scroll_offset = offset
 
     def waterfall_enter_modal_viewer_on_app_start(self):
         self.waterfall_appstart = True
@@ -3158,7 +3158,7 @@ class MainWindow(QMainWindow,
             elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
                 slide_content_height = self.waterfall_page_previews_columns_content_height(cf)-WATERFALL_VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
-                cf.waterfall_previews_scroll_offset = -offset
+                cf.waterfall_previews.scroll_offset = -offset
 
             self.update()
 
@@ -3326,7 +3326,7 @@ class MainWindow(QMainWindow,
         # при определении самого длинного столбца ниже.
         # Иначе просто невозможно будет проскроллить до самого конца.
         # (вертикальные отступы уже учтены в c.height)
-        max_height_col = max(folder_data.waterfall_columns, key=lambda c: c.height)
+        max_height_col = max(folder_data.waterfall_previews.columns, key=lambda c: c.height)
         height += max_height_col.height
         # добавляем пустое поле внизу списка
         height += self.PREVIEWS_AREA_SCROLL_SPACING
@@ -3399,10 +3399,10 @@ class MainWindow(QMainWindow,
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
             cf = LibraryData().current_folder()
-            if cf.waterfall_columns:
+            if cf.waterfall_previews.columns:
                 content_height = self.waterfall_page_previews_columns_content_height(cf)
                 if content_height > VIEWFRAME_HEIGHT:
-                    cf.waterfall_previews_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
+                    cf.waterfall_previews.scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
 
     def content_scroll_home(self):
         self.content_scroll_ends(True)
@@ -3455,11 +3455,11 @@ class MainWindow(QMainWindow,
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
             cf = LibraryData().current_folder()
-            if cf.waterfall_columns:
+            if cf.waterfall_previews.columns:
                 content_height = self.waterfall_page_previews_columns_content_height(cf)
                 if content_height > VIEWFRAME_HEIGHT:
-                    cf.waterfall_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.waterfall_previews_scroll_offset,
+                    cf.waterfall_previews.scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.waterfall_previews.scroll_offset,
                                                             offset_delta,
                                                             content_height,
                                                             VIEWFRAME_HEIGHT,
@@ -3530,22 +3530,22 @@ class MainWindow(QMainWindow,
         return max(min_value, min(max_value, value))
 
     def waterfall_change_number_of_columns(self, event, scroll_value):
-        min_value, max_value = Settings.get_setting_span('waterfall_columns_number')
+        min_value, max_value = Settings.get_setting_span('waterfall_previews_columns_number')
         if scroll_value > 0:
             n = 1
         else:
             n = -1
         cf = LibraryData().current_folder()
-        setting_value = self.STNG.waterfall_columns_number
+        setting_value = self.STNG.waterfall_previews.columns_number
         # пока закоментил, потому что не очень интуитивно получается
-        # setting_value = self.STNG.waterfall_columns_number
-        if setting_value > cf.waterfall_number_of_columns:
+        # setting_value = self.STNG.waterfall_previews.columns_number
+        if setting_value > cf.waterfall_previews.number_of_columns:
             value = setting_value
         else:
             if setting_value == 0:
                 value = 0
             else:
-                value = cf.waterfall_number_of_columns
+                value = cf.waterfall_previews.number_of_columns
         value = int(value)
         value += n
         value = self.apply_min_max_clamping(value, min_value, max_value)
@@ -3554,8 +3554,8 @@ class MainWindow(QMainWindow,
         # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
-        self.STNG.waterfall_columns_number = float(value)
-        Settings.postponed_set('waterfall_columns_number', float(value))
+        self.STNG.waterfall_previews.columns_number = float(value)
+        Settings.postponed_set('waterfall_previews.columns_number', float(value))
         value = int(value)
         if value == 0:
             msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
@@ -3564,7 +3564,7 @@ class MainWindow(QMainWindow,
         else:
             msg = _("You've set {0} columns").format(value)
         LibraryData().update_current_folder_columns()
-        msg += f"\n\n{cf.waterfall_number_of_columns} columns are now displayed"
+        msg += f"\n\n{cf.waterfall_previews.number_of_columns} columns are now displayed"
         self.show_center_label(msg)
         self.update()
 
@@ -4222,14 +4222,14 @@ class MainWindow(QMainWindow,
         cf = LibraryData().current_folder()
 
         interaction_list = self.waterfall_previews_list = []
-        columns = cf.waterfall_columns
+        columns = cf.waterfall_previews.columns
         active_item = self.waterfall_previews_list_active_item
 
         r = content_rect = self.rect()
 
         if columns:
-            number_of_cols = cf.waterfall_number_of_columns
-            content_width = number_of_cols*cf.column_width
+            number_of_cols = cf.waterfall_previews.number_of_columns
+            content_width = number_of_cols*cf.waterfall_previews.column_width
             content_width += (number_of_cols-1)*self.waterfall_grid_get_horizontal_spacing()
 
             left_offset = (self.rect().width()-content_width)/2
@@ -4243,7 +4243,7 @@ class MainWindow(QMainWindow,
                                         interaction_list,
                                         active_item,
                                         content_rect,
-                                        cf.column_width, cf.waterfall_previews_scroll_offset,
+                                        cf.waterfall_previews.column_width, cf.waterfall_previews.scroll_offset,
                                         bool(cf.images_list),
                                         render_as_blackplate,
                                         hor_gap=self.waterfall_grid_get_horizontal_spacing(),
@@ -4492,7 +4492,7 @@ class MainWindow(QMainWindow,
                                         interaction_list,
                                         active_item,
                                         right_col_check_rect,
-                                        cf.column_width, cf.library_previews_scroll_offset,
+                                        cf.library_previews.column_width, cf.library_previews_scroll_offset,
                                         bool(cf.images_list),
                                         corner_radius=self.STNG.library_corner_radius,
                                     )
@@ -4645,7 +4645,7 @@ class MainWindow(QMainWindow,
         ha = not any(self.corner_menu_visibility)
 
         offset_times = 4
-        if cf.waterfall_columns:
+        if cf.waterfall_previews.columns:
             self.draw_vertical_scrollbar(painter,
                 content_height=content_height,
                 viewframe_height=viewframe_height,
@@ -4655,7 +4655,7 @@ class MainWindow(QMainWindow,
                     SCROLLBAR_WIDTH,
                     SCROLLBAR_HEIGHT,
                 ),
-                content_offset=cf.waterfall_previews_scroll_offset,
+                content_offset=cf.waterfall_previews.scroll_offset,
                 index=vs.WATERFALL_PAGE_LEFT,
                 curpos=curpos,
                 highlighting_allowed=ha,
@@ -4670,7 +4670,7 @@ class MainWindow(QMainWindow,
                     SCROLLBAR_WIDTH,
                     SCROLLBAR_HEIGHT,
                 ),
-                content_offset=cf.waterfall_previews_scroll_offset,
+                content_offset=cf.waterfall_previews.scroll_offset,
                 index=vs.WATERFALL_PAGE_RIGHT,
                 curpos=curpos,
                 highlighting_allowed=ha,

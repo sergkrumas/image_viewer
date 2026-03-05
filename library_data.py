@@ -1401,12 +1401,6 @@ class FolderData():
         self.viewed_list = []
         self._images_list_selected = list()
 
-        self.library_previews_scroll_offset = 0
-        self.waterfall_previews_scroll_offset = 0
-        self.column_width = 0
-
-        self.waterfall_number_of_columns = 0
-
         self.sort_type = "original"
         self.sort_type_reversed = False
 
@@ -1429,8 +1423,12 @@ class FolderData():
                 # raise Exception("Should never happen")
         else:
             self._index = 0
-        self.library_columns = []
-        self.waterfall_columns = []
+
+        # self.library_columns = []
+        # self.waterfall_columns = []
+
+        self.waterfall_previews = self.PreviewsGrid(0)
+        self.library_previews = self.PreviewsGrid(0)
 
     modifiers_attrs = [
         'deep_scan',
@@ -1548,36 +1546,60 @@ class FolderData():
                 ico.addPixmap(QPixmap(path))
                 return ico.pixmap(QSize(50, 50))
 
-    def create_previews_columns(self, number_of_columns, preview_width, thread_instance=None, waterfall=False):
+    class PreviewsGrid():
+
+        def __init__(self, number_of_columns):
+            self.columns = []
+            self.scroll_offset = 0
+            self.number_of_columns = number_of_columns
+            self.gap = 0
+            self.column_width = 0
+            self.filter = False
+            self.create_columns()
+
+        def create_columns(self):
+            self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
+
+        def set_vertical_gap(self, gap):
+            self.gap = gap
+
+        def add_image(self, image_data):
+            if self.filter and image_data.preview_error:
+                pass
+            else:
+                min_content_height_col = min(self.columns, key=lambda col: col.height)
+                min_content_height_col.add_image(image_data, self.gap)
+
+        def set_filter(self, value):
+            self.filter = value
+
+    def create_previews_columns(self, number_of_columns, preview_width, waterfall=False):
         if self.images_list:
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
             # но при этом содержимое - вполне. Так что no fancy crap, ok.
-            columns = [LibraryModeImageColumn() for i in range(number_of_columns)]
-            MW = LibraryData().globals.main_window
-            gap_height = MW.waterfall_grid_get_vertical_spacing() if waterfall else 0.0
-            # для waterfall больше не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
-            images_list = filter(lambda imd: not imd.preview_error, self.images_list) if waterfall else self.images_list
 
-            for n, image_data in enumerate(images_list):
-                col = min(columns, key=lambda c: c.height)
-                col.add_image(image_data, gap_height)
+            pg = self.PreviewsGrid(number_of_columns)
+            pg.create_columns()
 
             if waterfall:
-                self.waterfall_columns = columns
-                self.waterfall_previews_scroll_offset = 0
-                self.waterfall_number_of_columns = number_of_columns
-            else:
-                self.library_columns = columns
-                self.library_previews_scroll_offset = 0
-                self.library_number_of_columns = number_of_columns
-        self.column_width = preview_width
+                MW = LibraryData().globals.main_window
+                pg.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
+                # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
+                pg.set_filter(True)
 
-        if thread_instance is not None:
-            thread_instance.update_signal.emit(None)
-        else:
-            LibraryData().globals.main_window.update()
+            for n, image_data in enumerate(self.images_list):
+                pg.add_image(image_data)
+
+            pg.column_width = preview_width
+
+            if waterfall:
+                self.waterfall_previews = pg
+            else:
+                self.library_previews = pg
+
+        LibraryData().globals.main_window.update()
 
 class ImageData():
     def get_creation_date(self):
