@@ -941,6 +941,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 thread_instance.update_signal.emit(data)
                 return
 
+        folder_data.waterfall_previews.finished()
+        folder_data.library_previews.finished()
+
         folder_data.previews_done = True
         Globals = LibraryData().globals
         if Globals.main_window:
@@ -966,7 +969,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             return count
 
         if folder_data and folder_data.previews_done:
-            folder_data.create_preview_grids(
+            FolderData.PreviewsGrid.create_grid_after_previews_done(
+                folder_data,
                 get_columns_number_based_on_width(library_width/2),
                 Globals.PREVIEW_WIDTH,
             )
@@ -977,7 +981,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 number = calc_number
             else:
                 number = min(desired_number, calc_number)
-            folder_data.create_preview_grids(
+            FolderData.PreviewsGrid.create_grid_after_previews_done(
+                folder_data,
                 number,
                 Globals.PREVIEW_WIDTH,
                 waterfall=True,
@@ -1553,6 +1558,7 @@ class FolderData():
             self.column_width = 0
             self.filter = False
             self.create_columns()
+            self._images_data_in_layout = []
 
         def create_columns(self):
             self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
@@ -1566,37 +1572,42 @@ class FolderData():
             else:
                 min_content_height_col = min(self.columns, key=lambda col: col.height)
                 min_content_height_col.add_image(image_data, self.gap)
+                self._images_data_in_layout.append(image_data)
 
         def set_filter(self, value):
             self.filter = value
 
-    def create_preview_grids(self, number_of_columns, preview_width, waterfall=False):
-        if self.images_list:
-            # (30 янв 26) тут я хотел досрочно выходить из функции, если
-            # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
-            # но потом пришла мысль, что кол-во картинок может не изменится,
-            # но при этом содержимое - вполне. Так что no fancy crap, ok.
+        def finished(self):
+            self._images_data_in_layout.clear()
 
-            pg = self.PreviewsGrid(number_of_columns)
-            pg.create_columns()
+        @classmethod
+        def create_grid_after_previews_done(cls, folder_data, number_of_columns, preview_width, waterfall=False):
+            if folder_data.images_list:
+                # (30 янв 26) тут я хотел досрочно выходить из функции, если
+                # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
+                # но потом пришла мысль, что кол-во картинок может не изменится,
+                # но при этом содержимое - вполне. Так что no fancy crap, ok.
 
-            if waterfall:
-                MW = LibraryData().globals.main_window
-                pg.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
-                # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
-                pg.set_filter(True)
+                pg = folder_data.PreviewsGrid(number_of_columns)
+                pg.create_columns()
 
-            for n, image_data in enumerate(self.images_list):
-                pg.add_image(image_data)
+                if waterfall:
+                    MW = LibraryData().globals.main_window
+                    pg.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
+                    # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
+                    pg.set_filter(True)
 
-            pg.column_width = preview_width
+                for n, image_data in enumerate(folder_data.images_list):
+                    pg.add_image(image_data)
 
-            if waterfall:
-                self.waterfall_previews = pg
-            else:
-                self.library_previews = pg
+                pg.column_width = preview_width
 
-        LibraryData().globals.main_window.update()
+                if waterfall:
+                    folder_data.waterfall_previews = pg
+                else:
+                    folder_data.library_previews = pg
+
+            LibraryData().globals.main_window.update()
 
 class ImageData():
     def get_creation_date(self):
