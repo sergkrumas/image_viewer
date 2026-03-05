@@ -77,7 +77,6 @@ class AutoscrollMixin():
         if setting_id is not None:
             return getattr(self.STNG, setting_id)
         else:
-            print('make')
             return 1.0
 
     def autoscroll_set_current_page_indicator(self):
@@ -131,6 +130,8 @@ class AutoscrollMixin():
         self.update()
 
     def autoscroll_intro_for_LibraryWaterfall_pages(self, scrollbar_index):
+        LibraryData = self.LibraryData
+
         vs = self.vertical_scrollbars
         sb_data = vs.data[scrollbar_index]
         vs.capture_index = scrollbar_index
@@ -142,6 +143,8 @@ class AutoscrollMixin():
             vs.captured_scroll_offset = cf.library_previews.scroll_offset
 
     def autoscroll_do_for_LibraryWaterfall_pages(self, velocity_y):
+        LibraryData = self.LibraryData
+
         vs = self.vertical_scrollbars
         index = vs.capture_index
         LIBRARY_VIEWFRAME_HEIGHT = self.library_page_viewframe_height()
