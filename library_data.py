@@ -954,7 +954,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         Globals = LibraryData().globals
         MW = Globals.main_window
 
-        create_grid = FolderData.PreviewsGrid.create_grid_if_previews_done
+        create_grid = FolderData.PreviewsGrid.create_grid_if_folder_previews_done
         if folder_data and folder_data.previews_done:
             folder_data.library_previews = create_grid(folder_data, MW.pages.LIBRARY_PAGE)
             folder_data.waterfall_previews = create_grid(folder_data, MW.pages.WATERFALL_PAGE)
@@ -1602,7 +1602,7 @@ class FolderData():
             # ну и потом уже добавлять текущую превьюшку в image_data
 
         @classmethod
-        def create_grid_if_previews_done(cls, folder_data, page):
+        def create_grid_if_folder_previews_done(cls, folder_data, page):
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
