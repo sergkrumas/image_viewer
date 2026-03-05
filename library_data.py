@@ -20,7 +20,7 @@
 
 from _utils import *
 
-from settings_handling import Settings 
+from settings_handling import Settings
 from commenting import CommentingLibraryDataMixin
 from board import BoardLibraryDataMixin
 from tagging import TaggingLibraryDataMixin
@@ -1542,7 +1542,7 @@ class FolderData():
                 SCROLLBAR_WIDTH = MW.SCROLLBAR_WIDTH
                 # вычитаем место для скроллбаров, чтобы они всегда помещались
                 waterfall_width = MW.rect().width() - SCROLLBAR_WIDTH*10
-                calc_number = cls.calc_columns_number(waterfall_width, waterfall_page=True)
+                calc_number = cls.calc_columns_number(waterfall_width, page)
                 desired_number = int(MW.STNG.waterfall_columns_number)
                 if desired_number == 0:
                     number = calc_number
@@ -1554,11 +1554,13 @@ class FolderData():
 
                 library_width = MW.rect().width()
                 library_width /= 2
-                return cls.calc_columns_number(library_width)
+                return cls.calc_columns_number(library_width, page)
 
         @classmethod
-        def calc_columns_number(cls, columns_horizontal_space, waterfall_page=False):
+        def calc_columns_number(cls, columns_horizontal_space, page):
             MW = LibraryData().globals.main_window
+            waterfall_page = (page == MW.pages.WATERFALL_PAGE)
+
             count = int(columns_horizontal_space/LibraryData.globals.PREVIEW_WIDTH)
             count = max(count, 1)
             if waterfall_page and count > 1:
@@ -1611,7 +1613,6 @@ class FolderData():
             pg.create_columns()
             pg.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
 
-            # if waterfall:
             if page == MW.pages.WATERFALL_PAGE:
                 pg.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
                 # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
