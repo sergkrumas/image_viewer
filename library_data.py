@@ -954,10 +954,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         Globals = LibraryData().globals
         MW = Globals.main_window
 
-        PreviewsGrid = FolderData.PreviewsGrid
+        create_grid = FolderData.PreviewsGrid.create_grid_after_previews_done
         if folder_data and folder_data.previews_done:
-            folder_data.library_previews = PreviewsGrid.create_grid_after_previews_done(folder_data)
-            folder_data.waterfall_previews = PreviewsGrid.create_grid_after_previews_done(folder_data, waterfall=True)
+            folder_data.library_previews = create_grid(folder_data)
+            folder_data.waterfall_previews = create_grid(folder_data, waterfall=True)
 
             if MW.waterfall_appstart:
                 MW.waterfall_appstart = False
