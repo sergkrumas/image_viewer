@@ -1580,7 +1580,7 @@ class MainWindow(QMainWindow,
         self.set_page_transparency_and_draw_callback(requested_page)
 
         if requested_page == self.pages.LIBRARY_PAGE:
-            LibraryData().update_current_folder_columns()
+            LibraryData().update_current_folder_previews_grids()
             self.library_page_scroll_autoset_or_reset()
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
@@ -1591,7 +1591,7 @@ class MainWindow(QMainWindow,
             self.transformations_allowed = False
 
         elif requested_page == self.pages.WATERFALL_PAGE:
-            LibraryData().update_current_folder_columns()
+            LibraryData().update_current_folder_previews_grids()
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
             self.waterfall_previews_list_active_item = None
@@ -2338,7 +2338,7 @@ class MainWindow(QMainWindow,
         self.center_comment_window()
 
         if self.is_library_page_active() or self.is_waterfall_page_active():
-            LibraryData().update_current_folder_columns()
+            LibraryData().update_current_folder_previews_grids()
             self.render_waterfall_backplate()
 
         Settings.center_window()
@@ -3524,7 +3524,7 @@ class MainWindow(QMainWindow,
         self.scroll_setting_value(event, scroll_value, 'waterfall_grid_spacing')
         cf = LibraryData().current_folder()
         if cf:
-            LibraryData().update_current_folder_columns()
+            LibraryData().update_current_folder_previews_grids()
         self.update()
 
     def apply_min_max_clamping(self, value, min_value, max_value):
@@ -3564,7 +3564,7 @@ class MainWindow(QMainWindow,
             msg = _("You've set {0} columns. This is the maximum!").format(value)
         else:
             msg = _("You've set {0} columns").format(value)
-        LibraryData().update_current_folder_columns()
+        LibraryData().update_current_folder_previews_grids()
         msg += f"\n\n{cf.waterfall_previews.number_of_columns} columns are now displayed"
         self.show_center_label(msg)
         self.update()

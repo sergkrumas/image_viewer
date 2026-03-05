@@ -256,7 +256,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.library_previews_list_active_item = None
         MW.waterfall_previews_list_active_item = None
         MW.library_page_scroll_autoset_or_reset()
-        self.update_current_folder_columns()
+        self.update_current_folder_previews_grids()
         MW.update_control_panel_label_text()
         self.on_current_folder_changed()
         MW.update()
@@ -302,7 +302,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.library_previews_list_active_item = None
         MW.waterfall_previews_list_active_item = None
         MW.library_page_scroll_autoset_or_reset()
-        self.update_current_folder_columns()
+        self.update_current_folder_previews_grids()
         MW.update_control_panel_label_text()
         self.on_current_folder_changed()
         MW.update()
@@ -374,7 +374,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 MW.show_image(im_data)
                 cf.current_image().load_ui_data()
                 MW.set_window_title(MW.current_image_details())
-            LibraryData.update_current_folder_columns()
+            LibraryData.update_current_folder_previews_grids()
             if force:
                 return ci
         else:
@@ -748,12 +748,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     break
             fav_folder.images_list.remove(im_data)
             self.store_fav_list()
-            LibraryData.update_folder_columns(fav_folder)
+            LibraryData.update_previews_grid(fav_folder)
             return "removed"
         else:
             fav_folder.images_list.append(image_data)
             self.store_fav_list()
-            LibraryData.update_folder_columns(fav_folder)
+            LibraryData.update_previews_grid(fav_folder)
             return "added"
 
     def is_in_fav_list(self, image_data):
@@ -947,10 +947,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         folder_data.previews_done = True
         Globals = LibraryData().globals
         if Globals.main_window:
-            LibraryData().update_folder_columns(folder_data)
+            LibraryData().update_previews_grid(folder_data)
 
     @classmethod
-    def update_folder_columns(cls, folder_data):
+    def update_previews_grid(cls, folder_data):
         Globals = LibraryData().globals
         MW = Globals.main_window
 
@@ -966,9 +966,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.update()
 
     @classmethod
-    def update_current_folder_columns(cls):
+    def update_current_folder_previews_grids(cls):
         cf = LibraryData().current_folder()
-        cls.update_folder_columns(cf)
+        cls.update_previews_grid(cf)
 
     @classmethod
     def get_user_rotations_filepath(cls, folder_data):
