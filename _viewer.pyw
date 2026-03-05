@@ -3578,7 +3578,10 @@ class MainWindow(QMainWindow,
         no_mod = event.modifiers() == Qt.NoModifier
         control_panel_undermouse = self.is_control_panel_under_mouse()
 
-        if self.is_board_page_active():
+        if self.autoscroll_cursor_over_origin():
+            self.autoscroll_set_speed_factor(scroll_value)
+
+        elif self.is_board_page_active():
             self.board_wheelEvent(event)
 
         elif self.is_start_page_active():

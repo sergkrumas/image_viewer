@@ -37,6 +37,49 @@ class AutoscrollMixin():
 
         AUTOSCROLL.desactivation_pass = False
 
+    def autoscroll_cursor_over_origin(self):
+        return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
+
+    def autoscroll_set_speed_factor(self, scroll_value):
+        if self.is_board_page_active():
+            setting_id = 'board_autoscroll_speed'
+        elif self.is_library_page_active():
+            setting_id = 'library_autoscroll_speed'
+        elif self.is_waterfall_page_active():
+            setting_id = 'waterfall_autoscroll_speed'
+        DEFAULT_FACTOR = 1.0
+        factors = [0.01, 0.10, 0.25, 0.5, 0.75, DEFAULT_FACTOR, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0]
+        current_speed_factor = self.autoscroll_get_speed_factor()
+        if current_speed_factor not in factors:
+            # в окне настроек можно выставить совершенно произвольные значения, которых нет в factors
+            current_speed_factor = DEFAULT_FACTOR
+        if scroll_value > 0:
+            index_change = +1
+        else:
+            index_change = -1
+        new_index = factors.index(current_speed_factor) + index_change
+        new_index %= len(factors)
+        speed_factor = factors[new_index]
+        setattr(self.STNG, setting_id, speed_factor)
+        self.Settings.postponed_set(setting_id, speed_factor)
+        speed_percent = f"{speed_factor*100:,}%".replace(',', ' ')
+        self.show_center_label("autoscroll speed {0}".format(speed_percent))
+
+    def autoscroll_get_speed_factor(self):
+        if self.is_board_page_active():
+            setting_id = 'board_autoscroll_speed'
+        elif self.is_library_page_active():
+            setting_id = 'library_autoscroll_speed'
+        elif self.is_waterfall_page_active():
+            setting_id = 'waterfall_autoscroll_speed'
+        else:
+            setting_id = None
+        if setting_id is not None:
+            return getattr(self.STNG, setting_id)
+        else:
+            print('make')
+            return 1.0
+
     def autoscroll_set_current_page_indicator(self):
         self.AUTOSCROLL.draw_vertical = False
         self.AUTOSCROLL.draw_horizontal = False
@@ -74,8 +117,9 @@ class AutoscrollMixin():
             diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
             vec = QVector2D(cursor_offset).normalized()*diff_l
             velocity_vec = vec.toPointF()
+            speed_factor = self.autoscroll_get_speed_factor()
             if self.is_board_page_active():
-                self.canvas_origin -= velocity_vec/25.0
+                self.canvas_origin -= velocity_vec*speed_factor/25.0
                 self.update_selection_bouding_box()
             elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars
@@ -83,7 +127,7 @@ class AutoscrollMixin():
                 if sb_index == vs.NO_SCROLLBAR:
                     self.autoscroll_finish()
                 else:
-                    self.autoscroll_do_for_LibraryWaterfall_pages(velocity_vec.y()/8.0)
+                    self.autoscroll_do_for_LibraryWaterfall_pages(velocity_vec.y()*speed_factor/8.0)
         self.update()
 
     def autoscroll_intro_for_LibraryWaterfall_pages(self, scrollbar_index):

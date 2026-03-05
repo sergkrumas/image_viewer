@@ -1047,12 +1047,14 @@ class Settings(SettingsWindow):
 
             '---librarypage': _('Library page'),
             'library_corner_radius': (10.0, (0.0, 250.0), _('Library page rounded corner radius')),
+            'library_autoscroll_speed': (1.0, (0.5, 3.0), _('Library Page autoscroll speed')),
 
 
             '---waterfallpage': _('Waterfall page'),
             'waterfall_columns_number': (0.0, (0.0, 40.0), _('Desired number of Waterfall page columns')),
             'waterfall_grid_spacing': (8.0, (0.0, 50.0), _('Waterfall page grid spacing')),
             'waterfall_corner_radius': (20.0, (0.0, 250.0), _('Waterfall page rounded corner radius')),
+            'waterfall_autoscroll_speed': (1.0, (0.5, 3.0), _('Waterfall Page autoscroll speed')),
 
 
             '---boardpage': _('Board page'),
@@ -1066,6 +1068,7 @@ class Settings(SettingsWindow):
             'transform_widget_activation_area_size': (16.0, (12.0, 20.0), _('Scaling and rotating activation-spot size')),
             'use_cbor2_instead_of_json': (True, _('Enable CBOR2 instead JSON for writing board data')),
             'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
+            'board_autoscroll_speed': (1.0, (0.5, 3.0), _('Board Page autoscroll speed')),
 
 
             '---pagestransparent': _('Pages transparent setting for full-screen mode'),
