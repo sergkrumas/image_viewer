@@ -139,7 +139,7 @@ class AutoscrollMixin():
             vs.captured_scroll_offset = LibraryData().folderslist_scroll_offset
         elif scrollbar_index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
             cf = LibraryData().current_folder()
-            vs.captured_scroll_offset = cf.library_previews_scroll_offset
+            vs.captured_scroll_offset = cf.library_previews.scroll_offset
 
     def autoscroll_do_for_LibraryWaterfall_pages(self, velocity_y):
         vs = self.vertical_scrollbars
@@ -161,10 +161,10 @@ class AutoscrollMixin():
 
             elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
                 cf = LibraryData().current_folder()
-                cf.library_previews_scroll_offset -= velocity_y
+                cf.library_previews.scroll_offset -= velocity_y
                 content_height = self.library_page_previews_columns_content_height(cf)
-                cf.library_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                            cf.library_previews_scroll_offset,
+                cf.library_previews.scroll_offset = self.apply_scroll_and_limits(
+                                                            cf.library_previews.scroll_offset,
                                                             0,
                                                             content_height,
                                                             LIBRARY_VIEWFRAME_HEIGHT,

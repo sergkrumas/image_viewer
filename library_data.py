@@ -1424,9 +1424,6 @@ class FolderData():
         else:
             self._index = 0
 
-        # self.library_columns = []
-        # self.waterfall_columns = []
-
         self.waterfall_previews = self.PreviewsGrid(0)
         self.library_previews = self.PreviewsGrid(0)
 

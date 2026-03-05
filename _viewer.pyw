@@ -3153,7 +3153,7 @@ class MainWindow(QMainWindow,
             elif index == vs.LIBRARY_PAGE_PREVIEWS_LIST:
                 slide_content_height = self.library_page_previews_columns_content_height(cf)-LIBRARY_VIEWFRAME_HEIGHT
                 offset = factor*slide_content_height
-                cf.library_previews_scroll_offset = -offset
+                cf.library_previews.scroll_offset = -offset
 
             elif index in [vs.WATERFALL_PAGE_LEFT, vs.WATERFALL_PAGE_RIGHT]:
                 slide_content_height = self.waterfall_page_previews_columns_content_height(cf)-WATERFALL_VIEWFRAME_HEIGHT
@@ -3305,7 +3305,7 @@ class MainWindow(QMainWindow,
         # добавляем пустое поле вверху списка
         height += self.PREVIEWS_AREA_SCROLL_SPACING
         # добавляем высоту контента
-        height += max(col.height for col in folder_data.library_columns)
+        height += max(col.height for col in folder_data.library_previews.columns)
         # добавляем пустое поле внизу списка
         height += self.PREVIEWS_AREA_SCROLL_SPACING
         return height
@@ -3392,10 +3392,10 @@ class MainWindow(QMainWindow,
                     LibraryData().folderslist_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
             else:
                 cf = LibraryData().current_folder()
-                if cf.library_columns:
+                if cf.library_previews.columns:
                     content_height = self.library_page_previews_columns_content_height(cf)
                     if content_height > VIEWFRAME_HEIGHT:
-                        cf.library_previews_scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
+                        cf.library_previews.scroll_offset = zero_or_value(-(content_height-VIEWFRAME_HEIGHT))
         elif self.is_waterfall_page_active():
             VIEWFRAME_HEIGHT = self.waterfall_page_viewframe_height()
             cf = LibraryData().current_folder()
@@ -3440,11 +3440,11 @@ class MainWindow(QMainWindow,
                                                             )
             else:
                 cf = LibraryData().current_folder()
-                if cf.library_columns:
+                if cf.library_previews.columns:
                     content_height = self.library_page_previews_columns_content_height(cf)
                     if content_height > VIEWFRAME_HEIGHT:
-                        cf.library_previews_scroll_offset = self.apply_scroll_and_limits(
-                                                                cf.library_previews_scroll_offset,
+                        cf.library_previews.scroll_offset = self.apply_scroll_and_limits(
+                                                                cf.library_previews.scroll_offset,
                                                                 offset_delta,
                                                                 content_height,
                                                                 VIEWFRAME_HEIGHT,
@@ -4484,7 +4484,7 @@ class MainWindow(QMainWindow,
         painter.setRenderHint(QPainter.Antialiasing, False)
 
         interaction_list = self.library_previews_list = []
-        columns = cf.library_columns
+        columns = cf.library_previews.columns
         active_item = self.library_previews_list_active_item
 
         self.draw_previews_grid(painter,
@@ -4492,7 +4492,7 @@ class MainWindow(QMainWindow,
                                         interaction_list,
                                         active_item,
                                         right_col_check_rect,
-                                        cf.library_previews.column_width, cf.library_previews_scroll_offset,
+                                        cf.library_previews.column_width, cf.library_previews.scroll_offset,
                                         bool(cf.images_list),
                                         corner_radius=self.STNG.library_corner_radius,
                                     )
@@ -4707,7 +4707,7 @@ class MainWindow(QMainWindow,
         )
 
         cf = LibraryData().current_folder()
-        if cf.library_columns:
+        if cf.library_previews.columns:
             self.draw_vertical_scrollbar(painter,
                 content_height=self.library_page_previews_columns_content_height(cf),
                 viewframe_height=viewframe_height,
@@ -4717,7 +4717,7 @@ class MainWindow(QMainWindow,
                     SCROLLBAR_WIDTH,
                     SCROLLBAR_HEIGHT,
                 ),
-                content_offset=cf.library_previews_scroll_offset,
+                content_offset=cf.library_previews.scroll_offset,
                 index=vs.LIBRARY_PAGE_PREVIEWS_LIST,
                 curpos=curpos,
             )
