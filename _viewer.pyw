@@ -280,7 +280,7 @@ class AppMixin():
         parser.add_argument('-lite', help="", action="store_true")
         parser.add_argument('-standard', help="", action="store_true")
         parser.add_argument('-frame', help="", action="store_true")
-        parser.add_argument('-forcelibrarypage', help="", action="store_true")
+        parser.add_argument('-library', help="", action="store_true")
         parser.add_argument('-rerun', help="", action="store_true")
         parser.add_argument('-aftercrash', help="", action="store_true")
         parser.add_argument('-board', help='', action='store_true')
@@ -404,7 +404,7 @@ class AppMixin():
             else:
                 # без запроса
                 LibraryData().create_empty_virtual_folder()
-            if args.forcelibrarypage:
+            if args.library:
                 MW.change_page(MW.pages.LIBRARY_PAGE)
 
         # вход в петлю обработки сообщений
@@ -630,7 +630,7 @@ class AppMixin():
             app_path = sys.argv[0]
         args = [sys.executable, app_path, path, "-standard"]
         if is_on_library_page:
-            args.append("-forcelibrarypage")
+            args.append("-library")
         subprocess.Popen(args)
         app = QApplication.instance()
         app.exit()
