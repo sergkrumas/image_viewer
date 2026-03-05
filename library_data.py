@@ -1526,7 +1526,6 @@ class FolderData():
     class PreviewsGrid():
 
         def __init__(self, number_of_columns, page):
-            self.columns = []
             self.scroll_offset = 0
             self.number_of_columns = number_of_columns
             self.gap = 0
@@ -1612,7 +1611,6 @@ class FolderData():
 
             number_of_columns = cls.get_columns_number(page)
             pg = folder_data.PreviewsGrid(number_of_columns, page)
-            pg.create_columns()
             pg.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
 
             if page == MW.pages.WATERFALL_PAGE:
