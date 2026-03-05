@@ -55,13 +55,16 @@ class ThumbnailsPreviewsThread(QThread):
         self.threads_pool.append(self)
         ############################################################
         self.update_signal.connect(lambda data: _globals.main_window.update_threads_info(data))
+        self.progressive_layout_enabled = _globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS
 
     def start(self):
         super().start(QThread.IdlePriority)
 
     def run(self):
         if self.needed_thread:
-            LibraryData().make_thumbnails_and_previews(self.folder_data, self)
+            LibraryData().make_thumbnails_and_previews(self.folder_data, self,
+                progressive=self.progressive_layout_enabled
+            )
 
 class LibraryModeImageColumn():
     def __init__(self):
@@ -863,7 +866,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             image_data.preview = ERROR_PREVIEW_PIXMAP
 
     @staticmethod
-    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False):
+    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False, progressive=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
@@ -915,6 +918,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             pass_time = time.time() - start_time
 
+            if progressive:
+                FolderData.PreviewsGrid.step(folder_data, image_data)
+
             LibraryData().total_TIME += pass_time
 
             if thread_instance is not None:
@@ -941,28 +947,26 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 thread_instance.update_signal.emit(data)
                 return
 
-        folder_data.waterfall_previews.finished()
-        folder_data.library_previews.finished()
+        FolderData.PreviewsGrid.finish_grids(folder_data)
 
         folder_data.previews_done = True
-        Globals = LibraryData().globals
-        if Globals.main_window:
-            LibraryData().update_previews_grid(folder_data)
+        if not progressive:
+            Globals = LibraryData().globals
+            if Globals.main_window:
+                LibraryData().update_previews_grid(folder_data)
 
     @classmethod
     def update_previews_grid(cls, folder_data):
         Globals = LibraryData().globals
         MW = Globals.main_window
 
-        create_grid = FolderData.PreviewsGrid.create_grid_if_folder_previews_done
+        create_grid = FolderData.PreviewsGrid.create_grid
         if folder_data and folder_data.previews_done:
-            folder_data.library_previews = create_grid(folder_data, MW.pages.LIBRARY_PAGE)
-            folder_data.waterfall_previews = create_grid(folder_data, MW.pages.WATERFALL_PAGE)
+            create_grid(folder_data, MW.pages.LIBRARY_PAGE)
+            create_grid(folder_data, MW.pages.WATERFALL_PAGE)
 
-            if MW.waterfall_appstart:
-                MW.waterfall_appstart = False
-                MW.waterfall_update_waterfall_on_app_start()
-
+            if not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
+                MW.waterfall_on_app_start_callback()
             MW.update()
 
     @classmethod
@@ -1535,6 +1539,14 @@ class FolderData():
             self.create_columns()
             self._images_data_in_layout = []
 
+            self.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
+
+        def configure(self, MW):
+            if self.page == MW.pages.WATERFALL_PAGE:
+                self.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
+                # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
+                self.set_filter(True)
+
         @classmethod
         def get_columns_number(cls, page):
             MW = LibraryData().globals.main_window
@@ -1594,34 +1606,66 @@ class FolderData():
         def finished(self):
             self._images_data_in_layout.clear()
 
-        def progressively_fill_layout(self, image_data):
-            pass
-            # TODO:
-            # тут надо вычислять кол-во столбцов
-                # если оно не соответствует текущему, то надо сносить старые столбцы и добавлять заново всё, что есть в _images_data_in_layout
-            # ну и потом уже добавлять текущую превьюшку в image_data
+        @classmethod
+        def finish_grids(cls, folder_data):
+            folder_data.waterfall_previews.finished()
+            folder_data.library_previews.finished()
+            MW = LibraryData().globals.main_window
+            MW.waterfall_on_app_start_callback()
 
         @classmethod
-        def create_grid_if_folder_previews_done(cls, folder_data, page):
+        def step(cls, folder_data, image_data):
+            folder_data.waterfall_previews.progressively_fill_layout(image_data)
+            folder_data.library_previews.progressively_fill_layout(image_data)
+
+        def progressively_fill_layout(self, image_data):
+            """
+                Этот метод рассчитывает столбцы ВО ВРЕМЯ ГЕНЕРАЦИИ ПРЕВЬЮШЕК,
+                тем самым сетка с превьюшками заполняется во время генерации
+            """
+            MW = LibraryData().globals.main_window
+
+            actualized_number_of_columns = self.get_columns_number(self.page)
+            if self.number_of_columns != actualized_number_of_columns:
+                # если кол-во столбцов устарело, то стосим старые столбцы,
+                # делаем новые и в эти новые добавляем уже ранее добавленные превьюшки
+                self.number_of_columns = actualized_number_of_columns
+                for col in self.columns:
+                    col.images_data.clear()
+                self.configure(MW)
+                self.create_columns()
+                for imd in self._images_data_in_layout:
+                    self.add_image(imd)
+
+            self.add_image(image_data)
+
+        @classmethod
+        def create_grid(cls, folder_data, page):
+            """
+                Этот метод класса рассчитывает столбцы, КОГДА ВСЕ ПРЕВЬЮШКИ СГЕНЕРИЛИСЬ,
+                тем самым отрабатываются ситуации,
+                когда размеры окна изменились или произошли другие события,
+                которые могут повлиять на кол-во столбцов
+            """
+
             # (30 янв 26) тут я хотел досрочно выходить из функции, если
             # number_of_columns = waterfall_number_of_columns или number_of_columns = library_number_of_columns,
             # но потом пришла мысль, что кол-во картинок может не изменится,
-            # но при этом содержимое, то есть высота каждой превьюшки - вполне. Так что no fancy crap, ok.
+            # но при этом содержимое, то есть высота каждой превьюшки, - вполне может.
+            # Так что no fancy crap, ok, оставляем всё как есть.
             MW = LibraryData().globals.main_window
 
             number_of_columns = cls.get_columns_number(page)
             pg = folder_data.PreviewsGrid(number_of_columns, page)
-            pg.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
-
-            if page == MW.pages.WATERFALL_PAGE:
-                pg.set_vertical_gap(MW.waterfall_grid_get_vertical_spacing())
-                # для waterfall никогда не показываем неподдерживаемые файлы отображаемые превьюшкой «?!»
-                pg.set_filter(True)
+            pg.configure(MW)
 
             for n, image_data in enumerate(folder_data.images_list):
                 pg.add_image(image_data)
 
-            return pg
+            if page == MW.pages.WATERFALL_PAGE:
+                folder_data.waterfall_previews = pg
+            elif page == MW.pages.LIBRARY_PAGE:
+                folder_data.library_previews = pg
 
 class ImageData():
     def get_creation_date(self):

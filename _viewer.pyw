@@ -109,6 +109,7 @@ class Globals():
     USE_GLOBAL_LIST_VIEW_HISTORY = False
     ANTIALIASING_AND_SMOOTH_PIXMAP_TRANSFORM = True
     USE_PIXMAP_PROXY_FOR_TEXT_ITEMS = True
+    ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS = True
 
     SECRET_HINTS_FILEPATH = "deep_secrets.txt"
     SESSION_FILENAME = "session.txt"
@@ -2692,6 +2693,11 @@ class MainWindow(QMainWindow,
                 Globals._timer.stop()
         self.update()
 
+    def waterfall_on_app_start_callback(self):
+        if self.waterfall_appstart:
+            self.waterfall_appstart = False
+            self.waterfall_update_waterfall_on_app_start()
+
     def waterfall_update_waterfall_on_app_start(self):
         self.waterfall_set_content_offset_to_current_image()
         self.render_waterfall_backplate()
@@ -4187,20 +4193,27 @@ class MainWindow(QMainWindow,
             painter.setOpacity(1.0)
 
     def draw_waterfall(self, painter, event):
-        if self.viewer_modal:
-            painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
-            painter.setRenderHint(QPainter.Antialiasing, False)
-            painter.drawPixmap(QPoint(0, 0), self.waterfall_backplate)
-            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-            painter.setRenderHint(QPainter.Antialiasing, True)
-
-            self.draw_viewer_modal(painter)
-            self.region_zoom_in_draw(painter)
-        else:
+        def draw_grid():
             painter.save()
             self.set_font_for_library_and_waterfall_pages(painter)
             self.draw_waterfall_content(painter)
             painter.restore()
+
+        if self.viewer_modal:
+            if Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS and not LibraryData().current_folder().previews_done:
+                draw_grid()
+                painter.fillRect(self.rect(), QBrush(QColor(0, 0, 0, 170)))
+            else:
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, False)
+                painter.setRenderHint(QPainter.Antialiasing, False)
+                painter.drawPixmap(QPoint(0, 0), self.waterfall_backplate)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+                painter.setRenderHint(QPainter.Antialiasing, True)
+
+            self.draw_viewer_modal(painter)
+            self.region_zoom_in_draw(painter)
+        else:
+            draw_grid()
 
     def draw_viewer_modal(self, painter):
         painter.save()
