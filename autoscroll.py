@@ -62,8 +62,8 @@ class AutoscrollMixin():
         speed_factor = factors[new_index]
         setattr(self.STNG, setting_id, speed_factor)
         self.Settings.postponed_set(setting_id, speed_factor)
-        speed_percent = f"{speed_factor*100:,}%".replace(',', ' ')
-        self.show_center_label("autoscroll speed {0}".format(speed_percent))
+        speed_percent = "{0:.0f}%".format(speed_factor*100)
+        self.show_center_label(_("autoscroll speed {0}").format(speed_percent), duration=2.0)
 
     def autoscroll_get_speed_factor(self):
         if self.is_board_page_active():
