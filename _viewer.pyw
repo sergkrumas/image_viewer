@@ -344,6 +344,7 @@ class AppMixin():
         # инициализация библиотеки
         LibraryData.globals = Globals
         LibraryData.FolderData = FolderData
+        LibraryData.MainWindowClass = MainWindow
         # загрузка данных библиотеки
         lib = LibraryData()
         # создание элементов интерфейса

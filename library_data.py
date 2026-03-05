@@ -1403,8 +1403,9 @@ class FolderData():
         else:
             self._index = 0
 
-        self.waterfall_previews = self.PreviewsGrid(0)
-        self.library_previews = self.PreviewsGrid(0)
+        pages = LibraryData().MainWindowClass.pages
+        self.waterfall_previews = self.PreviewsGrid(0, pages.WATERFALL_PAGE)
+        self.library_previews = self.PreviewsGrid(0, pages.LIBRARY_PAGE)
 
     modifiers_attrs = [
         'deep_scan',
@@ -1524,13 +1525,14 @@ class FolderData():
 
     class PreviewsGrid():
 
-        def __init__(self, number_of_columns):
+        def __init__(self, number_of_columns, page):
             self.columns = []
             self.scroll_offset = 0
             self.number_of_columns = number_of_columns
             self.gap = 0
             self.column_width = 0
             self.filter = False
+            self.page = page
             self.create_columns()
             self._images_data_in_layout = []
 
@@ -1609,7 +1611,7 @@ class FolderData():
             MW = LibraryData().globals.main_window
 
             number_of_columns = cls.get_columns_number(page)
-            pg = folder_data.PreviewsGrid(number_of_columns)
+            pg = folder_data.PreviewsGrid(number_of_columns, page)
             pg.create_columns()
             pg.set_column_width(LibraryData.globals.PREVIEW_WIDTH)
 
