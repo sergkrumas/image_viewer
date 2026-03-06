@@ -2677,6 +2677,7 @@ class MainWindow(QMainWindow,
         # (23 фев 26) этот код, вообще говоря, может вызыываться и когда страница waterfall неактивна
         self.viewer_modal = False
         self.waterfall_backplate = None
+        self.hide_center_label()
         if self.waterfall_block_active_item:
             cf = LibraryData().current_folder()
             image_data = cf.current_image()
