@@ -77,6 +77,7 @@ class BoardItem():
         ITEM_GROUP = ITEM_NODE = 3
         ITEM_FRAME = 4
         ITEM_NOTE = 5
+        ITEM_EDITING_TABLE = 6
 
     def __init__(self, item_type, visible=True):
         super().__init__()
