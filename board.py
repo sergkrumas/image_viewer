@@ -354,6 +354,9 @@ class BoardMixin(BoardTextEditItemMixin):
     # для поддержки миксинов
     BoardItem = BoardItem
 
+    def set_default_boardviewport_origin(self):
+        self.canvas_origin = QPointF(self.DEFAULT_CANVAS_ORIGIN)
+
     def board_viewport_reset_position_to_item(self):
         cf = self.LibraryData().current_folder()
         items_list = self.get_original_items_order(cf.board.items_list)
@@ -413,6 +416,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_debug_transform_widget = False
         self.context_menu_allowed = True
         self.long_loading = False
+
+        self.DEFAULT_CANVAS_ORIGIN = QPointF(600, 100)
 
         self.transform_cancelled = False
 
@@ -1534,12 +1539,61 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.layout_scale_x = board_item.scale_x
         board_item.layout_scale_y = board_item.scale_y
 
-
     def board_progressive_fill_layout(self, folder_data, image_data):
-        self.show_center_label(str(image_data.filepath))
+        """
+            Превьюшки могут генерится в совершенно произвольном порядке,
+            но нам всё-таки надо сохранить порядок,
+            поэтому здесь очень много кода, который это делает
+        """
 
-    def board_prepare_board_item(self, board, image_data, offset):
-        if not image_data.preview_error:
+        board = folder_data.board
+        if not hasattr(board, "progressive_board_preparation"):
+            board.items_list = []
+            pbp = board.progressive_board_preparation = type('PBPClass', (), {})()
+            pbp.forward_offset = QPointF()
+            pbp.backward_offset = QPointF()
+            pbp.pivot_index = None
+            self.DEFAULT_CANVAS_ORIGIN = QPointF(0, 0)
+        else:
+            pbp = board.progressive_board_preparation
+
+        pbp.direction = 1
+        if pbp.pivot_index is not None:
+            if folder_data.images_list.index(image_data) < pbp.pivot_index:
+                pbp.direction = -1
+            else:
+                pbp.direction = 1
+
+        bi = self.board_prepare_board_item(board, image_data,
+            pbp.forward_offset if pbp.direction == 1 else pbp.backward_offset,
+            pbp.direction
+        )
+        if bi is not None:
+            if pbp.pivot_index is None:
+                # пивот-индекс задаём именно тут, а не выше, где происходит инициализация pbp,
+                # ибо board_prepare_board_item создаёт айтем не для каждого image_data
+                pbp.pivot_index = folder_data.images_list.index(image_data)
+            self.build_board_bounding_rect(folder_data)
+
+        if self.is_board_page_active() and self.Globals.DEBUG:
+            self.show_center_label(str(image_data.filepath))
+
+    def board_prepare_board_item(self, board, image_data, offset, direction):
+
+        def _set_position(bi, imd, offset):
+            bi.position = offset + QPointF(imd.source_width, imd.source_height)/2
+            self.board_save_layout_transforms(bi)
+
+        def _offset_anchor(imd):
+            nonlocal offset
+            if self.STNG.board_vertical_items_layout:
+                offset += QPointF(0, direction*imd.source_height)
+            else:
+                offset += QPointF(direction*imd.source_width, 0)
+
+        if image_data.preview_error:
+            return None
+        else:
             board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
             # linking board and image data
             board_item.image_data = image_data
@@ -1548,15 +1602,18 @@ class BoardMixin(BoardTextEditItemMixin):
             # fill attributes and overlays
             board_item.animated_file = image_data.is_animated_file
             board_item.board_index = self.retrieve_new_board_item_index()
-            board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
-            self.board_save_layout_transforms(board_item)
-            if self.STNG.board_vertical_items_layout:
-                offset += QPointF(0, image_data.source_height)
-            else:
-                offset += QPointF(image_data.source_width, 0)
+            if direction == 1:
+                _set_position(board_item, image_data, offset)
+                _offset_anchor(image_data)
+
+            elif direction == -1:
+                _offset_anchor(image_data)
+                _set_position(board_item, image_data, offset)
+
             if not self.Globals.lite_mode:
                 board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
                 board_item._comments = self.LibraryData().get_comments_for_image(image_data)
+            return board_item
 
     def board_prepare_items_layout_and_viewport(self, folder_data):
 
@@ -1568,7 +1625,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board = folder_data.board
         board.items_list = []
         for image_data in folder_data.images_list:
-            self.board_prepare_board_item(board, image_data, offset)
+            self.board_prepare_board_item(board, image_data, offset, 1)
 
         # for board items map
         self.build_board_bounding_rect(folder_data)
@@ -1973,18 +2030,18 @@ class BoardMixin(BoardTextEditItemMixin):
         for point, canvas_scale_x, canvas_scale_y in cf.board.user_points:
             painter.drawPoint(self.board_MapToViewport(point))
 
-    def draw_grid_wrapper(self):
+    def draw_grid_wrapper(self, painter):
         if self.Globals.DEBUG or self.STNG.board_draw_grid:
             self.board_draw_grid(painter)
 
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
         if self.Globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT:
-            self.draw_grid_wrapper()
+            self.draw_grid_wrapper(painter)
             self.board_draw_content(painter, cf)
         else:
             if cf.previews_done:
-                self.draw_grid_wrapper()
+                self.draw_grid_wrapper(painter)
                 if not self.is_board_ready():
                     self.board_prepare_items_layout_and_viewport(cf)
                 else:
@@ -4042,9 +4099,6 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
-
-    def set_default_boardviewport_origin(self):
-        self.canvas_origin = QPointF(600, 100)
 
     def retrieve_selected_item(self):
         cf = self.LibraryData().current_folder()
