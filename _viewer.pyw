@@ -3539,15 +3539,15 @@ class MainWindow(QMainWindow,
         return max(min_value, min(max_value, value))
 
     def waterfall_change_number_of_columns(self, event, scroll_value):
-        min_value, max_value = Settings.get_setting_span('waterfall_previews_columns_number')
+        min_value, max_value = Settings.get_setting_span('waterfall_columns_number')
         if scroll_value > 0:
             n = 1
         else:
             n = -1
         cf = LibraryData().current_folder()
-        setting_value = self.STNG.waterfall_previews.columns_number
+        setting_value = self.STNG.waterfall_columns_number
         # пока закоментил, потому что не очень интуитивно получается
-        # setting_value = self.STNG.waterfall_previews.columns_number
+        # setting_value = self.STNG.waterfall_columns_number
         if setting_value > cf.waterfall_previews.number_of_columns:
             value = setting_value
         else:
@@ -3563,8 +3563,8 @@ class MainWindow(QMainWindow,
         # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
         # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
         # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
-        self.STNG.waterfall_previews.columns_number = float(value)
-        Settings.postponed_set('waterfall_previews.columns_number', float(value))
+        self.STNG.waterfall_columns_number = float(value)
+        Settings.postponed_set('waterfall_columns_number', float(value))
         value = int(value)
         if value == 0:
             msg = _("You've set 0 columns, so the number of columns depends only on the window width.")
