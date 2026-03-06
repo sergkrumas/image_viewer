@@ -2111,9 +2111,12 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(20)
         font.setWeight(300)
         painter.setFont(font)
-        pos = self.canvas_origin + QPoint(100, -100)
         alignment = Qt.AlignLeft
         rect = painter.boundingRect(self.rect(), alignment, text)
+        if self.STNG.board_vertical_items_layout:
+            pos = self.canvas_origin + QPointF(-100-self.board_bounding_rect.width()*self.canvas_scale_x, -100)
+        else:
+            pos = self.canvas_origin + QPointF(100, -100)
         rect.moveBottomLeft(pos.toPoint())
         painter.drawText(rect, alignment, text)
 
