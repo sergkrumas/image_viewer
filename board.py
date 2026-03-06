@@ -78,12 +78,14 @@ class BoardItem():
         ITEM_FRAME = 4
         ITEM_NOTE = 5
 
-    def __init__(self, item_type):
+    def __init__(self, item_type, visible=True):
         super().__init__()
         self.type = item_type
 
         self.pixmap = None
         self.animated = False
+
+        self.visible = visible
 
         self.scale_x = 1.0
         self.scale_y = 1.0
@@ -1600,7 +1602,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if image_data.preview_error:
             return None
         else:
-            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+            board_item = BoardItem(BoardItem.types.ITEM_IMAGE, visible=False)
             # linking board and image data
             board_item.image_data = image_data
             image_data.board_item = board_item
@@ -1619,6 +1621,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if not self.Globals.lite_mode:
                 board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
                 board_item._comments = self.LibraryData().get_comments_for_image(image_data)
+            board_item.visible = True
             return board_item
 
     def board_prepare_items_layout_and_viewport(self, folder_data):
@@ -1684,8 +1687,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.images_drawn = 0
         self.board_item_under_mouse = None
         for board_item in folder_data.board.items_list:
-            self.board_draw_item(painter, board_item)
-
+            if board_item.visible:
+                self.board_draw_item(painter, board_item)
         self.draw_selection(painter, folder_data)
 
         painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
