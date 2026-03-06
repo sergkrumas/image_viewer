@@ -356,6 +356,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def set_default_boardviewport_origin(self):
         self.canvas_origin = QPointF(self.DEFAULT_CANVAS_ORIGIN)
+        if self.DEFAULT_CANVAS_SCALE:
+            self.canvas_scale_x, self.canvas_scale_y = self.DEFAULT_CANVAS_SCALE
+            self.DEFAULT_CANVAS_SCALE = None
 
     def board_viewport_reset_position_to_item(self):
         cf = self.LibraryData().current_folder()
@@ -418,6 +421,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.long_loading = False
 
         self.DEFAULT_CANVAS_ORIGIN = QPointF(600, 100)
+        self.DEFAULT_CANVAS_SCALE = None
 
         self.transform_cancelled = False
 
@@ -1553,7 +1557,6 @@ class BoardMixin(BoardTextEditItemMixin):
             pbp.forward_offset = QPointF()
             pbp.backward_offset = QPointF()
             pbp.pivot_index = None
-            self.DEFAULT_CANVAS_ORIGIN = QPointF(0, 0)
         else:
             pbp = board.progressive_board_preparation
 
@@ -1573,6 +1576,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 # пивот-индекс задаём именно тут, а не выше, где происходит инициализация pbp,
                 # ибо board_prepare_board_item создаёт айтем не для каждого image_data
                 pbp.pivot_index = folder_data.images_list.index(image_data)
+                self.board_fit_content_on_screen(image_data)
+                self.DEFAULT_CANVAS_ORIGIN = QPointF(self.canvas_origin)
+                self.DEFAULT_CANVAS_SCALE = self.canvas_scale_x, self.canvas_scale_y
             self.build_board_bounding_rect(folder_data)
 
         if self.is_board_page_active() and self.Globals.DEBUG:
