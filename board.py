@@ -1605,24 +1605,20 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementResetColorsButtons()
         self.board_frame_items_text_rects = []
 
-        if not self.is_board_ready():
-            self.board_prepare_items_layout_and_viewport(folder_data)
-        else:
+        painter.setPen(QPen(Qt.white, 1))
+        font = painter.font()
+        font.setWeight(300)
+        font.setPixelSize(12)
+        painter.setFont(font)
 
-            painter.setPen(QPen(Qt.white, 1))
-            font = painter.font()
-            font.setWeight(300)
-            font.setPixelSize(12)
-            painter.setFont(font)
+        self.images_drawn = 0
+        self.board_item_under_mouse = None
+        for board_item in folder_data.board.items_list:
+            self.board_draw_item(painter, board_item)
 
-            self.images_drawn = 0
-            self.board_item_under_mouse = None
-            for board_item in folder_data.board.items_list:
-                self.board_draw_item(painter, board_item)
+        self.draw_selection(painter, folder_data)
 
-            self.draw_selection(painter, folder_data)
-
-            painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
+        painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
     def draw_selection(self, painter, folder_data):
         painter.save()
@@ -1972,10 +1968,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
-        if cf.previews_done:
             if self.Globals.DEBUG or self.STNG.board_draw_grid:
                 self.board_draw_grid(painter)
-            self.board_draw_content(painter, cf)
+            if not self.is_board_ready():
+                self.board_prepare_items_layout_and_viewport(cf)
+            else:
+                self.board_draw_content(painter, cf)
         else:
             self.board_draw_wait_label(painter)
 
