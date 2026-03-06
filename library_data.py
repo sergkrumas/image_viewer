@@ -56,6 +56,7 @@ class ThumbnailsPreviewsThread(QThread):
         ############################################################
         self.update_signal.connect(lambda data: _globals.main_window.update_threads_info(data))
         self.progressive_layout_enabled = _globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS
+        self.progressive_board_layout_enabled = _globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
     def start(self):
         super().start(QThread.IdlePriority)
@@ -63,7 +64,8 @@ class ThumbnailsPreviewsThread(QThread):
     def run(self):
         if self.needed_thread:
             LibraryData().make_thumbnails_and_previews(self.folder_data, self,
-                progressive=self.progressive_layout_enabled
+                progressive=self.progressive_layout_enabled,
+                progressive_board=self.progressive_board_layout_enabled
             )
 
 class LibraryModeImageColumn():
@@ -866,7 +868,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             image_data.preview = ERROR_PREVIEW_PIXMAP
 
     @staticmethod
-    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False, progressive=False):
+    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False, 
+                                                        progressive=False, progressive_board=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
@@ -893,7 +896,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 image_data.preview_error = True
             else:
                 try:
-                    # try only for .avif-files
+                    # try for .avif-files only
                     source = load_image_respect_orientation(image_data.filepath)
                     image_data.preview_error = False
                 except:
@@ -917,11 +920,17 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 LibraryData().make_thumbnail(Globals, image_data, image_data.preview)
 
             pass_time = time.time() - start_time
+            LibraryData().total_TIME += pass_time
 
+            # TODO: (6 мар 26) вообще говоря,
+            # нехорошо тут и ниже вызывать это всё напрямую,
+            # но в царстве GIL это нормально
             if progressive:
                 FolderData.PreviewsGrid.step(folder_data, image_data)
-
-            LibraryData().total_TIME += pass_time
+            if progressive_board:
+                MW = LibraryData().globals.main_window
+                if MW:
+                    MW.board_progressive_fill_layout(folder_data, image_data)
 
             if thread_instance is not None:
                 data = ThreadRuntimeData(
@@ -1178,7 +1187,7 @@ class BoardData():
         self.origin = None
         self.scale_x = None
         self.scale_y = None
-        self.ready = False
+        self.ready = False or LibraryData().globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
         self.user_points = []
         self.items_list = []

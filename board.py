@@ -1534,6 +1534,30 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.layout_scale_x = board_item.scale_x
         board_item.layout_scale_y = board_item.scale_y
 
+
+    def board_progressive_fill_layout(self, folder_data, image_data):
+        self.show_center_label(str(image_data.filepath))
+
+    def board_prepare_board_item(self, board, image_data, offset):
+        if not image_data.preview_error:
+            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+            # linking board and image data
+            board_item.image_data = image_data
+            image_data.board_item = board_item
+            board.items_list.append(board_item)
+            # fill attributes and overlays
+            board_item.animated_file = image_data.is_animated_file
+            board_item.board_index = self.retrieve_new_board_item_index()
+            board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
+            self.board_save_layout_transforms(board_item)
+            if self.STNG.board_vertical_items_layout:
+                offset += QPointF(0, image_data.source_height)
+            else:
+                offset += QPointF(image_data.source_width, 0)
+            if not self.Globals.lite_mode:
+                board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
+                board_item._comments = self.LibraryData().get_comments_for_image(image_data)
+
     def board_prepare_items_layout_and_viewport(self, folder_data):
 
         # layout and items overlays
@@ -1544,24 +1568,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board = folder_data.board
         board.items_list = []
         for image_data in folder_data.images_list:
-            if not image_data.preview_error:
-                board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-                # linking board and image data
-                board_item.image_data = image_data
-                image_data.board_item = board_item
-                board.items_list.append(board_item)
-                # fill attributes and overlays
-                board_item.animated_file = image_data.is_animated_file
-                board_item.board_index = self.retrieve_new_board_item_index()
-                board_item.position = offset + QPointF(image_data.source_width, image_data.source_height)/2
-                self.board_save_layout_transforms(board_item)
-                if self.STNG.board_vertical_items_layout:
-                    offset += QPointF(0, image_data.source_height)
-                else:
-                    offset += QPointF(image_data.source_width, 0)
-                if not self.Globals.lite_mode:
-                    board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
-                    board_item._comments = self.LibraryData().get_comments_for_image(image_data)
+            self.board_prepare_board_item(board, image_data, offset)
 
         # for board items map
         self.build_board_bounding_rect(folder_data)
@@ -1966,16 +1973,24 @@ class BoardMixin(BoardTextEditItemMixin):
         for point, canvas_scale_x, canvas_scale_y in cf.board.user_points:
             painter.drawPoint(self.board_MapToViewport(point))
 
+    def draw_grid_wrapper(self):
+        if self.Globals.DEBUG or self.STNG.board_draw_grid:
+            self.board_draw_grid(painter)
+
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
-            if self.Globals.DEBUG or self.STNG.board_draw_grid:
-                self.board_draw_grid(painter)
-            if not self.is_board_ready():
-                self.board_prepare_items_layout_and_viewport(cf)
-            else:
-                self.board_draw_content(painter, cf)
+        if self.Globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT:
+            self.draw_grid_wrapper()
+            self.board_draw_content(painter, cf)
         else:
-            self.board_draw_wait_label(painter)
+            if cf.previews_done:
+                self.draw_grid_wrapper()
+                if not self.is_board_ready():
+                    self.board_prepare_items_layout_and_viewport(cf)
+                else:
+                    self.board_draw_content(painter, cf)
+            else:
+                self.board_draw_wait_label(painter)
 
 
         if self.Globals.DEBUG or self.STNG.board_draw_canvas_origin:
