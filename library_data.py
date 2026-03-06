@@ -1597,6 +1597,7 @@ class FolderData():
 
         def create_columns(self):
             self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
+            self.any_image = False
 
         def set_vertical_gap(self, gap):
             self.gap = gap
@@ -1611,6 +1612,7 @@ class FolderData():
                 min_content_height_col = min(self.columns, key=lambda col: col.height)
                 min_content_height_col.add_image(image_data, self.gap)
                 self._images_data_in_layout.append(image_data)
+                self.any_image = True
 
         def set_filter(self, value):
             self.filter = value
