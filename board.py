@@ -470,6 +470,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.scroll_items_timestamp = time.time()
 
+        self.progressive_layout_ongoing = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1545,6 +1547,10 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.layout_scale_x = board_item.scale_x
         board_item.layout_scale_y = board_item.scale_y
 
+    def board_progressive_layout_finish(self, folder_data):
+        self.show_center_label(_("The board is prepared"))
+        self.progressive_layout_ongoing = False
+
     def board_progressive_fill_layout(self, folder_data, image_data):
         """
             Превьюшки могут генерится в совершенно произвольном порядке,
@@ -1575,6 +1581,7 @@ class BoardMixin(BoardTextEditItemMixin):
         )
         if bi is not None:
             if pbp.pivot_index is None:
+                self.progressive_layout_ongoing = True
                 # пивот-индекс задаём именно тут, а не выше, где происходит инициализация pbp,
                 # ибо board_prepare_board_item создаёт айтем не для каждого image_data
                 pbp.pivot_index = folder_data.images_list.index(image_data)
@@ -2080,6 +2087,18 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_minimap(painter)
 
         self.board_draw_long_process_label(painter)
+
+        self.draw_progressive_layout_animation(painter)
+
+    def draw_progressive_layout_animation(self, painter):
+        if self.progressive_layout_ongoing:
+            self.draw_rounded_frame_progress_label(painter,
+                                        (RectHelper(self.rect()).top_center()+QPointF(0, 50)).toPoint(),
+                                        _("Please wait").upper(),
+                                        normalized_progress=time.time() % 1.0,
+                                        from_center_to_sides=True,
+            )
+
 
     def board_draw_board_info(self, painter, current_folder):
         before_font = painter.font()

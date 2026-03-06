@@ -956,13 +956,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 thread_instance.update_signal.emit(data)
                 return
 
-        FolderData.PreviewsGrid.finish_grids(folder_data)
-
-        folder_data.previews_done = True
-        if not progressive:
+        if progressive:
+            FolderData.PreviewsGrid.finish_grids(folder_data)
+        else:
             Globals = LibraryData().globals
             if Globals.main_window:
                 LibraryData().update_previews_grid(folder_data)
+        if progressive_board:
+            MW.board_progressive_layout_finish(folder_data)
+
+        folder_data.previews_done = True
 
     @classmethod
     def update_previews_grid(cls, folder_data):
