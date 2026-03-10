@@ -3546,8 +3546,6 @@ class MainWindow(QMainWindow,
             n = -1
         cf = LibraryData().current_folder()
         setting_value = self.STNG.waterfall_columns_number
-        # пока закоментил, потому что не очень интуитивно получается
-        # setting_value = self.STNG.waterfall_columns_number
         if setting_value > cf.waterfall_previews.number_of_columns:
             value = setting_value
         else:
@@ -3558,11 +3556,6 @@ class MainWindow(QMainWindow,
         value = int(value)
         value += n
         value = self.apply_min_max_clamping(value, min_value, max_value)
-        # TODO: вообще тут лучше бы всё переписать, ибо я думал, что изменяя переменную настройки
-        # на главном окне, у меня должно изменяться и значение на матрице настроек,
-        # а это оказалось не так. Я уже забыл, как в этом проекте работают настройки
-        # Кстати, в одном месте boards.py вызывается store_to_disk, и именнно поэтому
-        # там тоже надо будет всё переписать, ибо по факту настройка не сохраняется на диск
         self.STNG.waterfall_columns_number = float(value)
         Settings.postponed_set('waterfall_columns_number', float(value))
         value = int(value)
