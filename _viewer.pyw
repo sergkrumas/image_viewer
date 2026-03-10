@@ -1175,7 +1175,7 @@ class MainWindow(QMainWindow,
             else:
                 event.ignore()
 
-    def update_threads_info(self, data):
+    def update_signal_from_threads(self, data):
         if data:
             done = data.current == data.count
             # self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}, {data.time}")

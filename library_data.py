@@ -54,7 +54,7 @@ class ThumbnailsPreviewsThread(QThread):
             self.images_data = images_data
         self.threads_pool.append(self)
         ############################################################
-        self.update_signal.connect(lambda data: _globals.main_window.update_threads_info(data))
+        self.update_signal.connect(lambda data: _globals.main_window.update_signal_from_threads(data))
         self.progressive_layout_enabled = _globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS
         self.progressive_board_layout_enabled = _globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
@@ -933,27 +933,25 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     MW.board_progressive_fill_layout(folder_data, image_data)
 
             if thread_instance is not None:
-                data = ThreadRuntimeData(
+                thread_instance.update_signal.emit(ThreadRuntimeData(
                     int(id(thread_instance)),
                     n+1,
                     image_count,
                     thread_instance.ui_name,
                     LibraryData().total_TIME
-                )
-                thread_instance.update_signal.emit(data)
+                ))
 
         if thread_instance is not None:
             thread_instance.update_signal.emit(None)
 
             if folder_data not in LibraryData().all_folders():
-                data = ThreadRuntimeData(
+                thread_instance.update_signal.emit(ThreadRuntimeData(
                     int(id(thread_instance)),
                     image_count,
                     image_count,
                     "",
                     LibraryData().total_TIME
-                )
-                thread_instance.update_signal.emit(data)
+                ))
                 return
 
         if progressive:
