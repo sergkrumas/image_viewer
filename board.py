@@ -3950,11 +3950,11 @@ class BoardMixin(BoardTextEditItemMixin):
         cb.setText("\n".join(filepaths), mode=cb.Clipboard)
         l = len(filepaths)
         if l > 0:
-            self.show_center_label(f'The files are moved to recycle bin!\n{l} filepaths has been copied to clipboard!')
             if not hasattr(self, '_marked_items_deleted_from_disk'):
                 self._marked_items_deleted_from_disk = True
                 for fp in filepaths:
                     delete_to_recyclebin(fp)
+            self.show_center_label(f'The files are moved to recycle bin!\n{l} filepaths has been copied to clipboard!')
         else:
             self.show_center_label('Nothing marked!', error=True)
 
