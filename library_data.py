@@ -1532,6 +1532,7 @@ class FolderData():
             self.column_width = 0
             self.filter = False
             self.page = page
+            self.progressive_ongoing = False
             self.create_columns()
             self._images_data_in_layout = []
 
@@ -1616,6 +1617,7 @@ class FolderData():
 
         def finished(self):
             self._images_data_in_layout.clear()
+            self.progressive_ongoing = False
 
         @classmethod
         def finish_grids(cls, folder_data):
@@ -1628,6 +1630,8 @@ class FolderData():
         def start_grids(cls, folder_data):
             if folder_data:
                 cls.set_empty_grids(folder_data)
+                folder_data.waterfall_previews.progressive_ongoing = True
+                folder_data.library_previews.progressive_ongoing = True
 
         @classmethod
         def set_empty_grids(cls, folder_data):

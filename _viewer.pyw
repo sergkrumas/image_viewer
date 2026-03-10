@@ -4317,6 +4317,7 @@ class MainWindow(QMainWindow,
                                         hor_gap=self.waterfall_grid_get_horizontal_spacing(),
                                         ver_gap=self.waterfall_grid_get_vertical_spacing(),
                                         corner_radius=self.STNG.waterfall_corner_radius,
+                                        progressive_ongoing=cf.waterfall_previews.progressive_ongoing
                                     )
 
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
@@ -4563,6 +4564,7 @@ class MainWindow(QMainWindow,
                                         cf.library_previews.column_width, cf.library_previews.scroll_offset,
                                         cf.library_previews.any_image,
                                         corner_radius=self.STNG.library_corner_radius,
+                                        progressive_ongoing=cf.library_previews.progressive_ongoing
                                     )
 
         if columns and active_item:
@@ -4622,16 +4624,17 @@ class MainWindow(QMainWindow,
                                                                     render_as_blackplate=False,
                                                                     hor_gap=.0,
                                                                     ver_gap=.0,
-                                                                    corner_radius=20.0):
+                                                                    corner_radius=20.0,
+                                                                    progressive_ongoing=False):
 
         rounded_previews = self.rounded_previews and corner_radius > 0.0
 
-        def _loding():
+        def _loading():
             painter.setPen(QPen(Qt.white))
             painter.drawText(area_rect, Qt.AlignCenter, _("Loading").upper())
 
         if LibraryData().current_folder() is LibraryData.none_folder:
-            _loding()
+            _loading()
 
         elif any_images:
             if rounded_previews:
@@ -4682,20 +4685,19 @@ class MainWindow(QMainWindow,
                 )
                 painter.drawPixmap(item_rect, active_item.preview)
 
-        else:
-            if not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
-                painter.setPen(QPen(Qt.white))
-                self.draw_rounded_frame_progress_label(painter,
-                                            area_rect.center(),
-                                            _("Please wait").upper(),
-                                            normalized_progress=time.time() % 1.0,
-                                            from_center_to_sides=True,
-                )
-            elif Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
-                _loding()
-            else:
-                painter.setPen(QPen(Qt.white))
-                painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
+        elif not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
+            painter.setPen(QPen(Qt.white))
+            self.draw_rounded_frame_progress_label(painter,
+                                        area_rect.center(),
+                                        _("Please wait").upper(),
+                                        normalized_progress=time.time() % 1.0,
+                                        from_center_to_sides=True,
+            )
+        elif Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS and progressive_ongoing:
+            _loading()
+        elif not any(LibraryData().current_folder().images_list):
+            painter.setPen(QPen(Qt.white))
+            painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
 
     def reset_scrollbars_visibility(self):
         vs = self.vertical_scrollbars
