@@ -32,7 +32,7 @@ import operator
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time")
+ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time folder_data image_data progressive_grid_layout progressive_board_layout stage")
 
 class ThumbnailsPreviewsThread(QThread):
     update_signal = pyqtSignal(object)
@@ -55,7 +55,7 @@ class ThumbnailsPreviewsThread(QThread):
         self.threads_pool.append(self)
         ############################################################
         self.update_signal.connect(lambda data: _globals.main_window.update_signal_from_threads(data))
-        self.progressive_layout_enabled = _globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS
+        self.progressive_grid_layout_enabled = _globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS
         self.progressive_board_layout_enabled = _globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
     def start(self):
@@ -64,8 +64,8 @@ class ThumbnailsPreviewsThread(QThread):
     def run(self):
         if self.needed_thread:
             LibraryData().make_thumbnails_and_previews(self.folder_data, self,
-                progressive=self.progressive_layout_enabled,
-                progressive_board=self.progressive_board_layout_enabled
+                do_progressive_grid_layout=self.progressive_grid_layout_enabled,
+                do_progressive_board_layout=self.progressive_board_layout_enabled
             )
 
 class LibraryModeImageColumn():
@@ -869,7 +869,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @staticmethod
     def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False, 
-                                                        progressive=False, progressive_board=False):
+                                                        do_progressive_grid_layout=False, do_progressive_board_layout=False):
 
         current_image = folder_data.current_image()
         if thread_instance is not None and not thread_instance.run_from_library:
@@ -879,11 +879,28 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         folder_data.previews_done = False
         image_count = len(images_list)
         Globals = LibraryData().globals
+
+        if thread_instance is not None:
+            thread_instance.update_signal.emit(ThreadRuntimeData(
+                int(id(thread_instance)),
+                -1,
+                -1,
+                thread_instance.ui_name,
+                LibraryData().total_TIME,
+                None,
+                None,
+                do_progressive_grid_layout,
+                do_progressive_board_layout,
+                1
+            ))
+        else:
+            pass
+
         for n, image_data in enumerate(images_list):
             if image_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
                 continue
 
-            if thread_instance:
+            if thread_instance is not None:
                 # switch to main thread
                 thread_instance.msleep(1)
 
@@ -922,15 +939,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             pass_time = time.time() - start_time
             LibraryData().total_TIME += pass_time
 
-            # TODO: (6 мар 26) вообще говоря,
-            # нехорошо тут и ниже вызывать это всё напрямую,
-            # но в царстве GIL это нормально
-            if progressive:
-                FolderData.PreviewsGrid.step(folder_data, image_data)
-            if progressive_board:
-                MW = LibraryData().globals.main_window
-                if MW:
-                    MW.board_progressive_fill_layout(folder_data, image_data)
 
             if thread_instance is not None:
                 thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -938,8 +946,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     n+1,
                     image_count,
                     thread_instance.ui_name,
-                    LibraryData().total_TIME
+                    LibraryData().total_TIME,
+                    folder_data,
+                    image_data,
+                    do_progressive_grid_layout,
+                    do_progressive_board_layout,
+                    2
                 ))
+            else:
+                if do_progressive_grid_layout:
+                    FolderData.PreviewsGrid.step(folder_data, image_data)
+                if do_progressive_board_layout:
+                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, image_data)
 
         if thread_instance is not None:
             thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -947,20 +965,24 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 image_count,
                 image_count,
                 "",
-                LibraryData().total_TIME
+                LibraryData().total_TIME,
+                folder_data,
+                None,
+                do_progressive_grid_layout,
+                do_progressive_board_layout,
+                3
             ))
             if folder_data not in LibraryData().all_folders():
                 thread_instance.update_signal.emit(None)
                 return
-
-        if progressive:
-            FolderData.PreviewsGrid.finish_grids(folder_data)
         else:
-            Globals = LibraryData().globals
-            if Globals.main_window:
+            MW = LibraryData().globals.main_window
+            if do_progressive_grid_layout:
+                FolderData.PreviewsGrid.finish_grids(folder_data)
+            elif MW:
                 LibraryData().update_previews_grid(folder_data)
-        if progressive_board:
-            MW.board_progressive_layout_finish(folder_data)
+            if do_progressive_board_layout:
+                MW.board_progressive_layout_finish(folder_data)
 
         folder_data.previews_done = True
 

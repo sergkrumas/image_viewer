@@ -1179,6 +1179,24 @@ class MainWindow(QMainWindow,
         if data:
             done = data.current == data.count
             # self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}, {data.time}")
+            stage = data.stage
+            image_data = data.image_data
+            folder_data = data.folder_data
+            if data.progressive_grid_layout:
+                if stage == 1:
+                    pass
+                elif stage == 2:
+                    FolderData.PreviewsGrid.step(folder_data, image_data)
+                elif stage == 3:
+                    FolderData.PreviewsGrid.finish_grids(folder_data)
+            elif data.progressive_board_layout:
+                if stage == 1:
+                    pass
+                elif stage == 2:
+                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, image_data)
+                elif stage == 3:
+                    self.board_progressive_layout_finish(folder_data)
+
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
         self.update()
 
