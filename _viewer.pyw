@@ -21,8 +21,8 @@
 from _utils import *
 
 
-from library_data import (LibraryData, FolderData, ImageData, BoardData, BoardNonAutoSerializedData,
-                                                         LibraryModeImageColumn, ThumbnailsPreviewsThread)
+from library_data import (LibraryData, FolderData, ImageData, BoardData,
+                                             BoardNonAutoSerializedData, ThumbnailsPreviewsThread)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin

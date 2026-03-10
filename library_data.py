@@ -68,17 +68,6 @@ class ThumbnailsPreviewsThread(QThread):
                 do_progressive_board_layout=self.progressive_board_layout_enabled
             )
 
-class LibraryModeImageColumn():
-    def __init__(self):
-        self.images_data = []
-        self.height = 0
-
-    def add_image(self, image_data, gap_height):
-        if not self.images_data:
-            gap_height = 0
-        image_data._waterfall_preview_column_absolute_offset = int(self.height)
-        self.images_data.append(image_data)
-        self.height += image_data.preview_size.height() + gap_height
 
 class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
     def __new__(cls, _globals=None):
@@ -1619,6 +1608,18 @@ class FolderData():
             return count
 
         def create_columns(self):
+            class LibraryModeImageColumn():
+                def __init__(self):
+                    self.images_data = []
+                    self.height = 0
+
+                def add_image(self, image_data, gap_height):
+                    if not self.images_data:
+                        gap_height = 0
+                    image_data._waterfall_preview_column_absolute_offset = int(self.height)
+                    self.images_data.append(image_data)
+                    self.height += image_data.preview_size.height() + gap_height
+
             self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
             self.any_image = False
 
