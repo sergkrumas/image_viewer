@@ -1122,38 +1122,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
-
-            if MW.is_library_page_active():
-                # выходим из страницы библиотеки для показа картинки
-                MW.change_page(MW.pages.VIEWER_PAGE, force=True)
-
-            if MW.is_viewer_page_active():
-                MW.show_image(fd.current_image(), only_set_thumbnails_offset=True)
-
-                fd.current_image().update_fav_button_state()
-                if MW.isAnimationEffectsAllowed():
-                    MW.animate_properties(
-                        [(MW, "image_scale", 0.01, MW.image_scale, MW.update)],
-                        anim_id = "image_transform_start"
-                    )
-                MW.update()
-                MW.activateWindow()
-
-                LibraryData().add_current_image_to_view_history()
-
-            if MW.is_waterfall_page_active():
-                ci = fd.current_image()
-                if is_file and ci and ci.is_supported_filetype:
-                    MW.waterfall_enter_modal_viewer_on_app_start()
-
-            # print('store session file from handle_input_data')
-            LibraryData().store_session_file()
-
-            if not Globals.DEBUG:
-                LibraryData().write_history_file(input_path)
-
-            # make thumbnails
-            ThumbnailsPreviewsThread(fd, Globals).start()
+            MW.handle_input_data_epilog_callback(MW, fd, is_file, input_path)
 
         elif fd and pre_load and content_hash:
             for n, image_data in enumerate(fd.images_list):

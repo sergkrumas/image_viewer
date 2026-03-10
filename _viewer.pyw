@@ -371,6 +371,7 @@ class AppMixin():
         ControlPanel.Settings = Settings
         # CP = MW.recreate_control_panel()
 
+        MW.handle_input_data_epilog_callback = cls.APP_handle_input_data_epilog
         cls.APP_prepare_page_on_appstart(args, path, MW)
 
         # вход в петлю обработки сообщений
@@ -427,6 +428,40 @@ class AppMixin():
                 LibraryData().create_empty_virtual_folder()
             if args.library:
                 MW.change_page(MW.pages.LIBRARY_PAGE)
+
+    def APP_handle_input_data_epilog(self, folder_data, is_file, input_path):
+
+        if self.is_library_page_active():
+            # выходим из страницы библиотеки для показа картинки
+            self.change_page(self.pages.VIEWER_PAGE, force=True)
+
+        if self.is_viewer_page_active():
+            self.show_image(folder_data.current_image(), only_set_thumbnails_offset=True)
+
+            folder_data.current_image().update_fav_button_state()
+            if self.isAnimationEffectsAllowed():
+                self.animate_properties(
+                    [(self, "image_scale", 0.01, self.image_scale, self.update)],
+                    anim_id = "image_transform_start"
+                )
+            self.update()
+            self.activateWindow()
+
+            LibraryData().add_current_image_to_view_history()
+
+        if self.is_waterfall_page_active():
+            ci = folder_data.current_image()
+            if is_file and ci and ci.is_supported_filetype:
+                self.waterfall_enter_modal_viewer_on_app_start()
+
+        # print('store session file from handle_input_data')
+        LibraryData().store_session_file()
+
+        if not Globals.DEBUG:
+            LibraryData().write_history_file(input_path)
+
+        # make thumbnails
+        ThumbnailsPreviewsThread(folder_data, Globals).start()
 
     @classmethod
     def APP_add_icon_to_system_tray(cls, app, icon):
