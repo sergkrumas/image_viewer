@@ -179,15 +179,35 @@ def read_APNG_to_QPixmapList(filepath):
     # `pip install apng` required for reading
     frames = []
     try:
+    # if True:
         apng_image = APNG.open(filepath)
+        middle_data = []
+        w = 0
+        h = 0
+
         for png_obj, control in apng_image.frames:
             delay_fraction = control.delay/control.delay_den
             delay = delay_fraction*1000
             frame_pixmap = QPixmap()
             frame_pixmap.loadFromData(png_obj.to_bytes())
-            frames.append((frame_pixmap, delay))
+            middle_data.append((frame_pixmap, control))
+            w = max(w, control.width + control.x_offset)
+            h = max(h, control.height + control.y_offset)
+
+        for frame_pixmap, control in middle_data:
+            out_pixmap = QPixmap(w, h)
+            out_pixmap.fill(Qt.transparent)
+            painter = QPainter()
+            painter.begin(out_pixmap)
+            painter.drawPixmap(QPoint(control.x_offset, control.y_offset), frame_pixmap)
+            # painter.setPen(QPen(Qt.white, 1))
+            # painter.drawText(QPoint(0, h), f"{control.depose_op} {control.blend_op}")
+            painter.end()
+            frames.append((out_pixmap, delay))
+
     except:
         pass
+        # raise
     return frames
 
 def read_AVIF_to_QPixmap(filepath):
