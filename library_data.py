@@ -34,6 +34,11 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time folder_data image_data progressive_grid_layout progressive_board_layout stage")
 
+class MakingThumbnailsPreviewsStages():
+    START = 0
+    ITERATION_DONE = 1
+    FINISH = 2
+
 class ThumbnailsPreviewsThread(QThread):
     update_signal = pyqtSignal(object)
     threads_pool = []
@@ -881,7 +886,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 None,
                 do_progressive_grid_layout,
                 do_progressive_board_layout,
-                1
+                MakingThumbnailsPreviewsStages.START
             ))
         else:
             if do_progressive_grid_layout:
@@ -945,7 +950,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     image_data,
                     do_progressive_grid_layout,
                     do_progressive_board_layout,
-                    2
+                    MakingThumbnailsPreviewsStages.ITERATION_DONE
                 ))
             else:
                 if do_progressive_grid_layout:
@@ -964,7 +969,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 None,
                 do_progressive_grid_layout,
                 do_progressive_board_layout,
-                3
+                MakingThumbnailsPreviewsStages.FINISH
             ))
             if folder_data not in LibraryData().all_folders():
                 thread_instance.update_signal.emit(None)

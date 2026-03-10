@@ -22,7 +22,7 @@ from _utils import *
 
 
 from library_data import (LibraryData, FolderData, ImageData, BoardData,
-                                             BoardNonAutoSerializedData, ThumbnailsPreviewsThread)
+             BoardNonAutoSerializedData, ThumbnailsPreviewsThread, MakingThumbnailsPreviewsStages)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
 from commenting import CommentingMixin
@@ -1183,18 +1183,18 @@ class MainWindow(QMainWindow,
             image_data = data.image_data
             folder_data = data.folder_data
             if data.progressive_grid_layout:
-                if stage == 1:
+                if stage == MakingThumbnailsPreviewsStages.START:
                     FolderData.PreviewsGrid.start_grids(folder_data)
-                elif stage == 2:
+                elif stage == MakingThumbnailsPreviewsStages.ITERATION_DONE:
                     FolderData.PreviewsGrid.step(folder_data, image_data)
-                elif stage == 3:
+                elif stage == MakingThumbnailsPreviewsStages.FINISH:
                     FolderData.PreviewsGrid.finish_grids(folder_data)
             if data.progressive_board_layout:
-                if stage == 1:
+                if stage == MakingThumbnailsPreviewsStages.START:
                     self.board_progressive_layout_start(folder_data)
-                elif stage == 2:
+                elif stage == MakingThumbnailsPreviewsStages.ITERATION_DONE:
                     self.board_progressive_fill_layout(folder_data, image_data)
-                elif stage == 3:
+                elif stage == MakingThumbnailsPreviewsStages.FINISH:
                     self.board_progressive_layout_finish(folder_data)
 
             self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}")
