@@ -1662,6 +1662,9 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.layout_scale_x = board_item.scale_x
         board_item.layout_scale_y = board_item.scale_y
 
+    def board_progressive_layout_start(self, folder_data):
+        pass
+
     def board_progressive_layout_finish(self, folder_data):
         if self.is_board_page_active():
             self.show_center_label(_("The board is prepared"))

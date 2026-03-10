@@ -879,6 +879,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         folder_data.previews_done = False
         image_count = len(images_list)
         Globals = LibraryData().globals
+        MW = Globals.main_window
 
         if thread_instance is not None:
             thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -894,7 +895,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 1
             ))
         else:
-            pass
+            if do_progressive_grid_layout:
+                FolderData.PreviewsGrid.start_grids(folder_data)
+
+            if do_progressive_board_layout:
+                MW.board_progressive_layout_start(folder_data)
 
         for n, image_data in enumerate(images_list):
             if image_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
@@ -976,7 +981,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 thread_instance.update_signal.emit(None)
                 return
         else:
-            MW = LibraryData().globals.main_window
             if do_progressive_grid_layout:
                 FolderData.PreviewsGrid.finish_grids(folder_data)
             elif MW:
@@ -1645,6 +1649,10 @@ class FolderData():
             folder_data.library_previews.finished()
             MW = LibraryData().globals.main_window
             MW.waterfall_on_app_start_callback()
+
+        @classmethod
+        def start_grids(csl, folder_data):
+            pass
 
         @classmethod
         def step(cls, folder_data, image_data):

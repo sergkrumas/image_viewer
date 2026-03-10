@@ -1184,16 +1184,16 @@ class MainWindow(QMainWindow,
             folder_data = data.folder_data
             if data.progressive_grid_layout:
                 if stage == 1:
-                    pass
+                    FolderData.PreviewsGrid.start_grids(folder_data)
                 elif stage == 2:
                     FolderData.PreviewsGrid.step(folder_data, image_data)
                 elif stage == 3:
                     FolderData.PreviewsGrid.finish_grids(folder_data)
             elif data.progressive_board_layout:
                 if stage == 1:
-                    pass
+                    self.board_progressive_layout_start(folder_data)
                 elif stage == 2:
-                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, image_data)
+                    self.board_progressive_fill_layout(folder_data, image_data)
                 elif stage == 3:
                     self.board_progressive_layout_finish(folder_data)
 
