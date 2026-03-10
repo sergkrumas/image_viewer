@@ -2725,9 +2725,11 @@ class MainWindow(QMainWindow,
         self.render_waterfall_backplate()
 
     def waterfall_set_content_offset_to_current_image(self):
+        if not self.viewer_modal:
+            return
+
         cf = LibraryData().current_folder()
         ci = cf.current_image()
-
         offset = 0
         # добавляем отступ верхней границы превьюшки
         offset -= ci._waterfall_preview_column_absolute_offset
