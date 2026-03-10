@@ -43,6 +43,113 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:ITEMS~#~'
 
 
+"""
+(6 мар 26) TODO: решение через декораторы,
+        но хотелось бы решение через метаклассы,
+        только нужно, чтобы метакласс влиял только на миксин,
+        и не влиял на всё, во что он миксуется
+
+    def _BOARD(func):
+        def simple_wrapper(*args):
+            return func(args[0].board, *args)
+        return simple_wrapper
+
+    class BoardMixin():
+
+        def __init__(self):
+            super().__init__()
+            self.board = type('board_object', (), {})
+            self.board.m = "[board_object_attr_value]"
+
+        @_BOARD
+        def method(BOARD, self, arg):
+            print(self, BOARD.m, arg)
+
+    nd = BoardMixin()
+    nd.method('[function arg]')
+
+
+
+- (10 мар 26) Решение через метаклассы
+        Вживлять его пока не буду, потому что это
+        добавляет вызов враппера при вызове метода
+        и непонятно как это отразится на FPS
+
+import types
+from functools import partial
+
+class MetaBase(type): 
+    def __new__(mcl, name, bases, namespace):
+
+        if namespace.get('_meta_add_BOARD', False):
+            for attr_name, attr_value in namespace.items():
+                if callable(attr_value) and not attr_name.startswith("__"):
+                    print('modification', attr_value, 'for', name)
+                    def make_wrapper(func):
+                        def wrapper(self, *args, **kwargs):
+                            return func(self.BOARD, self, *args, **kwargs)
+                        return wrapper
+                    namespace[attr_name] = make_wrapper(attr_value)
+
+        return super(MetaBase, mcl).__new__(mcl, name, bases, namespace)
+
+class AnotherMixin(metaclass=MetaBase):
+
+    _meta_add_BOARD = True
+
+    def board_mixin_method(BOARD, self):
+        print('board_mixin_method')
+
+class TestMixin(
+        AnotherMixin, 
+        metaclass=MetaBase
+    ):
+
+    _meta_add_BOARD = True
+
+    def __init__(self):
+        super().__init__()
+
+        self.BOARD = type('BOARD', (), {})
+
+    def board_method(BOARD, self, arg):
+        print('board_method', BOARD, self, arg)
+        self.board_method1(arg + ' !!!!!!!!')
+
+    def board_method1(BOARD, self, arg):
+        print('second method1', arg)
+        self.viewer_method()
+
+class MainClass(TestMixin):
+
+    def app_main(self):
+        print('app_main', self)
+
+
+    def viewer_method(self):
+        print('viewer_method')
+
+main = MainClass()
+main.app_main()
+
+try:
+    main.board_method('arg')
+except:
+    print('wanted fail')
+
+try:
+    main.board_method(None, 'arg')
+except:
+    print('unwanted fail')
+# print(main)
+
+main.board_mixin_method()
+
+
+"""
+
+
+
 @contextmanager
 def show_longtime_process_ongoing(board_window, text):
     # inside __enter__
