@@ -371,6 +371,17 @@ class AppMixin():
         ControlPanel.Settings = Settings
         # CP = MW.recreate_control_panel()
 
+        cls.APP_prepare_page_on_appstart(args, path, MW)
+
+        # вход в петлю обработки сообщений
+        exit_code = app.exec()
+        if sti:
+            sti.hide()
+        sys.exit(exit_code)
+
+    @classmethod
+    def APP_prepare_page_on_appstart(cls, args, path, MW):
+
         legacy_viewer_page_branch = True
         # Нужно для того, чтобы иконка показалась в таскбаре.
         # И нужно это делать до того как будет показана панель управления.
@@ -416,12 +427,6 @@ class AppMixin():
                 LibraryData().create_empty_virtual_folder()
             if args.library:
                 MW.change_page(MW.pages.LIBRARY_PAGE)
-
-        # вход в петлю обработки сообщений
-        exit_code = app.exec()
-        if sti:
-            sti.hide()
-        sys.exit(exit_code)
 
     @classmethod
     def APP_add_icon_to_system_tray(cls, app, icon):
