@@ -815,6 +815,12 @@ class Settings(SettingsWindow):
     postponed_set_timers = dict()
 
     @classmethod
+    def execute_postponed_timers_handlers(cls):
+        for setting_id, timer in cls.postponed_set_timers.items():
+            if timer.isActive():
+                timer.timeout.emit()
+
+    @classmethod
     def set_callback(cls, setting_id, setting_value):
         cls.set(setting_id, setting_value)
         localized_setting_description = cls.matrix[setting_id][-1]

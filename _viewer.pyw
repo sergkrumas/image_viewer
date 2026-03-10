@@ -258,7 +258,7 @@ class AppMixin():
         Globals.do_not_show_start_dialog = Settings.get("do_not_show_start_dialog")
 
         app = QApplication(sys.argv)
-        app.aboutToQuit.connect(cls.APP_exit_threads)
+        app.aboutToQuit.connect(cls.APP_exit)
 
         # задание иконки для таскбара
         myappid = 'sergei_krumas.image_viewer.client.1'
@@ -588,11 +588,13 @@ class AppMixin():
         subprocess.Popen(args)
 
     @classmethod
-    def APP_exit_threads(cls):
+    def APP_exit(cls):
         # принудительно глушим все потоки, что ещё работают
         for thread in ThumbnailsPreviewsThread.threads_pool:
             thread.terminate()
             # нужно вызывать terminate вместо exit
+
+        Settings.execute_postponed_timers_handlers()
 
     @classmethod
     def APP_retrieve_cmd_args(cls):
