@@ -1609,7 +1609,7 @@ class MainWindow(QMainWindow,
             self.library_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
-                ThumbnailsPreviewsThread(folder_data, Globals, run_from_library=True).start()
+                ThumbnailsPreviewsThread(folder_data, Globals, invoke_from_library=True).start()
             self.transformations_allowed = False
 
         elif requested_page == self.pages.WATERFALL_PAGE:
@@ -1617,9 +1617,6 @@ class MainWindow(QMainWindow,
             if Globals.control_panel is not None:
                 Globals.control_panel.setVisible(False)
             self.waterfall_previews_list_active_item = None
-            for folder_data in LibraryData().folders:
-                images_data = folder_data.images_list
-                ThumbnailsPreviewsThread(folder_data, Globals, run_from_library=True).start()
             if self.viewer_modal:
                 self.transformations_allowed = True
             else:
