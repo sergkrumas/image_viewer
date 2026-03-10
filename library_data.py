@@ -1652,7 +1652,8 @@ class FolderData():
 
         @classmethod
         def start_grids(cls, folder_data):
-            pass
+            if folder_data:
+                cls.set_empty_grids(folder_data)
 
         @classmethod
         def set_empty_grids(cls, folder_data):
