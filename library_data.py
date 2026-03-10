@@ -994,8 +994,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def update_previews_grid(cls, folder_data):
         Globals = LibraryData().globals
         MW = Globals.main_window
-
         create_grid = FolderData.PreviewsGrid.create_grid
+
         if folder_data and folder_data.previews_done:
             create_grid(folder_data, MW.pages.LIBRARY_PAGE)
             create_grid(folder_data, MW.pages.WATERFALL_PAGE)
