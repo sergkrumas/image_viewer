@@ -128,6 +128,11 @@ class BoardItem():
 
         self.animated_file = False
 
+        self.countdown_red_frame = 0
+
+    def set_alert(self):
+        self.countdown_red_frame = 10
+
     def set_tags(self, tags):
         self._tags = tags
 
@@ -1535,6 +1540,8 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.rotation = transform.rotation
             board_item.scale_x = transform.scale_x
             board_item.scale_y = transform.scale_y
+        else:
+            board_item.set_alert()
 
     def board_apply_layout_transforms(self, board_item):
         board_item.position = QPointF(board_item.layout_position)
@@ -1745,6 +1752,16 @@ class BoardMixin(BoardTextEditItemMixin):
         return rect1.intersects(rect2)
 
     def board_draw_item(self, painter, board_item):
+
+        if board_item.countdown_red_frame > 0:
+            br = board_item.get_selection_area(canvas=self).boundingRect()
+            painter.save()
+            painter.setPen(QPen(Qt.red, board_item.countdown_red_frame))
+            painter.setBrush(Qt.NoBrush)
+            painter.drawRect(br)
+            painter.restore()
+            board_item.countdown_red_frame -= 1
+
         if board_item.type in [BoardItem.types.ITEM_FRAME]:
             FRAME_PADDING = BoardItem.FRAME_PADDING
 
