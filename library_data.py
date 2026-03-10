@@ -1431,9 +1431,7 @@ class FolderData():
         else:
             self._index = 0
 
-        pages = LibraryData().MainWindowClass.pages
-        self.waterfall_previews = self.PreviewsGrid(0, pages.WATERFALL_PAGE)
-        self.library_previews = self.PreviewsGrid(0, pages.LIBRARY_PAGE)
+        self.PreviewsGrid.set_empty_grids(self)
 
     modifiers_attrs = [
         'deep_scan',
@@ -1653,8 +1651,14 @@ class FolderData():
             MW.waterfall_on_app_start_callback()
 
         @classmethod
-        def start_grids(csl, folder_data):
+        def start_grids(cls, folder_data):
             pass
+
+        @classmethod
+        def set_empty_grids(cls, folder_data):
+            pages = LibraryData().MainWindowClass.pages
+            folder_data.waterfall_previews = cls(0, pages.WATERFALL_PAGE)
+            folder_data.library_previews = cls(0, pages.LIBRARY_PAGE)
 
         @classmethod
         def step(cls, folder_data, image_data):
@@ -1703,7 +1707,7 @@ class FolderData():
             pg.configure(MW)
 
             for n, image_data in enumerate(folder_data.images_list):
-                pg.add_image(image_data)
+                pg.add_image(image_data, remember=False)
 
             if page == MW.pages.WATERFALL_PAGE:
                 folder_data.waterfall_previews = pg
