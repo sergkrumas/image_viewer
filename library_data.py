@@ -857,7 +857,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             image_data.preview = ERROR_PREVIEW_PIXMAP
 
     @staticmethod
-    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False, 
+    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False,
                                                         do_progressive_grid_layout=False, do_progressive_board_layout=False):
 
         current_image = folder_data.current_image()
@@ -1629,13 +1629,14 @@ class FolderData():
         def set_column_width(self, width):
             self.column_width = width
 
-        def add_image(self, image_data):
+        def add_image(self, image_data, remember=True):
             if self.filter and image_data.preview_error:
                 pass
             else:
                 min_content_height_col = min(self.columns, key=lambda col: col.height)
                 min_content_height_col.add_image(image_data, self.gap)
-                self._images_data_in_layout.append(image_data)
+                if remember:
+                    self._images_data_in_layout.append(image_data)
                 self.any_image = True
 
         def set_filter(self, value):
@@ -1677,7 +1678,7 @@ class FolderData():
                 self.configure(MW)
                 self.create_columns()
                 for imd in self._images_data_in_layout:
-                    self.add_image(imd)
+                    self.add_image(imd, remember=False)
 
             self.add_image(image_data)
 
