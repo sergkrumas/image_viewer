@@ -4567,7 +4567,14 @@ class MainWindow(QMainWindow,
 
         rounded_previews = self.rounded_previews and corner_radius > 0.0
 
-        if any_images:
+        def _loding():
+            painter.setPen(QPen(Qt.white))
+            painter.drawText(area_rect, Qt.AlignCenter, _("Loading").upper())
+
+        if LibraryData().current_folder() is LibraryData.none_folder:
+            _loding()
+
+        elif any_images:
             if rounded_previews:
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
                 painter.setRenderHint(QPainter.Antialiasing, True)
@@ -4616,21 +4623,20 @@ class MainWindow(QMainWindow,
                 )
                 painter.drawPixmap(item_rect, active_item.preview)
 
-        elif not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
-            painter.setPen(QPen(Qt.white))
-
-            self.draw_rounded_frame_progress_label(painter,
-                                        area_rect.center(),
-                                        _("Please wait").upper(),
-                                        normalized_progress=time.time() % 1.0,
-                                        from_center_to_sides=True,
-            )
-        elif LibraryData().current_folder() is LibraryData.none_folder:
-            painter.setPen(QPen(Qt.white))
-            painter.drawText(area_rect, Qt.AlignCenter, _("Loading").upper())
         else:
-            painter.setPen(QPen(Qt.white))
-            painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
+            if not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
+                painter.setPen(QPen(Qt.white))
+                self.draw_rounded_frame_progress_label(painter,
+                                            area_rect.center(),
+                                            _("Please wait").upper(),
+                                            normalized_progress=time.time() % 1.0,
+                                            from_center_to_sides=True,
+                )
+            elif Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
+                _loding()
+            else:
+                painter.setPen(QPen(Qt.white))
+                painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
 
     def reset_scrollbars_visibility(self):
         vs = self.vertical_scrollbars
