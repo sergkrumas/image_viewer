@@ -863,7 +863,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         addItem(_("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
 
-        addItem(_('Place items in column'), self.board_place_items_in_column)
+        addItem(_('Place items in column/row'), self.board_place_items_in_column_or_row)
 
         addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
 
@@ -4172,7 +4172,20 @@ class BoardMixin(BoardTextEditItemMixin):
             # тут надо ещё будет задавать и принудительное включение вьювера
             self.APP_start_lite_process(filepath)
 
-    def board_place_items_in_column(self):
+    def board_place_items_in_column_or_row(self):
+        subMenu = RoundedQMenu()
+        subMenu.setStyleSheet(self.context_menu_stylesheet)
+        horizontal = subMenu.addAction(_("Horizontally"))
+        vertical = subMenu.addAction(_("Vertically"))
+        item = subMenu.exec_(QCursor().pos())
+        if item is None:
+            pass
+        elif item == horizontal:
+            self.board_do_place_items_in_column_or_row(column=False)
+        elif item == vertical:
+            self.board_do_place_items_in_column_or_row(column=True)
+
+    def board_do_place_items_in_column_or_row(self, column=True):
         folder_data = self.LibraryData().current_folder()
 
         items_list = folder_data.board.items_list
@@ -4195,16 +4208,24 @@ class BoardMixin(BoardTextEditItemMixin):
             b_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bi_width = b_rect.width()
             bi_height = b_rect.height()
-            bi.position = offset + QPointF(bi_width/2, bi_height/2)
-            offset += QPointF(0, bi_height)
+            if column == True:
+                bi.position = offset + QPointF(bi_width/2, bi_height/2)
+                offset += QPointF(0, bi_height)
+            else:
+                bi.position = offset + QPointF(bi_width/2, bi_height/2)
+                offset += QPointF(bi_width, 0)
 
         offset = QPointF(main_offset)
         for bi in reversed(neg_list):
             b_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bi_width = b_rect.width()
             bi_height = b_rect.height()
-            bi.position = offset + QPointF(bi_width/2, -bi_height/2)
-            offset -= QPointF(0, bi_height)
+            if column == True:
+                bi.position = offset + QPointF(bi_width/2, -bi_height/2)
+                offset -= QPointF(0, bi_height)
+            else:
+                bi.position = offset + QPointF(-bi_width/2, bi_height/2)
+                offset -= QPointF(bi_width, 0)
 
         self.build_board_bounding_rect(folder_data)
         self.init_selection_bounding_box_widget(folder_data)
@@ -4745,7 +4766,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("No images found in selected folders!"), error=True)
             return
 
-        # needed for board_place_items_in_column
+        # needed for board_do_place_items_in_column_or_row
         self.LibraryData().make_folder_current(cf, write_view_history=False)
 
         with self.show_longtime_process_ongoing(self, _("Loading images to the board")):
@@ -4755,7 +4776,7 @@ class BoardMixin(BoardTextEditItemMixin):
             cf.board.ready = False
 
             self.board_prepare_items_layout_and_viewport(cf)
-            self.board_place_items_in_column()
+            self.board_do_place_items_in_column_or_row()
 
         self.update()
 
