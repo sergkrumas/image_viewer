@@ -942,16 +942,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 ))
 
         if thread_instance is not None:
-            thread_instance.update_signal.emit(None)
-
+            thread_instance.update_signal.emit(ThreadRuntimeData(
+                int(id(thread_instance)),
+                image_count,
+                image_count,
+                "",
+                LibraryData().total_TIME
+            ))
             if folder_data not in LibraryData().all_folders():
-                thread_instance.update_signal.emit(ThreadRuntimeData(
-                    int(id(thread_instance)),
-                    image_count,
-                    image_count,
-                    "",
-                    LibraryData().total_TIME
-                ))
+                thread_instance.update_signal.emit(None)
                 return
 
         if progressive:
