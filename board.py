@@ -1667,7 +1667,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_progressive_layout_finish(self, folder_data):
         if self.is_board_page_active():
-            self.show_center_label(_("The board is prepared"))
+            self.show_center_label(_("The board is prepared"), duration=1.0)
         self.progressive_layout_ongoing = False
 
     def board_progressive_fill_layout(self, folder_data, image_data):
