@@ -42,7 +42,7 @@ class MakingThumbnailsPreviewsStages():
 class ThumbnailsPreviewsThread(QThread):
     update_signal = pyqtSignal(object)
     threads_pool = []
-    def __init__(self, folder_data, _globals, invoke_from_library=False):
+    def __init__(self, folder_data, _globals, current_index_centered_order=False):
         QThread.__init__(self)
         self.needed_thread = True
         self.ui_name = folder_data.folder_path
@@ -50,7 +50,7 @@ class ThumbnailsPreviewsThread(QThread):
         images_data = folder_data.images_list
         in_process = images_data in [thread.images_data for thread in self.threads_pool]
         previews_done = folder_data.previews_done
-        self.invoke_from_library = invoke_from_library
+        self.current_index_centered_order = current_index_centered_order
         if in_process or previews_done:
             # предотвращаем запуск второй копии треда
             self.images_data = []
@@ -866,7 +866,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                                                         do_progressive_grid_layout=False, do_progressive_board_layout=False):
 
         current_image = folder_data.current_image()
-        if thread_instance is not None and not thread_instance.invoke_from_library:
+        if thread_instance is not None and thread_instance.current_index_centered_order:
             images_list = list(get_index_centered_list(folder_data.images_list, folder_data.current_image()))
         else:
             images_list = folder_data.images_list

@@ -460,6 +460,8 @@ class AppMixin():
 
     def APP_handle_input_data_epilog(self, folder_data, is_file, input_path):
 
+        current_index_centered_order = True
+
         if self.is_viewer_page_active():
             self.show_image(folder_data.current_image(), only_set_thumbnails_offset=True)
 
@@ -474,10 +476,17 @@ class AppMixin():
 
             LibraryData().add_current_image_to_view_history()
 
+        if self.is_board_page_active():
+            pass
+
         if self.is_waterfall_page_active():
+            current_index_centered_order = False
             ci = folder_data.current_image()
             if is_file and ci and ci.is_supported_filetype:
                 self.waterfall_enter_modal_viewer_on_app_start()
+
+        if self.is_library_page_active():
+            current_index_centered_order = False
 
         # print('store session file from handle_input_data')
         LibraryData().store_session_file()
@@ -486,7 +495,9 @@ class AppMixin():
             LibraryData().write_history_file(input_path)
 
         # make thumbnails and previews
-        ThumbnailsPreviewsThread(folder_data, Globals).start()
+        ThumbnailsPreviewsThread(folder_data, Globals,
+                current_index_centered_order=current_index_centered_order
+            ).start()
 
     @classmethod
     def APP_add_icon_to_system_tray(cls, app, icon):
@@ -1674,7 +1685,7 @@ class MainWindow(QMainWindow,
             self.library_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
-                ThumbnailsPreviewsThread(folder_data, Globals, invoke_from_library=True).start()
+                ThumbnailsPreviewsThread(folder_data, Globals).start()
             self.transformations_allowed = False
 
         elif requested_page == self.pages.WATERFALL_PAGE:
