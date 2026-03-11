@@ -4185,6 +4185,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     if ';' in mime_type:
                         mime_type = mime_type.split(";")[0]
                     ext = mime_type.split("/")[1]
+            if not ext.startswith("."):
+                ext = f'.{ext}'
             filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
             urllib.request.urlretrieve(url, filepath)
             self.board_create_new_board_item_image(filepath, cf, source_url=url)
