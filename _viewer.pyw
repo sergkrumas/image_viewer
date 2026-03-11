@@ -421,7 +421,7 @@ class AppMixin():
             # а потом уже меняем полностью через change_page
             MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
             # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
-            MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
+            MW.change_page(MW.pages.BOARD_PAGE, init_force=True, force=True)
             if path.lower().endswith('.board'):
                 MW.board_loadBoard(path)
                 board_loading = True
@@ -440,16 +440,16 @@ class AppMixin():
 
         elif pts == pages.LIBRARY_PAGE:
 
-            MW.change_page(pts)
+            MW.change_page(pts, init_force=True, force=True)
 
         elif pts == pages.WATERFALL_PAGE:
 
-            MW.change_page(pts)
+            MW.change_page(pts, init_force=True, force=True)
             MW.update()
 
         elif pts == pages.START_PAGE:
 
-            MW.change_page(pts)
+            MW.change_page(pts, init_force=True, force=True)
             MW.update()
 
         processAppEvents()
@@ -480,7 +480,8 @@ class AppMixin():
             LibraryData().add_current_image_to_view_history()
 
         if self.is_board_page_active():
-            pass
+            # (11 мар 26) для снятия блокировки перемещения
+            self.change_page(self.pages.BOARD_PAGE, force=True, init_force=True)
 
         if self.is_waterfall_page_active():
             current_index_centered_order = False
