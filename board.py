@@ -1708,6 +1708,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.DEFAULT_CANVAS_ORIGIN = QPointF(self.canvas_origin)
                 self.DEFAULT_CANVAS_SCALE = self.canvas_scale_x, self.canvas_scale_y
             self.build_board_bounding_rect(folder_data)
+            bi.sort_index = folder_data.images_list.index(image_data) - pbp.pivot_index
 
         if self.is_board_page_active() and self.Globals.DEBUG:
             self.show_center_label(str(image_data.filepath))
@@ -4459,7 +4460,10 @@ class BoardMixin(BoardTextEditItemMixin):
             )
 
     def get_original_items_order(self, items_list):
-        return list(sorted(items_list, key=lambda x: x.board_index))
+        if all((hasattr(bi, 'sort_index') for bi in items_list)):
+            return list(sorted(items_list, key=lambda x: x.sort_index))
+        else:
+            return list(sorted(items_list, key=lambda x: x.board_index))
 
     def is_flyover_ongoing(self):
         return bool(self.fly_pairs)
