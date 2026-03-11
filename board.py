@@ -78,7 +78,7 @@ COPY_SELECTED_BOARD_ITEMS_STR = '~#~KRUMASSAN:IMAGE:VIEWER:COPY:SELECTED:BOARD:I
 import types
 from functools import partial
 
-class MetaBase(type): 
+class MetaBase(type):
     def __new__(mcl, name, bases, namespace):
 
         if namespace.get('_meta_add_BOARD', False):
@@ -101,7 +101,7 @@ class AnotherMixin(metaclass=MetaBase):
         print('board_mixin_method')
 
 class TestMixin(
-        AnotherMixin, 
+        AnotherMixin,
         metaclass=MetaBase
     ):
 
