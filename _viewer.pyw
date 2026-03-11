@@ -405,8 +405,8 @@ class AppMixin():
             pts = pages.START_PAGE
 
         MW.change_page_at_appstart(pts)
-        LibraryData().create_empty_virtual_folder()
-
+        if not is_path_exists:
+            LibraryData().create_empty_virtual_folder()
 
         board_loading = False
         board_plugin_loading = False
