@@ -460,6 +460,9 @@ class AppMixin():
 
     def APP_handle_input_data_epilog(self, folder_data, is_file, input_path):
 
+        if self.is_start_page_active():
+            self.change_page(self.STNG.page_on_app_launch_from_explorer, force=True, init_force=True)
+
         current_index_centered_order = True
 
         if self.is_viewer_page_active():
@@ -487,6 +490,7 @@ class AppMixin():
 
         if self.is_library_page_active():
             current_index_centered_order = False
+
 
         # print('store session file from handle_input_data')
         LibraryData().store_session_file()
