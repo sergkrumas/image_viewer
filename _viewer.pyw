@@ -382,58 +382,83 @@ class AppMixin():
 
     @classmethod
     def APP_prepare_page_on_appstart(cls, args, path, MW):
+        pages = cls.pages
+        pts = None
 
-        legacy_viewer_page_branch = True
-        # Нужно для того, чтобы иконка показалась в таскбаре.
-        # И нужно это делать до того как будет показана панель управления.
-        if not os.path.exists(path):
-            # если путь не задан, то по дефолту
-            # будет отображена стартовая страница
-
+        if any((args.board, args.library, args.viewer, args.waterfall, args.startpage)):
             if args.board:
-                LibraryData().create_empty_virtual_folder()
-                # тут хороший приём применён:
-                # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
-                # а потом уже меняем полностью через change_page
-                MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
-                # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
-                MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
-                if path.lower().endswith('.board'):
-                    MW.board_loadBoard(path)
-                elif path.lower().endswith('.py'):
-                    MW.board_LoadPlugins()
-                    MW.board_loadPluginBoard(path)
-                else:
-                    raise Exception(f'Unable to handle board argument {path}')
-                legacy_viewer_page_branch = False
+                pts = pages.BOARD_PAGE
+            elif args.viewer:
+                pts = pages.VIEWER_PAGE
+            elif args.library:
+                pts = pages.LIBRARY_PAGE
+            elif args.waterfall:
+                pts = pages.WATERFALL_PAGE
+            elif args.startpage:
+                pts = pages.START_PAGE
 
+        is_path_exists = os.path.exists(path)
+
+        if is_path_exists and pts is None:
+            pts = MW.STNG.page_on_app_launch_from_explorer
         else:
-            waterfall_page_needed = Settings.get("open_app_on_waterfall_page")
-            if waterfall_page_needed:
-                MW.change_page_at_appstart(MW.pages.WATERFALL_PAGE)
+            pts = pages.START_PAGE
 
+        MW.change_page_at_appstart(pts)
+        LibraryData().create_empty_virtual_folder()
+
+
+        board_loading = False
+        board_plugin_loading = False
+
+        if pts is None:
+            pass
+
+        elif pts == pages.BOARD_PAGE:
+
+            # тут хороший приём применён:
+            # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
+            # а потом уже меняем полностью через change_page
+            MW.change_page_at_appstart(MW.pages.BOARD_PAGE)
+            # processAppEvents() # TODO: (6 фев 26) вызов этой темы вызывает мерцание, поэтому отключил пока
+            MW.change_page(MW.pages.BOARD_PAGE, init_force=True)
+            if path.lower().endswith('.board'):
+                MW.board_loadBoard(path)
+                board_loading = True
+            elif path.lower().endswith('.py'):
+                MW.board_LoadPlugins()
+                MW.board_loadPluginBoard(path)
+                board_plugin_loading = True
+            elif os.path.isfile(path) or os.path.isdir(path):
+                pass
             else:
-                MW.change_page_at_appstart(MW.pages.VIEWER_PAGE)
+                raise Exception(f'Unable to handle board argument {path}')
 
+        elif pts == pages.VIEWER_PAGE:
+
+            MW.update()
+
+        elif pts == pages.LIBRARY_PAGE:
+
+            MW.change_page(pts)
+
+        elif pts == pages.WATERFALL_PAGE:
+
+            MW.change_page(pts)
+            MW.update()
+
+        elif pts == pages.START_PAGE:
+
+            MW.change_page(pts)
             MW.update()
 
         processAppEvents()
 
         # обработка входящих данных
-        if legacy_viewer_page_branch:
-            if path:
-                LibraryData().handle_input_data(path, check_windows_explorer_window=True)
-            else:
-                # без запроса
-                LibraryData().create_empty_virtual_folder()
-            if args.library:
-                MW.change_page(MW.pages.LIBRARY_PAGE)
+        if pts != pages.START_PAGE and not (board_loading or board_plugin_loading):
+            LibraryData().handle_input_data(path, check_windows_explorer_window=True)
 
     def APP_handle_input_data_epilog(self, folder_data, is_file, input_path):
-
-        if self.is_library_page_active():
-            # выходим из страницы библиотеки для показа картинки
-            self.change_page(self.pages.VIEWER_PAGE, force=True)
 
         if self.is_viewer_page_active():
             self.show_image(folder_data.current_image(), only_set_thumbnails_offset=True)
@@ -460,7 +485,7 @@ class AppMixin():
         if not Globals.DEBUG:
             LibraryData().write_history_file(input_path)
 
-        # make thumbnails
+        # make thumbnails and previews
         ThumbnailsPreviewsThread(folder_data, Globals).start()
 
     @classmethod
