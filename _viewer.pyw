@@ -4630,11 +4630,16 @@ class MainWindow(QMainWindow,
         if columns and active_item:
             cached = active_item.previews_grids_cached_original
             if cached:
+                multiframe = False
                 if isinstance(cached, QPixmap):
                     pixmap = cached
+                    multiframe = False
                 else:
                     pixmap = cached.currentPixmap()
-                    # draw scrub line
+                    multiframe = True
+
+                if multiframe:
+                    # draw scrub line on preview
                     scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                     painter.setPen(QPen(Qt.white))
@@ -4644,13 +4649,12 @@ class MainWindow(QMainWindow,
                         scrub_rect.bottomLeft() + offset
                     )
                     painter.setPen(Qt.NoPen)
+
                 # draw original on the left side
                 source_rect = pixmap.rect()
                 main_rect = QRectF(0, 0, self.rect().width()/2, self.rect().height()).toRect()
                 projected = fit_rect_into_rect(source_rect, main_rect)
-                painter.setOpacity(0.8)
-                painter.drawRect(main_rect)
-                painter.setOpacity(1.0)
+                painter.fillRect(main_rect, QBrush(QColor(0, 0, 0, 204)))
                 if pixmap.isNull():
                     painter.setPen(QPen(Qt.white))
                     _error_msg = _("Error")
