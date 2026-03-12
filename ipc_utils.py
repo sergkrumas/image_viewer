@@ -50,8 +50,15 @@ class Window(QWidget):
             f'{self.servername}\n{self.random_value}'
         )
 
+
+        offset = 0
+        WIDTH = 50
         for n, image in enumerate(self.images):
-            painter.drawImage(QPointF(50*n, 50*n), image)
+            dest_rect = QRect(offset, 0, WIDTH, WIDTH)
+            src_width = min(image.width(), image.height())
+            source_rect = QRect(0, 0, src_width, src_width)
+            painter.drawImage(dest_rect, image, source_rect)
+            offset += WIDTH
         painter.end()
 
     def mousePressEvent(self, event):
