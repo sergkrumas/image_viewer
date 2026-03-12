@@ -411,6 +411,7 @@ class AppMixin():
         board_loading = False
         board_plugin_loading = False
 
+        # TODO: (12 мар 26) код ниже надо переписать позже, ибо так нельзя
         if pts is None:
             pass
 
