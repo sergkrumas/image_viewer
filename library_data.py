@@ -1757,7 +1757,7 @@ class ImageData():
         self._is_animated_file = None
         self._is_animated_apng = None
 
-        self.library_page_cached_original = None
+        self.previews_grids_cached_original = None
 
     # для страниц Boards и Library
     @property

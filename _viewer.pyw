@@ -2968,7 +2968,7 @@ class MainWindow(QMainWindow,
     def library_page_NoButton_mouseMoveEvent(self, event):
         active_item = self.library_previews_list_active_item
         if active_item:
-            if active_item.library_page_cached_original is None:
+            if active_item.previews_grids_cached_original is None:
                 if active_item.is_animated_file:
                     filepath = active_item.filepath
                     if active_item.is_animated_apng:
@@ -2983,8 +2983,8 @@ class MainWindow(QMainWindow,
                         active_item.filepath,
                         highres_svg=LibraryData().is_svg_file(active_item.filepath)
                     )
-                active_item.library_page_cached_original = data
-            cached = active_item.library_page_cached_original
+                active_item.previews_grids_cached_original = data
+            cached = active_item.previews_grids_cached_original
             if isinstance(cached, QPixmap):
                 pass
             else:
@@ -4610,7 +4610,7 @@ class MainWindow(QMainWindow,
                                     )
 
         if columns and active_item:
-            cached = active_item.library_page_cached_original
+            cached = active_item.previews_grids_cached_original
             if cached:
                 if isinstance(cached, QPixmap):
                     pixmap = cached
