@@ -4697,6 +4697,18 @@ class MainWindow(QMainWindow,
             painter.setPen(QPen(Qt.white))
             painter.drawText(area_rect, Qt.AlignCenter, _("Loading").upper())
 
+        def _draw_enlarged_preview(painter, active_item, pixmap):
+            item_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
+            painter.drawRect(item_rect) #for images with transparent layer
+            draw_shadow(
+                self,
+                painter,
+                item_rect, 10,
+                webRGBA(QColor(0, 0, 0, 100)),
+                webRGBA(QColor(0, 0, 0, 0))
+            )
+            painter.drawPixmap(item_rect, pixmap)
+
         if LibraryData().current_folder() is LibraryData.none_folder:
             _loading()
 
@@ -4738,16 +4750,27 @@ class MainWindow(QMainWindow,
                 painter.setRenderHint(QPainter.Antialiasing, False)
 
             if active_item and (not render_as_blackplate) and (not any(self.corner_menu_visibility)):
-                item_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
-                painter.drawRect(item_rect) #for images with transparent layer
-                draw_shadow(
-                    self,
-                    painter,
-                    item_rect, 10,
-                    webRGBA(QColor(0, 0, 0, 100)),
-                    webRGBA(QColor(0, 0, 0, 0))
-                )
-                painter.drawPixmap(item_rect, active_item.preview)
+                cached = active_item.previews_grids_cached_original
+
+                if cached and not isinstance(cached, QPixmap):
+                    pixmap = cached.currentPixmap()
+
+                    _draw_enlarged_preview(painter, active_item, pixmap)
+
+                    # draw scrub line
+                    scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
+                    inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
+                    painter.setPen(QPen(Qt.white))
+                    offset = QPoint(int(inside_rect_x_offset), 0)
+                    painter.drawLine(
+                        scrub_rect.topLeft() + offset,
+                        scrub_rect.bottomLeft() + offset
+                    )
+                    painter.setPen(Qt.NoPen)
+
+                else:
+                    _draw_enlarged_preview(painter, active_item, active_item.preview)
+
 
         elif not Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS:
             painter.setPen(QPen(Qt.white))
