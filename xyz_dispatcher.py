@@ -27,6 +27,9 @@ class XYZMixin():
 
     def init_XYZ(self):
         pass
+        # self.mousePressEvent = lambda x: None
+        # self.mouseMoveEvent = lambda x: None
+        # self.mousePressEvent = lambda x: None
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
