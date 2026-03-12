@@ -2965,7 +2965,7 @@ class MainWindow(QMainWindow,
                 self.get_rotated_pixmap(force_update=True)
                 self.update()
 
-    def library_page_NoButton_mouseMoveEvent(self, event):
+    def previews_grid_NoButton_mouseMoveEvent(self, event):
         active_item = self.library_previews_list_active_item
         if active_item:
             if active_item.previews_grids_cached_original is None:
@@ -3058,7 +3058,7 @@ class MainWindow(QMainWindow,
         elif self.is_library_page_active():
             if event.buttons() == Qt.NoButton:
                 self.previews_grid_mouseMoveEvent(event)
-                self.library_page_NoButton_mouseMoveEvent(event)
+                self.previews_grid_NoButton_mouseMoveEvent(event)
 
             if event.buttons() == Qt.LeftButton:
                 self.clickable_scrollbars_mouseMoveEvent(event)
