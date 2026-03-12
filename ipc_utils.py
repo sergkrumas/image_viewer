@@ -41,6 +41,7 @@ class Window(QWidget):
         self.servername = ""
         self.random_value = ""
         self.images = defaultdict(list)
+        self.images_done = defaultdict(bool)
         self.setMouseTracking(True)
 
     def paintEvent(self, event):
@@ -52,12 +53,16 @@ class Window(QWidget):
         )
 
         WIDTH = 50
-        for y, worker_list in enumerate(self.images.values()):
+        for key_y, worker_list in self.images.items():
             for x, image in enumerate(worker_list):
-                dest_rect = QRect(x*WIDTH, y*WIDTH, WIDTH, WIDTH)
+                dest_rect = QRect(x*WIDTH, key_y*WIDTH, WIDTH, WIDTH)
                 src_width = min(image.width(), image.height())
                 source_rect = QRect(0, 0, src_width, src_width)
                 painter.drawImage(dest_rect, image, source_rect)
+            if self.images_done[key_y]:
+                dest_rect = QRect(0, key_y*WIDTH, WIDTH, WIDTH)
+                painter.setPen(QPen(Qt.white, 1))
+                painter.drawText(dest_rect, Qt.AlignLeft, 'DONE')
 
         painter.end()
 
@@ -79,6 +84,14 @@ class Window(QWidget):
 
     def addImage(self, image, worker_index):
         self.images[worker_index].append(image)
+        self.update()
+
+    def addDone(self, worker_index):
+        self.images_done[worker_index] = True
+
+        if all(self.images_done.values()):
+            QMessageBox.critical(None, '', "DONE")
+
         self.update()
 
 class Globals:
@@ -134,6 +147,8 @@ class DataType:
 
     Image = 5
 
+    Done = 6
+
 
 class JSONKEYS():
     MESSAGE_TYPE = 0
@@ -158,6 +173,13 @@ class SocketWrapper():
         self.socket = socket
         self.socket_buffer = bytes()
         self.readState = self.states.readSize
+
+    def sendDone(self, worker_index):
+        data = {
+            JSONKEYS.MESSAGE_TYPE: DataType.Done,
+            JSONKEYS.WORKER_INDEX: worker_index,
+        }
+        self.socket.write(Utils.prepare_data_to_write(data, b'', b''))
 
     def sendQImage(self, image, worker_index, filepath):
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
@@ -248,6 +270,9 @@ class SocketWrapper():
                                         parsed_serial_data[JSONKEYS.WORKER_INDEX]
                                     )
                                     # QMessageBox.warning(None, "", parsed_serial_data[JSONKEYS.FILEPATH])
+                                elif self.currentDataType == DataType.Done:
+                                    print('done')
+                                    window.addDone(parsed_serial_data[JSONKEYS.WORKER_INDEX])
                                 else:
                                     print(f'Undefined crap has been received {parsed_serial_data}')
 
@@ -368,18 +393,16 @@ def main():
 
                 for filepath in filepaths:
                     qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                        # print('Exception ', e)
-                    # time.sleep(0.01)
-                    # qimage = QImage(50, 50, QImage.Format_ARGB32)
                     if not qimage.isNull():
                         try:
                             client_socket_wrapper.sendQImage(qimage, worker_index, filepath)
                         except Exception as e:
                             pass
-                        # print(qimage.width())
                         window.addImage(qimage, worker_index)
                         window.update()
                         QApplication.processEvents()
+
+                client_socket_wrapper.sendDone(worker_index)
 
             def client_socket_error(socketError):
                 errors = {
