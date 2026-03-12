@@ -2966,7 +2966,10 @@ class MainWindow(QMainWindow,
                 self.update()
 
     def previews_grid_NoButton_mouseMoveEvent(self, event):
-        active_item = self.library_previews_list_active_item
+        if self.is_library_page_active():
+            active_item = self.library_previews_list_active_item
+        elif self.is_waterfall_page_active():
+            active_item = self.waterfall_previews_list_active_item
         if active_item:
             if active_item.previews_grids_cached_original is None:
                 if active_item.is_animated_file:
@@ -2988,7 +2991,7 @@ class MainWindow(QMainWindow,
             if isinstance(cached, QPixmap):
                 pass
             else:
-                scrub_rect = self.get_scrub_rect_for_library_previews(active_item)
+                scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
                 inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                 frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
                     inside_rect_x_offset,
@@ -3079,6 +3082,7 @@ class MainWindow(QMainWindow,
             else:
                 if event.buttons() == Qt.NoButton:
                     self.previews_grid_mouseMoveEvent(event)
+                    self.previews_grid_NoButton_mouseMoveEvent(event)
 
                 if event.buttons() == Qt.LeftButton:
                     self.clickable_scrollbars_mouseMoveEvent(event)
@@ -4623,7 +4627,7 @@ class MainWindow(QMainWindow,
                     pixmap = cached
                 else:
                     pixmap = cached.currentPixmap()
-                    scrub_rect = self.get_scrub_rect_for_library_previews(active_item)
+                    scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                     # draw scrub line
                     painter.setPen(QPen(Qt.white))
@@ -4657,7 +4661,7 @@ class MainWindow(QMainWindow,
 
         painter.restore()
 
-    def get_scrub_rect_for_library_previews(self, active_item):
+    def get_scrub_rect_for_previews_grid(self, active_item):
         enlarged_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
         scrub_rect = QRect(enlarged_rect)
         # уменьшая ширину и корректируя центр, вставляем неактивные поля по бокам для улучшенного UX
