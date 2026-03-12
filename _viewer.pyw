@@ -3927,7 +3927,11 @@ class MainWindow(QMainWindow,
             return 1.0
 
     def draw_rounded_frame_progress_label(self, event_painter, pos, text, bold=False,
-                    color=Qt.red, normalized_progress=0.0, from_center_to_sides=False):
+                    color=Qt.red, normalized_progress=0.0, from_center_to_sides=False,
+                    save_and_restore=True):
+
+        if save_and_restore:
+            event_painter.save()
 
         font = event_painter.font()
         font.setFamily('consolas')
@@ -3991,6 +3995,9 @@ class MainWindow(QMainWindow,
         show_pos_rect = QRect(QPoint(0,0), pix.size())
         show_pos_rect.moveCenter(pos)
         event_painter.drawPixmap(show_pos_rect, pix)
+
+        if save_and_restore:
+            event_painter.restore()
 
     def draw_rounded_frame_label(self, painter, pos, text, bold=False, color=Qt.red):
         painter.save()
