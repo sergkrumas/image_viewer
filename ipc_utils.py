@@ -133,6 +133,13 @@ class DataType:
 
     Image = 5
 
+
+class JSONKEYS():
+    message_type = 0
+    width = 1
+    height = 2
+    format = 3
+
 class SocketWrapper():
 
     class states():
@@ -148,7 +155,7 @@ class SocketWrapper():
         ptr = image.constBits()
         ptr.setsize(image.sizeInBytes())
         barray = bytes(ptr)
-        data = {'message_type': DataType.Image, 'width': image.width(), 'height': image.height(), 'format': image.format()}
+        data = {JSONKEYS.message_type: DataType.Image, JSONKEYS.width: image.width(), JSONKEYS.height: image.height(), JSONKEYS.format: image.format()}
         self.socket.write(Utils.prepare_data_to_write(data, barray, b''))
         print(data)
 
@@ -197,11 +204,11 @@ class SocketWrapper():
                             parsed_serial_data = pickle.loads(serial_data)
 
                             if isinstance(parsed_serial_data, dict):
-                                self.currentDataType = parsed_serial_data['message_type']
+                                self.currentDataType = parsed_serial_data[JSONKEYS.message_type]
                                 if self.currentDataType == DataType.Greeting:
                                     pass
                                 elif self.currentDataType == DataType.Image:
-                                    image = QImage(binary_data_1, parsed_serial_data['width'], parsed_serial_data['height'], parsed_serial_data['format'])
+                                    image = QImage(binary_data_1, parsed_serial_data[JSONKEYS.width], parsed_serial_data[JSONKEYS.height], parsed_serial_data[JSONKEYS.format])
                                     global window
                                     print('take', image, image.width())
                                     window.addImage(image)
