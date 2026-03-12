@@ -62,7 +62,8 @@ class Window(QWidget):
         painter.end()
 
     def mousePressEvent(self, event):
-        pass
+        app = QApplication.instance()
+        app.exit()
 
     def mouseMoveEvent(self, event):
         pass
@@ -113,12 +114,12 @@ class Utils:
             bin_length_2 = 0
 
         total_data_length = serial_length + bin_length_1 + bin_length_2
-        header = \
+        header_data = \
             total_data_length.to_bytes(Globals.INT_SIZE, 'big') + \
             serial_length.to_bytes(Globals.INT_SIZE, 'big') + \
             bin_length_1.to_bytes(Globals.INT_SIZE, 'big') + \
             bin_length_2.to_bytes(Globals.INT_SIZE, 'big')
-        data_to_sent = b''.join((header, serial_binary, bin_binary_1, bin_binary_2))
+        data_to_sent = b''.join((header_data, serial_binary, bin_binary_1, bin_binary_2))
 
         # print('prepare_data_to_write', serial_data)
 
@@ -140,6 +141,7 @@ class JSONKEYS():
     HEIGHT = 2
     FORMAT = 3
     WORKER_INDEX = 4
+    FILEPATH = 5
 
 class SocketWrapper():
 
@@ -147,12 +149,27 @@ class SocketWrapper():
         readSize = 0
         readData = 1
 
+    qt_images_formats_dict = dict()
+    for attr_name in dir(QImage):
+        if attr_name.startswith('Format') and not attr_name == 'Format':
+            qt_images_formats_dict[getattr(QImage, attr_name)] = attr_name
+
     def __init__(self, socket):
         self.socket = socket
         self.socket_buffer = bytes()
         self.readState = self.states.readSize
 
-    def sendQImage(self, image, worker_index):
+    def sendQImage(self, image, worker_index, filepath):
+        if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
+            # На практике у изображения может может быть формат Index8,
+            # который не даёт ничего отправить,
+            # да и ещё сервер бахается при отправке ему такое отправить,
+            # а клиент почему-то нет.
+            # Именно поэтому здесь все нестандартные форматы переводим в стандартные,
+            # чтобы избежать крашей, глюков, зависаний.
+            image = image.convertToFormat(QImage.Format_RGB32)
+
+
         ptr = image.constBits()
         ptr.setsize(image.sizeInBytes())
         barray = bytes(ptr)
@@ -162,9 +179,14 @@ class SocketWrapper():
             JSONKEYS.HEIGHT: image.height(),
             JSONKEYS.FORMAT: image.format(),
             JSONKEYS.WORKER_INDEX: worker_index,
+            JSONKEYS.FILEPATH: filepath,
         }
+        format_str = self.qt_images_formats_dict[image.format()]
+        print(format_str, filepath)
+
         self.socket.write(Utils.prepare_data_to_write(data, barray, b''))
-        print(data)
+
+
 
     def processReadyRead(self):
 
@@ -221,10 +243,11 @@ class SocketWrapper():
                                         parsed_serial_data[JSONKEYS.FORMAT],
                                     )
                                     global window
-                                    print('take', image, image.width())
+                                    # print('take', image, image.width())
                                     window.addImage(image,
                                         parsed_serial_data[JSONKEYS.WORKER_INDEX]
                                     )
+                                    # QMessageBox.warning(None, "", parsed_serial_data[JSONKEYS.FILEPATH])
                                 else:
                                     print(f'Undefined crap has been received {parsed_serial_data}')
 
@@ -256,6 +279,48 @@ def ipc_utils_debug_input_data(worker_index):
         path = file.readlines()[worker_index].strip()
         return path
 
+
+
+
+
+class ServerWrapper():
+
+    def __init__(self, ):
+        self.SERVER_NAME = f'kiv_ipc_{time.time()}'
+        # self.SERVER_NAME = f'kiv_ips_'
+
+        self.server_obj = QLocalServer()
+
+        self.clients_sockets = []
+
+        def on_ready_read(client_socket):
+            data = client_socket.readAll().data()
+            # print('from worker:', data)
+
+        def receive_incoming_worker(server_obj, clients_sockets):
+            clientConnSocket = server_obj.nextPendingConnection()
+            sw = SocketWrapper(clientConnSocket)
+            clientConnSocket.readyRead.connect(sw.processReadyRead)
+            # clientConnSocket.readyRead.connect(lambda: on_ready_read(clientConnSocket))
+            # clientConnSocket.write('hello'.encode('utf8'))
+
+
+            # ТУТ МОЖНО ОТДАТЬ ТАСКУ
+
+
+            clients_sockets.append(sw)
+
+            # clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
+            # clientConnSocket.disconnectFromServer()
+
+        if self.server_obj.listen(self.SERVER_NAME):
+            self.server_obj.newConnection.connect(lambda: receive_incoming_worker(self.server_obj, self.clients_sockets))
+            # print("server started")
+        else:
+            QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
+
+
+
 def main():
 
     app = QApplication([])
@@ -274,10 +339,10 @@ def main():
         SERVER_NAME = args.servername
         window = Window(Qt.blue)
         window.show()
-        window.resize(1500, 200)
-        window.move(100, 900+200*int(args.i))
+        window.resize(1500, 100)
+        worker_index = int(args.i)
+        window.move(100, 900+100*worker_index)
         window.setServerName(SERVER_NAME)
-
 
 
         def worker_init():
@@ -290,17 +355,31 @@ def main():
                 window.update()
                 QApplication.processEvents()
 
-                worker_index = int(args.i)
+                filepaths = []
                 path = ipc_utils_debug_input_data(worker_index)
+                window.setWindowTitle(f'{args.i} {path}')
                 for curdir, folders, files in os.walk(path):
                     for filename in files:
                         filepath = os.path.join(curdir, filename)
-                        if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
-                            qimage = QImage(filepath)
-                            client_socket_wrapper.sendQImage(qimage, worker_index)
-                            window.addImage(qimage, worker_index)
-                            window.update()
-                            QApplication.processEvents()
+                        if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                            filepaths.append(filepath)
+
+
+
+                for filepath in filepaths:
+                    qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                        # print('Exception ', e)
+                    # time.sleep(0.01)
+                    # qimage = QImage(50, 50, QImage.Format_ARGB32)
+                    if not qimage.isNull():
+                        try:
+                            client_socket_wrapper.sendQImage(qimage, worker_index, filepath)
+                        except Exception as e:
+                            pass
+                        # print(qimage.width())
+                        window.addImage(qimage, worker_index)
+                        window.update()
+                        QApplication.processEvents()
 
             def client_socket_error(socketError):
                 errors = {
@@ -333,7 +412,8 @@ def main():
             client_socket.connectToServer(SERVER_NAME)
 
 
-        QTimer.singleShot(1, worker_init)
+        # QTimer.singleShot(1000, worker_init)
+        worker_init()
         app.exec()
 
 
@@ -342,51 +422,16 @@ def main():
         window = Window(Qt.red)
         window.show()
 
-        SERVER_NAME = f'kiv_ipc_{time.time()}'
+        servers = []
 
-        global server_obj
-        server_obj = QLocalServer()
-
-        global clients_sockets
-        clients_sockets = []
-
-        def on_ready_read(client_socket):
-            data = client_socket.readAll().data()
-            print('from worker:', data)
-
-        def receive_incoming_worker(server_obj, clients_sockets):
-            clientConnSocket = server_obj.nextPendingConnection()
-            sw = SocketWrapper(clientConnSocket)
-            clientConnSocket.readyRead.connect(sw.processReadyRead)
-            # clientConnSocket.readyRead.connect(lambda: on_ready_read(clientConnSocket))
-            # clientConnSocket.write('hello'.encode('utf8'))
-
-
-            # ТУТ МОЖНО ОТДАТЬ ТАСКУ
-
-
-            clients_sockets.append(sw)
-
-            # clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
-            # clientConnSocket.disconnectFromServer()
-
-        if server_obj.listen(SERVER_NAME):
-            server_obj.newConnection.connect(lambda: receive_incoming_worker(server_obj, clients_sockets))
-            print("server started")
-        else:
-            QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
-
-
-        WORKER_COUNT = 3
+        WORKER_COUNT = 4
         for i in range(WORKER_COUNT):
-            subprocess.Popen([sys.executable, __file__, '-worker', '-servername', SERVER_NAME, '-i', str(i)])
+            serv = ServerWrapper()
+            servers.append(serv)
+            # print('!!!! SERVER', serv.SERVER_NAME)
+            subprocess.Popen([sys.executable, __file__, '-worker', '-servername', serv.SERVER_NAME, '-i', str(i)])
 
-        # formats_dict = dict()
-        # for attr_name in dir(QImage):
-        #     if attr_name.startswith('Format') and not attr_name == 'Format':
-        #         formats_dict[getattr(QImage, attr_name)] = attr_name
 
-        # print(formats_dict[data.format()])
 
         app.exec()
 
