@@ -44,6 +44,8 @@ class Window(QWidget):
         self.images_done = defaultdict(bool)
         self.setMouseTracking(True)
 
+        self.time_start = None
+
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
@@ -83,6 +85,10 @@ class Window(QWidget):
         self.random_value = value
 
     def addImage(self, image, worker_index):
+
+        if self.time_start is None:
+            self.time_start = time.time()
+
         self.images[worker_index].append(image)
         self.update()
 
@@ -90,7 +96,14 @@ class Window(QWidget):
         self.images_done[worker_index] = True
 
         if all(self.images_done.values()):
-            QMessageBox.critical(None, '', "DONE")
+            ipc_job_time = time.time() - self.time_start
+
+            time2 = time.time()
+            for i in range(WORKER_COUNT):
+                task_function(None, i)
+            non_ipc_job_time = time.time() - time2
+            QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
+
 
         self.update()
 
@@ -269,9 +282,9 @@ class SocketWrapper():
                                     window.addImage(image,
                                         parsed_serial_data[JSONKEYS.WORKER_INDEX]
                                     )
-                                    # QMessageBox.warning(None, "", parsed_serial_data[JSONKEYS.FILEPATH])
+
                                 elif self.currentDataType == DataType.Done:
-                                    print('done')
+
                                     window.addDone(parsed_serial_data[JSONKEYS.WORKER_INDEX])
                                 else:
                                     print(f'Undefined crap has been received {parsed_serial_data}')
@@ -346,6 +359,30 @@ class ServerWrapper():
 
 
 
+def task_function(socket, worker_index):
+
+    filepaths = []
+
+    path = ipc_utils_debug_input_data(worker_index)
+    window.setWindowTitle(f'{worker_index} {path}')
+    for curdir, folders, files in os.walk(path):
+        for filename in files:
+            filepath = os.path.join(curdir, filename)
+            if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                filepaths.append(filepath)
+
+    for filepath in filepaths:
+        qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if not qimage.isNull():
+            if socket:
+                try:
+                    socket.sendQImage(qimage, worker_index, filepath)
+                except Exception as e:
+                    pass
+                window.addImage(qimage, worker_index)
+            window.update()
+            QApplication.processEvents()
+
 def main():
 
     app = QApplication([])
@@ -380,28 +417,7 @@ def main():
                 window.update()
                 QApplication.processEvents()
 
-                filepaths = []
-                path = ipc_utils_debug_input_data(worker_index)
-                window.setWindowTitle(f'{args.i} {path}')
-                for curdir, folders, files in os.walk(path):
-                    for filename in files:
-                        filepath = os.path.join(curdir, filename)
-                        if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                            filepaths.append(filepath)
-
-
-
-                for filepath in filepaths:
-                    qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                    if not qimage.isNull():
-                        try:
-                            client_socket_wrapper.sendQImage(qimage, worker_index, filepath)
-                        except Exception as e:
-                            pass
-                        window.addImage(qimage, worker_index)
-                        window.update()
-                        QApplication.processEvents()
-
+                task_function(client_socket_wrapper, worker_index)
                 client_socket_wrapper.sendDone(worker_index)
 
             def client_socket_error(socketError):
@@ -447,7 +463,9 @@ def main():
 
         servers = []
 
-        WORKER_COUNT = 4
+        global WORKER_COUNT
+
+        WORKER_COUNT = 5
         for i in range(WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
