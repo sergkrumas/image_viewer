@@ -31,6 +31,7 @@ import subprocess
 import argparse
 import pickle
 
+from collections import defaultdict
 
 class Window(QWidget):
 
@@ -39,7 +40,7 @@ class Window(QWidget):
         self.color = color
         self.servername = ""
         self.random_value = ""
-        self.images = []
+        self.images = defaultdict(list)
         self.setMouseTracking(True)
 
     def paintEvent(self, event):
@@ -50,15 +51,14 @@ class Window(QWidget):
             f'{self.servername}\n{self.random_value}'
         )
 
-
-        offset = 0
         WIDTH = 50
-        for n, image in enumerate(self.images):
-            dest_rect = QRect(offset, 0, WIDTH, WIDTH)
-            src_width = min(image.width(), image.height())
-            source_rect = QRect(0, 0, src_width, src_width)
-            painter.drawImage(dest_rect, image, source_rect)
-            offset += WIDTH
+        for y, worker_list in enumerate(self.images.values()):
+            for x, image in enumerate(worker_list):
+                dest_rect = QRect(x*WIDTH, y*WIDTH, WIDTH, WIDTH)
+                src_width = min(image.width(), image.height())
+                source_rect = QRect(0, 0, src_width, src_width)
+                painter.drawImage(dest_rect, image, source_rect)
+
         painter.end()
 
     def mousePressEvent(self, event):
@@ -76,8 +76,8 @@ class Window(QWidget):
     def setRandomValue(self, value):
         self.random_value = value
 
-    def addImage(self, image):
-        self.images.append(image)
+    def addImage(self, image, worker_index):
+        self.images[worker_index].append(image)
         self.update()
 
 class Globals:
@@ -135,10 +135,11 @@ class DataType:
 
 
 class JSONKEYS():
-    message_type = 0
-    width = 1
-    height = 2
-    format = 3
+    MESSAGE_TYPE = 0
+    WIDTH = 1
+    HEIGHT = 2
+    FORMAT = 3
+    WORKER_INDEX = 4
 
 class SocketWrapper():
 
@@ -151,11 +152,17 @@ class SocketWrapper():
         self.socket_buffer = bytes()
         self.readState = self.states.readSize
 
-    def sendQImage(self, image):
+    def sendQImage(self, image, worker_index):
         ptr = image.constBits()
         ptr.setsize(image.sizeInBytes())
         barray = bytes(ptr)
-        data = {JSONKEYS.message_type: DataType.Image, JSONKEYS.width: image.width(), JSONKEYS.height: image.height(), JSONKEYS.format: image.format()}
+        data = {
+            JSONKEYS.MESSAGE_TYPE: DataType.Image,
+            JSONKEYS.WIDTH: image.width(),
+            JSONKEYS.HEIGHT: image.height(),
+            JSONKEYS.FORMAT: image.format(),
+            JSONKEYS.WORKER_INDEX: worker_index,
+        }
         self.socket.write(Utils.prepare_data_to_write(data, barray, b''))
         print(data)
 
@@ -204,14 +211,20 @@ class SocketWrapper():
                             parsed_serial_data = pickle.loads(serial_data)
 
                             if isinstance(parsed_serial_data, dict):
-                                self.currentDataType = parsed_serial_data[JSONKEYS.message_type]
+                                self.currentDataType = parsed_serial_data[JSONKEYS.MESSAGE_TYPE]
                                 if self.currentDataType == DataType.Greeting:
                                     pass
                                 elif self.currentDataType == DataType.Image:
-                                    image = QImage(binary_data_1, parsed_serial_data[JSONKEYS.width], parsed_serial_data[JSONKEYS.height], parsed_serial_data[JSONKEYS.format])
+                                    image = QImage(binary_data_1,
+                                        parsed_serial_data[JSONKEYS.WIDTH],
+                                        parsed_serial_data[JSONKEYS.HEIGHT],
+                                        parsed_serial_data[JSONKEYS.FORMAT],
+                                    )
                                     global window
                                     print('take', image, image.width())
-                                    window.addImage(image)
+                                    window.addImage(image,
+                                        parsed_serial_data[JSONKEYS.WORKER_INDEX]
+                                    )
                                 else:
                                     print(f'Undefined crap has been received {parsed_serial_data}')
 
@@ -238,9 +251,9 @@ class SocketWrapper():
             self.socket.readyRead.emit()
 
 
-def ipc_utils_debug_input_data():
+def ipc_utils_debug_input_data(worker_index):
     with open('ips_utils_debug_input.data', "r", encoding="utf-8") as file:
-        path = file.readlines()[0].strip()
+        path = file.readlines()[worker_index].strip()
         return path
 
 def main():
@@ -251,6 +264,7 @@ def main():
     # parser.add_argument('path', nargs='?', default=None)
     parser.add_argument('-worker', help="", action="store_true")
     parser.add_argument('-servername', help="")
+    parser.add_argument('-i', nargs="?", default=0)
     args = parser.parse_args(sys.argv[1:])
 
     global window
@@ -260,54 +274,67 @@ def main():
         SERVER_NAME = args.servername
         window = Window(Qt.blue)
         window.show()
-        window.resize(1000, 800)
-        window.move(1200, 900)
+        window.resize(1500, 200)
+        window.move(100, 900+200*int(args.i))
         window.setServerName(SERVER_NAME)
 
 
-        global client_socket
-        client_socket = QLocalSocket()
-        client_socket_wrapper = SocketWrapper(client_socket)
 
-        def connected_to_server():
+        def worker_init():
+            global client_socket
+            client_socket = QLocalSocket()
+            client_socket_wrapper = SocketWrapper(client_socket)
 
-            path = ipc_utils_debug_input_data()
-            for curdir, folders, files in os.walk(path):
-                for filename in files:
-                    filepath = os.path.join(curdir, filename)
-                    client_socket_wrapper.sendQImage(QImage(filepath))
+            def connected_to_server():
 
-        def client_socket_error(socketError):
-            errors = {
-                QLocalSocket.ServerNotFoundError:
-                    "The host was not found. Please check the host name and port settings.",
-                QLocalSocket.ConnectionRefusedError:
-                    "The connection was refused by the peer. Make sure the server is running,"
-                    "and check that the host name and port settings are correct.",
-                QLocalSocket.PeerClosedError:
-                    None,
-            }
-            default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
-            msg = errors.get(socketError, default_error_msg)
-            print(msg)
+                window.update()
+                QApplication.processEvents()
 
+                worker_index = int(args.i)
+                path = ipc_utils_debug_input_data(worker_index)
+                for curdir, folders, files in os.walk(path):
+                    for filename in files:
+                        filepath = os.path.join(curdir, filename)
+                        if filepath.lower().endswith(('.png', '.jpg', '.jpeg')):
+                            qimage = QImage(filepath)
+                            client_socket_wrapper.sendQImage(qimage, worker_index)
+                            window.addImage(qimage, worker_index)
+                            window.update()
+                            QApplication.processEvents()
 
-        def on_ready_read(client_socket):
-
-            msg = client_socket.readAll()
-            if msg:
-                msg = msg.data().decode("utf8")
-                QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
-
-
-        client_socket.connected.connect(connected_to_server)
-        client_socket.error.connect(client_socket_error)
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! по идее здесь надо подключать враппер
-        client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
-        client_socket.abort()
-        client_socket.connectToServer(SERVER_NAME)
+            def client_socket_error(socketError):
+                errors = {
+                    QLocalSocket.ServerNotFoundError:
+                        "The host was not found. Please check the host name and port settings.",
+                    QLocalSocket.ConnectionRefusedError:
+                        "The connection was refused by the peer. Make sure the server is running,"
+                        "and check that the host name and port settings are correct.",
+                    QLocalSocket.PeerClosedError:
+                        None,
+                }
+                default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
+                msg = errors.get(socketError, default_error_msg)
+                print(msg)
 
 
+            def on_ready_read(client_socket):
+
+                msg = client_socket.readAll()
+                if msg:
+                    msg = msg.data().decode("utf8")
+                    QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
+
+
+            client_socket.connected.connect(connected_to_server)
+            client_socket.error.connect(client_socket_error)
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! по идее здесь надо подключать враппер
+            client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
+            client_socket.abort()
+            client_socket.connectToServer(SERVER_NAME)
+
+
+        QTimer.singleShot(1, worker_init)
+        app.exec()
 
 
     else:
@@ -350,9 +377,9 @@ def main():
             QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
 
 
-        # for i in range(2):
-        if True:
-            subprocess.Popen([sys.executable, __file__, '-worker', '-servername', SERVER_NAME])
+        WORKER_COUNT = 3
+        for i in range(WORKER_COUNT):
+            subprocess.Popen([sys.executable, __file__, '-worker', '-servername', SERVER_NAME, '-i', str(i)])
 
         # formats_dict = dict()
         # for attr_name in dir(QImage):
@@ -361,8 +388,8 @@ def main():
 
         # print(formats_dict[data.format()])
 
+        app.exec()
 
-    app.exec()
 
 if __name__ == '__main__':
     main()
