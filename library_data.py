@@ -1363,12 +1363,20 @@ class FolderData():
                 self.images_list.remove(image_data)
                 break
 
+    CURRENT_ID = 0
+    @classmethod
+    def set_id(cls, obj):
+        obj.id = cls.CURRENT_ID
+        cls.CURRENT_ID += 1
+
     def __init__(self, folder_path, files,
                     image_filepath=None,
                     virtual=False,
                     library_loading=False):
 
         super().__init__()
+
+        self.set_id(self)
 
         self.virtual = virtual
         self.tag_data = None
@@ -1707,8 +1715,17 @@ class ImageData():
                 # so we'll settle for when its content was last modified.
                 return stat.st_mtime
 
+    CURRENT_ID = 0
+    @classmethod
+    def set_id(cls, obj):
+        obj.id = cls.CURRENT_ID
+        cls.CURRENT_ID += 1
+
     def __init__(self, filepath, folder_data):
         super().__init__()
+
+        self.set_id(self)
+
         self.scale = None
         self.position = None
         self.hint_position = None
