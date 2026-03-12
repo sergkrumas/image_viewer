@@ -4638,8 +4638,8 @@ class MainWindow(QMainWindow,
                     pixmap = cached.currentPixmap()
                     multiframe = True
 
+                # draw scrub line on preview
                 if multiframe:
-                    # draw scrub line on preview
                     scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
                     painter.setPen(QPen(Qt.white))
@@ -4757,8 +4757,10 @@ class MainWindow(QMainWindow,
                                         normalized_progress=time.time() % 1.0,
                                         from_center_to_sides=True,
             )
+
         elif Globals.ENABLE_PROGRESSIVE_GRID_LAYOUT_FOR_PREVIEWS and progressive_ongoing:
             _loading()
+
         elif not any(LibraryData().current_folder().images_list):
             painter.setPen(QPen(Qt.white))
             painter.drawText(area_rect, Qt.AlignCenter, _("No images"))
