@@ -2970,6 +2970,7 @@ class MainWindow(QMainWindow,
             active_item = self.library_previews_list_active_item
         elif self.is_waterfall_page_active():
             active_item = self.waterfall_previews_list_active_item
+
         if active_item:
             if active_item.previews_grids_cached_original is None:
                 if active_item.is_animated_file:
@@ -2981,24 +2982,30 @@ class MainWindow(QMainWindow,
                         movie.setCacheMode(QMovie.CacheAll)
                     movie.jumpToFrame(0)
                     data = movie
+                elif self.is_waterfall_page_active():
+                    # на странице waterfall кэши статических хайрезов не нужны
+                    data = None
                 else:
                     data = load_image_respect_orientation(
                         active_item.filepath,
                         highres_svg=LibraryData().is_svg_file(active_item.filepath)
                     )
                 active_item.previews_grids_cached_original = data
+
             cached = active_item.previews_grids_cached_original
-            if isinstance(cached, QPixmap):
-                pass
-            else:
-                scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
-                inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
-                frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
-                    inside_rect_x_offset,
-                    scrub_rect,
-                    cached.frameCount(),
-                )
-                cached.jumpToFrame(frame_index)
+
+            if cached:
+                if isinstance(cached, QPixmap):
+                    pass
+                else:
+                    scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
+                    inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
+                    frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
+                        inside_rect_x_offset,
+                        scrub_rect,
+                        cached.frameCount(),
+                    )
+                    cached.jumpToFrame(frame_index)
 
     def viewer_LeftButton_mouseReleaseEvent(self, event):
         if self.transformations_allowed:
@@ -4627,9 +4634,9 @@ class MainWindow(QMainWindow,
                     pixmap = cached
                 else:
                     pixmap = cached.currentPixmap()
+                    # draw scrub line
                     scrub_rect = self.get_scrub_rect_for_previews_grid(active_item)
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - scrub_rect.left()
-                    # draw scrub line
                     painter.setPen(QPen(Qt.white))
                     offset = QPoint(int(inside_rect_x_offset), 0)
                     painter.drawLine(
