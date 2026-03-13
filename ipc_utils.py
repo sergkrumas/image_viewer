@@ -50,7 +50,7 @@ class Window(QWidget):
         painter = QPainter()
         painter.begin(self)
         painter.fillRect(self.rect(), self.color)
-        painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter, 
+        painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter,
             f'{self.servername}\n{self.random_value}'
         )
 

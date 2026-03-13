@@ -509,10 +509,10 @@ def generate_gradient(type, shadow_size, color1_hex, color2_hex):
         GradientConstants.bottom_right:    (shadow_size, shadow_size),
         GradientConstants.bottom_left:     (shadow_size, shadow_size),
         GradientConstants.top_right:       (shadow_size, shadow_size),
-        GradientConstants.top:             (1, shadow_size),          
-        GradientConstants.bottom:          (1, shadow_size),          
-        GradientConstants.left:            (shadow_size, 1),          
-        GradientConstants.right:           (shadow_size, 1),          
+        GradientConstants.top:             (1, shadow_size),
+        GradientConstants.bottom:          (1, shadow_size),
+        GradientConstants.left:            (shadow_size, 1),
+        GradientConstants.right:           (shadow_size, 1),
     }
     size = gradients.get(type)
     gradient_type_pxm = QPixmap(*size)
@@ -833,7 +833,7 @@ class RoundedQMenu(QMenu):
     def resizeEvent(self, event):
         path = QPainterPath()
         RADIUS = 5
-        # the rectangle must be translated and adjusted by 1 pixel in order to 
+        # the rectangle must be translated and adjusted by 1 pixel in order to
         # correctly map the rounded shape
         rect = QRectF(self.rect()).adjusted(.5, .5, -1.5, -1.5)
         path.addRoundedRect(rect, RADIUS, RADIUS)
