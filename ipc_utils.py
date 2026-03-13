@@ -194,7 +194,7 @@ class SocketWrapper():
             JSONKEYS.MESSAGE_TYPE: DataType.Done,
             JSONKEYS.WORKER_INDEX: worker_index,
         }
-        self.socket.write(self.prepare_data_to_write(data, b'', b''))
+        self.socket.write(self.prepare_data_to_write(data, None, None))
 
     def sendQImage(self, image, worker_index, filepath):
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
@@ -220,7 +220,7 @@ class SocketWrapper():
         # format_str = self.qt_images_formats_dict[image.format()]
         # print(format_str, filepath)
 
-        self.socket.write(self.prepare_data_to_write(data, barray, b''))
+        self.socket.write(self.prepare_data_to_write(data, barray, None))
 
     def processReadyRead(self):
 
