@@ -867,8 +867,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         current_image = folder_data.current_image()
         if thread_instance is not None and thread_instance.current_index_centered_order:
+            folder_data.modified_order_pivot_index = folder_data.current_image()
             images_list = list(get_index_centered_list(folder_data.images_list, folder_data.current_image()))
         else:
+            folder_data.modified_order_pivot_index = None
             images_list = folder_data.images_list
         folder_data.previews_done = False
         image_count = len(images_list)
@@ -1199,6 +1201,59 @@ class BoardData():
 
 class FolderData():
 
+    CURRENT_ID = 0
+    @classmethod
+    def set_id(cls, obj):
+        obj.id = cls.CURRENT_ID
+        cls.CURRENT_ID += 1
+
+    def __init__(self, folder_path, files,
+                    image_filepath=None,
+                    virtual=False,
+                    library_loading=False):
+
+        super().__init__()
+
+        self.set_id(self)
+
+        self.virtual = virtual
+        self.tag_data = None
+        self.folder_path = folder_path
+        self.folder_name = os.path.basename(folder_path)
+        self._index = -1
+        self.before_index = -1
+        self.images_list = []
+        self.modified_order_pivot_index = None
+        self.previews_done = False
+        self.deep_scan = False
+        self.viewed_list = []
+        self._images_list_selected = list()
+
+        self.sort_type = "original"
+        self.sort_type_reversed = False
+
+        self.board = BoardData()
+
+        self.preview_error = False
+
+        self.relative_thumbnails_row_offset_x = 0
+        self.absolute_board_thumbnails_row_offset_x = 0
+
+        self.init_images(files, library_loading=library_loading)
+        if image_filepath:
+            for n, image in enumerate(self.images_list):
+                if os.path.normpath(image.filepath) == os.path.normpath(image_filepath):
+                    self._index = n
+            if self._index == -1:
+                # it happens when image_filepath points to non-image file
+                if self.images_list:
+                    self.index = 0
+                # raise Exception("Should never happen")
+        else:
+            self._index = 0
+
+        self.PreviewsGrid.set_empty_grids(self)
+
     def check_insert_position(self, index):
         cf = self
         if index == 0:
@@ -1362,58 +1417,6 @@ class FolderData():
                 temp_list.append(image_data)
                 self.images_list.remove(image_data)
                 break
-
-    CURRENT_ID = 0
-    @classmethod
-    def set_id(cls, obj):
-        obj.id = cls.CURRENT_ID
-        cls.CURRENT_ID += 1
-
-    def __init__(self, folder_path, files,
-                    image_filepath=None,
-                    virtual=False,
-                    library_loading=False):
-
-        super().__init__()
-
-        self.set_id(self)
-
-        self.virtual = virtual
-        self.tag_data = None
-        self.folder_path = folder_path
-        self.folder_name = os.path.basename(folder_path)
-        self._index = -1
-        self.before_index = -1
-        self.images_list = []
-        self.previews_done = False
-        self.deep_scan = False
-        self.viewed_list = []
-        self._images_list_selected = list()
-
-        self.sort_type = "original"
-        self.sort_type_reversed = False
-
-        self.board = BoardData()
-
-        self.preview_error = False
-
-        self.relative_thumbnails_row_offset_x = 0
-        self.absolute_board_thumbnails_row_offset_x = 0
-
-        self.init_images(files, library_loading=library_loading)
-        if image_filepath:
-            for n, image in enumerate(self.images_list):
-                if os.path.normpath(image.filepath) == os.path.normpath(image_filepath):
-                    self._index = n
-            if self._index == -1:
-                # it happens when image_filepath points to non-image file
-                if self.images_list:
-                    self.index = 0
-                # raise Exception("Should never happen")
-        else:
-            self._index = 0
-
-        self.PreviewsGrid.set_empty_grids(self)
 
     modifiers_attrs = [
         'deep_scan',
@@ -1693,7 +1696,14 @@ class FolderData():
             pg = folder_data.PreviewsGrid(number_of_columns, page)
             pg.configure(MW)
 
-            for n, image_data in enumerate(folder_data.images_list):
+            # according to make_thumbnails_and_previews
+            pivot_image = folder_data.modified_order_pivot_index
+            if pivot_image in folder_data.images_list:
+                images_list = list(get_index_centered_list(folder_data.images_list, pivot_image))
+            else:
+                images_list = folder_data.images_list
+
+            for n, image_data in enumerate(images_list):
                 pg.add_image(image_data, remember=False)
 
             if page == MW.pages.WATERFALL_PAGE:
