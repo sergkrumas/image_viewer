@@ -30,8 +30,8 @@ import time, random
 import subprocess
 import argparse
 import pickle
-
 from collections import defaultdict
+
 
 class Window(QWidget):
 
@@ -108,7 +108,6 @@ class Window(QWidget):
             non_ipc_job_time = time.time() - time2
             QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
 
-
         self.update()
 
 class Globals:
@@ -120,7 +119,6 @@ class Consts:
     INT_SIZE = 8
     MESSAGE_HEADER_SIZE = INT_SIZE*3
 
-
 class DataType:
     Undefined = 0
     Greeting = 1
@@ -131,7 +129,6 @@ class DataType:
     Image = 5
 
     Done = 6
-
 
 class JSONKEYS():
     MESSAGE_TYPE = 0
@@ -314,11 +311,6 @@ class SocketWrapper():
             self.socket.readyRead.emit()
 
 
-def ipc_utils_debug_input_data(worker_index):
-    with open('ips_utils_debug_input.data', "r", encoding="utf-8") as file:
-        path = file.readlines()[worker_index].strip()
-        return path
-
 
 
 
@@ -327,10 +319,7 @@ class ServerWrapper():
 
     def __init__(self, ):
         self.SERVER_NAME = f'kiv_ipc_{time.time()}'
-        # self.SERVER_NAME = f'kiv_ips_'
-
         self.server_obj = QLocalServer()
-
         self.clients_sockets = []
 
         def on_ready_read(client_socket):
@@ -344,9 +333,7 @@ class ServerWrapper():
             # clientConnSocket.readyRead.connect(lambda: on_ready_read(clientConnSocket))
             # clientConnSocket.write('hello'.encode('utf8'))
 
-
-            # ТУТ МОЖНО ОТДАТЬ ТАСКУ
-
+            # TODO: тут можно отдать таску
 
             clients_sockets.append(sw)
 
@@ -360,6 +347,11 @@ class ServerWrapper():
             QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
 
 
+
+def ipc_utils_debug_input_data(worker_index):
+    with open('ips_utils_debug_input.data', "r", encoding="utf-8") as file:
+        path = file.readlines()[worker_index].strip()
+        return path
 
 def task_function(socket, worker_index):
 
@@ -409,7 +401,6 @@ def worker_init(window, SERVER_NAME, worker_index):
         msg = errors.get(socketError, default_error_msg)
         print(msg)
 
-
     def on_ready_read(client_socket):
 
         msg = client_socket.readAll()
@@ -417,10 +408,9 @@ def worker_init(window, SERVER_NAME, worker_index):
             msg = msg.data().decode("utf8")
             QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
 
-
     client_socket.connected.connect(connected_to_server)
     client_socket.error.connect(client_socket_error)
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! по идее здесь надо подключать враппер
+    # TODO: !!!!! по идее здесь надо подключать враппер
     client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
     client_socket.abort()
     client_socket.connectToServer(SERVER_NAME)
@@ -437,7 +427,7 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     if args.worker:
-        client = True
+        # client
         SERVER_NAME = args.servername
         Globals.window = window = Window(Qt.blue)
         window.show()
@@ -445,26 +435,22 @@ def main():
         worker_index = int(args.i)
         window.move(100, 900+100*worker_index)
         window.setServerName(SERVER_NAME)
+
         worker_init(window, SERVER_NAME, worker_index)
         app.exec()
 
     else:
-        server = True
+        # server
         Globals.window = window = Window(Qt.red)
         window.show()
 
         servers = []
-
         Globals.WORKER_COUNT = 5
         for i in range(Globals.WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
             subprocess.Popen([sys.executable, __file__, '-worker', '-servername', serv.SERVER_NAME, '-i', str(i)])
-
-
-
         app.exec()
-
 
 if __name__ == '__main__':
     main()
