@@ -265,31 +265,31 @@ class SocketWrapper():
 
                     try:
                         if serial_data:
-                            parsed_serial_data = pickle.loads(serial_data)
+                            data = pickle.loads(serial_data)
 
-                            if isinstance(parsed_serial_data, dict):
-                                self.currentDataType = parsed_serial_data[JSONKEYS.MESSAGE_TYPE]
+                            if isinstance(data, dict):
+                                self.currentDataType = data[JSONKEYS.MESSAGE_TYPE]
                                 if self.currentDataType == DataType.Greeting:
                                     pass
                                 elif self.currentDataType == DataType.Image:
                                     image = QImage(binary_data_1,
-                                        parsed_serial_data[JSONKEYS.WIDTH],
-                                        parsed_serial_data[JSONKEYS.HEIGHT],
-                                        parsed_serial_data[JSONKEYS.FORMAT],
+                                        data[JSONKEYS.WIDTH],
+                                        data[JSONKEYS.HEIGHT],
+                                        data[JSONKEYS.FORMAT],
                                     )
                                     # print('take', image, image.width())
                                     Globals.window.addImage(image,
-                                        parsed_serial_data[JSONKEYS.WORKER_INDEX]
+                                        data[JSONKEYS.WORKER_INDEX]
                                     )
 
                                 elif self.currentDataType == DataType.Done:
 
-                                    Globals.window.addDone(parsed_serial_data[JSONKEYS.WORKER_INDEX])
+                                    Globals.window.addDone(data[JSONKEYS.WORKER_INDEX])
                                 else:
-                                    print(f'Undefined crap has been received {parsed_serial_data}')
+                                    print(f'Undefined crap has been received {data}')
 
                             else:
-                                print(f'Undefined crap has been received, and there is no header section within {parsed_serial_data}')
+                                print(f'Undefined crap has been received, and there is no header section within {data}')
 
                     except Exception as e:
                         raise
