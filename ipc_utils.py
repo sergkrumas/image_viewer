@@ -202,12 +202,11 @@ class SocketWrapper():
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
             # На практике у изображения может может быть формат Index8,
             # который не даёт ничего отправить,
-            # да и ещё сервер бахается при отправке ему такое отправить,
+            # да и ещё сервер бахается при попытке ему такое отправить,
             # а клиент почему-то нет.
             # Именно поэтому здесь все нестандартные форматы переводим в стандартные,
             # чтобы избежать крашей, глюков, зависаний.
             image = image.convertToFormat(QImage.Format_RGB32)
-
 
         ptr = image.constBits()
         ptr.setsize(image.sizeInBytes())
