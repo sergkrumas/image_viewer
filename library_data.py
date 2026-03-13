@@ -1063,7 +1063,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 content_hash=None,
                 modifiers="",
                 library_loading=False,
-                check_windows_explorer_window=False):
+                check_windows_explorer_window=False,
+                dragNdrop=False):
 
         # все пути приводим к единому виду, чтобы не было разных слэшей в путях,
         # из-за которых в библиотеке могут ходить разные дубликаты одной и той же папки
@@ -1124,7 +1125,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if fd and not pre_load:
             # ui prepare
             MW = Globals.main_window
-            MW.handle_input_data_epilog_callback(MW, fd, is_file, input_path)
+            MW.handle_input_data_epilog_callback(MW, fd, is_file, input_path, dragNdrop)
 
         elif fd and pre_load and content_hash:
             for n, image_data in enumerate(fd.images_list):

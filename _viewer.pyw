@@ -459,10 +459,13 @@ class AppMixin():
         if pts != pages.START_PAGE and not (board_loading or board_plugin_loading):
             LibraryData().handle_input_data(path, check_windows_explorer_window=True)
 
-    def APP_handle_input_data_epilog(self, folder_data, is_file, input_path):
+    def APP_handle_input_data_epilog(self, folder_data, is_file, input_path, dragNdrop):
 
-        if self.is_start_page_active():
-            self.change_page(self.STNG.page_on_app_launch_from_explorer, force=True, init_force=True)
+        if dragNdrop:
+            self.change_page(self.STNG.page_to_open_on_drag_and_drop, force=True, init_force=True)
+        else:
+            if self.is_start_page_active():
+                self.change_page(self.STNG.page_on_app_launch_from_explorer, force=True, init_force=True)
 
         current_index_centered_order = True
 
@@ -1252,7 +1255,7 @@ class MainWindow(QMainWindow,
                 for path in all_but_last:
                     LibraryData().handle_input_data(path, pre_load=True)
                 for path in last_path:
-                    LibraryData().handle_input_data(path)
+                    LibraryData().handle_input_data(path, dragNdrop=True)
                 self.update()
             else:
                 event.ignore()

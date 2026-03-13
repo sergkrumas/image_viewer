@@ -1010,6 +1010,7 @@ class Settings(SettingsWindow):
             '---general': _('General'),
             UI_LANG_SETTING_ID: ('en', _('UI language')),
             'page_on_app_launch_from_explorer': (cls.pages.VIEWER_PAGE, pages, _('Page on App Launch (when opened from Explorer)')),
+            'page_to_open_on_drag_and_drop': (cls.pages.VIEWER_PAGE, pages, _('Page to open on Drag&Drop')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
             'show_fullscreen': (True, _('Full-screen mode on application start')),
