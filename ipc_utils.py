@@ -103,7 +103,7 @@ class Window(QWidget):
             ipc_job_time = time.time() - self.time_start
 
             time2 = time.time()
-            for i in range(WORKER_COUNT):
+            for i in range(Globals.WORKER_COUNT):
                 task_function(None, i)
             non_ipc_job_time = time.time() - time2
             QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
@@ -111,8 +111,11 @@ class Window(QWidget):
 
         self.update()
 
-class Consts:
+class Globals:
+    window = None
+    WORKER_COUNT = None
 
+class Consts:
     INT_SIZE = 8
     MESSAGE_HEADER_SIZE = INT_SIZE*3
 
@@ -276,15 +279,14 @@ class SocketWrapper():
                                         parsed_serial_data[JSONKEYS.HEIGHT],
                                         parsed_serial_data[JSONKEYS.FORMAT],
                                     )
-                                    global window
                                     # print('take', image, image.width())
-                                    window.addImage(image,
+                                    Globals.window.addImage(image,
                                         parsed_serial_data[JSONKEYS.WORKER_INDEX]
                                     )
 
                                 elif self.currentDataType == DataType.Done:
 
-                                    window.addDone(parsed_serial_data[JSONKEYS.WORKER_INDEX])
+                                    Globals.window.addDone(parsed_serial_data[JSONKEYS.WORKER_INDEX])
                                 else:
                                     print(f'Undefined crap has been received {parsed_serial_data}')
 
@@ -363,7 +365,7 @@ def task_function(socket, worker_index):
     filepaths = []
 
     path = ipc_utils_debug_input_data(worker_index)
-    window.setWindowTitle(f'{worker_index} {path}')
+    Globals.window.setWindowTitle(f'{worker_index} {path}')
     for curdir, folders, files in os.walk(path):
         for filename in files:
             filepath = os.path.join(curdir, filename)
@@ -378,8 +380,8 @@ def task_function(socket, worker_index):
                     socket.sendQImage(qimage, worker_index, filepath)
                 except Exception as e:
                     pass
-                window.addImage(qimage, worker_index)
-            window.update()
+                Globals.window.addImage(qimage, worker_index)
+            Globals.window.update()
             QApplication.processEvents()
 
 def main():
@@ -393,12 +395,11 @@ def main():
     parser.add_argument('-i', nargs="?", default=0)
     args = parser.parse_args(sys.argv[1:])
 
-    global window
 
     if args.worker:
         client = True
         SERVER_NAME = args.servername
-        window = Window(Qt.blue)
+        Globals.window = window = Window(Qt.blue)
         window.show()
         window.resize(1500, 100)
         worker_index = int(args.i)
@@ -457,15 +458,13 @@ def main():
 
     else:
         server = True
-        window = Window(Qt.red)
+        Globals.window = window = Window(Qt.red)
         window.show()
 
         servers = []
 
-        global WORKER_COUNT
-
-        WORKER_COUNT = 5
-        for i in range(WORKER_COUNT):
+        Globals.WORKER_COUNT = 5
+        for i in range(Globals.WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
             # print('!!!! SERVER', serv.SERVER_NAME)
