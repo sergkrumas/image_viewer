@@ -111,7 +111,7 @@ class Window(QWidget):
 
         self.update()
 
-class Globals:
+class Consts:
 
     INT_SIZE = 8
     MESSAGE_HEADER_SIZE = INT_SIZE*3
@@ -174,10 +174,10 @@ class SocketWrapper():
 
         total_data_length = serial_length + bin_length_1 + bin_length_2
         header_data = \
-            total_data_length.to_bytes(Globals.INT_SIZE, 'big') + \
-            serial_length.to_bytes(Globals.INT_SIZE, 'big') + \
-            bin_length_1.to_bytes(Globals.INT_SIZE, 'big') + \
-            bin_length_2.to_bytes(Globals.INT_SIZE, 'big')
+            total_data_length.to_bytes(Consts.INT_SIZE, 'big') + \
+            serial_length.to_bytes(Consts.INT_SIZE, 'big') + \
+            bin_length_1.to_bytes(Consts.INT_SIZE, 'big') + \
+            bin_length_2.to_bytes(Consts.INT_SIZE, 'big')
         data_to_sent = b''.join((header_data, serial_binary, bin_binary_1, bin_binary_2))
 
         # print('prepare_data_to_write', serial_data)
@@ -235,14 +235,14 @@ class SocketWrapper():
 
         self.enough_data_to_read = True
 
-        # while len(self.socket_buffer) > Globals.MESSAGE_HEADER_SIZE and self.enough_data_to_read:
+        # while len(self.socket_buffer) > Consts.MESSAGE_HEADER_SIZE and self.enough_data_to_read:
         if True:
             if self.readState == self.states.readSize:
-                if len(self.socket_buffer) >= Globals.MESSAGE_HEADER_SIZE:
-                    self.content_data_size = int.from_bytes(retrieve_data(Globals.INT_SIZE), 'big')
-                    self.serial_data_size = int.from_bytes(retrieve_data(Globals.INT_SIZE), 'big')
-                    self.binary_data_1_size = int.from_bytes(retrieve_data(Globals.INT_SIZE), 'big')
-                    self.binary_data_2_size = int.from_bytes(retrieve_data(Globals.INT_SIZE), 'big')
+                if len(self.socket_buffer) >= Consts.MESSAGE_HEADER_SIZE:
+                    self.content_data_size = int.from_bytes(retrieve_data(Consts.INT_SIZE), 'big')
+                    self.serial_data_size = int.from_bytes(retrieve_data(Consts.INT_SIZE), 'big')
+                    self.binary_data_1_size = int.from_bytes(retrieve_data(Consts.INT_SIZE), 'big')
+                    self.binary_data_2_size = int.from_bytes(retrieve_data(Consts.INT_SIZE), 'big')
                     self.readState = self.states.readData
                     # print('content_data_size', self.content_data_size, 'socket_buffer_size', len(self.socket_buffer))
                     # print('size read', self.content_data_size)
@@ -307,7 +307,7 @@ class SocketWrapper():
                     self.enough_data_to_read = False
                     print('not enough data to read', len(self.socket_buffer), self.content_data_size)
 
-        if self.enough_data_to_read and len(self.socket_buffer) > Globals.MESSAGE_HEADER_SIZE:
+        if self.enough_data_to_read and len(self.socket_buffer) > Consts.MESSAGE_HEADER_SIZE:
             self.socket.readyRead.emit()
 
 
