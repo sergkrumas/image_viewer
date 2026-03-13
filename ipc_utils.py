@@ -99,7 +99,7 @@ class Window(QWidget):
     def addDone(self, worker_index):
         self.images_done[worker_index] = True
 
-        if all(self.images_done.values()):
+        if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT:
             ipc_job_time = time.time() - self.time_start
 
             time2 = time.time()
@@ -114,6 +114,7 @@ class Window(QWidget):
 class Globals:
     window = None
     WORKER_COUNT = None
+    worker_socket = None
 
 class Consts:
     INT_SIZE = 8
@@ -384,6 +385,46 @@ def task_function(socket, worker_index):
             Globals.window.update()
             QApplication.processEvents()
 
+def worker_init(window, SERVER_NAME, worker_index):
+    client_socket = QLocalSocket()
+    Globals.client_socket_wrapper = SocketWrapper(client_socket)
+
+    def connected_to_server():
+        window.update()
+        QApplication.processEvents()
+        task_function(Globals.client_socket_wrapper, worker_index)
+        Globals.client_socket_wrapper.sendDone(worker_index)
+
+    def client_socket_error(socketError):
+        errors = {
+            QLocalSocket.ServerNotFoundError:
+                "The host was not found. Please check the host name and port settings.",
+            QLocalSocket.ConnectionRefusedError:
+                "The connection was refused by the peer. Make sure the server is running,"
+                "and check that the host name and port settings are correct.",
+            QLocalSocket.PeerClosedError:
+                None,
+        }
+        default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
+        msg = errors.get(socketError, default_error_msg)
+        print(msg)
+
+
+    def on_ready_read(client_socket):
+
+        msg = client_socket.readAll()
+        if msg:
+            msg = msg.data().decode("utf8")
+            QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
+
+
+    client_socket.connected.connect(connected_to_server)
+    client_socket.error.connect(client_socket_error)
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! по идее здесь надо подключать враппер
+    client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
+    client_socket.abort()
+    client_socket.connectToServer(SERVER_NAME)
+
 def main():
 
     app = QApplication([])
@@ -395,7 +436,6 @@ def main():
     parser.add_argument('-i', nargs="?", default=0)
     args = parser.parse_args(sys.argv[1:])
 
-
     if args.worker:
         client = True
         SERVER_NAME = args.servername
@@ -405,56 +445,8 @@ def main():
         worker_index = int(args.i)
         window.move(100, 900+100*worker_index)
         window.setServerName(SERVER_NAME)
-
-
-        def worker_init():
-            global client_socket
-            client_socket = QLocalSocket()
-            client_socket_wrapper = SocketWrapper(client_socket)
-
-            def connected_to_server():
-
-                window.update()
-                QApplication.processEvents()
-
-                task_function(client_socket_wrapper, worker_index)
-                client_socket_wrapper.sendDone(worker_index)
-
-            def client_socket_error(socketError):
-                errors = {
-                    QLocalSocket.ServerNotFoundError:
-                        "The host was not found. Please check the host name and port settings.",
-                    QLocalSocket.ConnectionRefusedError:
-                        "The connection was refused by the peer. Make sure the server is running,"
-                        "and check that the host name and port settings are correct.",
-                    QLocalSocket.PeerClosedError:
-                        None,
-                }
-                default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
-                msg = errors.get(socketError, default_error_msg)
-                print(msg)
-
-
-            def on_ready_read(client_socket):
-
-                msg = client_socket.readAll()
-                if msg:
-                    msg = msg.data().decode("utf8")
-                    QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
-
-
-            client_socket.connected.connect(connected_to_server)
-            client_socket.error.connect(client_socket_error)
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! по идее здесь надо подключать враппер
-            client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
-            client_socket.abort()
-            client_socket.connectToServer(SERVER_NAME)
-
-
-        # QTimer.singleShot(1000, worker_init)
-        worker_init()
+        worker_init(window, SERVER_NAME, worker_index)
         app.exec()
-
 
     else:
         server = True
@@ -467,7 +459,6 @@ def main():
         for i in range(Globals.WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
-            # print('!!!! SERVER', serv.SERVER_NAME)
             subprocess.Popen([sys.executable, __file__, '-worker', '-servername', serv.SERVER_NAME, '-i', str(i)])
 
 
