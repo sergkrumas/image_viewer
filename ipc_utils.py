@@ -117,7 +117,36 @@ class Globals:
     MESSAGE_HEADER_SIZE = INT_SIZE*3
 
 
-class Utils:
+class DataType:
+    Undefined = 0
+    Greeting = 1
+    RequestJob = 2
+    JobDescription = 3
+    TaskResult = 4
+
+    Image = 5
+
+    Done = 6
+
+
+class JSONKEYS():
+    MESSAGE_TYPE = 0
+    WIDTH = 1
+    HEIGHT = 2
+    FORMAT = 3
+    WORKER_INDEX = 4
+    FILEPATH = 5
+
+class SocketWrapper():
+
+    class states():
+        readSize = 0
+        readData = 1
+
+    qt_images_formats_dict = dict()
+    for attr_name in dir(QImage):
+        if attr_name.startswith('Format') and not attr_name == 'Format':
+            qt_images_formats_dict[getattr(QImage, attr_name)] = attr_name
 
     @staticmethod
     def prepare_data_to_write(serial_data, binary_attachment_data_1, binary_attachment_data_2):
@@ -155,37 +184,6 @@ class Utils:
 
         return data_to_sent
 
-class DataType:
-    Undefined = 0
-    Greeting = 1
-    RequestJob = 2
-    JobDescription = 3
-    TaskResult = 4
-
-    Image = 5
-
-    Done = 6
-
-
-class JSONKEYS():
-    MESSAGE_TYPE = 0
-    WIDTH = 1
-    HEIGHT = 2
-    FORMAT = 3
-    WORKER_INDEX = 4
-    FILEPATH = 5
-
-class SocketWrapper():
-
-    class states():
-        readSize = 0
-        readData = 1
-
-    qt_images_formats_dict = dict()
-    for attr_name in dir(QImage):
-        if attr_name.startswith('Format') and not attr_name == 'Format':
-            qt_images_formats_dict[getattr(QImage, attr_name)] = attr_name
-
     def __init__(self, socket):
         self.socket = socket
         self.socket_buffer = bytes()
@@ -196,7 +194,7 @@ class SocketWrapper():
             JSONKEYS.MESSAGE_TYPE: DataType.Done,
             JSONKEYS.WORKER_INDEX: worker_index,
         }
-        self.socket.write(Utils.prepare_data_to_write(data, b'', b''))
+        self.socket.write(self.prepare_data_to_write(data, b'', b''))
 
     def sendQImage(self, image, worker_index, filepath):
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
@@ -219,12 +217,10 @@ class SocketWrapper():
             JSONKEYS.WORKER_INDEX: worker_index,
             JSONKEYS.FILEPATH: filepath,
         }
-        format_str = self.qt_images_formats_dict[image.format()]
-        print(format_str, filepath)
+        # format_str = self.qt_images_formats_dict[image.format()]
+        # print(format_str, filepath)
 
-        self.socket.write(Utils.prepare_data_to_write(data, barray, b''))
-
-
+        self.socket.write(self.prepare_data_to_write(data, barray, b''))
 
     def processReadyRead(self):
 
