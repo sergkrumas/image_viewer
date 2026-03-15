@@ -401,6 +401,8 @@ class AppMixin():
 
         if is_path_exists and pts is None:
             pts = MW.STNG.page_on_app_launch_from_explorer
+        elif path.lower().endswith('.py') and pts == pages.BOARD_PAGE:
+            pass
         else:
             pts = pages.START_PAGE
 
@@ -416,7 +418,6 @@ class AppMixin():
             pass
 
         elif pts == pages.BOARD_PAGE:
-
             # тут хороший приём применён:
             # сначала выставляем колбэки, чтобы отрисовка была соответствующая,
             # а потом уже меняем полностью через change_page
