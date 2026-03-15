@@ -34,6 +34,7 @@ class AutoscrollMixin():
         AUTOSCROLL.timer.setInterval(10)
         AUTOSCROLL.timer.timeout.connect(self.autoscroll_timer)
         AUTOSCROLL.inside_activation_zone = False
+        AUTOSCROLL.is_moved_while_middle_button_pressed = False
 
         AUTOSCROLL.desactivation_pass = False
 
