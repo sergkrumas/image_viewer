@@ -4929,7 +4929,6 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(QPen(Qt.red, 10))
             painter.drawPoint(self.AD_TOOLBOX.pos)
             painter.restore()
-        self.update()
 
     def board_hide_AD_toolbox(self):
         self.AD_TOOLBOX.visible = False
