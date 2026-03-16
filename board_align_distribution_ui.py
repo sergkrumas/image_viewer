@@ -299,43 +299,47 @@ class ToolWindow(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        self.init_attrs()
+
         self.setMouseTracking(True)
 
-        self.buttons = []
-        self.rows = []
-        self.current_row = None
-        self.layout_ready = False
+    def init_attrs(self):
+        self.AD_TOOLBOX = AD_TOOLBOX = type('AD_TOOLBOX', (), {})()
+        AD_TOOLBOX.rows = []
+        AD_TOOLBOX.current_row = None
+        AD_TOOLBOX.layout_ready = False
 
     def layout(self, painter, spacing):
 
         def label(text):
             lbl = self.LBL(text, painter)
-            self.current_row.elements.append(lbl)
+            self.AD_TOOLBOX.current_row.elements.append(lbl)
             return lbl
 
         def button(btn_id, **kwargs):
             btn = self.BTN(btn_id, **kwargs)
-            self.current_row.elements.append(btn)
+            self.AD_TOOLBOX.current_row.elements.append(btn)
             return btn
 
         def space(width=40):
             space = self.SPACE(width)
-            self.current_row.elements.append(space)
+            self.AD_TOOLBOX.current_row.elements.append(space)
             return None
 
         def row():
-            self.current_row = self.ROW()
-            self.rows.append(self.current_row)
-            return self.current_row
+            self.AD_TOOLBOX.current_row = self.ROW()
+            self.AD_TOOLBOX.rows.append(self.AD_TOOLBOX.current_row)
+            return self.AD_TOOLBOX.current_row
 
         def radioButton(btns):
             radio_btn = self.RADIO_BTN(btns, painter)
-            self.current_row.elements.append(radio_btn)
+            self.AD_TOOLBOX.current_row.elements.append(radio_btn)
             return radio_btn
 
         def fix_top_by_label_height(height):
             fix = self.FIX(height)
-            self.current_row.elements.append(fix)
+            self.AD_TOOLBOX.current_row.elements.append(fix)
             return fix
 
         def update_bounding_layout_rect(blr, _b):
@@ -349,7 +353,7 @@ class ToolWindow(QWidget):
             offset = QPoint(0, 0)
             _b = []
             self.blr = QRect()
-            for row in self.rows:
+            for row in self.AD_TOOLBOX.rows:
                 max_height = 0
                 for el in row.elements:
                     max_height = max(max_height, el.content_rect.height())
@@ -373,11 +377,11 @@ class ToolWindow(QWidget):
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
 
-            for row in self.rows:
+            for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
                     el.draw(painter)
 
-        if not self.layout_ready:
+        if not self.AD_TOOLBOX.layout_ready:
             row()
             label('Align:')
             row()
@@ -413,14 +417,14 @@ class ToolWindow(QWidget):
             radioButton(self.AlignType.get_consts_and_their_names())
 
             calc_layout()
-            self.layout_ready = True
+            self.AD_TOOLBOX.layout_ready = True
 
         draw_layout()
 
     def layout_mouse(self, event):
         pos = event.pos()
-        if self.layout_ready:
-            for row in self.rows:
+        if self.AD_TOOLBOX.layout_ready:
+            for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
                     lr = el.layout_rect
                     if lr and lr.contains(pos):
