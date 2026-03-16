@@ -4949,6 +4949,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.AD_TOOLBOX.drag = True
                 self.AD_TOOLBOX.drag_startpos = event.pos()
                 self.AD_TOOLBOX.drag_toolbox_pos = QPoint(self.AD_TOOLBOX.pos)
+                self.update()
                 return True
         return False
 
@@ -4956,12 +4957,15 @@ class BoardMixin(BoardTextEditItemMixin):
         if event.buttons() == Qt.LeftButton:
             if self.AD_TOOLBOX.drag:
                 self.AD_TOOLBOX.pos = self.AD_TOOLBOX.drag_toolbox_pos + (event.pos() - self.AD_TOOLBOX.drag_startpos)
+                self.update()
+                return True
         return False
 
     def board_AD_toolbox_releaseEvent(self, event):
         if event.button() == Qt.LeftButton:
             if self.AD_TOOLBOX.drag:
                 self.AD_TOOLBOX.drag = False
+                self.update()
                 return True
             else:
                 btn_clicked = ToolWindow.layout_mouse(self, event)
