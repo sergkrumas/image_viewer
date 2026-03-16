@@ -81,6 +81,7 @@ files_to_parse = [
     'colorpicker.py', #DONE
     'line_eyedropper_tool.py', #DONE
     'autoscroll.py', #DONE
+    'board_align_distribution_ui.py', #DONE
 ]
 
 def get_locales(this_folder):

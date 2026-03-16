@@ -1,8 +1,29 @@
-
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+#  Author: Sergei Krumas (github.com/sergkrumas)
+#
+# ##### END GPL LICENSE BLOCK #####
 
 from _utils import *
 
 from functools import lru_cache
+
+__import__('builtins').__dict__['_'] = __import__('gettext').gettext
+
 
 class TOOLWINDOW_BUTTONSIDS():
     ALIGN_LEFT_EDGE = 0
@@ -16,7 +37,7 @@ class TOOLWINDOW_BUTTONSIDS():
 
     @classmethod
     def all(cls):
-        if not hasattr(cls, 'all_list'):
+        if not hasattr(cls, "all_list"):
             cls.all_list = []
             for attr_name in cls.__dict__:
                 if not attr_name.startswith("__"):
@@ -28,7 +49,7 @@ class TOOLWINDOW_BUTTONSIDS():
 
     @classmethod
     def names(cls):
-        if not hasattr(cls, 'all_names'):
+        if not hasattr(cls, "all_names"):
             cls.all_names = dict()
             for attr_name in cls.__dict__:
                 if not attr_name.startswith("__") and attr_name.upper() == attr_name:
@@ -161,14 +182,14 @@ class AlignType():
     @classmethod
     def get_consts_and_their_names(cls):
         return {
-            cls.ALIGN_TO_VIEWPORT: "Viewport",
-            cls.ALIGN_TO_SELECTION: "Selection",
-            cls.ALIGN_TO_WHOLE_BOARD: "Whole board",
+            cls.ALIGN_TO_VIEWPORT: _("Viewport"),
+            cls.ALIGN_TO_SELECTION: _("Selection"),
+            cls.ALIGN_TO_WHOLE_BOARD: _("Whole board"),
         }
 
     @classmethod
     def all(cls):
-        if not hasattr(cls, 'all_list'):
+        if not hasattr(cls, "all_list"):
             cls.all_list = []
             for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
                 if attr_name.startswith("ALIGN_TO_"):
@@ -309,7 +330,7 @@ class ToolWindow(QWidget):
         self.setMouseTracking(True)
 
     def init_AD_toolbox_attrs(self):
-        self.AD_TOOLBOX = AD_TOOLBOX = type('AD_TOOLBOX', (), {})()
+        self.AD_TOOLBOX = AD_TOOLBOX = type("AD_TOOLBOX", (), {})()
         AD_TOOLBOX.rows = []
         AD_TOOLBOX.current_row = None
         AD_TOOLBOX.layout_ready = False
@@ -390,7 +411,7 @@ class ToolWindow(QWidget):
 
         if not self.AD_TOOLBOX.layout_ready:
             row()
-            label('Align:')
+            label(_("Align:"))
             row()
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_LEFT_EDGE, action=ToolActions.ALIGN)
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_CENTER, action=ToolActions.ALIGN)
@@ -401,7 +422,7 @@ class ToolWindow(QWidget):
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_BOTTOM_EDGE, action=ToolActions.ALIGN)
 
             row()
-            label('Distribute:')
+            label(_("Distribute:"))
             row()
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_LEFT_EDGE, action=ToolActions.DISTRIBUTE)
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_CENTER, action=ToolActions.DISTRIBUTE)
@@ -412,7 +433,7 @@ class ToolWindow(QWidget):
             button(TOOLWINDOW_BUTTONSIDS.ALIGN_BOTTOM_EDGE, action=ToolActions.DISTRIBUTE)
 
             row()
-            lbl = label('Distribute spacing:')
+            lbl = label(_("Distribute spacing:"))
             row()
             button(TOOLWINDOW_BUTTONSIDS.DISTRIBUTE_H, action=ToolActions.DISTRIBUTE)
             button(TOOLWINDOW_BUTTONSIDS.DISTRIBUTE_V, action=ToolActions.DISTRIBUTE)
@@ -420,7 +441,7 @@ class ToolWindow(QWidget):
             space(100)
             # это конечно костыль, но зато можно не переписывать огромную часть кода
             fix_top_by_label_height(lbl.content_rect.height())
-            label('Align To:')
+            label(_("Align To:"))
             radioButton(AlignType.get_consts_and_their_names())
 
             calc_layout()
