@@ -55,8 +55,10 @@ class LBL():
         self.content_rect = painter.boundingRect(QRect(), self.alignment, self.text)
         self.layout_rect = None
 
-    def draw(self, painter):
-        painter.drawText(self.layout_rect, self.alignment, self.text)
+    def draw(self, painter, offset):
+        lr = QRect(self.layout_rect)
+        lr.moveCenter(lr.center() + offset)
+        painter.drawText(lr, self.alignment, self.text)
 
 class SPACE():
 
@@ -64,7 +66,7 @@ class SPACE():
         self.content_rect = QRect(0, 0, width, 0)
         self.layout_rect = None
 
-    def draw(self, painter):
+    def draw(self, painter, offset):
         pass
 
 class BTN():
@@ -75,9 +77,10 @@ class BTN():
         self.layout_rect = None
         self.kwargs = kwargs
 
-    def draw(self, painter):
-        if self.btn_id is not None:
-            painter.drawPixmap(self.layout_rect, ToolWindow.get_btn_pixmap(self.btn_id))
+    def draw(self, painter, offset):
+        lr = QRect(self.layout_rect)
+        lr.moveCenter(lr.center() + offset)
+        painter.drawPixmap(lr, ToolWindow.get_btn_pixmap(self.btn_id))
 
 class RADIO_BTN():
 
@@ -116,22 +119,24 @@ class RADIO_BTN():
     def get_active_name(self):
         return self.get_active_radiobtn()[-1]
 
-    def draw(self, painter):
+    def draw(self, painter, offset):
+        lr = QRect(self.layout_rect)
+        lr.moveCenter(lr.center() + offset)
         painter.save()
         path = QPainterPath()
-        path.addRoundedRect(QRectF(self.layout_rect), 3, 3)
+        path.addRoundedRect(QRectF(lr), 3, 3)
         painter.drawPath(path)
         offset = QPoint(5, 5)
         painter.setClipPath(path)
         painter.setClipping(True)
         for n, (radio_id, radio_rect, radio_name) in enumerate(self.radio_btns):
             radio_rect = QRect(radio_rect)
-            radio_rect.moveTopLeft(radio_rect.topLeft() + self.layout_rect.topLeft())
+            radio_rect.moveTopLeft(radio_rect.topLeft() + lr.topLeft())
             if n == self.index:
                 painter.setPen(QPen(Qt.white, 1))
                 backplate_rect = QRect(radio_rect)
-                backplate_rect.setLeft(self.layout_rect.left())
-                backplate_rect.setWidth(self.layout_rect.width())
+                backplate_rect.setLeft(lr.left())
+                backplate_rect.setWidth(lr.width())
                 painter.fillRect(backplate_rect, QBrush(ToolWindow.BCKG))
             else:
                 painter.setPen(QPen(Qt.black, 1))
@@ -145,7 +150,7 @@ class FIX():
         self.content_rect = QRect()
         self.layout_rect = None
 
-    def draw(self, painter):
+    def draw(self, painter, offset):
         pass
 
 class AlignType():
@@ -366,7 +371,7 @@ class ToolWindow(QWidget):
                         el.layout_rect = QRect(el.content_rect)
                         el.layout_rect.moveTopLeft(QPoint(offset.x() + row.padding, offset.y() + row.padding))
                         offset.setX(el.layout_rect.right())
-                        el.layout_rect.moveCenter(el.layout_rect.center() + layout_spacing_offset + self.AD_TOOLBOX.pos)
+                        el.layout_rect.moveCenter(el.layout_rect.center() + layout_spacing_offset)
                         _b.append(QRect(el.layout_rect))
                 offset += QPoint(0, max_height+10)
                 update_bounding_layout_rect(self.blr, _b)
@@ -375,12 +380,13 @@ class ToolWindow(QWidget):
         def draw_layout():
             path = QPainterPath()
             blr = self.blr.adjusted(-5, -5, 5, 5)
+            blr.moveCenter(blr.center() + self.AD_TOOLBOX.pos)
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
 
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
-                    el.draw(painter)
+                    el.draw(painter, self.AD_TOOLBOX.pos)
 
         if not self.AD_TOOLBOX.layout_ready:
             row()
@@ -423,7 +429,7 @@ class ToolWindow(QWidget):
         draw_layout()
 
     def is_toolbox_click(self, event):
-        return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos()) and not ToolWindow.layout_mouse(self, event)
+        return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos() - self.AD_TOOLBOX.pos) and not ToolWindow.layout_mouse(self, event)
 
     def layout_mouse(self, event):
         pos = event.pos()
@@ -431,11 +437,12 @@ class ToolWindow(QWidget):
         if self.AD_TOOLBOX.layout_ready:
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
-                    if el.layout_rect:
-                        lr = QRect(el.layout_rect)
-                        if lr.contains(pos):
+                    lr = el.layout_rect
+                    if lr:
+                        lr = QRect(lr)
+                        if lr.contains(pos - self.AD_TOOLBOX.pos):
                             if isinstance(el, RADIO_BTN):
-                                el.click(pos)
+                                el.click(pos - self.AD_TOOLBOX.pos)
                                 if debug:
                                     print(el.get_active_name())
                                 return True
