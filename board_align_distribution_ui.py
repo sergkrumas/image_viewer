@@ -41,7 +41,6 @@ class ToolActions():
     ALIGN = 0
     DISTRIBUTE = 1
 
-
 class ToolWindow(QWidget):
 
     BORDER = QColor(31, 31, 31)

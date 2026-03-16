@@ -27,14 +27,12 @@ import http
 import datetime
 from functools import partial
 from contextlib import contextmanager
+from collections import defaultdict
 
 from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
-
-from collections import defaultdict
-
-from hidapi_adapter import draw_gamepad_monitor, draw_gamepad_easing_monitor
+from board_align_distribution_ui import (TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow)
 
 import cbor2
 
@@ -629,10 +627,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_mainBoardCallback(painter, event)
 
         if self.STNG.show_gamepad_monitor:
-            draw_gamepad_monitor(self, painter, event)
+            hidapi_adapter.draw_gamepad_monitor(self, painter, event)
 
         if self.show_easeInExpo_monitor:
-            draw_gamepad_easing_monitor(self, painter, event)
+            hidapi_adapter.draw_gamepad_easing_monitor(self, painter, event)
 
     def board_mousePressEvent(self, event):
         self.mousePressEventBoardCallback(event)
