@@ -952,6 +952,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
+        addItem(_('Align && Distribute...'), self.board_show_AD_toolbox)
+
         addItem(_('Multifolder board...'), self.board_prepare_multifolder_board)
 
         addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
@@ -4896,6 +4898,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
+    def board_show_AD_toolbox(self):
+        pass
+
+    def board_hide_AD_toolbox(self):
+        pass
 
 
 
