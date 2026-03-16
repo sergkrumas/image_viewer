@@ -378,8 +378,6 @@ def task_function(socket, worker_index):
             QApplication.processEvents()
 
 def worker_init(window, SERVER_NAME, worker_index):
-    client_socket = QLocalSocket()
-    Globals.client_socket_wrapper = SocketWrapper(client_socket)
 
     def connected_to_server():
         window.update()
@@ -407,6 +405,9 @@ def worker_init(window, SERVER_NAME, worker_index):
         if msg:
             msg = msg.data().decode("utf8")
             QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
+
+    client_socket = QLocalSocket()
+    Globals.client_socket_wrapper = SocketWrapper(client_socket)
 
     client_socket.connected.connect(connected_to_server)
     client_socket.error.connect(client_socket_error)
