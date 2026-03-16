@@ -402,6 +402,50 @@ class ServerWrapper():
             QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
 
 
+def set_system_tray_icon(app, icon):
+    sti = QSystemTrayIcon(app)
+
+    app.setProperty("stray_icon", sti)
+
+    if True:
+        opm = QPixmap(icon.pixmap(icon.actualSize(QSize(64, 64))))
+
+        pm = QPixmap(opm.width(), opm.height())
+        pm.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(pm)
+        painter.drawPixmap(QPoint(0, 0), opm)
+        font = painter.font()
+        font.setBold(True)
+        font.setPixelSize(40)
+        painter.setFont(font)
+        painter.drawText(QPoint(0, pm.height()), "W")
+        painter.end()
+
+        icon_frame = QIcon(pm)
+        sti.setIcon(icon_frame)
+
+    @pyqtSlot()
+    def on_trayicon_activated(reason):
+        if reason == QSystemTrayIcon.Trigger:
+            pass
+
+        if reason == QSystemTrayIcon.Context:
+            menu = QMenu()
+            menu.addSeparator()
+            menu.addAction('Krumassan Image Viewer Worker').setEnabled(False)
+            quit = menu.addAction('Quit')
+            action = menu.exec_(QCursor().pos())
+            if action == quit:
+                app = QApplication.instance()
+                app.exit()
+
+    sti.activated.connect(on_trayicon_activated)
+    sti.setToolTip('Krumassan Image Viewer Worker')
+    sti.show()
+
+
+
 def main():
 
     app = QApplication([])
@@ -423,8 +467,16 @@ def main():
         window.move(100, 900+100*worker_index)
         window.setServerName(SERVER_NAME)
 
+        path_icon = os.path.join(os.path.dirname(__file__), "image_viewer_lite.ico")
+        icon = QIcon()
+        icon.addFile(path_icon)
+        sti = set_system_tray_icon(app, icon)
+
         worker_init(window, SERVER_NAME, worker_index)
         app.exec()
+
+        if sti:
+            sti.hide()
 
     else:
         # server
