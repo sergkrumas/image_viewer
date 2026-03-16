@@ -2222,6 +2222,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.draw_progressive_layout_animation(painter)
 
+        self.board_draw_AD_toolbox(painter)
+
     def draw_progressive_layout_animation(self, painter):
         if self.progressive_layout_ongoing:
             self.draw_rounded_frame_progress_label(painter,
@@ -4900,6 +4902,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_show_AD_toolbox(self):
         self.AD_TOOLBOX.visible = True
+
+    def board_draw_AD_toolbox(self, painter):
+        painter.save()
+        painter.setPen(QPen(Qt.black, 1))
+        painter.setBrush(QBrush(Qt.gray))
+        if self.AD_TOOLBOX.visible:
+            ToolWindow.layout(self, painter, 20)
+        painter.restore()
 
     def board_hide_AD_toolbox(self):
         self.AD_TOOLBOX.visible = False

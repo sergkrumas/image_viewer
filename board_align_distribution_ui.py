@@ -41,6 +41,138 @@ class ToolActions():
     ALIGN = 0
     DISTRIBUTE = 1
 
+class ROW():
+
+    def __init__(self, padding=10):
+        self.elements = []
+        self.padding = padding
+
+class LBL():
+
+    def __init__(self, text, painter):
+        self.text = text
+        self.alignment = Qt.AlignLeft
+        self.content_rect = painter.boundingRect(QRect(), self.alignment, self.text)
+        self.layout_rect = None
+
+    def draw(self, painter):
+        painter.drawText(self.layout_rect, self.alignment, self.text)
+
+class SPACE():
+
+    def __init__(self, width):
+        self.content_rect = QRect(0, 0, width, 0)
+        self.layout_rect = None
+
+    def draw(self, painter):
+        pass
+
+class BTN():
+
+    def __init__(self, btn_id, **kwargs):
+        self.btn_id = btn_id
+        self.content_rect = QRect(0, 0, 40, 40)
+        self.layout_rect = None
+        self.kwargs = kwargs
+
+    def draw(self, painter):
+        if self.btn_id is not None:
+            painter.drawPixmap(self.layout_rect, ToolWindow.get_btn_pixmap(self.btn_id))
+
+class RADIO_BTN():
+
+    def __init__(self, btns, painter):
+        self.alignment = Qt.AlignVCenter | Qt.AlignHCenter
+        spacing_offset = QPoint(5, 0)
+        _offset = QPoint(spacing_offset)
+        self.index = 0
+        self.radio_btns = []
+        for radio_id, radio_name in btns.items():
+            r = painter.boundingRect(QRect(), Qt.AlignLeft, radio_name)
+            r.adjust(0, 0, 5, 5)
+            r.moveTopLeft(r.topLeft() + _offset)
+            self.radio_btns.append((radio_id, QRect(r), radio_name))
+            _offset = r.bottomLeft()
+        self.content_rect = QRect(QPoint(0, 0), r.bottomRight() + spacing_offset)
+        self.layout_rect = None
+
+    def click(self, pos):
+        if self.layout_rect is None:
+            return False
+        for n, (radio_id, radio_rect, radio_name) in enumerate(self.radio_btns):
+            radio_rect = QRect(radio_rect)
+            radio_rect.moveTopLeft(radio_rect.topLeft() + self.layout_rect.topLeft())
+            if radio_rect.contains(pos):
+                self.index = n
+                return True
+        return False
+
+    def get_active_radiobtn(self):
+        return self.radio_btns[self.index]
+
+    def get_active_id(self):
+        return self.get_active_radiobtn()[0]
+
+    def get_active_name(self):
+        return self.get_active_radiobtn()[-1]
+
+    def draw(self, painter):
+        painter.save()
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(self.layout_rect), 3, 3)
+        painter.drawPath(path)
+        offset = QPoint(5, 5)
+        painter.setClipPath(path)
+        painter.setClipping(True)
+        for n, (radio_id, radio_rect, radio_name) in enumerate(self.radio_btns):
+            radio_rect = QRect(radio_rect)
+            radio_rect.moveTopLeft(radio_rect.topLeft() + self.layout_rect.topLeft())
+            if n == self.index:
+                painter.setPen(QPen(Qt.white, 1))
+                backplate_rect = QRect(radio_rect)
+                backplate_rect.setLeft(self.layout_rect.left())
+                backplate_rect.setWidth(self.layout_rect.width())
+                painter.fillRect(backplate_rect, QBrush(ToolWindow.BCKG))
+            else:
+                painter.setPen(QPen(Qt.black, 1))
+            painter.drawText(radio_rect, self.alignment, radio_name)
+        painter.setClipping(False)
+        painter.restore()
+
+class FIX():
+    def __init__(self, height):
+        self.height = height
+        self.content_rect = QRect()
+        self.layout_rect = None
+
+    def draw(self, painter):
+        pass
+
+class AlignType():
+    ALIGN_TO_VIEWPORT = 0
+    ALIGN_TO_SELECTION = 1
+    ALIGN_TO_WHOLE_BOARD = 2
+
+    @classmethod
+    def get_consts_and_their_names(cls):
+        return {
+            cls.ALIGN_TO_VIEWPORT: "Viewport",
+            cls.ALIGN_TO_SELECTION: "Selection",
+            cls.ALIGN_TO_WHOLE_BOARD: "Whole board",
+        }
+
+    @classmethod
+    def all(cls):
+        if not hasattr(cls, 'all_list'):
+            cls.all_list = []
+            for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
+                if attr_name.startswith("ALIGN_TO_"):
+                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
+                    if isinstance(attr_value, int):
+                        cls.all_list.append(attr_value)
+            cls.all_list = tuple(sorted(cls.all_list))
+        return cls.all_list
+
 class ToolWindow(QWidget):
 
     BORDER = QColor(31, 31, 31)
@@ -164,138 +296,6 @@ class ToolWindow(QWidget):
         painter.end()
         return pixmap
 
-    class ROW():
-
-        def __init__(self, padding=10):
-            self.elements = []
-            self.padding = padding
-
-    class LBL():
-
-        def __init__(self, text, painter):
-            self.text = text
-            self.alignment = Qt.AlignLeft
-            self.content_rect = painter.boundingRect(QRect(), self.alignment, self.text)
-            self.layout_rect = None
-
-        def draw(self, painter):
-            painter.drawText(self.layout_rect, self.alignment, self.text)
-
-    class SPACE():
-
-        def __init__(self, width):
-            self.content_rect = QRect(0, 0, width, 0)
-            self.layout_rect = None
-
-        def draw(self, painter):
-            pass
-
-    class BTN():
-
-        def __init__(self, btn_id, **kwargs):
-            self.btn_id = btn_id
-            self.content_rect = QRect(0, 0, 40, 40)
-            self.layout_rect = None
-            self.kwargs = kwargs
-
-        def draw(self, painter):
-            if self.btn_id is not None:
-                painter.drawPixmap(self.layout_rect, ToolWindow.get_btn_pixmap(self.btn_id))
-
-    class RADIO_BTN():
-
-        def __init__(self, btns, painter):
-            self.alignment = Qt.AlignVCenter | Qt.AlignHCenter
-            spacing_offset = QPoint(5, 0)
-            _offset = QPoint(spacing_offset)
-            self.index = 0
-            self.radio_btns = []
-            for radio_id, radio_name in btns.items():
-                r = painter.boundingRect(QRect(), Qt.AlignLeft, radio_name)
-                r.adjust(0, 0, 5, 5)
-                r.moveTopLeft(r.topLeft() + _offset)
-                self.radio_btns.append((radio_id, QRect(r), radio_name))
-                _offset = r.bottomLeft()
-            self.content_rect = QRect(QPoint(0, 0), r.bottomRight() + spacing_offset)
-            self.layout_rect = None
-
-        def click(self, pos):
-            if self.layout_rect is None:
-                return False
-            for n, (radio_id, radio_rect, radio_name) in enumerate(self.radio_btns):
-                radio_rect = QRect(radio_rect)
-                radio_rect.moveTopLeft(radio_rect.topLeft() + self.layout_rect.topLeft())
-                if radio_rect.contains(pos):
-                    self.index = n
-                    return True
-            return False
-
-        def get_active_radiobtn(self):
-            return self.radio_btns[self.index]
-
-        def get_active_id(self):
-            return self.get_active_radiobtn()[0]
-
-        def get_active_name(self):
-            return self.get_active_radiobtn()[-1]
-
-        def draw(self, painter):
-            painter.save()
-            path = QPainterPath()
-            path.addRoundedRect(QRectF(self.layout_rect), 3, 3)
-            painter.drawPath(path)
-            offset = QPoint(5, 5)
-            painter.setClipPath(path)
-            painter.setClipping(True)
-            for n, (radio_id, radio_rect, radio_name) in enumerate(self.radio_btns):
-                radio_rect = QRect(radio_rect)
-                radio_rect.moveTopLeft(radio_rect.topLeft() + self.layout_rect.topLeft())
-                if n == self.index:
-                    painter.setPen(QPen(Qt.white, 1))
-                    backplate_rect = QRect(radio_rect)
-                    backplate_rect.setLeft(self.layout_rect.left())
-                    backplate_rect.setWidth(self.layout_rect.width())
-                    painter.fillRect(backplate_rect, QBrush(ToolWindow.BCKG))
-                else:
-                    painter.setPen(QPen(Qt.black, 1))
-                painter.drawText(radio_rect, self.alignment, radio_name)
-            painter.setClipping(False)
-            painter.restore()
-
-    class FIX():
-        def __init__(self, height):
-            self.height = height
-            self.content_rect = QRect()
-            self.layout_rect = None
-
-        def draw(self, painter):
-            pass
-
-    class AlignType():
-        ALIGN_TO_VIEWPORT = 0
-        ALIGN_TO_SELECTION = 1
-        ALIGN_TO_WHOLE_BOARD = 2
-
-        @classmethod
-        def get_consts_and_their_names(cls):
-            return {
-                cls.ALIGN_TO_VIEWPORT: "Viewport",
-                cls.ALIGN_TO_SELECTION: "Selection",
-                cls.ALIGN_TO_WHOLE_BOARD: "Whole board",
-            }
-
-        @classmethod
-        def all(cls):
-            if not hasattr(cls, 'all_list'):
-                cls.all_list = []
-                for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
-                    if attr_name.startswith("ALIGN_TO_"):
-                        attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
-                        if isinstance(attr_value, int):
-                            cls.all_list.append(attr_value)
-                cls.all_list = tuple(sorted(cls.all_list))
-            return cls.all_list
-
     def __init__(self):
         super().__init__()
 
@@ -313,32 +313,32 @@ class ToolWindow(QWidget):
     def layout(self, painter, spacing):
 
         def label(text):
-            lbl = self.LBL(text, painter)
+            lbl = LBL(text, painter)
             self.AD_TOOLBOX.current_row.elements.append(lbl)
             return lbl
 
         def button(btn_id, **kwargs):
-            btn = self.BTN(btn_id, **kwargs)
+            btn = BTN(btn_id, **kwargs)
             self.AD_TOOLBOX.current_row.elements.append(btn)
             return btn
 
         def space(width=40):
-            space = self.SPACE(width)
+            space = SPACE(width)
             self.AD_TOOLBOX.current_row.elements.append(space)
             return None
 
         def row():
-            self.AD_TOOLBOX.current_row = self.ROW()
+            self.AD_TOOLBOX.current_row = ROW()
             self.AD_TOOLBOX.rows.append(self.AD_TOOLBOX.current_row)
             return self.AD_TOOLBOX.current_row
 
         def radioButton(btns):
-            radio_btn = self.RADIO_BTN(btns, painter)
+            radio_btn = RADIO_BTN(btns, painter)
             self.AD_TOOLBOX.current_row.elements.append(radio_btn)
             return radio_btn
 
         def fix_top_by_label_height(height):
-            fix = self.FIX(height)
+            fix = FIX(height)
             self.AD_TOOLBOX.current_row.elements.append(fix)
             return fix
 
@@ -358,7 +358,7 @@ class ToolWindow(QWidget):
                 for el in row.elements:
                     max_height = max(max_height, el.content_rect.height())
                 for el in row.elements:
-                    if isinstance(el, self.FIX):
+                    if isinstance(el, FIX):
                         offset -= QPoint(row.padding, el.height + row.padding)
                     else:
                         el.layout_rect = QRect(el.content_rect)
@@ -414,7 +414,7 @@ class ToolWindow(QWidget):
             # это конечно костыль, но зато можно не переписывать огромную часть кода
             fix_top_by_label_height(lbl.content_rect.height())
             label('Align To:')
-            radioButton(self.AlignType.get_consts_and_their_names())
+            radioButton(AlignType.get_consts_and_their_names())
 
             calc_layout()
             self.AD_TOOLBOX.layout_ready = True
@@ -428,10 +428,10 @@ class ToolWindow(QWidget):
                 for el in row.elements:
                     lr = el.layout_rect
                     if lr and lr.contains(pos):
-                        if isinstance(el, self.RADIO_BTN):
+                        if isinstance(el, RADIO_BTN):
                             el.click(pos)
                             print(el.get_active_name())
-                        elif isinstance(el, self.BTN):
+                        elif isinstance(el, BTN):
                             print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
                         break
         self.update()
