@@ -3651,6 +3651,9 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
+        if self.AD_TOOLBOX.visible and self.board_AD_toolbox_pressEvent(event):
+            return
+
         if self.board_TextElementMousePressEvent(event):
             return
 
@@ -3700,6 +3703,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         special_update = False
         self.board_scrubbed_item_rect = None
+
+        if self.AD_TOOLBOX.visible and self.board_AD_toolbox_moveEvent(event):
+            return
 
         if self.board_TextElementMouseMoveEvent(event):
             return
@@ -3808,6 +3814,9 @@ class BoardMixin(BoardTextEditItemMixin):
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
+
+        if self.AD_TOOLBOX.visible and self.board_AD_toolbox_releaseEvent(event):
+            return
 
         if self.board_TextElementMouseReleaseEvent(event):
             return
@@ -4916,7 +4925,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.AD_TOOLBOX.visible:
             painter.setPen(QPen(Qt.black, 1))
             painter.setBrush(QBrush(Qt.gray))
-            ToolWindow.layout(self, painter, 20)
+            ToolWindow.layout(self, painter, 0)
+            painter.setPen(QPen(Qt.red, 10))
+            painter.drawPoint(self.AD_TOOLBOX.pos)
         painter.restore()
         self.update()
 
@@ -4925,16 +4936,40 @@ class BoardMixin(BoardTextEditItemMixin):
         self.AD_TOOLBOX.layout_ready = False
         self.AD_TOOLBOX.rows = []
         self.AD_TOOLBOX.current_row = None
-
         # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
+
+    def board_AD_toolbox_pressEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            if ToolWindow.is_toolbox_click(self, event):
+                self.AD_TOOLBOX.drag = True
+                self.AD_TOOLBOX.drag_startpos = event.pos()
+                self.AD_TOOLBOX.drag_toolbox_pos = QPoint(self.AD_TOOLBOX.pos)
+                return True
+        return False
+
+    def board_AD_toolbox_moveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            if self.AD_TOOLBOX.drag:
+                self.AD_TOOLBOX.pos = self.AD_TOOLBOX.drag_toolbox_pos + (event.pos() - self.AD_TOOLBOX.drag_startpos)
+        return False
+
+    def board_AD_toolbox_releaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if self.AD_TOOLBOX.drag:
+                self.AD_TOOLBOX.drag = False
+                return True
+            else:
+                btn_clicked = ToolWindow.layout_mouse(self, event)
+                toolbox_clicked = ToolWindow.is_toolbox_click(self, event)
+                return btn_clicked or toolbox_clicked
+        return False
+
+    def board_AD_toolbox_double_click(self, event):
+        if ToolWindow.is_toolbox_click(self, event):
+            self.board_hide_AD_toolbox()
 
     def board_do_align_and_distribute(self):
         pass
-
-    def board_AD_toolbox_double_click(self, event):
-        if ToolWindow.is_window_click(self, event):
-            self.board_hide_AD_toolbox()
-
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

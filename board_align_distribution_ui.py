@@ -310,8 +310,9 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.layout_ready = False
         AD_TOOLBOX.visible = False
         AD_TOOLBOX.pos = QPoint(0, 0)
+        AD_TOOLBOX.drag = False
 
-    def layout(self, painter, spacing):
+    def layout(self, painter, spacing=20):
 
         def label(text):
             lbl = LBL(text, painter)
@@ -421,12 +422,12 @@ class ToolWindow(QWidget):
 
         draw_layout()
 
-    def is_window_click(self, event):
+    def is_toolbox_click(self, event):
         return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos()) and not ToolWindow.layout_mouse(self, event)
 
     def layout_mouse(self, event):
         pos = event.pos()
-        debug = isinstance(self, ToolWindow) or True
+        debug = isinstance(self, ToolWindow)
         if self.AD_TOOLBOX.layout_ready:
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
@@ -451,7 +452,7 @@ class ToolWindow(QWidget):
         painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         painter.fillRect(self.rect(), Qt.gray)
-        self.layout(painter, 20)
+        self.layout(painter)
         painter.end()
 
         # self.debugPaintEvent(event)
