@@ -432,7 +432,6 @@ class ToolWindow(QWidget):
                 for el in row.elements:
                     if el.layout_rect:
                         lr = QRect(el.layout_rect)
-                        lr.moveCenter(lr.center() + pos)
                         if lr.contains(pos):
                             if isinstance(el, RADIO_BTN):
                                 el.click(pos)
