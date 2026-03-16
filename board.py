@@ -4905,7 +4905,11 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_show_AD_toolbox(self):
+        if self.AD_TOOLBOX.visible:
+            self.board_hide_AD_toolbox()
         self.AD_TOOLBOX.visible = True
+        self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
+        self.update()
 
     def board_draw_AD_toolbox(self, painter):
         painter.save()
@@ -4914,9 +4918,14 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setBrush(QBrush(Qt.gray))
             ToolWindow.layout(self, painter, 20)
         painter.restore()
+        self.update()
 
     def board_hide_AD_toolbox(self):
         self.AD_TOOLBOX.visible = False
+        self.AD_TOOLBOX.layout_ready = False
+        self.AD_TOOLBOX.rows = []
+        self.AD_TOOLBOX.current_row = None
+
         # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
 
     def board_do_align_and_distribute(self):

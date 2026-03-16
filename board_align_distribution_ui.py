@@ -365,7 +365,7 @@ class ToolWindow(QWidget):
                         el.layout_rect = QRect(el.content_rect)
                         el.layout_rect.moveTopLeft(QPoint(offset.x() + row.padding, offset.y() + row.padding))
                         offset.setX(el.layout_rect.right())
-                        el.layout_rect.moveCenter(el.layout_rect.center() + layout_spacing_offset)
+                        el.layout_rect.moveCenter(el.layout_rect.center() + layout_spacing_offset + self.AD_TOOLBOX.pos)
                         _b.append(QRect(el.layout_rect))
                 offset += QPoint(0, max_height+10)
                 update_bounding_layout_rect(self.blr, _b)
@@ -373,7 +373,6 @@ class ToolWindow(QWidget):
 
         def draw_layout():
             path = QPainterPath()
-            blr = self.blr
             blr = self.blr.adjusted(-5, -5, 5, 5)
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
