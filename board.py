@@ -583,6 +583,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.progressive_layout_ongoing = False
 
+        ToolWindow.init_AD_toolbox_attrs(self)
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -4897,11 +4899,14 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_show_AD_toolbox(self):
-        pass
+        self.AD_TOOLBOX.visible = True
 
     def board_hide_AD_toolbox(self):
-        pass
+        self.AD_TOOLBOX.visible = False
+        # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
 
+    def board_do_align_and_distribute(self):
+        pass
 
 
 # для запуска программы прямо из этого файла при разработке и отладке

@@ -299,15 +299,16 @@ class ToolWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.init_attrs()
+        self.init_AD_toolbox_attrs()
 
         self.setMouseTracking(True)
 
-    def init_attrs(self):
+    def init_AD_toolbox_attrs(self):
         self.AD_TOOLBOX = AD_TOOLBOX = type('AD_TOOLBOX', (), {})()
         AD_TOOLBOX.rows = []
         AD_TOOLBOX.current_row = None
         AD_TOOLBOX.layout_ready = False
+        AD_TOOLBOX.visible = False
 
     def layout(self, painter, spacing):
 
