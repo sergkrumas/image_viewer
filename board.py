@@ -583,6 +583,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.progressive_layout_ongoing = False
 
+        self.force_vertical_layout = False
+
         ToolWindow.init_AD_toolbox_attrs(self)
 
     def board_FindPlugin(self, plugin_filename):
@@ -1676,6 +1678,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("The board is prepared"), duration=1.0)
         self.progressive_layout_ongoing = False
 
+        self.force_vertical_layout = False
+
     def board_progressive_fill_layout(self, folder_data, image_data):
         """
             Превьюшки могут генерится в совершенно произвольном порядке,
@@ -1727,7 +1731,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def _offset_anchor(imd):
             nonlocal offset
-            if self.STNG.board_vertical_items_layout:
+            if self.STNG.board_vertical_items_layout or self.force_vertical_layout:
                 offset += QPointF(0, direction*imd.source_height)
             else:
                 offset += QPointF(direction*imd.source_width, 0)
@@ -4882,7 +4886,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for folder_path in selected_folders:
             self.LibraryData().handle_input_data(folder_path, pre_load=True)
 
-            # грузим из папок в стартовую папку
+            # переносим из всё в стартовую папку
             cf.images_list.extend(self.LibraryData().current_folder().images_list)
 
             # почему-то он иногда сообщает, что виртуальную доску удалить нельзя,
@@ -4899,17 +4903,19 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("No images found in selected folders!"), error=True)
             return
 
-        # needed for board_do_place_items_in_column_or_row
         self.LibraryData().make_folder_current(cf, write_view_history=False)
 
-        with self.show_longtime_process_ongoing(self, _("Loading images to the board")):
-
-            self.LibraryData().make_thumbnails_and_previews(cf, None)
-
-            cf.board.ready = False
-
-            self.board_prepare_items_layout_and_viewport(cf)
-            self.board_do_place_items_in_column_or_row()
+        if True:
+            self.force_vertical_layout = True # будет сброшен после окончания прогрессивной раскладки
+            cf.previews_done = False
+            self.Globals.ThumbnailsPreviewsThread(cf, self.Globals).start()
+        else:
+            # старая версия, когда прогрессивного расположения айтемов ещё не было реализовано
+            with self.show_longtime_process_ongoing(self, _("Loading images to the board")):
+                self.LibraryData().make_thumbnails_and_previews(cf, None)
+                cf.board.ready = False
+                self.board_prepare_items_layout_and_viewport(cf)
+                self.board_do_place_items_in_column_or_row()
 
         self.update()
 

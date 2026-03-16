@@ -93,6 +93,8 @@ class Globals():
 
     _timer = None
 
+    ThumbnailsPreviewsThread = ThumbnailsPreviewsThread
+
     DEBUG = True
     SUPER_LITE = True
     FORCE_STANDARD_DEBUG = False
