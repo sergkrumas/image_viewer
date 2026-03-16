@@ -4905,7 +4905,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.LibraryData().make_folder_current(cf, write_view_history=False)
 
-        if True:
+        if self.Globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT:
             self.force_vertical_layout = True # будет сброшен после окончания прогрессивной раскладки
             cf.previews_done = False
             self.Globals.ThumbnailsPreviewsThread(cf, self.Globals).start()
