@@ -315,31 +315,6 @@ class SocketWrapper():
 
 
 
-class ServerWrapper():
-
-    def __init__(self, ):
-        self.SERVER_NAME = f'kiv_ipc_{time.time()}'
-        self.server_obj = QLocalServer()
-        self.clients_sockets = []
-
-        def receive_incoming_worker(server_obj, clients_sockets):
-            clientConnSocket = server_obj.nextPendingConnection()
-            sw = SocketWrapper(clientConnSocket)
-            clientConnSocket.readyRead.connect(sw.processReadyRead)
-
-            # TODO: тут можно отдать таску
-
-            clients_sockets.append(sw)
-
-            # clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
-            # clientConnSocket.disconnectFromServer()
-
-        if self.server_obj.listen(self.SERVER_NAME):
-            self.server_obj.newConnection.connect(lambda: receive_incoming_worker(self.server_obj, self.clients_sockets))
-            # print("server started")
-        else:
-            QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
-
 def ipc_utils_debug_input_data(worker_index):
     with open('ips_utils_debug_input.data', "r", encoding="utf-8") as file:
         path = file.readlines()[worker_index].strip()
@@ -399,6 +374,33 @@ def worker_init(window, SERVER_NAME, worker_index):
     client_socket.readyRead.connect(sw.processReadyRead)
     client_socket.abort()
     client_socket.connectToServer(SERVER_NAME)
+
+
+class ServerWrapper():
+
+    def __init__(self, ):
+        self.SERVER_NAME = f'kiv_ipc_{time.time()}'
+        self.server_obj = QLocalServer()
+        self.clients_sockets = []
+
+        def receive_incoming_worker(server_obj, clients_sockets):
+            clientConnSocket = server_obj.nextPendingConnection()
+            sw = SocketWrapper(clientConnSocket)
+            clientConnSocket.readyRead.connect(sw.processReadyRead)
+
+            # TODO: тут можно отдать таску
+
+            clients_sockets.append(sw)
+
+            # clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
+            # clientConnSocket.disconnectFromServer()
+
+        if self.server_obj.listen(self.SERVER_NAME):
+            self.server_obj.newConnection.connect(lambda: receive_incoming_worker(self.server_obj, self.clients_sockets))
+            # print("server started")
+        else:
+            QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
+
 
 def main():
 
