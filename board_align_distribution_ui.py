@@ -417,7 +417,7 @@ class ToolWindow(QWidget):
             button(TOOLWINDOW_BUTTONSIDS.DISTRIBUTE_H, action=ToolActions.DISTRIBUTE)
             button(TOOLWINDOW_BUTTONSIDS.DISTRIBUTE_V, action=ToolActions.DISTRIBUTE)
 
-            space(80)
+            space(100)
             # это конечно костыль, но зато можно не переписывать огромную часть кода
             fix_top_by_label_height(lbl.content_rect.height())
             label('Align To:')

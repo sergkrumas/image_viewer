@@ -4929,12 +4929,34 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_AD_toolbox(self, painter):
         if self.AD_TOOLBOX.visible:
             painter.save()
+
+            rh = painter.renderHints()
+            aa = rh & QPainter.Antialiasing
+            spt = rh & QPainter.SmoothPixmapTransform
+            haa = rh & QPainter.HighQualityAntialiasing
+            ta = rh & QPainter.TextAntialiasing
+
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            painter.setRenderHint(QPainter.TextAntialiasing, True)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
             painter.setPen(QPen(Qt.black, 1))
             painter.setBrush(QBrush(Qt.gray))
+            font = painter.font()
+            font.setBold(True)
+            font.setFamily('Consolas')
+            font.setPixelSize(15)
+            painter.setFont(font)
             ToolWindow.layout(self, painter, 0)
             painter.setPen(QPen(Qt.red, 10))
             painter.drawPoint(self.AD_TOOLBOX.pos)
             painter.restore()
+
+            painter.setRenderHint(QPainter.Antialiasing, aa)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, spt)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, haa)
+            painter.setRenderHint(QPainter.TextAntialiasing, ta)
 
     def board_hide_AD_toolbox(self):
         self.AD_TOOLBOX.visible = False
