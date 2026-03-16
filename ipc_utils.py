@@ -322,16 +322,10 @@ class ServerWrapper():
         self.server_obj = QLocalServer()
         self.clients_sockets = []
 
-        def on_ready_read(client_socket):
-            data = client_socket.readAll().data()
-            # print('from worker:', data)
-
         def receive_incoming_worker(server_obj, clients_sockets):
             clientConnSocket = server_obj.nextPendingConnection()
             sw = SocketWrapper(clientConnSocket)
             clientConnSocket.readyRead.connect(sw.processReadyRead)
-            # clientConnSocket.readyRead.connect(lambda: on_ready_read(clientConnSocket))
-            # clientConnSocket.write('hello'.encode('utf8'))
 
             # TODO: тут можно отдать таску
 
@@ -345,8 +339,6 @@ class ServerWrapper():
             # print("server started")
         else:
             QMessageBox.critical(None, "Server", "Unable to start the server: %s." % server_obj.errorString())
-
-
 
 def ipc_utils_debug_input_data(worker_index):
     with open('ips_utils_debug_input.data', "r", encoding="utf-8") as file:
@@ -399,20 +391,12 @@ def worker_init(window, SERVER_NAME, worker_index):
         msg = errors.get(socketError, default_error_msg)
         print(msg)
 
-    def on_ready_read(client_socket):
-
-        msg = client_socket.readAll()
-        if msg:
-            msg = msg.data().decode("utf8")
-            QMessageBox.critical(None, "Client", "Message from server: %s." % msg)
 
     client_socket = QLocalSocket()
-    Globals.client_socket_wrapper = SocketWrapper(client_socket)
-
+    Globals.client_socket_wrapper = sw = SocketWrapper(client_socket)
     client_socket.connected.connect(connected_to_server)
     client_socket.error.connect(client_socket_error)
-    # TODO: !!!!! по идее здесь надо подключать враппер
-    client_socket.readyRead.connect(lambda: on_ready_read(client_socket))
+    client_socket.readyRead.connect(sw.processReadyRead)
     client_socket.abort()
     client_socket.connectToServer(SERVER_NAME)
 
