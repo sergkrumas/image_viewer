@@ -723,6 +723,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_plugins.append(pi)
 
     def board_mouseDoubleClickEventDefault(self, event):
+
+        if self.board_AD_toolbox_double_click(event):
+            return
+
         cf = self.LibraryData().current_folder()
         for board_item in cf.board.items_list:
             item_selection_area = board_item.get_selection_area(canvas=self)
@@ -4905,9 +4909,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_AD_toolbox(self, painter):
         painter.save()
-        painter.setPen(QPen(Qt.black, 1))
-        painter.setBrush(QBrush(Qt.gray))
         if self.AD_TOOLBOX.visible:
+            painter.setPen(QPen(Qt.black, 1))
+            painter.setBrush(QBrush(Qt.gray))
             ToolWindow.layout(self, painter, 20)
         painter.restore()
 
@@ -4917,6 +4921,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_do_align_and_distribute(self):
         pass
+
+    def board_AD_toolbox_double_click(self, event):
+        if ToolWindow.is_window_click(self, event):
+            self.board_hide_AD_toolbox()
 
 
 # для запуска программы прямо из этого файла при разработке и отладке

@@ -309,6 +309,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.current_row = None
         AD_TOOLBOX.layout_ready = False
         AD_TOOLBOX.visible = False
+        AD_TOOLBOX.pos = QPoint(0, 0)
 
     def layout(self, painter, spacing):
 
@@ -421,20 +422,29 @@ class ToolWindow(QWidget):
 
         draw_layout()
 
+    def is_window_click(self, event):
+        return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos()) and not ToolWindow.layout_mouse(self, event)
+
     def layout_mouse(self, event):
         pos = event.pos()
+        debug = isinstance(self, ToolWindow) or True
         if self.AD_TOOLBOX.layout_ready:
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
-                    lr = el.layout_rect
-                    if lr and lr.contains(pos):
-                        if isinstance(el, RADIO_BTN):
-                            el.click(pos)
-                            print(el.get_active_name())
-                        elif isinstance(el, BTN):
-                            print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
-                        break
-        self.update()
+                    if el.layout_rect:
+                        lr = QRect(el.layout_rect)
+                        lr.moveCenter(lr.center() + pos)
+                        if lr.contains(pos):
+                            if isinstance(el, RADIO_BTN):
+                                el.click(pos)
+                                if debug:
+                                    print(el.get_active_name())
+                                return True
+                            elif isinstance(el, BTN):
+                                if debug:
+                                    print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
+                                return True
+        return False
 
     def paintEvent(self, event):
         painter = QPainter()
