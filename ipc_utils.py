@@ -416,7 +416,7 @@ def main():
     if args.worker:
         # client
         SERVER_NAME = args.servername
-        Globals.window = window = Window(Qt.blue)
+        Globals.window = window = Window(Qt.black)
         window.show()
         window.resize(1500, 100)
         worker_index = int(args.i)
@@ -428,7 +428,7 @@ def main():
 
     else:
         # server
-        Globals.window = window = Window(Qt.red)
+        Globals.window = window = Window(Qt.gray)
         window.show()
 
         servers = []

@@ -4921,14 +4921,14 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_draw_AD_toolbox(self, painter):
-        painter.save()
         if self.AD_TOOLBOX.visible:
+            painter.save()
             painter.setPen(QPen(Qt.black, 1))
             painter.setBrush(QBrush(Qt.gray))
             ToolWindow.layout(self, painter, 0)
             painter.setPen(QPen(Qt.red, 10))
             painter.drawPoint(self.AD_TOOLBOX.pos)
-        painter.restore()
+            painter.restore()
         self.update()
 
     def board_hide_AD_toolbox(self):
