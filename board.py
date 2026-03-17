@@ -5103,7 +5103,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_MapToBoard(r.bottomRight())
                 )
                 return (
-                    get_func(br),
+                    sum(get_func(item) for item in input_items),
                     get_min_func(br),
                     get_max_func(br)
                 )
@@ -5118,7 +5118,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
                 bbr = self.board_bounding_rect
                 return (
-                    get_func(bbr),
+                    sum(get_func(item) for item in input_items),
                     get_min_func(bbr),
                     get_max_func(bbr)
                 )
