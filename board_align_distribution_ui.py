@@ -76,7 +76,7 @@ class LBL():
         self.content_rect = painter.boundingRect(QRect(), self.alignment, self.text)
         self.layout_rect = None
 
-    def draw(self, painter, offset):
+    def draw(self, painter, offset, hover):
         lr = QRect(self.layout_rect)
         lr.moveCenter(lr.center() + offset)
         painter.drawText(lr, self.alignment, self.text)
@@ -87,7 +87,7 @@ class SPACE():
         self.content_rect = QRect(0, 0, width, 0)
         self.layout_rect = None
 
-    def draw(self, painter, offset):
+    def draw(self, painter, offset, hover):
         pass
 
 class BTN():
@@ -98,10 +98,10 @@ class BTN():
         self.layout_rect = None
         self.kwargs = kwargs
 
-    def draw(self, painter, offset):
+    def draw(self, painter, offset, hover):
         lr = QRect(self.layout_rect)
         lr.moveCenter(lr.center() + offset)
-        painter.drawPixmap(lr, ToolWindow.get_btn_pixmap(self.btn_id))
+        painter.drawPixmap(lr, ToolWindow.get_btn_pixmap(self.btn_id, hover))
 
 class RADIO_BTN():
 
@@ -140,7 +140,7 @@ class RADIO_BTN():
     def get_active_name(self):
         return self.get_active_radiobtn()[-1]
 
-    def draw(self, painter, offset):
+    def draw(self, painter, offset, hover):
         lr = QRect(self.layout_rect)
         lr.moveCenter(lr.center() + offset)
         painter.save()
@@ -163,6 +163,8 @@ class RADIO_BTN():
                 painter.setPen(QPen(Qt.black, 1))
             painter.drawText(radio_rect, self.alignment, radio_name)
         painter.setClipping(False)
+        if hover:
+            painter.fillPath(path, QBrush(QColor(255, 255, 255, 25)))
         painter.restore()
 
 class FIX():
@@ -171,7 +173,7 @@ class FIX():
         self.content_rect = QRect()
         self.layout_rect = None
 
-    def draw(self, painter, offset):
+    def draw(self, painter, offset, hover):
         pass
 
 class AlignType():
@@ -206,8 +208,8 @@ class ToolWindow(QWidget):
     CONTENT = QColor(190, 190, 190)
 
     @classmethod
-    @lru_cache(maxsize=9)
-    def get_btn_pixmap(cls, btn_id):
+    @lru_cache(maxsize=9*2)
+    def get_btn_pixmap(cls, btn_id, hover):
 
         border = ToolWindow.BORDER
         bckg = ToolWindow.BCKG
@@ -226,6 +228,9 @@ class ToolWindow(QWidget):
 
         bckg_path = QPainterPath()
         bckg_path.addRoundedRect(BTN_RECT.adjusted(2, 2, -2, -2), 6, 6)
+        if hover:
+            bckg = bckg.lighter(120)
+            border = border.lighter(120)
         painter.setPen(QPen(border, 2))
         painter.setBrush(QBrush(bckg))
         painter.drawPath(bckg_path)
@@ -405,9 +410,11 @@ class ToolWindow(QWidget):
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
 
+            cursor_pos = self.mapFromGlobal(QCursor().pos())
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
-                    el.draw(painter, self.AD_TOOLBOX.pos)
+                    hover = el.layout_rect and el.layout_rect.contains(cursor_pos)
+                    el.draw(painter, self.AD_TOOLBOX.pos, hover)
 
         if not self.AD_TOOLBOX.layout_ready:
             row()
@@ -466,10 +473,12 @@ class ToolWindow(QWidget):
                                 el.click(pos - self.AD_TOOLBOX.pos)
                                 if debug:
                                     print(el.get_active_name())
+                                    self.update()
                                 return True
                             elif isinstance(el, BTN):
                                 if debug:
                                     print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
+                                    self.update()
                                 return True
         return False
 
