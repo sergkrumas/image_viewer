@@ -5314,6 +5314,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     item.move(0, dy)
                     currentY += item.height() + gap
 
+        self.build_board_bounding_rect(self.LibraryData().current_folder())
+        self.update_selection_bouding_box()
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
