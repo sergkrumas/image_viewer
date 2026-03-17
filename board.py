@@ -4992,7 +4992,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.update()
                 return True
             else:
-                btn_clicked = ToolWindow.layout_mouse(self, event)
+                btn_clicked = ToolWindow.toolbox_layout_mouse(self, event)
                 toolbox_clicked = ToolWindow.is_toolbox_inactive_area_click(self, event)
                 return btn_clicked or toolbox_clicked
         return False
