@@ -61,20 +61,10 @@ class TOOLWINDOW_BUTTONSIDS(BaseMethods):
     DISTRIBUTE_V = 7
 
 
-class ToolActions():
+class ToolActions(BaseMethods):
     ALIGN = 0
     DISTRIBUTE = 1
 
-    @classmethod
-    def names(cls):
-        if not hasattr(cls, "all_names"):
-            cls.all_names = dict()
-            for attr_name in cls.__dict__:
-                if not attr_name.startswith("__") and attr_name.upper() == attr_name:
-                    attr_value = getattr(cls, attr_name)
-                    if isinstance(attr_value, int):
-                        cls.all_names[attr_value] = attr_name
-        return cls.all_names
 
 class AlignType(BaseMethods):
     ALIGN_TO_SELECTION = 0
