@@ -4950,7 +4950,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setFont(font)
             ToolWindow.layout(self, painter, 0)
             painter.setPen(QPen(Qt.red, 10))
-            painter.drawPoint(self.AD_TOOLBOX.pos)
+            # painter.drawPoint(self.AD_TOOLBOX.pos)
             painter.restore()
 
             painter.setRenderHint(QPainter.Antialiasing, aa)
