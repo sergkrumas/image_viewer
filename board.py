@@ -4927,6 +4927,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # задаём положение только в первый раз,
             # чтобы далее положение сохранялось между следующими вызовами
             self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
+            self.AD_TOOLBOX.buttons_handler = self.board_do_align_and_distribute
         self.update()
 
     def board_draw_AD_toolbox(self, painter):
@@ -5001,7 +5002,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if ToolWindow.is_toolbox_inactive_area_click(self, event):
             self.board_hide_AD_toolbox()
 
-    def board_do_align_and_distribute(self):
+    def board_do_align_and_distribute(self, btn_id, action):
+        self.show_center_label(f'{btn_id} {action}')
         # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
         pass
 

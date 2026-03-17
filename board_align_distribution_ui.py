@@ -342,6 +342,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.visible = False
         AD_TOOLBOX.pos = QPoint(0, 0)
         AD_TOOLBOX.drag = False
+        AD_TOOLBOX.buttons_handler = None
 
     def layout(self, painter, spacing=20):
 
@@ -476,6 +477,9 @@ class ToolWindow(QWidget):
                                     self.update()
                                 return True
                             elif isinstance(el, BTN):
+                                handler = self.AD_TOOLBOX.buttons_handler
+                                if handler:
+                                    handler(el.kwargs, el.btn_id)
                                 if debug:
                                     print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
                                     self.update()
