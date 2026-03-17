@@ -4927,7 +4927,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # задаём положение только в первый раз,
             # чтобы далее положение сохранялось между следующими вызовами
             self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
-            self.AD_TOOLBOX.buttons_handler = self.board_do_align_and_distribute
+            self.AD_TOOLBOX.buttons_handler = self.board_AD_do_align_and_distribute
         self.update()
 
     def board_draw_AD_toolbox(self, painter):
@@ -4993,7 +4993,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.update()
                 return True
             else:
-                btn_clicked = ToolWindow.toolbox_layout_mouse(self, event)
+                btn_clicked = ToolWindow.toolbox_layout_mouse(self, event, call_handler=True)
                 toolbox_clicked = ToolWindow.is_toolbox_inactive_area_click(self, event)
                 return btn_clicked or toolbox_clicked
         return False
@@ -5002,7 +5002,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if ToolWindow.is_toolbox_inactive_area_click(self, event):
             self.board_hide_AD_toolbox()
 
-    def board_do_align_and_distribute(self, btn_id, action_id, align_type):
+    def board_AD_do_align_and_distribute(self, btn_id, action_id, align_type):
 
         button_identifier = TOOLWINDOW_BUTTONSIDS.names()[btn_id]
         action_identifier = ToolActions.names()[action_id]
@@ -5011,51 +5011,308 @@ class BoardMixin(BoardTextEditItemMixin):
 
         B_IDs = TOOLWINDOW_BUTTONSIDS
 
+        class BoardItemHelper():
+            def __init__(self, board_item):
+                self.board_item = board_item
+                self.bounding_rect = self.board_item.get_selection_area(canvas=None,
+                    place_center_at_origin=False,
+                    apply_global_scale=False,
+                    apply_translation=True
+                ).boundingRect()
 
-        if align_type == AlignType.ALIGN_TO_VIEWPORT:
-            pass
-        elif align_type == AlignType.ALIGN_TO_SELECTION:
-            pass
-        elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
-            pass
+            def move(self, dx, dy):
+                self.board_item.position += QPointF(dx, dy)
+
+            def width(self):
+                return self.bounding_rect.width()
+
+            def height(self):
+                return self.bounding_rect.height()
+
+            def left(self):
+                return self.bounding_rect.left()
+
+            def top(self):
+                return self.bounding_rect.top()
+
+            def right(self):
+                return self.bounding_rect.right()
+
+            def bottom(self):
+                return self.bounding_rect.bottom()
+
+            def hcenter(self):
+                return self.bounding_rect.center().x()
+
+            def vcenter(self):
+                return self.bounding_rect.center().y()
 
 
+
+        board_items = self.selected_items
+
+        items = [BoardItemHelper(bi) for bi in board_items]
+
+        def get_target(get_func, result_func):
+
+            if align_type == AlignType.ALIGN_TO_VIEWPORT:
+                r = self.rect()
+                vr = QRectF(
+                    self.board_MapToBoard(r.topLeft()),
+                    self.board_MapToBoard(r.bottomRight())
+                )
+                return get_func(vr)
+
+            elif align_type == AlignType.ALIGN_TO_SELECTION:
+                return result_func(get_func(item) for item in items)
+
+            elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
+                return get_func(self.board_bounding_rect)
+
+            else:
+                raise Exception("")
+
+        def boundingBox(bihs):
+
+            if align_type == AlignType.ALIGN_TO_VIEWPORT:
+                r = self.rect()
+                return QRectF(
+                    self.board_MapToBoard(r.topLeft()),
+                    self.board_MapToBoard(r.bottomRight())
+                )
+
+            elif align_type == AlignType.ALIGN_TO_SELECTION:
+                left = min(i.left() for i in bihs)
+                right = max(i.right() for i in bihs)
+                top = min(i.top() for i in bihs)
+                bottom = max(i.bottom() for i in bihs)
+                return QRectF(QPointF(left, top), QPointF(right, bottom))
+
+            elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
+                return self.board_bounding_rect
+
+            else:
+                raise Exception("")
+
+        def get_distribute_inputs(input_items, get_func, get_min_func, get_max_func):
+
+            if align_type == AlignType.ALIGN_TO_VIEWPORT:
+                r = self.rect()
+                br = QRectF(
+                    self.board_MapToBoard(r.topLeft()),
+                    self.board_MapToBoard(r.bottomRight())
+                )
+                return (
+                    get_func(br),
+                    get_min_func(br),
+                    get_max_func(br)
+                )
+
+            elif align_type == AlignType.ALIGN_TO_SELECTION:
+                return (
+                    sum(get_func(item) for item in input_items),
+                    get_min_func(items[0]),
+                    get_max_func(items[-1])
+                )
+
+            elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
+                bbr = self.board_bounding_rect
+                return (
+                    get_func(bbr),
+                    get_min_func(br),
+                    get_max_func(br)
+                )
+
+            else:
+                raise Exception("")
+
+
+
+        if not items:
+            return
 
         if action_id == ToolActions.ALIGN:
 
             if btn_id == B_IDs.ALIGN_LEFT_EDGE:
-                pass
+                target = get_target(lambda i: i.left(), min)
+
+                for item in items:
+                    dx = target - item.left()
+                    item.move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_TOP_EDGE:
-                pass
+                target = get_target(lambda i: i.top(), min)
+
+                for item in items:
+                    dy = target - item.top()
+                    item.move(0, dy)
+
             elif btn_id == B_IDs.ALIGN_RIGHT_EDGE:
-                pass
+                target = get_target(lambda i: i.right(), max)
+
+                for item in items:
+                    dx = target - item.right()
+                    item.move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_BOTTOM_EDGE:
-                pass
+                target = get_target(lambda i: i.bottom(), max)
+
+                for item in items:
+                    dy = target - item.bottom()
+                    item.move(0, dy)
+
             elif btn_id == B_IDs.ALIGN_CENTER:
-                pass
+                bb = boundingBox(items)
+                center = bb.left() + bb.width() / 2.0
+
+                for item in items:
+                    dx = center - item.hcenter()
+                    item.move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_MIDDLE:
-                pass
+                bb = boundingBox(items)
+                center = bb.top() + bb.height() / 2.0
+
+                for item in items:
+                    dy = center - item.vcenter()
+                    item.move(0, dy)
+
+
 
         elif action_id == ToolActions.DISTRIBUTE:
 
+            # проверять, что есть больше 3х объектов
             if btn_id == B_IDs.ALIGN_LEFT_EDGE:
-                pass
+
+                items = sorted(items, key=lambda i: i.left())
+
+                first = items[0].left()
+                last  = items[-1].left()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dx = target - items[i].left()
+                    items[i].move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_TOP_EDGE:
-                pass
+
+                items = sorted(items, key=lambda i: i.top())
+
+                first = items[0].top()
+                last  = items[-1].top()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dy = target - items[i].top()
+                    items[i].move(0, dy)
+
             elif btn_id == B_IDs.ALIGN_RIGHT_EDGE:
-                pass
+
+                items = sorted(items, key=lambda i: i.right())
+
+                first = items[0].right()
+                last  = items[-1].right()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dx = target - items[i].right()
+                    items[i].move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_BOTTOM_EDGE:
-                pass
+
+                items = sorted(items, key=lambda i: i.bottom())
+
+                first = items[0].bottom()
+                last  = items[-1].bottom()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dy = target - items[i].bottom()
+                    items[i].move(0, dy)
+
             elif btn_id == B_IDs.ALIGN_CENTER:
-                pass
+
+                items = sorted(items, key=lambda i: i.hcenter())
+
+                first = items[0].hcenter()
+                last  = items[-1].hcenter()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dx = target - items[i].hcenter()
+                    items[i].move(dx, 0)
+
             elif btn_id == B_IDs.ALIGN_MIDDLE:
-                pass
+
+                items = sorted(items, key=lambda i: i.vcenter())
+
+                first = items[0].vcenter()
+                last  = items[-1].vcenter()
+
+                step = (last - first) / (len(items) - 1)
+
+                for i in range(len(items)):
+                    target = first + i * step
+                    dy = target - items[i].vcenter()
+                    items[i].move(0, dy)
 
             elif btn_id == B_IDs.DISTRIBUTE_H:
-                pass
-            elif btn_id == B_IDs.DISTRIBUTE_V:
-                pass
 
+                items = sorted(items, key=lambda i: i.left())
+
+                # totalWidth = sum(item.width() for item in items)
+                totalWidth, left, right = get_distribute_inputs(items,
+                    lambda i: i.width(),
+                    lambda i: i.left(),
+                    lambda i: i.right()
+                )
+
+                # left = items[0].left()
+                # right = items[-1].right()
+
+                totalSpace = (right - left) - totalWidth
+                gap = totalSpace / (len(items) - 1)
+
+                currentX = left
+
+                for item in items:
+                    dx = currentX - item.left()
+                    item.move(dx, 0)
+                    currentX += item.width() + gap
+
+            elif btn_id == B_IDs.DISTRIBUTE_V:
+
+                items = sorted(items, key=lambda i: i.top())
+
+                # totalHeight = sum(item.height() for item in items)
+                totalHeight, top, bottom = get_distribute_inputs(items,
+                    lambda i: i.height(),
+                    lambda i: i.top(),
+                    lambda i: i.bottom()
+                )
+
+                # top = items[0].top()
+                # bottom = items[-1].bottom()
+
+                totalSpace = (bottom - top) - totalHeight
+                gap = totalSpace / (len(items) - 1)
+
+                currentY = top
+
+                for item in items:
+                    dy = currentY - item.top()
+                    item.move(0, dy)
+                    currentY += item.height() + gap
 
 
 

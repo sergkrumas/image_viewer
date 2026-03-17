@@ -73,6 +73,31 @@ class ToolActions():
                         cls.all_names[attr_value] = attr_name
         return cls.all_names
 
+class AlignType():
+    ALIGN_TO_SELECTION = 0
+    ALIGN_TO_VIEWPORT = 1
+    ALIGN_TO_WHOLE_BOARD = 2
+
+    @classmethod
+    def get_consts_and_their_names(cls):
+        return {
+            cls.ALIGN_TO_SELECTION: _("Selection"),
+            cls.ALIGN_TO_VIEWPORT: _("Viewport"),
+            cls.ALIGN_TO_WHOLE_BOARD: _("Whole board"),
+        }
+
+    @classmethod
+    def all(cls):
+        if not hasattr(cls, "all_list"):
+            cls.all_list = []
+            for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
+                if attr_name.startswith("ALIGN_TO_"):
+                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
+                    if isinstance(attr_value, int):
+                        cls.all_list.append(attr_value)
+            cls.all_list = tuple(sorted(cls.all_list))
+        return cls.all_list
+
 class ROW():
 
     def __init__(self, padding=10):
@@ -186,31 +211,6 @@ class FIX():
 
     def draw(self, painter, offset, hover):
         pass
-
-class AlignType():
-    ALIGN_TO_VIEWPORT = 0
-    ALIGN_TO_SELECTION = 1
-    ALIGN_TO_WHOLE_BOARD = 2
-
-    @classmethod
-    def get_consts_and_their_names(cls):
-        return {
-            cls.ALIGN_TO_VIEWPORT: _("Viewport"),
-            cls.ALIGN_TO_SELECTION: _("Selection"),
-            cls.ALIGN_TO_WHOLE_BOARD: _("Whole board"),
-        }
-
-    @classmethod
-    def all(cls):
-        if not hasattr(cls, "all_list"):
-            cls.all_list = []
-            for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
-                if attr_name.startswith("ALIGN_TO_"):
-                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
-                    if isinstance(attr_value, int):
-                        cls.all_list.append(attr_value)
-            cls.all_list = tuple(sorted(cls.all_list))
-        return cls.all_list
 
 class ToolWindow(QWidget):
 
@@ -481,7 +481,7 @@ class ToolWindow(QWidget):
             not ToolWindow.toolbox_layout_mouse(self, event)
         ))
 
-    def toolbox_layout_mouse(self, event):
+    def toolbox_layout_mouse(self, event, call_handler=False):
         pos = event.pos()
         debug = isinstance(self, ToolWindow)
         if self.AD_TOOLBOX.layout_ready:
@@ -499,7 +499,7 @@ class ToolWindow(QWidget):
                                 return True
                             elif isinstance(el, BTN):
                                 handler = self.AD_TOOLBOX.buttons_handler
-                                if handler:
+                                if call_handler and handler:
                                     handler(el.btn_id, el.kwargs['action'], self.AD_TOOLBOX.align_to_radiobutton.get_active_id())
                                 if debug:
                                     print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs, )
