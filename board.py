@@ -726,7 +726,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_mouseDoubleClickEventDefault(self, event):
 
-        if self.board_AD_toolbox_double_click(event):
+        if self.board_AD_toolbox_doubleClickEvent(event):
             return
 
         cf = self.LibraryData().current_folder()
@@ -4923,7 +4923,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.AD_TOOLBOX.visible:
             self.board_hide_AD_toolbox()
         self.AD_TOOLBOX.visible = True
-        self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
+        if not self.AD_TOOLBOX.pos:
+            # задаём положение только в первый раз,
+            # чтобы далее положение сохранялось между следующими вызовами
+            self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
         self.update()
 
     def board_draw_AD_toolbox(self, painter):
@@ -4963,7 +4966,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.AD_TOOLBOX.layout_ready = False
         self.AD_TOOLBOX.rows = []
         self.AD_TOOLBOX.current_row = None
-        # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
 
     def board_AD_toolbox_pressEvent(self, event):
         if event.buttons() == Qt.LeftButton:
@@ -4995,11 +4997,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 return btn_clicked or toolbox_clicked
         return False
 
-    def board_AD_toolbox_double_click(self, event):
+    def board_AD_toolbox_doubleClickEvent(self, event):
         if ToolWindow.is_toolbox_inactive_area_click(self, event):
             self.board_hide_AD_toolbox()
 
     def board_do_align_and_distribute(self):
+        # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
         pass
 
 # для запуска программы прямо из этого файла при разработке и отладке
