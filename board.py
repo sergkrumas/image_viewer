@@ -5119,8 +5119,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 bbr = self.board_bounding_rect
                 return (
                     get_func(bbr),
-                    get_min_func(br),
-                    get_max_func(br)
+                    get_min_func(bbr),
+                    get_max_func(bbr)
                 )
 
             else:
