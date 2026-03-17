@@ -5105,14 +5105,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 return (
                     sum(get_func(item) for item in input_items),
                     get_min_func(br),
-                    get_max_func(br)
+                    get_max_func(br),
+                    True
                 )
 
             elif align_type == AlignType.ALIGN_TO_SELECTION:
                 return (
                     sum(get_func(item) for item in input_items),
                     get_min_func(items[0]),
-                    get_max_func(items[-1])
+                    get_max_func(items[-1]),
+                    False
                 )
 
             elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
@@ -5120,7 +5122,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 return (
                     sum(get_func(item) for item in input_items),
                     get_min_func(bbr),
-                    get_max_func(bbr)
+                    get_max_func(bbr),
+                    True
                 )
 
             else:
@@ -5271,14 +5274,15 @@ class BoardMixin(BoardTextEditItemMixin):
                 items = sorted(items, key=lambda i: i.left())
 
                 # totalWidth = sum(item.width() for item in items)
-                totalWidth, left, right = get_distribute_inputs(items,
+                totalWidth, left, right, do_fix = get_distribute_inputs(items,
                     lambda i: i.width(),
                     lambda i: i.left(),
                     lambda i: i.right()
                 )
 
-                # left = items[0].left()
-                # right = items[-1].right()
+                if do_fix:
+                    left += items[0].width()/2.0
+                    right += items[-1].width()/2.0
 
                 totalSpace = (right - left) - totalWidth
                 gap = totalSpace / (len(items) - 1)
@@ -5290,19 +5294,21 @@ class BoardMixin(BoardTextEditItemMixin):
                     item.move(dx, 0)
                     currentX += item.width() + gap
 
+
             elif btn_id == B_IDs.DISTRIBUTE_V:
 
                 items = sorted(items, key=lambda i: i.top())
 
                 # totalHeight = sum(item.height() for item in items)
-                totalHeight, top, bottom = get_distribute_inputs(items,
+                totalHeight, top, bottom, do_fix = get_distribute_inputs(items,
                     lambda i: i.height(),
                     lambda i: i.top(),
                     lambda i: i.bottom()
                 )
 
-                # top = items[0].top()
-                # bottom = items[-1].bottom()
+                if do_fix:
+                    top += items[0].height()/2.0
+                    bottom += items[-1].height()/2.0
 
                 totalSpace = (bottom - top) - totalHeight
                 gap = totalSpace / (len(items) - 1)
@@ -5316,6 +5322,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.build_board_bounding_rect(self.LibraryData().current_folder())
         self.update_selection_bouding_box()
+        self.update()
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
