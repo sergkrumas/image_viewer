@@ -414,7 +414,11 @@ class ToolWindow(QWidget):
             cursor_pos = self.mapFromGlobal(QCursor().pos())
             for row in self.AD_TOOLBOX.rows:
                 for el in row.elements:
-                    hover = el.layout_rect and el.layout_rect.contains(cursor_pos)
+                    hover = False
+                    if el.layout_rect:
+                        lr = QRect(el.layout_rect)
+                        lr.moveCenter(lr.center() + self.AD_TOOLBOX.pos)
+                        hover = lr.contains(cursor_pos)
                     el.draw(painter, self.AD_TOOLBOX.pos, hover)
 
         if not self.AD_TOOLBOX.layout_ready:
