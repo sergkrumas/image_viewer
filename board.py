@@ -4967,7 +4967,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_AD_toolbox_pressEvent(self, event):
         if event.buttons() == Qt.LeftButton:
-            if ToolWindow.is_toolbox_click(self, event):
+            if ToolWindow.is_toolbox_inactive_area_click(self, event):
                 self.AD_TOOLBOX.drag = True
                 self.AD_TOOLBOX.drag_startpos = event.pos()
                 self.AD_TOOLBOX.drag_toolbox_pos = QPoint(self.AD_TOOLBOX.pos)
@@ -4991,12 +4991,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 return True
             else:
                 btn_clicked = ToolWindow.layout_mouse(self, event)
-                toolbox_clicked = ToolWindow.is_toolbox_click(self, event)
+                toolbox_clicked = ToolWindow.is_toolbox_inactive_area_click(self, event)
                 return btn_clicked or toolbox_clicked
         return False
 
     def board_AD_toolbox_double_click(self, event):
-        if ToolWindow.is_toolbox_click(self, event):
+        if ToolWindow.is_toolbox_inactive_area_click(self, event):
             self.board_hide_AD_toolbox()
 
     def board_do_align_and_distribute(self):

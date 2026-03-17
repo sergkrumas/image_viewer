@@ -449,7 +449,7 @@ class ToolWindow(QWidget):
 
         draw_layout()
 
-    def is_toolbox_click(self, event):
+    def is_toolbox_inactive_area_click(self, event):
         return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos() - self.AD_TOOLBOX.pos) and not ToolWindow.layout_mouse(self, event)
 
     def layout_mouse(self, event):
