@@ -5003,14 +5003,13 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_hide_AD_toolbox()
 
     def board_do_align_and_distribute(self, btn_id, action_id, align_type):
+
         button_identifier = TOOLWINDOW_BUTTONSIDS.names()[btn_id]
-        action_identifier = ToolActions.names()[action_id['action']]
+        action_identifier = ToolActions.names()[action_id]
         align_identifier = AlignType.get_consts_and_their_names()[align_type]
-
-
         self.show_center_label(f'{button_identifier}, {action_identifier}, {align_identifier}')
-        # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
-        pass
+
+
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

@@ -500,7 +500,7 @@ class ToolWindow(QWidget):
                             elif isinstance(el, BTN):
                                 handler = self.AD_TOOLBOX.buttons_handler
                                 if handler:
-                                    handler(el.btn_id, el.kwargs, self.AD_TOOLBOX.align_to_radiobutton.get_active_id())
+                                    handler(el.btn_id, el.kwargs['action'], self.AD_TOOLBOX.align_to_radiobutton.get_active_id())
                                 if debug:
                                     print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs, )
                                     self.update()
