@@ -25,7 +25,7 @@ from functools import lru_cache
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 
-class BaseMethods():
+class BaseConstMethods():
     @classmethod
     def all(cls):
         if not hasattr(cls, "all_list"):
@@ -50,7 +50,7 @@ class BaseMethods():
         return cls.all_names
 
 
-class TOOLWINDOW_BUTTONSIDS(BaseMethods):
+class TOOLWINDOW_BUTTONSIDS(BaseConstMethods):
     ALIGN_LEFT_EDGE = 0
     ALIGN_TOP_EDGE = 1
     ALIGN_RIGHT_EDGE = 2
@@ -61,12 +61,12 @@ class TOOLWINDOW_BUTTONSIDS(BaseMethods):
     DISTRIBUTE_V = 7
 
 
-class ToolActions(BaseMethods):
+class ToolActions(BaseConstMethods):
     ALIGN = 0
     DISTRIBUTE = 1
 
 
-class AlignType(BaseMethods):
+class AlignType(BaseConstMethods):
     ALIGN_TO_SELECTION = 0
     ALIGN_TO_VIEWPORT = 1
     ALIGN_TO_WHOLE_BOARD = 2
