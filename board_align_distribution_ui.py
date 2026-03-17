@@ -25,16 +25,7 @@ from functools import lru_cache
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
 
-class TOOLWINDOW_BUTTONSIDS():
-    ALIGN_LEFT_EDGE = 0
-    ALIGN_TOP_EDGE = 1
-    ALIGN_RIGHT_EDGE = 2
-    ALIGN_BOTTOM_EDGE = 3
-    ALIGN_CENTER = 4
-    ALIGN_MIDDLE = 5
-    DISTRIBUTE_H = 6
-    DISTRIBUTE_V = 7
-
+class BaseMethods():
     @classmethod
     def all(cls):
         if not hasattr(cls, "all_list"):
@@ -58,6 +49,18 @@ class TOOLWINDOW_BUTTONSIDS():
                         cls.all_names[attr_value] = attr_name
         return cls.all_names
 
+
+class TOOLWINDOW_BUTTONSIDS(BaseMethods):
+    ALIGN_LEFT_EDGE = 0
+    ALIGN_TOP_EDGE = 1
+    ALIGN_RIGHT_EDGE = 2
+    ALIGN_BOTTOM_EDGE = 3
+    ALIGN_CENTER = 4
+    ALIGN_MIDDLE = 5
+    DISTRIBUTE_H = 6
+    DISTRIBUTE_V = 7
+
+
 class ToolActions():
     ALIGN = 0
     DISTRIBUTE = 1
@@ -73,7 +76,7 @@ class ToolActions():
                         cls.all_names[attr_value] = attr_name
         return cls.all_names
 
-class AlignType():
+class AlignType(BaseMethods):
     ALIGN_TO_SELECTION = 0
     ALIGN_TO_VIEWPORT = 1
     ALIGN_TO_WHOLE_BOARD = 2
@@ -86,17 +89,7 @@ class AlignType():
             cls.ALIGN_TO_WHOLE_BOARD: _("Whole board"),
         }
 
-    @classmethod
-    def all(cls):
-        if not hasattr(cls, "all_list"):
-            cls.all_list = []
-            for attr_name in dir(TOOLWINDOW_BUTTONSIDS):
-                if attr_name.startswith("ALIGN_TO_"):
-                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
-                    if isinstance(attr_value, int):
-                        cls.all_list.append(attr_value)
-            cls.all_list = tuple(sorted(cls.all_list))
-        return cls.all_list
+
 
 class ROW():
 
