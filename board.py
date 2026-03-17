@@ -5009,6 +5009,54 @@ class BoardMixin(BoardTextEditItemMixin):
         align_identifier = AlignType.get_consts_and_their_names()[align_type]
         self.show_center_label(f'{button_identifier}, {action_identifier}, {align_identifier}')
 
+        B_IDs = TOOLWINDOW_BUTTONSIDS
+
+
+        if align_type == AlignType.ALIGN_TO_VIEWPORT:
+            pass
+        elif align_type == AlignType.ALIGN_TO_SELECTION:
+            pass
+        elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
+            pass
+
+
+
+        if action_id == ToolActions.ALIGN:
+
+            if btn_id == B_IDs.ALIGN_LEFT_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_TOP_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_RIGHT_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_BOTTOM_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_CENTER:
+                pass
+            elif btn_id == B_IDs.ALIGN_MIDDLE:
+                pass
+
+        elif action_id == ToolActions.DISTRIBUTE:
+
+            if btn_id == B_IDs.ALIGN_LEFT_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_TOP_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_RIGHT_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_BOTTOM_EDGE:
+                pass
+            elif btn_id == B_IDs.ALIGN_CENTER:
+                pass
+            elif btn_id == B_IDs.ALIGN_MIDDLE:
+                pass
+
+            elif btn_id == B_IDs.DISTRIBUTE_H:
+                pass
+            elif btn_id == B_IDs.DISTRIBUTE_V:
+                pass
+
+
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
