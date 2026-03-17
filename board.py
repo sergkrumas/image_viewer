@@ -32,7 +32,7 @@ from collections import defaultdict
 from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
-from board_align_distribution_ui import (TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow)
+from board_align_distribution_ui import (TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow, AlignType)
 
 import cbor2
 
@@ -5002,8 +5002,13 @@ class BoardMixin(BoardTextEditItemMixin):
         if ToolWindow.is_toolbox_inactive_area_click(self, event):
             self.board_hide_AD_toolbox()
 
-    def board_do_align_and_distribute(self, btn_id, action):
-        self.show_center_label(f'{btn_id} {action}')
+    def board_do_align_and_distribute(self, btn_id, action_id, align_type):
+        button_identifier = TOOLWINDOW_BUTTONSIDS.names()[btn_id]
+        action_identifier = ToolActions.names()[action_id['action']]
+        align_identifier = AlignType.get_consts_and_their_names()[align_type]
+
+
+        self.show_center_label(f'{button_identifier}, {action_identifier}, {align_identifier}')
         # TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow
         pass
 

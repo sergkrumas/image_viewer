@@ -41,7 +41,7 @@ class TOOLWINDOW_BUTTONSIDS():
             cls.all_list = []
             for attr_name in cls.__dict__:
                 if not attr_name.startswith("__"):
-                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
+                    attr_value = getattr(cls, attr_name)
                     if isinstance(attr_value, int):
                         cls.all_list.append(attr_value)
             cls.all_list = tuple(sorted(cls.all_list))
@@ -53,7 +53,7 @@ class TOOLWINDOW_BUTTONSIDS():
             cls.all_names = dict()
             for attr_name in cls.__dict__:
                 if not attr_name.startswith("__") and attr_name.upper() == attr_name:
-                    attr_value = getattr(TOOLWINDOW_BUTTONSIDS, attr_name)
+                    attr_value = getattr(cls, attr_name)
                     if isinstance(attr_value, int):
                         cls.all_names[attr_value] = attr_name
         return cls.all_names
@@ -61,6 +61,17 @@ class TOOLWINDOW_BUTTONSIDS():
 class ToolActions():
     ALIGN = 0
     DISTRIBUTE = 1
+
+    @classmethod
+    def names(cls):
+        if not hasattr(cls, "all_names"):
+            cls.all_names = dict()
+            for attr_name in cls.__dict__:
+                if not attr_name.startswith("__") and attr_name.upper() == attr_name:
+                    attr_value = getattr(cls, attr_name)
+                    if isinstance(attr_value, int):
+                        cls.all_names[attr_value] = attr_name
+        return cls.all_names
 
 class ROW():
 
@@ -343,6 +354,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.pos = QPoint(0, 0)
         AD_TOOLBOX.drag = False
         AD_TOOLBOX.buttons_handler = None
+        AD_TOOLBOX.align_to_radiobutton = None
 
     def layout(self, painter, spacing=20):
 
@@ -454,7 +466,8 @@ class ToolWindow(QWidget):
             # это конечно костыль, но зато можно не переписывать огромную часть кода
             fix_top_by_label_height(lbl.content_rect.height())
             label(_("Align To:"))
-            radioButton(AlignType.get_consts_and_their_names())
+            rb = radioButton(AlignType.get_consts_and_their_names())
+            self.AD_TOOLBOX.align_to_radiobutton = rb
 
             calc_layout()
             self.AD_TOOLBOX.layout_ready = True
@@ -462,7 +475,11 @@ class ToolWindow(QWidget):
         draw_layout()
 
     def is_toolbox_inactive_area_click(self, event):
-        return self.AD_TOOLBOX.layout_ready and self.blr.contains(event.pos() - self.AD_TOOLBOX.pos) and not ToolWindow.toolbox_layout_mouse(self, event)
+        return all((
+            self.AD_TOOLBOX.layout_ready,
+            self.blr.contains(event.pos() - self.AD_TOOLBOX.pos),
+            not ToolWindow.toolbox_layout_mouse(self, event)
+        ))
 
     def toolbox_layout_mouse(self, event):
         pos = event.pos()
@@ -483,9 +500,9 @@ class ToolWindow(QWidget):
                             elif isinstance(el, BTN):
                                 handler = self.AD_TOOLBOX.buttons_handler
                                 if handler:
-                                    handler(el.kwargs, el.btn_id)
+                                    handler(el.btn_id, el.kwargs, self.AD_TOOLBOX.align_to_radiobutton.get_active_id())
                                 if debug:
-                                    print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs)
+                                    print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs, )
                                     self.update()
                                 return True
         return False
