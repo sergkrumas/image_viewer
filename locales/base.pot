@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-18 13:12+0300\n"
+"POT-Creation-Date: 2026-03-18 13:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -809,6 +809,10 @@ msgstr ""
 
 #: board.py:5082
 msgid "Nothing selected!"
+msgstr ""
+
+#: board.py:5086
+msgid "Select at least 3 items!"
 msgstr ""
 
 #: board_align_distribution_ui.py:77

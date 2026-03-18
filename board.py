@@ -5083,7 +5083,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         if action_id == ToolActions.DISTRIBUTE and len(board_items) < 3:
-            self.show_center_label(_('Select at least 3 items!', error=True))
+            self.show_center_label(_('Select at least 3 items!'), error=True)
             return
 
         items = [BoardItemHelper(bi) for bi in board_items]
