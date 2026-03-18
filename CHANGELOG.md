@@ -1100,6 +1100,11 @@
         - !!! очень хорошая фича: когда видишь хоть что-нибудь, пускай и с фризами, то психиологически намного легче ждать окончания генерации превьюшек, пускай и время генерации наверняка увеличилось из-за постоянных обновлений окна
     - (11 мар 26) из-за внедрения прогрессивной развёртки сбился порядок переключения айтемов, теперь он восстановлен
     - (16 мар 26) Aling & Distribute
+        - исходники
+            - https://docs.gimp.org/2.10/en/gimp-tool-align.html
+            - https://www.photoshopessentials.com/basics/layers/align-layers/
+            - https://helpx.adobe.com/nz/photoshop/desktop/create-manage-layers/create-layer-compositions/distribute-layers-groups-evenly.html
+            - иконки из GIMP, раскладка кнопок из Photoshop
         - UI полностью создан
             - вызывается через контекстное меню
             - окошко можно перемещать
