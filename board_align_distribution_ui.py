@@ -125,7 +125,7 @@ class BTN():
 class RADIO_BTN():
 
     def __init__(self, btns, painter):
-        self.alignment = Qt.AlignVCenter | Qt.AlignHCenter
+        self.alignment = Qt.AlignVCenter #Qt.AlignVCenter | Qt.AlignHCenter
         spacing_offset = QPoint(5, 0)
         _offset = QPoint(spacing_offset)
         self.index = 0
@@ -136,6 +136,14 @@ class RADIO_BTN():
             r.moveTopLeft(r.topLeft() + _offset)
             self.radio_btns.append((radio_id, QRect(r), radio_name))
             _offset = r.bottomLeft()
+
+        # делаем все прямоугольники одной ширины
+        max_width = 0
+        for radio_id, radio_rect, radio_name in self.radio_btns:
+            max_width = max(max_width, radio_rect.width())
+        for radio_id, radio_rect, radio_name in self.radio_btns:
+            radio_rect.setWidth(max_width)
+
         self.content_rect = QRect(QPoint(0, 0), r.bottomRight() + spacing_offset)
         self.layout_rect = None
 
@@ -338,6 +346,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.drag = False
         AD_TOOLBOX.buttons_handler = None
         AD_TOOLBOX.align_to_radiobutton = None
+        AD_TOOLBOX.mouse_captured = False
 
     def layout(self, painter, spacing=20):
 
@@ -400,9 +409,20 @@ class ToolWindow(QWidget):
                 offset.setX(0)
 
         def draw_layout():
+
             path = QPainterPath()
             blr = self.blr.adjusted(-5, -5, 5, 5)
             blr.moveCenter(blr.center() + self.AD_TOOLBOX.pos)
+
+            OFFSET = 5
+            shadow_rect = QRectF(blr).adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
+            draw_shadow(
+                painter,
+                shadow_rect, 15,
+                webRGBA(QColor(0, 0, 0, 140)),
+                webRGBA(QColor(0, 0, 0, 0))
+            )
+
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
 

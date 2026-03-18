@@ -4932,7 +4932,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_AD_toolbox(self, painter):
         if self.AD_TOOLBOX.visible:
-            painter.save()
 
             rh = painter.renderHints()
             aa = rh & QPainter.Antialiasing
@@ -4944,6 +4943,22 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
             painter.setRenderHint(QPainter.TextAntialiasing, True)
             painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+            painter.save()
+            pen_width = 3
+            bbr = self.board_bounding_rect.adjusted(-pen_width, -pen_width, pen_width, pen_width)
+
+            atr = self.AD_TOOLBOX.align_to_radiobutton
+            if all((
+                    bbr,
+                    atr is not None and atr.get_active_id() == AlignType.ALIGN_TO_WHOLE_BOARD
+                )):
+                painter.setPen(QPen(QColor(200, 50, 50, 100), pen_width))
+                painter.setBrush(Qt.NoBrush)
+                painter.drawRect(QRectF(
+                    self.board_MapToViewport(bbr.topLeft()),
+                    self.board_MapToViewport(bbr.bottomRight())
+                ))
 
             painter.setPen(QPen(Qt.black, 1))
             painter.setBrush(QBrush(Qt.gray))
@@ -4970,24 +4985,36 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_AD_toolbox_pressEvent(self, event):
         if event.buttons() == Qt.LeftButton:
+            self.AD_TOOLBOX.mouse_captured = False
             if ToolWindow.is_toolbox_inactive_area_click(self, event):
                 self.AD_TOOLBOX.drag = True
                 self.AD_TOOLBOX.drag_startpos = event.pos()
                 self.AD_TOOLBOX.drag_toolbox_pos = QPoint(self.AD_TOOLBOX.pos)
                 self.update()
+                self.AD_TOOLBOX.mouse_captured = True
+                return True
+            if ToolWindow.toolbox_layout_mouse(self, event):
+                self.update()
+                self.AD_TOOLBOX.mouse_captured = True
                 return True
         return False
 
     def board_AD_toolbox_moveEvent(self, event):
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == Qt.LeftButton and self.AD_TOOLBOX.mouse_captured:
             if self.AD_TOOLBOX.drag:
                 self.AD_TOOLBOX.pos = self.AD_TOOLBOX.drag_toolbox_pos + (event.pos() - self.AD_TOOLBOX.drag_startpos)
                 self.update()
                 return True
+            if ToolWindow.toolbox_layout_mouse(self, event) or ToolWindow.is_toolbox_inactive_area_click(self, event):
+                self.update()
+                return True
+            self.update()
+            return False
         return False
 
     def board_AD_toolbox_releaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton or self.AD_TOOLBOX.mouse_captured:
+            self.AD_TOOLBOX.mouse_captured = False
             if self.AD_TOOLBOX.drag:
                 self.AD_TOOLBOX.drag = False
                 self.update()
@@ -4995,6 +5022,7 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 btn_clicked = ToolWindow.toolbox_layout_mouse(self, event, call_handler=True)
                 toolbox_clicked = ToolWindow.is_toolbox_inactive_area_click(self, event)
+                self.update()
                 return btn_clicked or toolbox_clicked
         return False
 
@@ -5050,6 +5078,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         board_items = self.selected_items
+        if not board_items:
+            self.show_center_label(_('Nothing selected!'), error=True)
+            return
 
         items = [BoardItemHelper(bi) for bi in board_items]
 
@@ -5133,6 +5164,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if not items:
             return
+
+        for item in items:
+            self.board_stash_current_transform_to_history(item.board_item)
+
 
         if action_id == ToolActions.ALIGN:
 
@@ -5320,8 +5355,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     item.move(0, dy)
                     currentY += item.height() + gap
 
-        self.build_board_bounding_rect(self.LibraryData().current_folder())
-        self.update_selection_bouding_box()
+        cf = self.LibraryData().current_folder()
+        self.build_board_bounding_rect(cf)
+        self.init_selection_bounding_box_widget(cf)
         self.update()
 
 

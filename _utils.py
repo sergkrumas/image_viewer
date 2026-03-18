@@ -557,7 +557,7 @@ def generate_gradient(type, shadow_size, color1_hex, color2_hex):
     del p
     return gradient_type_pxm
 
-def draw_shadow(self, painter, rect, shadow_size, color1_hex, color2_hex):
+def draw_shadow(painter, rect, shadow_size, color1_hex, color2_hex):
     if not rect:
         return
     sr = rect

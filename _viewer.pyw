@@ -4707,7 +4707,6 @@ class MainWindow(QMainWindow,
             item_rect = self.previews_enlarge_active_item_rect(active_item.preview_ui_rect)
             painter.drawRect(item_rect) #for images with transparent layer
             draw_shadow(
-                self,
                 painter,
                 item_rect, 10,
                 webRGBA(QColor(0, 0, 0, 100)),
@@ -4982,7 +4981,6 @@ class MainWindow(QMainWindow,
                 shadow_rect = QRectF(im_rect)
                 shadow_rect = shadow_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
                 draw_shadow(
-                    self,
                     painter,
                     shadow_rect, 30,
                     webRGBA(QColor(0, 0, 0, 140)),
