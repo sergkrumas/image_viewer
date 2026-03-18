@@ -299,7 +299,7 @@ class AutoscrollMixin():
         color = QColor(255, 255, 255, 200)
 
         center = size_rect.center()
-        center_el = QRect(0, 0, 10, 10)
+        center_el = QRect(0, 0, 9, 9)
         center_el.moveCenter(center)
         painter.setBrush(QBrush(color))
         painter.setPen(Qt.gray)
@@ -318,9 +318,9 @@ class AutoscrollMixin():
             direction.setX(0.0)
             direction.setY(math.copysign(1.0, direction.y()))
 
-        dir_ = (direction*20.0).toPoint()
-        a = center + dir_ + QPoint(dir_.y(), -dir_.x())*.5 - dir_ *0.3
-        b = center + dir_ + QPoint(-dir_.y(), dir_.x())*.5 - dir_ *0.3
+        dir_ = direction*15.0
+        a = center + dir_*0.7 + QPointF(dir_.y(), -dir_.x())*.5
+        b = center + dir_*0.7 + QPointF(-dir_.y(), dir_.x())*.5
         painter.drawPolyline(a, center+dir_, b)
 
         painter.end()
