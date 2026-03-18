@@ -189,7 +189,7 @@ class RADIO_BTN():
                 backplate_rect.setWidth(lr.width())
                 painter.fillRect(backplate_rect, QBrush(ToolWindow.CONTENT))
             else:
-                painter.setPen(QPen(Qt.white, 1))
+                painter.setPen(QPen(ToolWindow.TEXT_COLOR, 1))
             painter.drawText(radio_rect, self.alignment, radio_name)
         painter.setClipping(False)
         painter.setBrush(Qt.NoBrush)
@@ -243,7 +243,10 @@ class ToolWindow(QWidget):
         painter.setBrush(QBrush(bckg))
         painter.drawPath(bckg_path)
 
-        arrow_color = content.lighter(200)
+        # arrow_color = content.lighter(200)
+        arrow_color = content.lighter(110)
+        # content = content.lighter(200)
+        content = QColor(150, 150, 150)
 
         def draw_arrow(tip, start):
             diff = tip - start
@@ -433,6 +436,7 @@ class ToolWindow(QWidget):
                 )
 
             path.addRoundedRect(QRectF(blr), 10, 10)
+            painter.setBrush(QBrush(ToolWindow.BCKG.darker(130)))
             painter.drawPath(path)
 
             cursor_pos = self.mapFromGlobal(QCursor().pos())

@@ -4935,7 +4935,7 @@ class BoardMixin(BoardTextEditItemMixin):
             ToolWindow.BORDER = QColor(48, 48, 48)
             ToolWindow.BCKG = QColor(31, 31, 31)
             ToolWindow.CONTENT = QColor(253, 149, 33)
-            ToolWindow.TEXT_COLOR = QColor(253, 149, 33)
+            ToolWindow.TEXT_COLOR = QColor(220, 220, 220)
 
         self.update()
 
