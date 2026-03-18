@@ -5082,6 +5082,10 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_('Nothing selected!'), error=True)
             return
 
+        if action_id == ToolActions.DISTRIBUTE and len(board_items) < 3:
+            self.show_center_label(_('Select at least 3 items!', error=True))
+            return
+
         items = [BoardItemHelper(bi) for bi in board_items]
 
         def get_target(get_func, result_func):
@@ -5161,9 +5165,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 raise Exception("")
 
 
-
-        if not items:
-            return
 
         for item in items:
             self.board_stash_current_transform_to_history(item.board_item)
