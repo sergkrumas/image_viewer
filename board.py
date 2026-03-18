@@ -2540,6 +2540,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if False:
             pass
 
+        elif self.autoscroll_is_cursor_activated():
+           self.autoscroll_set_cursor() 
+
         elif self.cursor_corners_buttons_and_menus():
             pass
 

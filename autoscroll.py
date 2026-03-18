@@ -38,6 +38,8 @@ class AutoscrollMixin():
 
         AUTOSCROLL.desactivation_pass = False
 
+        AUTOSCROLL.direction_vector = QVector2D()
+
     def autoscroll_cursor_over_origin(self):
         return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
 
@@ -117,6 +119,7 @@ class AutoscrollMixin():
             diff_l = max(0.0, diff_l - OUTER_ZONE_ACTIVATION_RADIUS)
             vec = QVector2D(cursor_offset).normalized()*diff_l
             velocity_vec = vec.toPointF()
+            self.AUTOSCROLL.direction_vector = QVector2D(velocity_vec).normalized().toPointF()
             speed_factor = self.autoscroll_get_speed_factor()
             if self.is_board_page_active():
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
@@ -276,6 +279,53 @@ class AutoscrollMixin():
 
                 painter.restore()
 
+    def autoscroll_is_cursor_activated(self):
+        return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone
+
+    def autoscroll_set_cursor(self):
+        self.setCursor(self.autoscroll_get_cursor())
+
+    def autoscroll_get_cursor(self):
+        size_rect = QRect(0, 0, 50, 50)
+        pixmap = QPixmap(size_rect.size())
+        pixmap.fill(Qt.transparent)
+        painter = QPainter()
+        painter.begin(pixmap)
+
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+
+        color = QColor(255, 255, 255, 200)
+
+        center = size_rect.center()
+        center_el = QRect(0, 0, 10, 10)
+        center_el.moveCenter(center)
+        painter.setBrush(QBrush(color))
+        painter.setPen(Qt.gray)
+        painter.drawEllipse(center_el)
+
+        pen = QPen(color, 4)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+
+        direction = self.AUTOSCROLL.direction_vector
+
+        if not self.AUTOSCROLL.draw_vertical:
+            direction.setY(0.0)
+            direction.setX(math.copysign(1.0, direction.x()))
+        if not self.AUTOSCROLL.draw_horizontal:
+            direction.setX(0.0)
+            direction.setY(math.copysign(1.0, direction.y()))
+
+        dir_ = (direction*20.0).toPoint()
+        a = center + dir_ + QPoint(dir_.y(), -dir_.x())*.5 - dir_ *0.3
+        b = center + dir_ + QPoint(-dir_.y(), dir_.x())*.5 - dir_ *0.3
+        painter.drawPolyline(a, center+dir_, b)
+
+        painter.end()
+
+        return QCursor(pixmap)
 
 if __name__ == '__main__':
 

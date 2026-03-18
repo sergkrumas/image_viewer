@@ -2532,6 +2532,9 @@ class MainWindow(QMainWindow,
             if False:
                 pass
 
+            elif self.autoscroll_is_cursor_activated():
+                self.autoscroll_set_cursor()
+
             elif self.LET_is_let_tool_activated():
                 self.LET_set_cursor()
 
