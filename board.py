@@ -725,24 +725,24 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_plugins.append(pi)
 
     def board_mouseDoubleClickEventDefault(self, event):
-
-        if self.board_AD_toolbox_doubleClickEvent(event):
-            return
-
-        cf = self.LibraryData().current_folder()
-        for board_item in cf.board.items_list:
-            item_selection_area = board_item.get_selection_area(canvas=self)
-            is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
-            if is_under_mouse:
-                if board_item.type == BoardItem.types.ITEM_NOTE:
-                    self.board_TextElementActivateEditMode(board_item)
-                    break
-                elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
-                    self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
-                    self.show_center_label(_('You\'re on viewer page now'))
-                else:
-                    self.board_fit_content_on_screen(None, board_item=board_item)
-                    break
+        if event.button() == Qt.LeftButton:
+            if self.board_AD_toolbox_doubleClickEvent(event):
+                return
+            else:
+                cf = self.LibraryData().current_folder()
+                for board_item in cf.board.items_list:
+                    item_selection_area = board_item.get_selection_area(canvas=self)
+                    is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                    if is_under_mouse:
+                        if board_item.type == BoardItem.types.ITEM_NOTE:
+                            self.board_TextElementActivateEditMode(board_item)
+                            break
+                        elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
+                            self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
+                            self.show_center_label(_('You\'re on viewer page now'))
+                        else:
+                            self.board_fit_content_on_screen(None, board_item=board_item)
+                        break
 
     def board_keyPressEventDefault(self, event):
         key = event.key()

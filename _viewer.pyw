@@ -3200,7 +3200,7 @@ class MainWindow(QMainWindow,
                 self.region_zoom_in_UX_breaker_finish(event)
                 return False
             if event.type() == QEvent.MouseButtonDblClick and obj is self:
-                if event.button() == Qt.LeftButton: 
+                if event.button() == Qt.LeftButton:
                     if self.is_cursor_over_image():
                         if self.frameless_mode:
                             self.toggle_image_pos_and_scale()
