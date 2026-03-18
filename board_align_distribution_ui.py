@@ -89,15 +89,17 @@ class ROW():
 
 class LBL():
 
-    def __init__(self, text, painter):
+    def __init__(self, text, painter, text_color):
         self.text = text
         self.alignment = Qt.AlignLeft
         self.content_rect = painter.boundingRect(QRect(), self.alignment, self.text)
         self.layout_rect = None
+        self.text_color = text_color
 
     def draw(self, painter, offset, hover):
         lr = QRect(self.layout_rect)
         lr.moveCenter(lr.center() + offset)
+        painter.setPen(QPen(self.text_color))
         painter.drawText(lr, self.alignment, self.text)
 
 class SPACE():
@@ -124,12 +126,13 @@ class BTN():
 
 class RADIO_BTN():
 
-    def __init__(self, btns, painter):
+    def __init__(self, btns, painter, text_color):
         self.alignment = Qt.AlignVCenter #Qt.AlignVCenter | Qt.AlignHCenter
         spacing_offset = QPoint(5, 0)
         _offset = QPoint(spacing_offset)
         self.index = 0
         self.radio_btns = []
+        self.text_color = text_color
         for radio_id, radio_name in btns.items():
             r = painter.boundingRect(QRect(), Qt.AlignLeft, radio_name)
             r.adjust(0, 0, 5, 5)
@@ -173,7 +176,6 @@ class RADIO_BTN():
         painter.save()
         path = QPainterPath()
         path.addRoundedRect(QRectF(lr), 3, 3)
-        painter.drawPath(path)
         offset = QPoint(5, 5)
         painter.setClipPath(path)
         painter.setClipping(True)
@@ -181,15 +183,18 @@ class RADIO_BTN():
             radio_rect = QRect(radio_rect)
             radio_rect.moveTopLeft(radio_rect.topLeft() + lr.topLeft())
             if n == self.index:
-                painter.setPen(QPen(Qt.white, 1))
+                painter.setPen(QPen(ToolWindow.BORDER, 1))
                 backplate_rect = QRect(radio_rect)
                 backplate_rect.setLeft(lr.left())
                 backplate_rect.setWidth(lr.width())
-                painter.fillRect(backplate_rect, QBrush(ToolWindow.BCKG))
+                painter.fillRect(backplate_rect, QBrush(ToolWindow.CONTENT))
             else:
-                painter.setPen(QPen(Qt.black, 1))
+                painter.setPen(QPen(Qt.white, 1))
             painter.drawText(radio_rect, self.alignment, radio_name)
         painter.setClipping(False)
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(ToolWindow.CONTENT, 1))
+        painter.drawPath(path)
         if hover:
             painter.fillPath(path, QBrush(QColor(255, 255, 255, 25)))
         painter.restore()
@@ -208,6 +213,7 @@ class ToolWindow(QWidget):
     BORDER = QColor(31, 31, 31)
     BCKG = QColor(48, 48, 48)
     CONTENT = QColor(190, 190, 190)
+    TEXT_COLOR = QColor(20, 20, 20)
 
     @classmethod
     @lru_cache(maxsize=9*2)
@@ -237,8 +243,9 @@ class ToolWindow(QWidget):
         painter.setBrush(QBrush(bckg))
         painter.drawPath(bckg_path)
 
+        arrow_color = content.lighter(200)
+
         def draw_arrow(tip, start):
-            content_color = content.lighter(200)
             diff = tip - start
             vert = False
             hor = False
@@ -265,17 +272,17 @@ class ToolWindow(QWidget):
             s1 = tip + QPointF(diff.y(), -diff.x()) - diff*1.1
             s2 = tip + QPointF(-diff.y(), diff.x()) - diff*1.1
             # line
-            painter.setPen(QPen(content_color, 4))
+            painter.setPen(QPen(arrow_color, 4))
             if vert:
                 tip_m = tip - diff*.3
             elif hor:
                 tip_m = tip - diff*.3
             painter.drawLine(tip_m, start)
             # tip
-            pen = QPen(content_color, 3)
+            pen = QPen(arrow_color, 3)
             pen.setJoinStyle(Qt.MiterJoin)
             painter.setPen(pen)
-            painter.setBrush(QBrush(content_color))
+            painter.setBrush(QBrush(arrow_color))
             arrow_tip_path = QPainterPath()
             arrow_tip_path.moveTo(tip)
             arrow_tip_path.lineTo(s1)
@@ -352,7 +359,7 @@ class ToolWindow(QWidget):
     def layout(self, painter, spacing=20):
 
         def label(text):
-            lbl = LBL(text, painter)
+            lbl = LBL(text, painter, ToolWindow.TEXT_COLOR)
             self.AD_TOOLBOX.current_row.elements.append(lbl)
             return lbl
 
@@ -372,7 +379,7 @@ class ToolWindow(QWidget):
             return self.AD_TOOLBOX.current_row
 
         def radioButton(btns):
-            radio_btn = RADIO_BTN(btns, painter)
+            radio_btn = RADIO_BTN(btns, painter, ToolWindow.TEXT_COLOR)
             self.AD_TOOLBOX.current_row.elements.append(radio_btn)
             return radio_btn
 
