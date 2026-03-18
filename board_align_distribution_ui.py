@@ -144,7 +144,7 @@ class RADIO_BTN():
         for radio_id, radio_rect, radio_name in self.radio_btns:
             radio_rect.setWidth(max_width)
 
-        self.content_rect = QRect(QPoint(0, 0), r.bottomRight() + spacing_offset)
+        self.content_rect = QRect(QPoint(0, 0), radio_rect.bottomRight() + spacing_offset)
         self.layout_rect = None
 
     def click(self, pos):
@@ -468,7 +468,7 @@ class ToolWindow(QWidget):
             space(100)
             # это конечно костыль, но зато можно не переписывать огромную часть кода
             fix_top_by_label_height(lbl.content_rect.height())
-            label(_("Align To:"))
+            label(_("Relative To:"))
             rb = radioButton(AlignType.get_consts_and_their_names())
             self.AD_TOOLBOX.align_to_radiobutton = rb
 
