@@ -345,7 +345,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.pos = QPoint(0, 0)
         AD_TOOLBOX.drag = False
         AD_TOOLBOX.buttons_handler = None
-        AD_TOOLBOX.align_to_radiobutton = None
+        AD_TOOLBOX.rel_to_radiobutton = None
         AD_TOOLBOX.mouse_captured = False
 
     def layout(self, painter, spacing=20):
@@ -470,7 +470,7 @@ class ToolWindow(QWidget):
             fix_top_by_label_height(lbl.content_rect.height())
             label(_("Relative To:"))
             rb = radioButton(AlignType.get_consts_and_their_names())
-            self.AD_TOOLBOX.align_to_radiobutton = rb
+            self.AD_TOOLBOX.rel_to_radiobutton = rb
 
             calc_layout()
             self.AD_TOOLBOX.layout_ready = True
@@ -503,7 +503,7 @@ class ToolWindow(QWidget):
                             elif isinstance(el, BTN):
                                 handler = self.AD_TOOLBOX.buttons_handler
                                 if call_handler and handler:
-                                    handler(el.btn_id, el.kwargs['action'], self.AD_TOOLBOX.align_to_radiobutton.get_active_id())
+                                    handler(el.btn_id, el.kwargs['action'], self.AD_TOOLBOX.rel_to_radiobutton.get_active_id())
                                 if debug:
                                     print(TOOLWINDOW_BUTTONSIDS.names()[el.btn_id], el.kwargs, )
                                     self.update()

@@ -4948,7 +4948,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pen_width = 3
             bbr = self.board_bounding_rect.adjusted(-pen_width, -pen_width, pen_width, pen_width)
 
-            atr = self.AD_TOOLBOX.align_to_radiobutton
+            atr = self.AD_TOOLBOX.rel_to_radiobutton
             if all((
                     bbr,
                     atr is not None and atr.get_active_id() == AlignType.ALIGN_TO_WHOLE_BOARD
