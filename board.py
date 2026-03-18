@@ -4932,11 +4932,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
             self.AD_TOOLBOX.buttons_handler = self.board_AD_do_align_and_distribute
 
-            ToolWindow.BORDER = QColor(48, 48, 48)
-            ToolWindow.BCKG = QColor(31, 31, 31)
-            ToolWindow.CONTENT = QColor(253, 149, 33)
-            ToolWindow.TEXT_COLOR = QColor(220, 220, 220)
-
         self.update()
 
     def board_draw_AD_toolbox(self, painter):

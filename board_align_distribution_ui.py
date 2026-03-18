@@ -210,10 +210,16 @@ class FIX():
 
 class ToolWindow(QWidget):
 
-    BORDER = QColor(31, 31, 31)
-    BCKG = QColor(48, 48, 48)
-    CONTENT = QColor(190, 190, 190)
-    TEXT_COLOR = QColor(20, 20, 20)
+    # BORDER = QColor(31, 31, 31)
+    # BCKG = QColor(48, 48, 48)
+    # CONTENT = QColor(190, 190, 190)
+    # TEXT_COLOR = QColor(20, 20, 20)
+
+    BORDER = QColor(48, 48, 48)
+    BCKG = QColor(31, 31, 31)
+    CONTENT = QColor(253, 149, 33)
+    TEXT_COLOR = QColor(220, 220, 220)
+
 
     @classmethod
     @lru_cache(maxsize=9*2)
