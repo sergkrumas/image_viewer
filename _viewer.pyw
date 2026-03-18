@@ -4270,14 +4270,14 @@ class MainWindow(QMainWindow,
 
     def draw_setting_notification(self, painter):
         if time.time() - self.settings_notification_time < 5.0:
-            painter.drawText(self.rect().adjusted(20, 20, -20, -20), Qt.AlignVCenter | Qt.AlignRight, self.settings_notification_text)
+            painter.drawText(self.rect().adjusted(20, 20, -20, -20), Qt.AlignVCenter | Qt.AlignLeft, self.settings_notification_text)
 
     def draw_gamepad_status(self, painter):
         if self.STNG.start_with_gamepad_enabled:
             r = self.gamepad_startup_activation_result
             if r is not None and time.time() - self.gamepad_startup_activation_request_timestamp < 5:
                 s = Globals.GAMEPAD_GREEN_PIXMAP.size()
-                pos = RectHelper(self.rect()).right_center() - QPoint(s.width()+50, s.height())
+                pos = RectHelper(self.rect()).left_center() + QPoint(25, 0)
                 painter.save()
                 if r:
                     text = _('Gamepad control activated!')
@@ -4288,9 +4288,9 @@ class MainWindow(QMainWindow,
                     color = QColor(255, 100, 100, 200)
                     painter.drawPixmap(pos, Globals.GAMEPAD_RED_PIXMAP)
                 alignment = Qt.AlignHCenter | Qt.AlignVCenter
-                text_rect = painter.boundingRect(QRect(), alignment, text)
+                text_rect = painter.boundingRect(QRectF(), alignment, text)
                 text_rect.setHeight(s.height())
-                text_rect.moveTopRight(pos.toPoint() - QPoint(25, 0))
+                text_rect.moveTopLeft(QPointF(pos.x() + Globals.GAMEPAD_GREEN_PIXMAP.size().width() + 25, pos.y()))
                 painter.setPen(QPen(color, 1))
                 painter.drawText(text_rect, alignment, text)
                 painter.restore()
