@@ -38,7 +38,7 @@ class AutoscrollMixin():
 
         AUTOSCROLL.desactivation_pass = False
 
-        AUTOSCROLL.direction_vector = QVector2D()
+        AUTOSCROLL.direction_vector = QPointF()
 
     def autoscroll_cursor_over_origin(self):
         return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
@@ -210,6 +210,7 @@ class AutoscrollMixin():
         if self.is_library_page_active() or self.is_waterfall_page_active():
             self.autoscroll_outro_for_LibraryWaterfall_pages()
         self.AUTOSCROLL.timer.stop()
+        self.setCursor(Qt.ArrowCursor)
 
     def autoscroll_middleMousePressEvent(self, event):
         self.AUTOSCROLL.is_moved_while_middle_button_pressed = False
@@ -248,24 +249,19 @@ class AutoscrollMixin():
 
                 center = self.AUTOSCROLL.startpos
                 if int(time.time()*4) % 2 == 0:
-                    offset = 1
+                    offset = 12.0
                 else:
-                    offset = 2
+                    offset = 24.0
 
                 if self.AUTOSCROLL.draw_vertical:
-                    self.autoscroll_draw_arrow(painter, center, QPoint(0, 1), 15.0, offset)
-                    self.autoscroll_draw_arrow(painter, center, QPoint(0, -1), 15.0, offset)
+                    self.autoscroll_draw_arrow(painter, center, QPointF(0, 1), offset)
+                    self.autoscroll_draw_arrow(painter, center, QPointF(0, -1), offset)
 
                 if self.AUTOSCROLL.draw_horizontal:
-                    self.autoscroll_draw_arrow(painter, center, QPoint(1, 0), 15.0, offset)
-                    self.autoscroll_draw_arrow(painter, center, QPoint(-1, 0), 15.0, offset)
+                    self.autoscroll_draw_arrow(painter, center, QPointF(1, 0), offset)
+                    self.autoscroll_draw_arrow(painter, center, QPointF(-1, 0), offset)
 
                 painter.setBrush(Qt.NoBrush)
-
-                # painter.setPen(QPen(gray, 2))
-                # el_rect = QRectF(0, 0, 39, 39)
-                # el_rect.moveCenter(self.AUTOSCROLL.startpos)
-                # painter.drawEllipse(el_rect)
 
                 painter.setPen(QPen(Qt.white, 2))
                 el_rect = QRectF(0, 0, 41, 41)
@@ -304,19 +300,19 @@ class AutoscrollMixin():
             direction.setX(0.0)
             direction.setY(math.copysign(1.0, direction.y()))
 
-        self.autoscroll_draw_arrow(painter, center, direction, 15.0)
+        self.autoscroll_draw_arrow(painter, center, direction, 12.0)
 
         painter.end()
 
         return QCursor(pixmap)
 
-    def autoscroll_draw_arrow(self, painter, center, norm_direction, distance, fac=1):
+    def autoscroll_draw_arrow(self, painter, center, norm_direction, distance):
         color = QColor(255, 255, 255, 200)
         pen = QPen(color, 4)
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
 
-        c1 = center + QPointF(norm_direction)*(0.0 + 12.0*fac)
+        c1 = center + QPointF(norm_direction)*(0.0 + distance)
         a = c1 + QPointF(norm_direction.y(), -norm_direction.x())*7.5
         b = c1 + QPointF(-norm_direction.y(), norm_direction.x())*7.5
         c2 = c1 + QPointF(norm_direction)*4.0
