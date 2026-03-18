@@ -3171,53 +3171,51 @@ class MainWindow(QMainWindow,
         self.update()
         super().mouseReleaseEvent(event)
 
-    def mouseDoubleClickEvent(self, event):
-        if self.is_library_page_active():
-            pass
-            # (29 янв 26) TODO: подзабыл, почему прописал обработку
-            # для этой страницы ниже в eventFilter, а не тут;
-            # может, там лучше срабатывает или нет? Надо будет проверить позже
-        if self.is_waterfall_page_active():
-            pass
-            # (29 янв 26) TODO: то же самое, что и выше
-        elif self.is_start_page_active():
-            return
-        elif self.is_viewer_page_active():
-            if self.is_cursor_over_image():
-                if self.frameless_mode:
-                    self.toggle_image_pos_and_scale()
-                elif self.STNG.doubleclick_toggle:
-                    self.toggle_to_frameless_mode()
-
     def eventFilter(self, obj, event):
         if self.is_library_page_active():
-            if event.type() == QEvent.MouseButtonDblClick:
-                if self.folders_list:
-                    for item_rect, item_data in self.folders_list:
-                        if item_rect.contains(event.pos()):
-                            # здесь выходим со страницы библиотеки
-                            self.change_page(self.pages.VIEWER_PAGE)
-                            self.update()
-                            # break
-                            return True
+            if event.type() == QEvent.MouseButtonDblClick and obj is self:
+                if event.button() == Qt.LeftButton:
+                    if self.folders_list:
+                        for item_rect, item_data in self.folders_list:
+                            if item_rect.contains(event.pos()):
+                                # здесь выходим со страницы библиотеки
+                                # TODO: (18 мар 26) тут почему-то папка не задаётся
+                                self.change_page(self.pages.VIEWER_PAGE)
+                                self.update()
+                                return True
+
         elif self.is_waterfall_page_active():
-            if event.type() == QEvent.MouseButtonDblClick:
-                if self.viewer_modal:
-                    self.leave_modal_viewer()
-                    return True
-                else:
-                    pass
+            if event.type() == QEvent.MouseButtonDblClick and obj is self:
+                if event.button() == Qt.LeftButton:
+                    if self.viewer_modal:
+                        self.leave_modal_viewer()
+                        return True
+                    else:
+                        pass
+
         elif self.is_viewer_page_active():
             if event.type() in [QEvent.MouseButtonRelease] and obj is self:
                 # в region_zoom_in_mouseReleaseEvent это не срабатывает,
                 # видимо потому, что кнопка мыши отпущена над окном-ребёнком
                 self.region_zoom_in_UX_breaker_finish(event)
                 return False
+            if event.type() == QEvent.MouseButtonDblClick and obj is self:
+                if event.button() == Qt.LeftButton: 
+                    if self.is_cursor_over_image():
+                        if self.frameless_mode:
+                            self.toggle_image_pos_and_scale()
+                        elif self.STNG.doubleclick_toggle:
+                            self.toggle_to_frameless_mode()
+
         elif self.is_board_page_active():
-            if event.type() == QEvent.MouseButtonDblClick:
-                if obj is self:
-                    self.board_mouseDoubleClickEvent(event)
-                    return True
+            if event.type() == QEvent.MouseButtonDblClick and obj is self:
+                self.board_mouseDoubleClickEvent(event)
+                return True
+
+        elif self.is_start_page_active():
+            if event.type() == QEvent.MouseButtonDblClick and obj is self:
+                return True
+
         return False
 
     def clickable_scrollbars_mousePressEvent(self, event):
