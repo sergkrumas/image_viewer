@@ -347,6 +347,7 @@ class ToolWindow(QWidget):
         AD_TOOLBOX.buttons_handler = None
         AD_TOOLBOX.rel_to_radiobutton = None
         AD_TOOLBOX.mouse_captured = False
+        AD_TOOLBOX.blr = QRect()
 
     def layout(self, painter, spacing=20):
 
@@ -381,16 +382,16 @@ class ToolWindow(QWidget):
             return fix
 
         def update_bounding_layout_rect(blr, _b):
-            self.blr.setTop(min(r.top() for r in _b))
-            self.blr.setLeft(min(r.left() for r in _b))
-            self.blr.setRight(max(r.right() for r in _b))
-            self.blr.setBottom(max(r.bottom() for r in _b))
+            self.AD_TOOLBOX.blr.setTop(min(r.top() for r in _b))
+            self.AD_TOOLBOX.blr.setLeft(min(r.left() for r in _b))
+            self.AD_TOOLBOX.blr.setRight(max(r.right() for r in _b))
+            self.AD_TOOLBOX.blr.setBottom(max(r.bottom() for r in _b))
 
         def calc_layout():
             layout_spacing_offset = QPoint(spacing, spacing)
             offset = QPoint(0, 0)
             _b = []
-            self.blr = QRect()
+            self.AD_TOOLBOX.blr = QRect()
             for row in self.AD_TOOLBOX.rows:
                 max_height = 0
                 for el in row.elements:
@@ -405,13 +406,13 @@ class ToolWindow(QWidget):
                         el.layout_rect.moveCenter(el.layout_rect.center() + layout_spacing_offset)
                         _b.append(QRect(el.layout_rect))
                 offset += QPoint(0, max_height+10)
-                update_bounding_layout_rect(self.blr, _b)
+                update_bounding_layout_rect(self.AD_TOOLBOX.blr, _b)
                 offset.setX(0)
 
         def draw_layout():
 
             path = QPainterPath()
-            blr = self.blr.adjusted(-5, -5, 5, 5)
+            blr = self.AD_TOOLBOX.blr.adjusted(-5, -5, 5, 5)
             blr.moveCenter(blr.center() + self.AD_TOOLBOX.pos)
 
             OFFSET = 5
@@ -480,7 +481,7 @@ class ToolWindow(QWidget):
     def is_toolbox_inactive_area_click(self, event):
         return all((
             self.AD_TOOLBOX.layout_ready,
-            self.blr.contains(event.pos() - self.AD_TOOLBOX.pos),
+            self.AD_TOOLBOX.blr.contains(event.pos() - self.AD_TOOLBOX.pos),
             not ToolWindow.toolbox_layout_mouse(self, event)
         ))
 
