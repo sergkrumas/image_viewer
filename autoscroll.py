@@ -246,44 +246,34 @@ class AutoscrollMixin():
                 el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.drawEllipse(el_rect)
 
-                o = self.AUTOSCROLL.startpos
+                center = self.AUTOSCROLL.startpos
                 if int(time.time()*4) % 2 == 0:
-                    f = 18
+                    offset = 1
                 else:
-                    f = 32
-
-                points = [
-                    QPointF(0, f),
-                    QPointF(-7, f-10),
-                    QPointF(7, f-10),
-                ]
+                    offset = 2
 
                 if self.AUTOSCROLL.draw_vertical:
-                    painter.drawPolygon([p + o for p in points])
-                    painter.drawPolygon([QPointF(p.x(), -p.y()) + o for p in points])
+                    self.autoscroll_draw_arrow(painter, center, QPoint(0, 1), 15.0, offset)
+                    self.autoscroll_draw_arrow(painter, center, QPoint(0, -1), 15.0, offset)
+
                 if self.AUTOSCROLL.draw_horizontal:
-                    painter.drawPolygon([QPointF(p.y(), p.x()) + o for p in points])
-                    painter.drawPolygon([QPointF(-p.y(), p.x()) + o for p in points])
+                    self.autoscroll_draw_arrow(painter, center, QPoint(1, 0), 15.0, offset)
+                    self.autoscroll_draw_arrow(painter, center, QPoint(-1, 0), 15.0, offset)
 
                 painter.setBrush(Qt.NoBrush)
 
-                painter.setPen(QPen(gray, 2))
-                el_rect = QRectF(0, 0, 39, 39)
-                el_rect.moveCenter(self.AUTOSCROLL.startpos)
-                painter.drawEllipse(el_rect)
+                # painter.setPen(QPen(gray, 2))
+                # el_rect = QRectF(0, 0, 39, 39)
+                # el_rect.moveCenter(self.AUTOSCROLL.startpos)
+                # painter.drawEllipse(el_rect)
 
-                painter.setPen(QPen(Qt.white, 1))
-                el_rect = QRectF(0, 0, 38, 38)
+                painter.setPen(QPen(Qt.white, 2))
+                el_rect = QRectF(0, 0, 41, 41)
                 el_rect.moveCenter(self.AUTOSCROLL.startpos)
+                painter.setBrush(QBrush(QColor(255, 255, 255, 100)))
                 painter.drawEllipse(el_rect)
 
                 painter.restore()
-
-    def autoscroll_is_cursor_activated(self):
-        return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone
-
-    def autoscroll_set_cursor(self):
-        self.setCursor(self.autoscroll_get_cursor())
 
     def autoscroll_get_cursor(self):
         size_rect = QRect(0, 0, 50, 50)
@@ -297,7 +287,6 @@ class AutoscrollMixin():
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
         color = QColor(255, 255, 255, 200)
-
         center = size_rect.center()
         center_el = QRect(0, 0, 9, 9)
         center_el.moveCenter(center)
@@ -305,9 +294,6 @@ class AutoscrollMixin():
         painter.setPen(Qt.gray)
         painter.drawEllipse(center_el)
 
-        pen = QPen(color, 4)
-        pen.setCapStyle(Qt.RoundCap)
-        painter.setPen(pen)
 
         direction = self.AUTOSCROLL.direction_vector
 
@@ -318,14 +304,29 @@ class AutoscrollMixin():
             direction.setX(0.0)
             direction.setY(math.copysign(1.0, direction.y()))
 
-        dir_ = direction*15.0
-        a = center + dir_*0.7 + QPointF(dir_.y(), -dir_.x())*.5
-        b = center + dir_*0.7 + QPointF(-dir_.y(), dir_.x())*.5
-        painter.drawPolyline(a, center+dir_, b)
+        self.autoscroll_draw_arrow(painter, center, direction, 15.0)
 
         painter.end()
 
         return QCursor(pixmap)
+
+    def autoscroll_draw_arrow(self, painter, center, norm_direction, distance, fac=1):
+        color = QColor(255, 255, 255, 200)
+        pen = QPen(color, 4)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+
+        c1 = center + QPointF(norm_direction)*(0.0 + 12.0*fac)
+        a = c1 + QPointF(norm_direction.y(), -norm_direction.x())*7.5
+        b = c1 + QPointF(-norm_direction.y(), norm_direction.x())*7.5
+        c2 = c1 + QPointF(norm_direction)*4.0
+        painter.drawPolyline(a, c2, b)
+
+    def autoscroll_is_cursor_activated(self):
+        return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone
+
+    def autoscroll_set_cursor(self):
+        self.setCursor(self.autoscroll_get_cursor())
 
 if __name__ == '__main__':
 
