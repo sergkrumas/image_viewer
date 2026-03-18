@@ -415,14 +415,15 @@ class ToolWindow(QWidget):
             blr = self.AD_TOOLBOX.blr.adjusted(-5, -5, 5, 5)
             blr.moveCenter(blr.center() + self.AD_TOOLBOX.pos)
 
-            OFFSET = 5
-            shadow_rect = QRectF(blr).adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
-            draw_shadow(
-                painter,
-                shadow_rect, 15,
-                webRGBA(QColor(0, 0, 0, 140)),
-                webRGBA(QColor(0, 0, 0, 0))
-            )
+            if not isinstance(self, ToolWindow):
+                OFFSET = 5
+                shadow_rect = QRectF(blr).adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
+                draw_shadow(
+                    painter,
+                    shadow_rect, 15,
+                    webRGBA(QColor(0, 0, 0, 140)),
+                    webRGBA(QColor(0, 0, 0, 0))
+                )
 
             path.addRoundedRect(QRectF(blr), 10, 10)
             painter.drawPath(path)
