@@ -4959,10 +4959,18 @@ class BoardMixin(BoardTextEditItemMixin):
                 )):
                 painter.setPen(QPen(QColor(200, 50, 50, 100), pen_width))
                 painter.setBrush(Qt.NoBrush)
-                painter.drawRect(QRectF(
+                bbr_viewport_mapped = QRectF(
                     self.board_MapToViewport(bbr.topLeft()),
                     self.board_MapToViewport(bbr.bottomRight())
-                ))
+                )
+                painter.drawRect(bbr_viewport_mapped)
+                text = _("Whole board")
+                font = painter.font()
+                font.setPixelSize(30)
+                painter.setFont(font)
+                text_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, text)
+                text_rect.moveTopLeft(bbr_viewport_mapped.bottomLeft())
+                painter.drawText(text_rect, Qt.AlignLeft, text)
 
             painter.setPen(QPen(ToolWindow.BORDER, 1))
             painter.setBrush(QBrush(ToolWindow.BCKG))
