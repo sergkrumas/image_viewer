@@ -22,6 +22,8 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 ## Pages corner menu
 The app is built around pages, with each page delivering a distinct image-viewing experience. You can change pages using the radial corner menu in the top-left corner or by pressing `TAB` key.
 
+In the app settings you could set your favorite page as page that would handle user request from Explorer.
+
 ![](docs/radial_corner_menu.png)
 
 
