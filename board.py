@@ -28,7 +28,6 @@ import datetime
 from functools import partial
 from contextlib import contextmanager
 from collections import defaultdict
-
 from _utils import *
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
@@ -2252,6 +2251,7 @@ class BoardMixin(BoardTextEditItemMixin):
             lines.append(_('Virtual folder board: {}').format(current_folder.folder_path))
         else:
             lines.append(_('Board folder: {}').format(current_folder.folder_path))
+        lines.append(_('Generation time: {}').format(datetime.datetime.fromtimestamp(board.generation_time).strftime("%d.%m.%Y %H:%M")))
         if board.plugin_filename:
             lines.append(_('File-plugin name: {}').format(board.plugin_filename))
         else:

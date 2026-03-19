@@ -1200,6 +1200,9 @@ class BoardData():
 
         self.prepareBoardOnFileLoad = False
 
+        self.generation_time = time.time()
+
+
 class FolderData():
 
     CURRENT_ID = 0
