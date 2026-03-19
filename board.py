@@ -2977,18 +2977,18 @@ class BoardMixin(BoardTextEditItemMixin):
                 return True
         return False
 
-    def board_START_selected_items_TRANSLATION(self, event_pos, viewport_zoom_changed=False):
+    def board_START_selected_items_TRANSLATION(self, event_pos, viewport_changed=False):
         self.start_translation_pos = QPointF(self.board_MapToBoard(event_pos))
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.items_list
-        if viewport_zoom_changed:
+        if viewport_changed:
             for board_item in items_list:
                 board_item.position = board_item.__position
 
         for board_item in items_list:
             board_item.__position = QPointF(board_item.position)
             self.board_stash_current_transform_to_history(board_item)
-            if not viewport_zoom_changed:
+            if not viewport_changed:
                 board_item.__position_init = QPointF(board_item.position)
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
@@ -3202,9 +3202,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.widget_active_point_index = None
         return False
 
-    def board_START_selected_items_ROTATION(self, event_pos, viewport_zoom_changed=False):
+    def board_START_selected_items_ROTATION(self, event_pos, viewport_changed=False):
         self.rotation_ongoing = True
-        if viewport_zoom_changed:
+        if viewport_changed:
             for bi in self.selected_items:
                 # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
                 # if bi.__rotation is not None:
@@ -3232,7 +3232,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.__position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
 
-            if not viewport_zoom_changed:
+            if not viewport_changed:
                 bi.__rotation_init = bi.rotation
                 bi.__position_init = QPointF(bi.position)
 
@@ -3342,10 +3342,10 @@ class BoardMixin(BoardTextEditItemMixin):
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
 
-    def board_START_selected_items_SCALING(self, event, viewport_zoom_changed=False):
+    def board_START_selected_items_SCALING(self, event, viewport_changed=False):
         self.scaling_ongoing = True
 
-        if viewport_zoom_changed:
+        if viewport_changed:
             for bi in self.selected_items:
                 if bi.__scale_x is not None:
                     bi.scale_x = bi.__scale_x
@@ -3406,7 +3406,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.__scale_y = bi.scale_y
             bi.__position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
-            if not viewport_zoom_changed:
+            if not viewport_changed:
                 bi.__scale_x_init = bi.scale_x
                 bi.__scale_y_init = bi.scale_y
                 bi.__position_init = QPointF(bi.position)
@@ -3967,13 +3967,13 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.scaling_ongoing:
             # пользователь вознамерился зумить посреди процесса скейла айтемов (нажал кнопку мыши и ещё не отпустил),
             # это значит, что инициализацию надо провести заново, но с нюансами
-            self.board_START_selected_items_SCALING(None, viewport_zoom_changed=True)
+            self.board_START_selected_items_SCALING(None, viewport_changed=True)
             # вызываю, чтобы дебажная графика обновилась сразу, а не после того, как двинется курсор мыши
             self.board_DO_selected_items_SCALING(event_pos)
 
         if self.rotation_ongoing:
             # то же самое, что и для скейла
-            self.board_START_selected_items_ROTATION(event_pos, viewport_zoom_changed=True)
+            self.board_START_selected_items_ROTATION(event_pos, viewport_changed=True)
             self.board_DO_selected_items_ROTATION(event_pos)
 
         self.update()
