@@ -251,7 +251,7 @@ class AutoscrollMixin():
                 if int(time.time()*4) % 2 == 0:
                     offset = 12.0
                 else:
-                    offset = 24.0
+                    offset = 30.0
 
                 if self.AUTOSCROLL.draw_vertical:
                     self.autoscroll_draw_arrow(painter, center, QPointF(0, 1), offset)
@@ -264,7 +264,7 @@ class AutoscrollMixin():
                 painter.setBrush(Qt.NoBrush)
 
                 painter.setPen(QPen(Qt.white, 2))
-                el_rect = QRectF(0, 0, 41, 41)
+                el_rect = QRectF(0, 0, 49, 49)
                 el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.setBrush(QBrush(QColor(255, 255, 255, 100)))
                 painter.drawEllipse(el_rect)
