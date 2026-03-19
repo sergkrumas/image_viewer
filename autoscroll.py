@@ -313,9 +313,9 @@ class AutoscrollMixin():
         painter.setPen(pen)
 
         c1 = center + QPointF(norm_direction)*(0.0 + distance)
-        a = c1 + QPointF(norm_direction.y(), -norm_direction.x())*7.5
-        b = c1 + QPointF(-norm_direction.y(), norm_direction.x())*7.5
-        c2 = c1 + QPointF(norm_direction)*4.0
+        a = c1 + QPointF(norm_direction.y(), -norm_direction.x())*6.5
+        b = c1 + QPointF(-norm_direction.y(), norm_direction.x())*6.5
+        c2 = c1 + QPointF(norm_direction)*6.0
         painter.drawPolyline(a, c2, b)
 
     def autoscroll_is_cursor_activated(self):
