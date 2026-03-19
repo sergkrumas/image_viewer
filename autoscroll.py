@@ -243,7 +243,7 @@ class AutoscrollMixin():
                 gray = QColor(100, 100, 100)
                 painter.setPen(gray)
                 painter.setBrush(QBrush(Qt.white))
-                el_rect = QRectF(0, 0, 6, 6)
+                el_rect = QRectF(0, 0, 9, 9)
                 el_rect.moveCenter(self.AUTOSCROLL.startpos)
                 painter.drawEllipse(el_rect)
 
