@@ -3387,23 +3387,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
         points_count = self.selection_bounding_box.size()
 
-        # заранее высчитываем пивот и оси для модификатора Alt;
-        # для удобства вычислений оси заимствуем у нулевой точки и укорачиваем их в два раза
-        index = 0
-        pivot_point_index = (index+2) % points_count
-        prev_point_index = (pivot_point_index-1) % points_count
-        next_point_index = (pivot_point_index+1) % points_count
-        prev_point = self.selection_bounding_box[prev_point_index]
-        next_point = self.selection_bounding_box[next_point_index]
-        spp = QPointF(self.selection_bounding_box[pivot_point_index])
+        if True:
+            # заранее высчитываем пивот и оси для модификатора Alt;
+            # для удобства вычислений оси заимствуем у нулевой точки и укорачиваем их в два раза
+            index = 0
+            pivot_point_index = (index+2) % points_count
+            prev_point_index = (pivot_point_index-1) % points_count
+            next_point_index = (pivot_point_index+1) % points_count
+            prev_point = self.selection_bounding_box[prev_point_index]
+            next_point = self.selection_bounding_box[next_point_index]
+            spp = QPointF(self.selection_bounding_box[pivot_point_index])
 
-        self.scaling_pivot_center_point = self.selection_bounding_box_center
+            self.scaling_pivot_center_point = self.selection_bounding_box_center
 
-        __x_axis = QVector2D(next_point - spp).toPointF()
-        __y_axis = QVector2D(prev_point - spp).toPointF()
+            __x_axis = QVector2D(next_point - spp).toPointF()
+            __y_axis = QVector2D(prev_point - spp).toPointF()
 
-        self.scaling_from_center_x_axis = __x_axis/2.0
-        self.scaling_from_center_y_axis = __y_axis/2.0
+            self.scaling_from_center_x_axis = __x_axis/2.0
+            self.scaling_from_center_y_axis = __y_axis/2.0
 
         # высчитываем пивот и оси для обычного скейла относительно угла
         index = self.scaling_active_point_index
