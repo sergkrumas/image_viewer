@@ -3398,10 +3398,10 @@ class BoardMixin(BoardTextEditItemMixin):
             next_point = self.selection_bounding_box[next_point_index]
             spp = QPointF(self.selection_bounding_box[pivot_point_index])
 
-            self.scaling_pivot_center_point = self.selection_bounding_box_center
+            self.scaling_pivot_CENTER_point = self.selection_bounding_box_center
 
-            __x_axis = QVector2D(next_point - spp).toPointF()
-            __y_axis = QVector2D(prev_point - spp).toPointF()
+            __x_axis = next_point - spp
+            __y_axis = prev_point - spp
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
@@ -3413,10 +3413,10 @@ class BoardMixin(BoardTextEditItemMixin):
         next_point_index = (pivot_point_index+1) % points_count
         prev_point = self.selection_bounding_box[prev_point_index]
         next_point = self.selection_bounding_box[next_point_index]
-        self.scaling_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
+        self.scaling_pivot_CORNER_point = QPointF(self.selection_bounding_box[pivot_point_index])
 
-        x_axis = QVector2D(next_point - self.scaling_pivot_corner_point).toPointF()
-        y_axis = QVector2D(prev_point - self.scaling_pivot_corner_point).toPointF()
+        x_axis = next_point - self.scaling_pivot_CORNER_point
+        y_axis = prev_point - self.scaling_pivot_CORNER_point
 
         if self.scaling_active_point_index % 2 == 1:
             x_axis, y_axis = y_axis, x_axis
@@ -3432,9 +3432,9 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._scale_x_init = bi.scale_x
             bi._scale_y_init = bi.scale_y
             bi._position_init = QPointF(bi.position)
-            position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_corner_point
+            position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_CORNER_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
-            position_vec_center = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_center_point
+            position_vec_center = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_CENTER_point
             # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
             position_vec_center *= 2
             bi.normalized_pos_x_center, bi.normalized_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
@@ -3468,11 +3468,11 @@ class BoardMixin(BoardTextEditItemMixin):
         # center_is_pivot = center_is_pivot and not multi_item_mode
 
         if center_is_pivot:
-            pivot = self.scaling_pivot_center_point
+            pivot = self.scaling_pivot_CENTER_point
             scaling_x_axis = self.scaling_from_center_x_axis
             scaling_y_axis = self.scaling_from_center_y_axis
         else:
-            pivot = self.scaling_pivot_corner_point
+            pivot = self.scaling_pivot_CORNER_point
             scaling_x_axis = self.scaling_x_axis
             scaling_y_axis = self.scaling_y_axis
 
