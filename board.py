@@ -3315,10 +3315,8 @@ class BoardMixin(BoardTextEditItemMixin):
         debug_mw = self
         debug_mw = None
         if len(self.selected_items) == 1:
-            # эта будет вращаться сама вместе с айтемом
             self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
         else:
-            # а эту надо вращать самому
             self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
