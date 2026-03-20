@@ -199,8 +199,8 @@ class BoardItem():
 
         self.__scale_x = None
         self.__scale_y = None
-        self.__position = None
-        self.__rotation = None
+        self._position = None
+        self._rotation = None
 
         self.__scale_x_init = None
         self.__scale_y_init = None
@@ -337,7 +337,14 @@ class BoardItem():
         elif self.type == self.types.ITEM_NOTE:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
 
-    def get_selection_area(self, canvas=None, place_center_at_origin=True, apply_global_scale=True, apply_translation=True):
+    def get_selection_area(self, canvas=None,
+            place_center_at_origin=True,
+            apply_global_scale=True,
+            apply_translation=True,
+            transformation_ongoing=False,
+            skip_rotation=False,
+            debug_mw=None):
+
         size_rect = self.get_size_rect()
         if place_center_at_origin:
             size_rect.moveCenter(QPointF(0, 0))
@@ -348,23 +355,51 @@ class BoardItem():
             size_rect.bottomLeft(),
         ]
         polygon = QPolygonF(points)
-        transform = self.get_transform_obj(canvas=canvas, apply_global_scale=apply_global_scale, apply_translation=apply_translation)
+        transform = self.get_transform_obj(canvas=canvas,
+            apply_global_scale=apply_global_scale,
+            apply_translation=apply_translation,
+            transformation_ongoing=transformation_ongoing,
+            skip_rotation=skip_rotation,
+            debug_mw=debug_mw
+        )
         return transform.map(polygon)
 
-    def get_transform_obj(self, canvas=None, apply_local_scale=True, apply_translation=True, apply_global_scale=True):
+    def get_transform_obj(self, canvas=None,
+                        apply_local_scale=True,
+                        apply_translation=True,
+                        apply_global_scale=True,
+                        transformation_ongoing=False,
+                        skip_rotation=False,
+                        debug_mw=None):
+
         local_scaling = QTransform()
         rotation = QTransform()
         global_scaling = QTransform()
         translation = QTransform()
         if apply_local_scale:
             local_scaling.scale(self.scale_x, self.scale_y)
-        rotation.rotate(self.rotation)
+        if skip_rotation:
+            rotation.rotate(0)
+        else:
+            if transformation_ongoing and self.__rotation is not None:
+                rotation.rotate(self.__rotation)
+            else:
+                rotation.rotate(self.rotation)
         if apply_translation:
-            if apply_global_scale:
-                pos = self.calculate_absolute_position(canvas=canvas)
+            _pos = None
+            if transformation_ongoing:
+                _pos = self._position
+                if debug_mw:
+                    debug_mw.show_center_label(f'set_old_pos {transformation_ongoing} {_pos}')
+            if transformation_ongoing and _pos is not None:
+                pos = self.calculate_absolute_position(canvas=canvas, rel_pos=_pos)
                 translation.translate(pos.x(), pos.y())
             else:
-                translation.translate(self.position.x(), self.position.y())
+                if apply_global_scale:
+                    pos = self.calculate_absolute_position(canvas=canvas)
+                    translation.translate(pos.x(), pos.y())
+                else:
+                    translation.translate(self.position.x(), self.position.y())
         if apply_global_scale:
             global_scaling.scale(canvas.canvas_scale_x, canvas.canvas_scale_y)
         transform = local_scaling * rotation * global_scaling * translation
@@ -585,6 +620,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.force_vertical_layout = False
 
         ToolWindow.init_AD_toolbox_attrs(self)
+
+        self.rotation_pivot_index = None
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -2341,7 +2378,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             default_pen = painter.pen()
 
-            # roration activation areas
+            # rotation activation areas
             painter.setPen(QPen(Qt.red))
             for index, point in enumerate(self.selection_bounding_box):
                 points_count = self.selection_bounding_box.size()
@@ -3175,14 +3212,19 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._selected = True
         self.update()
 
-    def update_selection_bouding_box(self):
+    def update_selection_bouding_box(self, transformation_ongoing=False, debug_mw=None):
         self.selection_bounding_box = None
         if len(self.selected_items) == 1:
-            self.selection_bounding_box = self.selected_items[0].get_selection_area(canvas=self)
+            self.selection_bounding_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
         elif len(self.selected_items) > 1:
             bounding_box = QRectF()
             for board_item in self.selected_items:
-                bounding_box = bounding_box.united(board_item.get_selection_area(canvas=self).boundingRect())
+                bounding_box = bounding_box.united(
+                    board_item.get_selection_area(canvas=self,
+                        transformation_ongoing=transformation_ongoing,
+                        skip_rotation=transformation_ongoing,
+                        debug_mw=debug_mw).boundingRect()
+                )
             self.selection_bounding_box = QPolygonF([
                 bounding_box.topLeft(),
                 bounding_box.topRight(),
@@ -3198,39 +3240,30 @@ class BoardMixin(BoardTextEditItemMixin):
         self.widget_active_point_index = None
         return False
 
-    def board_START_selected_items_ROTATION(self, event_pos, viewport_changed=False):
+    def board_START_selected_items_ROTATION(self, event_pos):
         self.rotation_ongoing = True
-        if viewport_changed:
-            for bi in self.selected_items:
-                # лучше закоментить этот код, так адекватнее и правильнее, как мне кажется
-                # if bi.__rotation is not None:
-                #     bi.rotation = bi.__rotation
-                if bi.type != BoardItem.types.ITEM_FRAME:
-                    if bi.__position is not None:
-                        bi.position = bi.__position
-
-            self.update_selection_bouding_box()
+        mtb = self.board_MapToBoard
 
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
-        pivot = self.selection_bounding_box.boundingRect().center()
-        radius_vector = QPointF(event_pos) - pivot
+        pivot = mtb(self.selection_bounding_box.boundingRect().center())
+        radius_vector = mtb(QPointF(event_pos)) - pivot
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
 
         points_count = self.selection_bounding_box.size()
         index = self.widget_active_point_index
         pivot_point_index = (index+2) % points_count
-        self.rotation_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
+        self.rotation_pivot_index = pivot_point_index
 
-        self.rotation_pivot_center_point = self.__selection_bounding_box.boundingRect().center()
+        self.rotation_pivot_corner_pos = mtb(QPointF(self.__selection_bounding_box[self.rotation_pivot_index]))
+        self.rotation_pivot_center_pos = mtb(self.__selection_bounding_box.boundingRect().center())
 
         for bi in self.selected_items:
-            bi.__rotation = bi.rotation
-            bi.__position = QPointF(bi.position)
+            bi._rotation = bi.rotation
+            bi._position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
 
-            if not viewport_changed:
-                bi.__rotation_init = bi.rotation
-                bi.__position_init = QPointF(bi.position)
+            bi._rotation_init = bi.rotation
+            bi._position_init = QPointF(bi.position)
 
     def step_rotation(self, rotation_value):
         interval = 45.0
@@ -3242,61 +3275,70 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_DO_selected_items_ROTATION(self, event_pos):
         self.start_translation_pos = None
+        mtb = self.board_MapToBoard
 
         multi_item_mode = len(self.selected_items) > 1
         ctrl_mod = QApplication.queryKeyboardModifiers() & Qt.ControlModifier
         alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
         use_corner_pivot = alt_mod
         if use_corner_pivot:
-            pivot = self.rotation_pivot_corner_point
+            pivot = self.rotation_pivot_corner_pos
         else:
-            pivot = self.rotation_pivot_center_point
-        radius_vector = QPointF(event_pos) - pivot
+            pivot = self.rotation_pivot_center_pos
+        radius_vector = mtb(QPointF(event_pos)) - pivot
+
+        # self.show_center_label(f'{radius_vector}')
+
         self.rotation_end_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
         self.rotation_delta = self.rotation_end_angle_rad - self.rotation_start_angle_rad
         rotation_delta_degrees = math.degrees(self.rotation_delta)
-        if multi_item_mode and ctrl_mod:
-            rotation_delta_degrees = self.step_rotation(rotation_delta_degrees)
         rotation = QTransform()
         if ctrl_mod:
-            rotation.rotate(self.step_rotation(rotation_delta_degrees))
-        else:
-            rotation.rotate(rotation_delta_degrees)
+            rotation_delta_degrees = self.step_rotation(rotation_delta_degrees)
+        rotation.rotate(rotation_delta_degrees)
+
         for bi in self.selected_items:
             # rotation component
             if bi.type == BoardItem.types.ITEM_FRAME:
                 continue
-            bi.rotation = bi.__rotation + rotation_delta_degrees
+            bi.rotation = bi._rotation + rotation_delta_degrees
             if not multi_item_mode and ctrl_mod:
                 bi.rotation = self.step_rotation(bi.rotation)
             # position component
-            pos = bi.calculate_absolute_position(canvas=self, rel_pos=bi.__position)
-            pos_radius_vector = pos - pivot
+            pos_radius_vector = bi._position - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
-            new_absolute_position = pivot + pos_radius_vector
-            rel_pos_global_scaled = new_absolute_position - self.canvas_origin
-            new_position = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.canvas_scale_y)
-            bi.position = new_position
+            bi.position = pivot + pos_radius_vector
+
         # bounding box transformation
-        translate_to_coord_origin = QTransform()
-        translate_back_to_place = QTransform()
-        if use_corner_pivot:
-            offset = - self.rotation_pivot_corner_point
+        self.mtb_rotation_pivot = pivot
+        self.rotation_transform = rotation
+        self.board_DO_selection_bounding_box_ROTATION()
+
+    def board_DO_selection_bounding_box_ROTATION(self):
+        debug_mw = None
+        debug_mw = self
+        if len(self.selected_items) == 1:
+            # эта будет вращаться сама вместе с айтемом
+            self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
         else:
-            offset = - self.__selection_bounding_box.boundingRect().center()
-        translate_to_coord_origin.translate(offset.x(), offset.y())
-        offset = - offset
-        translate_back_to_place.translate(offset.x(), offset.y())
-        transform = translate_to_coord_origin * rotation * translate_back_to_place
-        self.selection_bounding_box = transform.map(self.__selection_bounding_box)
+            # а эту надо вращать самому
+            self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
+            translate_to_coord_origin = QTransform()
+            translate_back_to_place = QTransform()
+
+            offset = self.board_MapToViewport(self.mtb_rotation_pivot)
+            translate_to_coord_origin.translate(-offset.x(), -offset.y())
+            translate_back_to_place.translate(offset.x(), offset.y())
+            transform = translate_to_coord_origin * self.rotation_transform * translate_back_to_place
+            self.selection_bounding_box = transform.map(self.selection_bounding_box)
 
     def board_FINISH_selected_items_ROTATION(self, event, cancel=False):
         self.rotation_ongoing = False
         cf = self.LibraryData().current_folder()
         if cancel:
             for bi in self.selected_items:
-                bi.rotation = bi.__rotation_init
-                bi.position = QPointF(bi.__position_init)
+                bi.rotation = bi._rotation_init
+                bi.position = QPointF(bi._position_init)
         else:
             self.init_selection_bounding_box_widget(cf)
             self.build_board_bounding_rect(cf)
@@ -3957,7 +3999,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.selection_rect:
             self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
-        self.update_selection_bouding_box()
+
+        if self.rotation_ongoing:
+            self.board_DO_selection_bounding_box_ROTATION()
+        else:
+            self.update_selection_bouding_box()
 
         event_pos = self.mapped_cursor_pos()
         if self.scaling_ongoing:
@@ -3966,11 +4012,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_START_selected_items_SCALING(None, viewport_changed=True)
             # вызываю, чтобы дебажная графика обновилась сразу, а не после того, как двинется курсор мыши
             self.board_DO_selected_items_SCALING(event_pos)
-
-        if self.rotation_ongoing:
-            # то же самое, что и для скейла
-            self.board_START_selected_items_ROTATION(event_pos, viewport_changed=True)
-            self.board_DO_selected_items_ROTATION(event_pos)
 
         self.update()
 
