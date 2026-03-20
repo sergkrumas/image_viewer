@@ -3528,10 +3528,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling.scale(bi.normalized_pos_x_center, bi.normalized_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
-                rel_pos_viewport_scaled = new_viewport_position - self.canvas_origin
-                new_rel_pos = QPointF(rel_pos_viewport_scaled.x()/self.canvas_scale_x, rel_pos_viewport_scaled.y()/self.canvas_scale_y)
-                bi.position = new_rel_pos
-                # bi.position = self.board_MapToViewport(new_viewport_position)
+                bi.position = self.board_MapToBoard(new_viewport_position)
 
             else:
                 scaling = QTransform()
@@ -3539,10 +3536,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
-                rel_pos_viewport_scaled = new_viewport_position - self.canvas_origin
-                new_rel_pos = QPointF(rel_pos_viewport_scaled.x()/self.canvas_scale_x, rel_pos_viewport_scaled.y()/self.canvas_scale_y)
-                bi.position = new_rel_pos
-                # bi.position = self.board_MapToViewport(new_viewport_position)
+                bi.position = self.board_MapToBoard(new_viewport_position)
 
         # bounding box update
         self.update_selection_bouding_box()
