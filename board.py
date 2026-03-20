@@ -3504,6 +3504,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             # scaling component
             x_factor, y_factor = self.calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
+            # self.show_center_label(f'{x_factor} {y_factor}')
 
             if center_is_pivot and multi_item_mode:
                 # это решение убирает флип скейла по обеим осям
@@ -3527,8 +3528,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling.scale(bi.normalized_pos_x_center, bi.normalized_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
-                rel_pos_global_scaled = new_viewport_position - self.canvas_origin
-                new_rel_pos = QPointF(rel_pos_global_scaled.x()/self.canvas_scale_x, rel_pos_global_scaled.y()/self.canvas_scale_y)
+                rel_pos_viewport_scaled = new_viewport_position - self.canvas_origin
+                new_rel_pos = QPointF(rel_pos_viewport_scaled.x()/self.canvas_scale_x, rel_pos_viewport_scaled.y()/self.canvas_scale_y)
                 bi.position = new_rel_pos
                 # bi.position = self.board_MapToViewport(new_viewport_position)
 
