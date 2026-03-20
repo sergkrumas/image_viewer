@@ -3360,10 +3360,10 @@ class BoardMixin(BoardTextEditItemMixin):
         return False
 
     def board_get_cursor_angle(self):
-        prev_point, next_point, pivot_point = self.board_SCALING_pivot_data(self.widget_active_point_index)
+        x_axis, y_axis, pivot_point = self.board_SCALING_pivot_data(self.widget_active_point_index)
 
-        x_axis = QVector2D(next_point - pivot_point).normalized().toPointF()
-        y_axis = QVector2D(prev_point - pivot_point).normalized().toPointF()
+        x_axis = QVector2D(x_axis).normalized().toPointF()
+        y_axis = QVector2D(y_axis).normalized().toPointF()
 
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
@@ -3378,7 +3378,10 @@ class BoardMixin(BoardTextEditItemMixin):
         next_point = QPointF(self.selection_bounding_box[next_point_index])
         pivot_point = QPointF(self.selection_bounding_box[pivot_point_index])
 
-        return prev_point, next_point, pivot_point
+        x_axis = next_point - pivot_point
+        y_axis = prev_point - pivot_point
+
+        return x_axis, y_axis, pivot_point
 
     def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
@@ -3396,26 +3399,21 @@ class BoardMixin(BoardTextEditItemMixin):
             # заранее высчитываем пивот и оси для модификатора Alt;
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
-            prev_point, next_point, pivot_point = self.board_SCALING_pivot_data(index)
+            __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index)
             self.scaling_pivot_CENTER_point = self.selection_bounding_box_center
-
-            __x_axis = next_point - pivot_point
-            __y_axis = prev_point - pivot_point
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
 
-        # высчитываем пивот и оси для обычного скейла относительно угла
-        prev_point, next_point, self.scaling_pivot_CORNER_point = self.board_SCALING_pivot_data(self.scaling_active_point_index)
+        if True:
+            # высчитываем пивот и оси для обычного скейла относительно угла
+            x_axis, y_axis, self.scaling_pivot_CORNER_point = self.board_SCALING_pivot_data(self.scaling_active_point_index)
 
-        x_axis = next_point - self.scaling_pivot_CORNER_point
-        y_axis = prev_point - self.scaling_pivot_CORNER_point
+            if self.scaling_active_point_index % 2 == 1:
+                x_axis, y_axis = y_axis, x_axis
 
-        if self.scaling_active_point_index % 2 == 1:
-            x_axis, y_axis = y_axis, x_axis
-
-        self.scaling_x_axis = x_axis
-        self.scaling_y_axis = y_axis
+            self.scaling_x_axis = x_axis
+            self.scaling_y_axis = y_axis
 
         for bi in self.selected_items:
             bi._scale_x = bi.scale_x
