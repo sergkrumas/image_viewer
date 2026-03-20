@@ -225,7 +225,7 @@ class BoardItem():
         self._show_file_info_overlay = False
         self._marked_item = False
 
-        self.__label_ui_rect = None
+        self._label_ui_rect = None
 
         self.force_full_quality = False
         self.scrubbed = False
@@ -378,13 +378,10 @@ class BoardItem():
         translation = QTransform()
         if apply_local_scale:
             local_scaling.scale(self.scale_x, self.scale_y)
-        if skip_rotation:
-            rotation.rotate(0)
+        if transformation_ongoing:
+            rotation.rotate(self._rotation)
         else:
-            if transformation_ongoing and self._rotation is not None:
-                rotation.rotate(self._rotation)
-            else:
-                rotation.rotate(self.rotation)
+            rotation.rotate(self.rotation)
         if apply_translation:
             _pos = None
             if transformation_ongoing:
@@ -1942,7 +1939,7 @@ class BoardMixin(BoardTextEditItemMixin):
             alignment = Qt.AlignLeft
             rect = painter.boundingRect(area.boundingRect(), alignment, text)
             rect.moveBottomLeft(pos+zoom_delta)
-            board_item.__label_ui_rect = None
+            board_item._label_ui_rect = None
             show_text = True
             if rect.width() > area.boundingRect().width():
                 show_text = False
@@ -1952,7 +1949,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 show_text = True
 
             if show_text:
-                board_item.__label_ui_rect = rect
+                board_item._label_ui_rect = rect
                 painter.drawText(rect, alignment, text)
                 self.board_frame_items_text_rects.append((board_item, rect, area.boundingRect()))
 
@@ -3006,7 +3003,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def is_pos_over_item_area(self, item, position):
         sa = item.get_selection_area(canvas=self)
         return sa.containsPoint(position, Qt.WindingFill) or \
-                (item.type == BoardItem.types.ITEM_FRAME and item.__label_ui_rect is not None and item.__label_ui_rect.contains(position))
+                (item.type == BoardItem.types.ITEM_FRAME and item._label_ui_rect is not None and item._label_ui_rect.contains(position))
 
     def is_over_translation_activation_area(self, position):
         for item in self.selected_items:
@@ -3323,14 +3320,14 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             # а эту надо вращать самому
             self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
-            translate_to_coord_origin = QTransform()
-            translate_back_to_place = QTransform()
+        translate_to_coord_origin = QTransform()
+        translate_back_to_place = QTransform()
 
-            offset = self.board_MapToViewport(self.mtb_rotation_pivot)
-            translate_to_coord_origin.translate(-offset.x(), -offset.y())
-            translate_back_to_place.translate(offset.x(), offset.y())
-            transform = translate_to_coord_origin * self.rotation_transform * translate_back_to_place
-            self.selection_bounding_box = transform.map(self.selection_bounding_box)
+        offset = self.board_MapToViewport(self.mtb_rotation_pivot)
+        translate_to_coord_origin.translate(-offset.x(), -offset.y())
+        translate_back_to_place.translate(offset.x(), offset.y())
+        transform = translate_to_coord_origin * self.rotation_transform * translate_back_to_place
+        self.selection_bounding_box = transform.map(self.selection_bounding_box)
 
     def board_FINISH_selected_items_ROTATION(self, event, cancel=False):
         self.rotation_ongoing = False
