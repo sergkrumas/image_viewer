@@ -3375,19 +3375,8 @@ class BoardMixin(BoardTextEditItemMixin):
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
 
-    def board_START_selected_items_SCALING(self, event, viewport_changed=False):
+    def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
-
-        if viewport_changed:
-            for bi in self.selected_items:
-                if bi._scale_x is not None:
-                    bi.scale_x = bi._scale_x
-                if bi._scale_y is not None:
-                    bi.scale_y = bi._scale_y
-                if bi._position is not None:
-                    bi.position = bi._position
-
-            self.update_selection_bouding_box()
 
         self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
 
@@ -3439,10 +3428,9 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._scale_y = bi.scale_y
             bi._position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
-            if not viewport_changed:
-                bi._scale_x_init = bi.scale_x
-                bi._scale_y_init = bi.scale_y
-                bi._position_init = QPointF(bi.position)
+            bi._scale_x_init = bi.scale_x
+            bi._scale_y_init = bi.scale_y
+            bi._position_init = QPointF(bi.position)
             position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_corner_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
             position_vec_center = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_center_point
@@ -3997,16 +3985,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.rotation_ongoing:
             self.board_DO_selection_bounding_box_ROTATION()
+        elif self.scaling_ongoing:
+            self.update_selection_bouding_box()
         else:
             self.update_selection_bouding_box()
-
-        event_pos = self.mapped_cursor_pos()
-        if self.scaling_ongoing:
-            # пользователь вознамерился зумить посреди процесса скейла айтемов (нажал кнопку мыши и ещё не отпустил),
-            # это значит, что инициализацию надо провести заново, но с нюансами
-            self.board_START_selected_items_SCALING(None, viewport_changed=True)
-            # вызываю, чтобы дебажная графика обновилась сразу, а не после того, как двинется курсор мыши
-            self.board_DO_selected_items_SCALING(event_pos)
 
         self.update()
 
