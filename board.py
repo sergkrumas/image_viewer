@@ -2575,7 +2575,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pass
 
         elif self.autoscroll_is_cursor_activated():
-           self.autoscroll_set_cursor() 
+           self.autoscroll_set_cursor()
 
         elif self.cursor_corners_buttons_and_menus():
             pass
@@ -3360,20 +3360,25 @@ class BoardMixin(BoardTextEditItemMixin):
         return False
 
     def board_get_cursor_angle(self):
-        points_count = self.selection_bounding_box.size()
-        index = self.widget_active_point_index
-        pivot_point_index = (index+2) % points_count
-        prev_point_index = (pivot_point_index-1) % points_count
-        next_point_index = (pivot_point_index+1) % points_count
-        prev_point = self.selection_bounding_box[prev_point_index]
-        next_point = self.selection_bounding_box[next_point_index]
-        __scaling_pivot_corner_point = QPointF(self.selection_bounding_box[pivot_point_index])
+        prev_point, next_point, pivot_point = self.board_SCALING_pivot_data(self.widget_active_point_index)
 
-        x_axis = QVector2D(next_point - __scaling_pivot_corner_point).normalized().toPointF()
-        y_axis = QVector2D(prev_point - __scaling_pivot_corner_point).normalized().toPointF()
+        x_axis = QVector2D(next_point - pivot_point).normalized().toPointF()
+        y_axis = QVector2D(prev_point - pivot_point).normalized().toPointF()
 
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
+
+    def board_SCALING_pivot_data(self, index):
+        points_count = self.selection_bounding_box.size()
+
+        pivot_point_index = (index+2) % points_count
+        prev_point_index = (pivot_point_index-1) % points_count
+        next_point_index = (pivot_point_index+1) % points_count
+        prev_point = QPointF(self.selection_bounding_box[prev_point_index])
+        next_point = QPointF(self.selection_bounding_box[next_point_index])
+        pivot_point = QPointF(self.selection_bounding_box[pivot_point_index])
+
+        return prev_point, next_point, pivot_point
 
     def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
@@ -3389,31 +3394,19 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if True:
             # заранее высчитываем пивот и оси для модификатора Alt;
-            # для удобства вычислений оси заимствуем у нулевой точки и укорачиваем их в два раза
+            # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
-            pivot_point_index = (index+2) % points_count
-            prev_point_index = (pivot_point_index-1) % points_count
-            next_point_index = (pivot_point_index+1) % points_count
-            prev_point = self.selection_bounding_box[prev_point_index]
-            next_point = self.selection_bounding_box[next_point_index]
-            spp = QPointF(self.selection_bounding_box[pivot_point_index])
-
+            prev_point, next_point, pivot_point = self.board_SCALING_pivot_data(index)
             self.scaling_pivot_CENTER_point = self.selection_bounding_box_center
 
-            __x_axis = next_point - spp
-            __y_axis = prev_point - spp
+            __x_axis = next_point - pivot_point
+            __y_axis = prev_point - pivot_point
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
 
         # высчитываем пивот и оси для обычного скейла относительно угла
-        index = self.scaling_active_point_index
-        pivot_point_index = (index+2) % points_count
-        prev_point_index = (pivot_point_index-1) % points_count
-        next_point_index = (pivot_point_index+1) % points_count
-        prev_point = self.selection_bounding_box[prev_point_index]
-        next_point = self.selection_bounding_box[next_point_index]
-        self.scaling_pivot_CORNER_point = QPointF(self.selection_bounding_box[pivot_point_index])
+        prev_point, next_point, self.scaling_pivot_CORNER_point = self.board_SCALING_pivot_data(self.scaling_active_point_index)
 
         x_axis = next_point - self.scaling_pivot_CORNER_point
         y_axis = prev_point - self.scaling_pivot_CORNER_point
