@@ -2977,19 +2977,15 @@ class BoardMixin(BoardTextEditItemMixin):
                 return True
         return False
 
-    def board_START_selected_items_TRANSLATION(self, event_pos, viewport_changed=False):
+    def board_START_selected_items_TRANSLATION(self, event_pos):
         self.start_translation_pos = QPointF(self.board_MapToBoard(event_pos))
         current_folder = self.LibraryData().current_folder()
         items_list = current_folder.board.items_list
-        if viewport_changed:
-            for board_item in items_list:
-                board_item.position = board_item.__position
 
         for board_item in items_list:
             board_item.__position = QPointF(board_item.position)
             self.board_stash_current_transform_to_history(board_item)
-            if not viewport_changed:
-                board_item.__position_init = QPointF(board_item.position)
+            board_item.__position_init = QPointF(board_item.position)
             board_item._children_items = []
             if board_item.type == BoardItem.types.ITEM_FRAME:
                 this_frame_area = board_item.calc_area
