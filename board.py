@@ -2421,6 +2421,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.setPen(QPen(Qt.yellow, 4))
                     painter.drawLine(pivot, pivot + self.scaling_vector)
 
+                painter.setPen(QPen(Qt.blue, 4))
+                painter.drawLine(pivot, pivot + self.mapped_scaling_vector)
+
                 if self.proportional_scaling_vector is not None:
                     painter.setPen(QPen(Qt.darkGray, 4))
                     painter.drawLine(pivot, pivot + self.proportional_scaling_vector)
@@ -3432,6 +3435,8 @@ class BoardMixin(BoardTextEditItemMixin):
             position_vec_center *= 2
             bi.normalized_pos_x_center, bi.normalized_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
 
+            # self.show_center_label(f'{position_vec} {position_vec_center}')
+
     def calculate_vector_projection_factors(self, x_axis, y_axis, vector):
         x_axis = QVector2D(x_axis)
         y_axis = QVector2D(y_axis)
@@ -3530,6 +3535,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
                 bi.position = self.board_MapToBoard(new_viewport_position)
+                self.mapped_scaling_vector = mapped_scaling_vector
 
             else:
                 scaling = QTransform()
@@ -3539,6 +3545,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
                 bi.position = self.board_MapToBoard(new_viewport_position)
+                self.mapped_scaling_vector = mapped_scaling_vector
 
         # bounding box update
         self.update_selection_bouding_box()
