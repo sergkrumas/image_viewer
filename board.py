@@ -3425,8 +3425,10 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._scale_x_init = bi.scale_x
             bi._scale_y_init = bi.scale_y
             bi._position_init = QPointF(bi.position)
+            # corner
             position_vec = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_CORNER_point
             bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
+            # center
             position_vec_center = bi.calculate_absolute_position(canvas=self) - self.scaling_pivot_CENTER_point
             # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
             position_vec_center *= 2
