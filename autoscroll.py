@@ -133,8 +133,11 @@ class AutoscrollMixin():
                     s3 = fit(cursor_pos.x(), o.left(), i.left(), 1.0, 0.0)
                     s4 = fit(cursor_pos.x(), i.right(), o.right(), 0.0, 1.0)
                     sf = max((s1, s2, s3, s4))
-                    speed_factor /= 4.0
                     speed_factor *= sf
+                    # переназначем изначальную скорость, отводим "курсор" из центра до верхней границы окна
+                    length = QVector2D(self.AUTOSCROLL.startpos - QPoint(self.AUTOSCROLL.startpos.x(), 0)).length()
+                    velocity_vec = QVector2D(velocity_vec).normalized().toPointF()*length
+                    speed_factor /= 4.0
                     # self.show_center_label(f'{sf}: {s1} {s2} {s3} {s4}')
 
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
