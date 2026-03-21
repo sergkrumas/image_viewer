@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2026-03-19 18:07+0300\n"
-"PO-Revision-Date: 2026-03-19 18:09+0300\n"
+"PO-Revision-Date: 2026-03-21 19:20+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1621,19 +1621,19 @@ msgstr ""
 
 #: settings_handling.py:1056
 msgid "Library Page autoscroll speed"
-msgstr "Скорость автоскролла"
+msgstr "Скорость автопрокрутки"
 
 #: settings_handling.py:1063
 msgid "Waterfall Page autoscroll speed"
-msgstr "Скорость автоскролла"
+msgstr "Скорость автопрокрутки"
 
 #: settings_handling.py:1077
 msgid "Board Page autoscroll speed"
-msgstr "Скорость автоскролла"
+msgstr "Скорость автопрокрутки"
 
 #: autoscroll.py:69
 msgid "autoscroll speed {0}"
-msgstr "скорость автоскролла {0}"
+msgstr "скорость автопрокрутки {0}"
 
 #: board.py:1677
 msgid "The board is prepared"
