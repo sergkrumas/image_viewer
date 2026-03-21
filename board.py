@@ -2268,7 +2268,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
 
     def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
-        if self.Globals.DEBUG or True:
+        if self.Globals.DEBUG:
             o, i = self.autoscroll_activation_zones_for_board_item_transform()
             painter.setBrush(Qt.NoBrush)
             pen = QPen(Qt.gray, 1)
