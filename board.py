@@ -3343,6 +3343,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.mtb_rotation_pivot = pivot
         self.rotation_transform = rotation
         self.board_DO_selection_bounding_box_ROTATION()
+        self.autoscroll_activate_board_item_transform_autoscroll()
 
     def board_DO_selection_bounding_box_ROTATION(self):
         debug_mw = self
@@ -3370,6 +3371,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.init_selection_bounding_box_widget(cf)
             self.build_board_bounding_rect(cf)
+        self.autoscroll_desactivate_board_item_transform_autoscroll()
 
     def board_CANCEL_selected_items_ROTATION(self):
         if self.rotation_ongoing:
