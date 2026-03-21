@@ -3399,7 +3399,7 @@ class BoardMixin(BoardTextEditItemMixin):
         points_count = self.selection_bounding_box.size()
 
         if True:
-            # заранее высчитываем пивот и оси для модификатора Alt;
+            # заранее высчитываем пивот и оси для скейла относительно центра выделения (включается модификатором Alt);
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
             __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index)
