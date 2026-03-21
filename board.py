@@ -3536,25 +3536,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif center_is_pivot and multi_item_mode:
                 scaling = QTransform()
-                # эти нормализованные координаты актуальны
-                # для пропорционального и непропорционального масштабирования
                 scaling.scale(bi.factor_item_pos_x_center, bi.factor_item_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
-                # new_viewport_position = pivot + mapped_scaling_vector
-                # bi.position = self.board_MapToBoard(new_viewport_position)
                 bi.position = pivot + mapped_scaling_vector
-                # self.mapped_scaling_vector = mapped_scaling_vector
 
             else:
                 scaling = QTransform()
-                # эти нормализованные координаты актуальны
-                # для пропорционального и непропорционального масштабирования
                 scaling.scale(bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner)
                 mapped_scaling_vector = scaling.map(scaling_vector)
-                # new_viewport_position = pivot + mapped_scaling_vector
-                # bi.position = self.board_MapToBoard(new_viewport_position)
                 bi.position = pivot + mapped_scaling_vector
-                # self.mapped_scaling_vector = mapped_scaling_vector
 
         # bounding box update
         self.update_selection_bouding_box()
