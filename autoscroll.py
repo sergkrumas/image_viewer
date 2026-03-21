@@ -40,6 +40,7 @@ class AutoscrollMixin():
 
         AUTOSCROLL.direction_vector = QPointF()
         AUTOSCROLL.board_item_transform = False
+        self.AUTOSCROLL.INNER_OUTER_OFFSET = 100
 
     def autoscroll_cursor_over_origin(self):
         return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
@@ -126,7 +127,16 @@ class AutoscrollMixin():
 
             if self.is_board_page_active():
                 if self.AUTOSCROLL.board_item_transform:
+                    o, i = self.autoscroll_activation_zones_for_board_item_transform()
+                    s1 = fit(cursor_pos.y(), o.top(), i.top(), 1.0, 0.0)
+                    s2 = fit(cursor_pos.y(), i.bottom(), o.bottom(), 0.0, 1.0)
+                    s3 = fit(cursor_pos.x(), o.left(), i.left(), 1.0, 0.0)
+                    s4 = fit(cursor_pos.x(), i.right(), o.right(), 0.0, 1.0)
+                    sf = max((s1, s2, s3, s4))
                     speed_factor /= 4.0
+                    speed_factor *= sf
+                    # self.show_center_label(f'{sf}: {s1} {s2} {s3} {s4}')
+
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
                 if self.AUTOSCROLL.board_item_transform:
                     if self.translation_ongoing:
@@ -345,7 +355,8 @@ class AutoscrollMixin():
     def autoscroll_activation_zones_for_board_item_transform(self):
         outer_rect = self.rect()
         outer_rect.setBottom(self.globals.control_panel.frameGeometry().top())
-        inner_rect = outer_rect.adjusted(100, 100, -100, -100)
+        OFFSET = self.AUTOSCROLL.INNER_OUTER_OFFSET
+        inner_rect = outer_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
         return outer_rect, inner_rect
 
     def autoscroll_activate_board_item_transform_autoscroll(self):
