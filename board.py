@@ -2265,6 +2265,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_AD_toolbox(painter)
 
+        self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
+
+    def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
+        if self.Globals.DEBUG or True:
+            o, i = self.autoscroll_activation_zones_for_board_item_transform()
+            painter.setBrush(Qt.NoBrush)
+            pen = QPen(Qt.gray, 1)
+            pen.setStyle(Qt.DashLine)
+            painter.setPen(pen)
+            painter.drawRect(o)
+            painter.drawRect(i)
+
     def draw_progressive_layout_animation(self, painter):
         if self.progressive_layout_ongoing:
             self.draw_rounded_frame_progress_label(painter,
@@ -3070,6 +3082,7 @@ class BoardMixin(BoardTextEditItemMixin):
                                 ch_bi.position = ch_bi._position + delta
                 self.init_selection_bounding_box_widget(current_folder)
                 self.check_item_group_under_mouse()
+                self.autoscroll_activate_board_item_transform_autoscroll()
         else:
             self.translation_ongoing = False
 
@@ -3089,6 +3102,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.build_board_bounding_rect(current_folder)
             self.move_items_to_group(items=self.selected_items)
             self.check_item_group_under_mouse(reset=True)
+        self.autoscroll_desactivate_board_item_transform_autoscroll()
 
     def board_CANCEL_selected_items_TRANSLATION(self):
         if self.translation_ongoing:

@@ -39,6 +39,7 @@ class AutoscrollMixin():
         AUTOSCROLL.desactivation_pass = False
 
         AUTOSCROLL.direction_vector = QPointF()
+        AUTOSCROLL.board_item_transform = False
 
     def autoscroll_cursor_over_origin(self):
         return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
@@ -111,7 +112,8 @@ class AutoscrollMixin():
 
     def autoscroll_timer(self):
         OUTER_ZONE_ACTIVATION_RADIUS = 30.0
-        cursor_offset = self.mapped_cursor_pos() - self.AUTOSCROLL.startpos
+        cursor_pos = self.mapped_cursor_pos()
+        cursor_offset = cursor_pos - self.AUTOSCROLL.startpos
         diff_l = QVector2D(cursor_offset).length()
         self.AUTOSCROLL.inside_activation_zone = diff_l < OUTER_ZONE_ACTIVATION_RADIUS
         if not self.AUTOSCROLL.inside_activation_zone:
@@ -121,9 +123,16 @@ class AutoscrollMixin():
             velocity_vec = vec.toPointF()
             self.AUTOSCROLL.direction_vector = QVector2D(velocity_vec).normalized().toPointF()
             speed_factor = self.autoscroll_get_speed_factor()
+
             if self.is_board_page_active():
+                if self.AUTOSCROLL.board_item_transform:
+                    speed_factor /= 4.0
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
                 self.update_selection_bouding_box()
+                if self.AUTOSCROLL.board_item_transform:
+                    if self.translation_ongoing:
+                        self.board_DO_selected_items_TRANSLATION(cursor_pos)
+
             elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars
                 sb_index = self.autoscroll_is_scrollbar_available()
@@ -131,6 +140,7 @@ class AutoscrollMixin():
                     self.autoscroll_finish()
                 else:
                     self.autoscroll_do_for_LibraryWaterfall_pages(velocity_vec.y()*speed_factor/8.0)
+
         self.update()
 
     def autoscroll_intro_for_LibraryWaterfall_pages(self, scrollbar_index):
@@ -235,41 +245,44 @@ class AutoscrollMixin():
         self.AUTOSCROLL.is_moved_while_middle_button_pressed = False
 
     def autoscroll_draw(self, painter):
-        if self.AUTOSCROLL.timer.isActive():
-            if self.AUTOSCROLL.inside_activation_zone:
-                painter.save()
+        if not self.AUTOSCROLL.timer.isActive():
+            return
+        if not self.AUTOSCROLL.inside_activation_zone:
+            return
 
-                painter.setOpacity(0.7)
-                gray = QColor(100, 100, 100)
-                painter.setPen(gray)
-                painter.setBrush(QBrush(Qt.white))
-                el_rect = QRectF(0, 0, 9, 9)
-                el_rect.moveCenter(self.AUTOSCROLL.startpos)
-                painter.drawEllipse(el_rect)
+        painter.save()
 
-                center = self.AUTOSCROLL.startpos
-                if int(time.time()*4) % 2 == 0:
-                    offset = 12.0
-                else:
-                    offset = 30.0
+        painter.setOpacity(0.7)
+        gray = QColor(100, 100, 100)
+        painter.setPen(gray)
+        painter.setBrush(QBrush(Qt.white))
+        el_rect = QRectF(0, 0, 9, 9)
+        el_rect.moveCenter(self.AUTOSCROLL.startpos)
+        painter.drawEllipse(el_rect)
 
-                if self.AUTOSCROLL.draw_vertical:
-                    self.autoscroll_draw_arrow(painter, center, QPointF(0, 1), offset)
-                    self.autoscroll_draw_arrow(painter, center, QPointF(0, -1), offset)
+        center = self.AUTOSCROLL.startpos
+        if int(time.time()*4) % 2 == 0:
+            offset = 12.0
+        else:
+            offset = 30.0
 
-                if self.AUTOSCROLL.draw_horizontal:
-                    self.autoscroll_draw_arrow(painter, center, QPointF(1, 0), offset)
-                    self.autoscroll_draw_arrow(painter, center, QPointF(-1, 0), offset)
+        if self.AUTOSCROLL.draw_vertical:
+            self.autoscroll_draw_arrow(painter, center, QPointF(0, 1), offset)
+            self.autoscroll_draw_arrow(painter, center, QPointF(0, -1), offset)
 
-                painter.setBrush(Qt.NoBrush)
+        if self.AUTOSCROLL.draw_horizontal:
+            self.autoscroll_draw_arrow(painter, center, QPointF(1, 0), offset)
+            self.autoscroll_draw_arrow(painter, center, QPointF(-1, 0), offset)
 
-                painter.setPen(QPen(Qt.white, 2))
-                el_rect = QRectF(0, 0, 49, 49)
-                el_rect.moveCenter(self.AUTOSCROLL.startpos)
-                painter.setBrush(QBrush(QColor(255, 255, 255, 100)))
-                painter.drawEllipse(el_rect)
+        painter.setBrush(Qt.NoBrush)
 
-                painter.restore()
+        painter.setPen(QPen(Qt.white, 2))
+        el_rect = QRectF(0, 0, 49, 49)
+        el_rect.moveCenter(self.AUTOSCROLL.startpos)
+        painter.setBrush(QBrush(QColor(255, 255, 255, 100)))
+        painter.drawEllipse(el_rect)
+
+        painter.restore()
 
     def autoscroll_get_cursor(self):
         size_rect = QRect(0, 0, 50, 50)
@@ -323,6 +336,31 @@ class AutoscrollMixin():
 
     def autoscroll_set_cursor(self):
         self.setCursor(self.autoscroll_get_cursor())
+
+    def autoscroll_activation_zones_for_board_item_transform(self):
+        outer_rect = self.rect()
+        outer_rect.setBottom(self.globals.control_panel.frameGeometry().top())
+        inner_rect = outer_rect.adjusted(100, 100, -100, -100)
+        return outer_rect, inner_rect
+
+    def autoscroll_activate_board_item_transform_autoscroll(self):
+        o, i = self.autoscroll_activation_zones_for_board_item_transform()
+        cursor_pos = self.mapped_cursor_pos()
+        on_border = o.contains(cursor_pos) and not i.contains(cursor_pos)
+        over_control_panel = not o.contains(cursor_pos)
+        if on_border or over_control_panel:
+            if not self.AUTOSCROLL.board_item_transform:
+                self.AUTOSCROLL.board_item_transform = True
+                o, i = self.autoscroll_activation_zones_for_board_item_transform()
+                self.AUTOSCROLL.startpos = o.center()
+                self.autoscroll_start()
+        else:
+            self.autoscroll_desactivate_board_item_transform_autoscroll()
+
+    def autoscroll_desactivate_board_item_transform_autoscroll(self):
+        if self.AUTOSCROLL.board_item_transform:
+            self.AUTOSCROLL.board_item_transform = False
+            self.autoscroll_finish()
 
 if __name__ == '__main__':
 
