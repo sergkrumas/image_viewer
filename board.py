@@ -3394,7 +3394,6 @@ class BoardMixin(BoardTextEditItemMixin):
         bbw = self.selection_bounding_box.boundingRect().width()
         bbh = self.selection_bounding_box.boundingRect().height()
         self.selection_bounding_box_aspect_ratio = bbw/bbh
-        self.selection_bounding_box_center = self.selection_bounding_box.boundingRect().center()
 
         points_count = self.selection_bounding_box.size()
 
@@ -3403,7 +3402,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
             __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index)
-            self.scaling_pivot_CENTER_point = self.selection_bounding_box_center
+            self.scaling_pivot_CENTER_point = self.selection_bounding_box.boundingRect().center()
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
