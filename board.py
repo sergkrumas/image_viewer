@@ -2410,29 +2410,30 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if self.board_debug_transform_widget and self.scaling_ongoing and self.scaling_pivot_point is not None:
                 pivot = self.scaling_pivot_point
+                pivot_vm = self.board_MapToViewport(pivot)
                 x_axis = self.scaling_pivot_point_x_axis
                 y_axis = self.scaling_pivot_point_y_axis
 
                 painter.setPen(QPen(Qt.red, 4))
                 painter.drawLine(
-                    self.board_MapToViewport(pivot),
+                    pivot_vm,
                     self.board_MapToViewport(pivot+x_axis)
                 )
                 painter.setPen(QPen(Qt.green, 4))
                 painter.drawLine(
-                    self.board_MapToViewport(pivot),
+                    pivot_vm,
                     self.board_MapToViewport(pivot+y_axis)
                 )
                 if self.scaling_vector is not None:
                     painter.setPen(QPen(Qt.yellow, 4))
                     painter.drawLine(
-                        self.board_MapToViewport(pivot),
+                        pivot_vm,
                         self.board_MapToViewport(pivot + self.scaling_vector)
                     )
 
                 painter.setPen(QPen(Qt.blue, 4))
                 painter.drawLine(
-                    self.board_MapToViewport(pivot),
+                    pivot_vm,
                     self.board_MapToViewport(pivot + self.mapped_scaling_vector)
                 )
 
