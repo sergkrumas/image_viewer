@@ -128,6 +128,7 @@ class AutoscrollMixin():
             if self.is_board_page_active():
                 if self.AUTOSCROLL.board_item_transform:
                     o, i = self.autoscroll_activation_zones_for_board_item_transform()
+                    # у внешних границ должна быть максимальная скорость, у внутренних - минимальная, то есть нулевая
                     s1 = fit(cursor_pos.y(), o.top(), i.top(), 1.0, 0.0)
                     s2 = fit(cursor_pos.y(), i.bottom(), o.bottom(), 0.0, 1.0)
                     s3 = fit(cursor_pos.x(), o.left(), i.left(), 1.0, 0.0)
