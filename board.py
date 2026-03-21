@@ -3389,8 +3389,6 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
 
-        self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
-
         bbw = self.selection_bounding_box.boundingRect().width()
         bbh = self.selection_bounding_box.boundingRect().height()
         self.selection_bounding_box_aspect_ratio = bbw/bbh
