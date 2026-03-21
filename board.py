@@ -3371,7 +3371,7 @@ class BoardMixin(BoardTextEditItemMixin):
         __vector  = x_axis + y_axis
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
 
-    def board_SCALING_pivot_data(self, index):
+    def board_SCALING_pivot_data(self, index, map_to_board=False):
         points_count = self.selection_bounding_box.size()
 
         pivot_point_index = (index+2) % points_count
@@ -3380,6 +3380,11 @@ class BoardMixin(BoardTextEditItemMixin):
         prev_point = QPointF(self.selection_bounding_box[prev_point_index])
         next_point = QPointF(self.selection_bounding_box[next_point_index])
         pivot_point = QPointF(self.selection_bounding_box[pivot_point_index])
+
+        if map_to_board:
+            prev_point = self.board_MapToBoard(prev_point)
+            next_point = self.board_MapToBoard(next_point)
+            pivot_point = self.board_MapToBoard(pivot_point)
 
         x_axis = next_point - pivot_point
         y_axis = prev_point - pivot_point
@@ -3399,7 +3404,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # заранее высчитываем пивот и оси для скейла относительно центра выделения (включается модификатором Alt);
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
-            __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index)
+            __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index, map_to_board=True)
             self.scaling_pivot_CENTER_point = self.selection_bounding_box.boundingRect().center()
 
             self.scaling_from_center_x_axis = __x_axis/2.0
@@ -3407,7 +3412,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if True:
             # высчитываем пивот и оси для обычного скейла относительно угла
-            x_axis, y_axis, self.scaling_pivot_CORNER_point = self.board_SCALING_pivot_data(self.scaling_active_point_index)
+            x_axis, y_axis, self.scaling_pivot_CORNER_point = self.board_SCALING_pivot_data(self.scaling_active_point_index, map_to_board=True)
 
             if self.scaling_active_point_index % 2 == 1:
                 x_axis, y_axis = y_axis, x_axis
@@ -3424,10 +3429,10 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._scale_y_init = bi.scale_y
             bi._position_init = QPointF(bi.position)
             # corner
-            position_vec = bi.calculate_viewport_position(canvas=self) - self.scaling_pivot_CORNER_point
+            position_vec = bi.position - self.scaling_pivot_CORNER_point
             bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
             # center
-            position_vec_center = bi.calculate_viewport_position(canvas=self) - self.scaling_pivot_CENTER_point
+            position_vec_center = bi.position - self.scaling_pivot_CENTER_point
             # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
             position_vec_center *= 2
             bi.factor_item_pos_x_center, bi.factor_item_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
@@ -3477,7 +3482,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.scaling_pivot_point_y_axis = scaling_y_axis
 
         for bi in self.selected_items:
-            cursor_scaling_vector =  QPointF(event_pos) - pivot # не вытаскивать вычисления вектора из цикла!
+            cursor_scaling_vector =  self.board_MapToBoard(QPointF(event_pos)) - pivot # не вытаскивать вычисления вектора из цикла!
 
             # принудительно задаётся минимальный скейл, значение в экранных координатах
             # MIN_LENGTH = 100.0
@@ -3535,9 +3540,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 # для пропорционального и непропорционального масштабирования
                 scaling.scale(bi.factor_item_pos_x_center, bi.factor_item_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
-                new_viewport_position = pivot + mapped_scaling_vector
-                bi.position = self.board_MapToBoard(new_viewport_position)
-                self.mapped_scaling_vector = mapped_scaling_vector
+                # new_viewport_position = pivot + mapped_scaling_vector
+                # bi.position = self.board_MapToBoard(new_viewport_position)
+                bi.position = pivot + mapped_scaling_vector
+                # self.mapped_scaling_vector = mapped_scaling_vector
 
             else:
                 scaling = QTransform()
@@ -3545,9 +3551,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 # для пропорционального и непропорционального масштабирования
                 scaling.scale(bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner)
                 mapped_scaling_vector = scaling.map(scaling_vector)
-                new_viewport_position = pivot + mapped_scaling_vector
-                bi.position = self.board_MapToBoard(new_viewport_position)
-                self.mapped_scaling_vector = mapped_scaling_vector
+                # new_viewport_position = pivot + mapped_scaling_vector
+                # bi.position = self.board_MapToBoard(new_viewport_position)
+                bi.position = pivot + mapped_scaling_vector
+                # self.mapped_scaling_vector = mapped_scaling_vector
 
         # bounding box update
         self.update_selection_bouding_box()
