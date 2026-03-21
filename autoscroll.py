@@ -134,6 +134,8 @@ class AutoscrollMixin():
                         self.board_DO_selected_items_TRANSLATION(cursor_pos)
                     if self.rotation_ongoing:
                         self.board_DO_selected_items_ROTATION(cursor_pos)
+                    if self.scaling_ongoing:
+                        self.board_DO_selected_items_SCALING(cursor_pos)
 
             elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars

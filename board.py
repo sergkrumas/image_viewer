@@ -3582,6 +3582,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # bounding box update
         self.update_selection_bouding_box()
+        self.autoscroll_activate_board_item_transform_autoscroll()
 
     def board_FINISH_selected_items_SCALING(self, event, cancel=False):
         self.scaling_ongoing = False
@@ -3597,6 +3598,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.init_selection_bounding_box_widget(cf)
             self.build_board_bounding_rect(cf)
+        self.autoscroll_desactivate_board_item_transform_autoscroll()
 
     def board_CANCEL_selected_items_SCALING(self):
         if self.scaling_ongoing:
