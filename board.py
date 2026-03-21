@@ -2414,19 +2414,34 @@ class BoardMixin(BoardTextEditItemMixin):
                 y_axis = self.scaling_pivot_point_y_axis
 
                 painter.setPen(QPen(Qt.red, 4))
-                painter.drawLine(pivot, pivot+x_axis)
+                painter.drawLine(
+                    self.board_MapToViewport(pivot),
+                    self.board_MapToViewport(pivot+x_axis)
+                )
                 painter.setPen(QPen(Qt.green, 4))
-                painter.drawLine(pivot, pivot+y_axis)
+                painter.drawLine(
+                    self.board_MapToViewport(pivot),
+                    self.board_MapToViewport(pivot+y_axis)
+                )
                 if self.scaling_vector is not None:
                     painter.setPen(QPen(Qt.yellow, 4))
-                    painter.drawLine(pivot, pivot + self.scaling_vector)
+                    painter.drawLine(
+                        self.board_MapToViewport(pivot),
+                        self.board_MapToViewport(pivot + self.scaling_vector)
+                    )
 
                 painter.setPen(QPen(Qt.blue, 4))
-                painter.drawLine(pivot, pivot + self.mapped_scaling_vector)
+                painter.drawLine(
+                    self.board_MapToViewport(pivot),
+                    self.board_MapToViewport(pivot + self.mapped_scaling_vector)
+                )
 
                 if self.proportional_scaling_vector is not None:
                     painter.setPen(QPen(Qt.darkGray, 4))
-                    painter.drawLine(pivot, pivot + self.proportional_scaling_vector)
+                    painter.drawLine(
+                        self.board_MapToViewport(pivot),
+                        self.board_MapToViewport(pivot + self.proportional_scaling_vector)
+                    )
 
             painter.setOpacity(1.0)
 
@@ -3405,7 +3420,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
             __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index, map_to_board=True)
-            self.scaling_pivot_CENTER_point = self.selection_bounding_box.boundingRect().center()
+            self.scaling_pivot_CENTER_point = self.board_MapToBoard(self.selection_bounding_box.boundingRect().center())
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
@@ -3539,12 +3554,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling.scale(bi.factor_item_pos_x_center, bi.factor_item_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 bi.position = pivot + mapped_scaling_vector
+                self.mapped_scaling_vector = mapped_scaling_vector
 
             else:
                 scaling = QTransform()
                 scaling.scale(bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 bi.position = pivot + mapped_scaling_vector
+                self.mapped_scaling_vector = mapped_scaling_vector
 
         # bounding box update
         self.update_selection_bouding_box()
