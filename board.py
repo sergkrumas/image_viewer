@@ -3428,12 +3428,12 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._position_init = QPointF(bi.position)
             # corner
             position_vec = bi.calculate_viewport_position(canvas=self) - self.scaling_pivot_CORNER_point
-            bi.normalized_pos_x, bi.normalized_pos_y = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
+            bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
             # center
             position_vec_center = bi.calculate_viewport_position(canvas=self) - self.scaling_pivot_CENTER_point
             # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
             position_vec_center *= 2
-            bi.normalized_pos_x_center, bi.normalized_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
+            bi.factor_item_pos_x_center, bi.factor_item_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
 
             # self.show_center_label(f'{position_vec} {position_vec_center}')
 
@@ -3531,7 +3531,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling = QTransform()
                 # эти нормализованные координаты актуальны
                 # для пропорционального и непропорционального масштабирования
-                scaling.scale(bi.normalized_pos_x_center, bi.normalized_pos_y_center)
+                scaling.scale(bi.factor_item_pos_x_center, bi.factor_item_pos_y_center)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
                 bi.position = self.board_MapToBoard(new_viewport_position)
@@ -3541,7 +3541,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling = QTransform()
                 # эти нормализованные координаты актуальны
                 # для пропорционального и непропорционального масштабирования
-                scaling.scale(bi.normalized_pos_x, bi.normalized_pos_y)
+                scaling.scale(bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner)
                 mapped_scaling_vector = scaling.map(scaling_vector)
                 new_viewport_position = pivot + mapped_scaling_vector
                 bi.position = self.board_MapToBoard(new_viewport_position)
