@@ -128,7 +128,6 @@ class AutoscrollMixin():
                 if self.AUTOSCROLL.board_item_transform:
                     speed_factor /= 4.0
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
-                self.update_selection_bouding_box()
                 if self.AUTOSCROLL.board_item_transform:
                     if self.translation_ongoing:
                         self.board_DO_selected_items_TRANSLATION(cursor_pos)
@@ -136,6 +135,8 @@ class AutoscrollMixin():
                         self.board_DO_selected_items_ROTATION(cursor_pos)
                     if self.scaling_ongoing:
                         self.board_DO_selected_items_SCALING(cursor_pos)
+                else:
+                    self.update_selection_bouding_box()
 
             elif self.is_library_page_active() or self.is_waterfall_page_active():
                 vs = self.vertical_scrollbars
