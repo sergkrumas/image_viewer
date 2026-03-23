@@ -618,6 +618,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.rotation_pivot_index = None
 
+        self.snapping_targets = list()
+        self.snap_anchors = list()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -2281,9 +2284,22 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.draw_progressive_layout_animation(painter)
 
+        self.board_draw_snapping_targets(painter)
+
         self.board_draw_AD_toolbox(painter)
 
         self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
+
+    def board_draw_snapping_targets(self, painter):
+        painter.save()
+        painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
+        for target in self.snapping_targets:
+            target.draw(self, painter)
+
+        for anchor in self.snap_anchors:
+            anchor.draw(self, painter)
+
+        painter.restore()
 
     def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
         if self.Globals.DEBUG:
@@ -3090,7 +3106,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
             current_folder = self.LibraryData().current_folder()
-            delta = QPointF(self.board_MapToBoard(event_pos)) - self.start_translation_pos
+            cursor_pos = self.board_items_snapping(QPointF(self.board_MapToBoard(event_pos)))
+            delta = cursor_pos - self.start_translation_pos
             if self.translation_ongoing:
                 for board_item in current_folder.board.items_list:
                     if board_item._selected:
@@ -3121,6 +3138,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.move_items_to_group(items=self.selected_items)
             self.check_item_group_under_mouse(reset=True)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
+        self.board_items_snapping_finish()
 
     def board_CANCEL_selected_items_TRANSLATION(self):
         if self.translation_ongoing:
@@ -3128,6 +3146,128 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_update_selection_box_widget()
             self.transform_cancelled = True
             print('cancel translation')
+
+    def board_items_snapping_finish(self):
+        self.show_center_label('finished')
+        self.snap_anchors.clear()
+        self.snapping_targets.clear()
+
+    def board_items_snapping(self, board_mapped_cursor_pos):
+        cursor_pos = board_mapped_cursor_pos
+
+
+        if not self.selected_items:
+            self.show_center_label('skipping', error=True)
+            return cursor_pos
+
+        self.snapping_targets = []
+
+        class SnappingTarget():
+            class types():
+                UNDEFINED = 0
+                POINT = 1
+                LINE = 2
+
+            def __init__(self, x_snapping, y_snapping):
+                self.x_snapping = x_snapping
+                self.y_snapping = y_snapping
+                self.type = -1
+
+                nones = [self.x_snapping, self.y_snapping].count(None)
+                if nones == 2:
+                    self.type = SnappingTarget.types.UNDEFINED
+                elif nones == 1:
+                    self.type = SnappingTarget.types.LINE
+                elif nones == 0:
+                    self.type = SnappingTarget.types.POINT
+
+            def pos(self):
+                return QPointF(self.x_snapping, self.y_snapping)
+
+            def draw(self, canvas, painter):
+                if self.type == SnappingTarget.types.UNDEFINED:
+                    pass
+
+                elif self.type == SnappingTarget.types.POINT:
+                    pos = canvas.board_MapToViewport(QPointF(self.x_snapping, self.y_snapping))
+                    vertical = QPointF(0, 100)
+                    horizontal = QPointF(100, 0)
+                    painter.drawLine(pos - vertical, pos + vertical)
+                    painter.drawLine(pos - horizontal, pos + horizontal)
+                    rect = QRectF(0, 0, 25, 25)
+                    rect.moveCenter(pos)
+                    painter.drawRect(rect)
+
+                elif self.type == SnappingTarget.types.LINE:
+                    if self.x_snapping is None:
+                        x = 0
+                        y = self.y_snapping
+                    elif self.y_snapping is None:
+                        x = self.x_snapping
+                        y = 0
+                    pos = canvas.board_MapToViewport(QPointF(x, y))
+                    canvas_rect = canvas.rect()
+                    if self.x_snapping is None:
+                        pos_y = pos.y()
+                        painter.drawLine(QPointF(0, pos_y), QPointF(canvas_rect.width(), pos_y))
+                    elif self.y_snapping is None:
+                        pos_x = pos.x()
+                        painter.drawLine(QPointF(pos_x, 0), QPointF(pos_x, canvas_rect.height()))
+
+        class SnapAnchor():
+            def __init__(self, item, offset, place):
+                self.offset = offset
+                self.snapped = False
+                self.cursor_pos = None
+                self.place = place
+                self.item = item
+
+            def draw(self, canvas, painter):
+                point = self.place + self.offset
+                point = canvas.board_MapToViewport(point)
+                painter.setPen(QPen(Qt.white, 20))
+                painter.drawPoint(point)
+
+        self.snapping_targets = [
+            SnappingTarget(0.0, 0.0),
+            SnappingTarget(0.0, 500.0),
+            # SnappingTarget(100.0, 0.0),
+            # SnappingTarget(100.0, None),
+            # SnappingTarget(None, 500.0),
+        ]
+
+        item = self.selected_items[0]
+        if (not self.snap_anchors) or (self.snap_anchors[0].item is not item):
+            br = item.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
+            center = br.center()
+            self.snap_anchors = [
+                SnapAnchor(item, QPointF(0, 0), center),
+                SnapAnchor(item, br.bottomLeft() - center, center),
+                SnapAnchor(item, br.topLeft() - center, center),
+                SnapAnchor(item, br.bottomRight() - center, center),
+                SnapAnchor(item, br.topRight() - center, center),
+            ]
+            # self.show_center_label(f'updating anchors for {item}')
+
+        ACTIVATION_RADIUS = 100.0
+
+        for st in self.snapping_targets:
+            for snap_anchor in self.snap_anchors:
+                snap_offset = snap_anchor.offset
+                if st.type == SnappingTarget.types.POINT:
+                    snap_length = QVector2D(st.pos() - (snap_offset + item.position)).length()
+                    if snap_length < ACTIVATION_RADIUS:
+                        if snap_anchor.snapped and QVector2D(snap_anchor.cursor_pos - cursor_pos).length() > (ACTIVATION_RADIUS+20):
+                            snap_anchor.snapped = False
+                            snap_anchor.cursor_pos = None
+                            return cursor_pos
+                        offset = QPointF(item._position) + snap_offset
+                        result = self.start_translation_pos - offset + st.pos()
+                        if snap_anchor.cursor_pos is None:
+                            snap_anchor.snapped = True
+                            snap_anchor.cursor_pos = QPointF(cursor_pos)
+                        return result
+        return cursor_pos
 
     def is_context_menu_executed_over_group_item(self):
         self.check_item_group_under_mouse(use_context_menu_exec_point=True)
