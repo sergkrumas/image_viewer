@@ -3245,10 +3245,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.snapping_targets = [
             # SnappingTarget(0.0, 0.0),
-            # SnappingTarget(0.0, 500.0),
+            SnappingTarget(0.0, 500.0),
             # SnappingTarget(100.0, 0.0),
-            SnappingTarget(100.0, None),
-            SnappingTarget(None, 500.0),
+            # SnappingTarget(100.0, None),
+            # SnappingTarget(None, 500.0),
         ]
 
         item = self.selected_items[0]
@@ -3269,20 +3269,19 @@ class BoardMixin(BoardTextEditItemMixin):
         for st in self.snapping_targets:
             for snap_anchor in self.snap_anchors:
                 snap_offset = snap_anchor.offset
-                if st.type in [SnappingTarget.types.POINT, SnappingTarget.types.LINE]:
-                    snap_length = QVector2D(st.point(cursor_pos) - (snap_offset + item.position)).length()
-                    if snap_length < ACTIVATION_RADIUS:
-                        if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
-                            snap_anchor.snapped = False
-                            snap_anchor.cursor_pos = None
-                            return cursor_pos
-                        offset = QPointF(item._position) + snap_offset
-                        result = self.start_translation_pos - offset + st.point(cursor_pos)
-                        if snap_anchor.cursor_pos is None:
-                            snap_anchor.snapped = True
-                            snap_anchor.cursor_pos = QPointF(cursor_pos)
-                            # snap_anchor.st = st
-                        return result
+                snap_length = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position)).length()
+                if snap_length < ACTIVATION_RADIUS:
+                    if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                        snap_anchor.snapped = False
+                        snap_anchor.cursor_pos = None
+                        return cursor_pos
+                    offset = QPointF(item._position) + snap_offset
+                    result = self.start_translation_pos - offset + st.point(cursor_pos)
+                    if snap_anchor.cursor_pos is None:
+                        snap_anchor.snapped = True
+                        snap_anchor.cursor_pos = QPointF(cursor_pos)
+                        snap_anchor.st = st
+                    return result
         return cursor_pos
 
     def is_context_menu_executed_over_group_item(self):
