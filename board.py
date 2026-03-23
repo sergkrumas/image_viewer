@@ -3181,8 +3181,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif nones == 0:
                     self.type = SnappingTarget.types.POINT
 
-            def pos(self):
-                return QPointF(self.x_snapping, self.y_snapping)
+            def point(self, cp):
+                if self.type == SnappingTarget.types.POINT:
+                    return QPointF(self.x_snapping, self.y_snapping)
+                elif self.type == SnappingTarget.types.LINE:
+                    if self.x_snapping is None:
+                        return QPointF(cp.x(), self.y_snapping)
+                    elif self.y_snapping is None:
+                        return QPointF(self.x_snapping, cp.y())
 
             def draw(self, canvas, painter):
                 if self.type == SnappingTarget.types.UNDEFINED:
@@ -3214,6 +3220,15 @@ class BoardMixin(BoardTextEditItemMixin):
                         pos_x = pos.x()
                         painter.drawLine(QPointF(pos_x, 0), QPointF(pos_x, canvas_rect.height()))
 
+            def get_deactivation_length(self, snap_pos, cursor_pos):
+                if self.type == SnappingTarget.types.POINT:
+                    return QVector2D(snap_pos - cursor_pos).length()
+                elif self.type == SnappingTarget.types.LINE:
+                    if self.x_snapping is None:
+                        return QVector2D(QPointF(0, snap_pos.y()) - QPointF(0, cursor_pos.y())).length()
+                    elif self.y_snapping is None:
+                        return QVector2D(QPointF(snap_pos.x(), 0) - QPointF(cursor_pos.x(), 0)).length()
+
         class SnapAnchor():
             def __init__(self, item, offset, place):
                 self.offset = offset
@@ -3229,11 +3244,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawPoint(point)
 
         self.snapping_targets = [
-            SnappingTarget(0.0, 0.0),
-            SnappingTarget(0.0, 500.0),
+            # SnappingTarget(0.0, 0.0),
+            # SnappingTarget(0.0, 500.0),
             # SnappingTarget(100.0, 0.0),
-            # SnappingTarget(100.0, None),
-            # SnappingTarget(None, 500.0),
+            SnappingTarget(100.0, None),
+            SnappingTarget(None, 500.0),
         ]
 
         item = self.selected_items[0]
@@ -3254,18 +3269,19 @@ class BoardMixin(BoardTextEditItemMixin):
         for st in self.snapping_targets:
             for snap_anchor in self.snap_anchors:
                 snap_offset = snap_anchor.offset
-                if st.type == SnappingTarget.types.POINT:
-                    snap_length = QVector2D(st.pos() - (snap_offset + item.position)).length()
+                if st.type in [SnappingTarget.types.POINT, SnappingTarget.types.LINE]:
+                    snap_length = QVector2D(st.point(cursor_pos) - (snap_offset + item.position)).length()
                     if snap_length < ACTIVATION_RADIUS:
-                        if snap_anchor.snapped and QVector2D(snap_anchor.cursor_pos - cursor_pos).length() > (ACTIVATION_RADIUS+20):
+                        if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
                             snap_anchor.snapped = False
                             snap_anchor.cursor_pos = None
                             return cursor_pos
                         offset = QPointF(item._position) + snap_offset
-                        result = self.start_translation_pos - offset + st.pos()
+                        result = self.start_translation_pos - offset + st.point(cursor_pos)
                         if snap_anchor.cursor_pos is None:
                             snap_anchor.snapped = True
                             snap_anchor.cursor_pos = QPointF(cursor_pos)
+                            # snap_anchor.st = st
                         return result
         return cursor_pos
 
