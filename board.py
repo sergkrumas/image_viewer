@@ -191,6 +191,7 @@ class BoardItem():
 
         self.pixmap = None
         self.animated = False
+        self.audiovideo_file = False
 
         self.visible = visible
 
@@ -262,7 +263,7 @@ class BoardItem():
         return abs(r.width() * r.height())
 
     def retrieve_image_data(self):
-        if self.type == BoardItem.types.ITEM_IMAGE:
+        if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             image_data = self.image_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             image_data = self.item_folder_data.current_image()
@@ -281,7 +282,7 @@ class BoardItem():
         return copied_item
 
     def info_text(self):
-        if self.type == self.types.ITEM_IMAGE:
+        if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             image_data = self.image_data
             text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
             if self.image_source_url is not None:
@@ -310,7 +311,7 @@ class BoardItem():
 
     def get_size_rect(self, scaled=False):
         if scaled:
-            if self.type == self.types.ITEM_IMAGE:
+            if self.type in [self.types.ITEM_IMAGE, self.types.ITEM_AV]:
                 scale_x = self.scale_x
                 scale_y = self.scale_y
             elif self.type == self.types.ITEM_FOLDER:
@@ -328,7 +329,7 @@ class BoardItem():
         else:
             scale_x = 1.0
             scale_y = 1.0
-        if self.type == self.types.ITEM_IMAGE:
+        if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             return QRectF(0, 0, self.image_data.source_width*scale_x, self.image_data.source_height*scale_y)
         elif self.type == self.types.ITEM_FOLDER:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
@@ -405,7 +406,7 @@ class BoardItem():
         return transform
 
     def update_corner_info(self):
-        if self.type == BoardItem.types.ITEM_IMAGE:
+        if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             current_frame = self.movie.currentFrameNumber()
             frame_count = self.movie.frameCount()
             if frame_count > 0:
@@ -775,6 +776,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
                             self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
                             self.show_center_label(_('You\'re on viewer page now'))
+                        elif board_item.type == BoardItem.types.ITEM_AV:
+                            execute_clickable_text(board_item.image_data.filepath)
                         else:
                             self.board_fit_content_on_screen(None, board_item=board_item)
                         break
@@ -1774,13 +1777,18 @@ class BoardMixin(BoardTextEditItemMixin):
         if image_data.preview_error:
             return None
         else:
-            board_item = BoardItem(BoardItem.types.ITEM_IMAGE, visible=False)
+            if image_data.is_audio_video_filetype:
+                item_type = BoardItem.types.ITEM_AV
+            else:
+                item_type = BoardItem.types.ITEM_IMAGE
+            board_item = BoardItem(item_type, visible=False)
             # linking board and image data
             board_item.image_data = image_data
             image_data.board_item = board_item
             board.items_list.append(board_item)
             # fill attributes and overlays
             board_item.animated_file = image_data.is_animated_file
+            board_item.audiovideo_file = image_data.is_audio_video_filetype
             board_item.board_index = self.retrieve_new_board_item_index()
             if direction == 1:
                 _set_position(board_item, image_data, offset)
@@ -2027,7 +2035,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 ))
                 if full_quality:
                     self.trigger_board_item_pixmap_loading(board_item)
-                    image_to_draw = board_item.pixmap
+                    if board_item.type == BoardItem.types.ITEM_AV:
+                        image_to_draw = image_data.preview
+                    else:
+                        image_to_draw = board_item.pixmap
                 else:
                     image_to_draw = image_data.preview
 
@@ -2036,6 +2047,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
+                    if board_item.type == BoardItem.types.ITEM_AV and full_quality:
+                        painter.drawText(item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.image_data.filename)
 
                 painter.setOpacity(1.0)
                 case1 = board_item.type == BoardItem.types.ITEM_IMAGE
@@ -2162,7 +2175,13 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.animated = False
             show_msg(filepath)
 
-        if board_item.type == BoardItem.types.ITEM_IMAGE:
+        def __load_audio_video(filepath):
+            # TODO: написать извлечение превьюшки через ffmpeg для видео, дла аудио пока не знаю что делать
+            board_item.pixmap = QPixmap()
+            board_item.animated = False
+            show_msg(filepath)
+
+        if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             filepath = board_item.image_data.filepath
         elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             filepath = board_item.item_folder_data.current_image().filepath
@@ -2177,6 +2196,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     __load_animated(filepath)
                 elif self.LibraryData().is_svg_file(filepath):
                     __load_svg(filepath)
+                elif board_item.audiovideo_file:
+                    __load_audio_video(filepath)
                 else:
                     __load_static(filepath)
             except Exception as e:

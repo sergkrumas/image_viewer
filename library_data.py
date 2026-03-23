@@ -771,6 +771,41 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         )
         return filepath.lower().endswith(exts)
 
+    @classmethod
+    def audio_exts(cls):
+        return (
+            '.wav',
+            '.mp3',
+            '.aac',
+            '.wma',
+            '.ogg',
+            '.m4a',
+        )
+
+    @classmethod
+    def video_exts(cls):
+        return (
+            '.mp4',
+            '.mkv',
+            '.webm',
+            '.avi',
+            '.mov',
+            '.flv',
+            '.mpg',
+            '.mpeg',
+            '.m4v',
+            '.m4p',
+        )
+
+    @classmethod
+    @lru_cache(None)
+    def _audio_video_exts(cls):
+        return cls.audio_exts() + cls.video_exts()
+
+    @classmethod
+    def is_audio_video_file(cls, filepath):
+        return filepath.lower().endswith(cls._audio_video_exts())
+
     @staticmethod
     def is_interest_file(filepath):
         # поддерживаемые самим Qt форматы для чтения
@@ -909,6 +944,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if from_board_items:
                 source = image_data.board_item.pixmap
                 image_data.preview_error = False
+            elif image_data.is_audio_video_filetype:
+                source = Globals.AUDIO_VIDEO_PIXMAP
+                image_data.preview_error = False                
             elif not image_data.is_supported_filetype:
                 source = Globals.NOT_SUPPORTED_PIXMAP
                 image_data.preview_error = True
@@ -1396,6 +1434,7 @@ class FolderData():
         LibraryData().remove_progressbar()
         for image_data in self.images_list:
             image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
+            image_data.is_audio_video_filetype = LibraryData.is_audio_video_file(image_data.filepath)
 
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
@@ -1745,6 +1784,7 @@ class ImageData():
         self.hint_position = None
         self.image_rotation = 0
         self.is_supported_filetype = True
+        self.is_audio_video_filetype = False
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
         self.filename = os.path.basename(filepath)

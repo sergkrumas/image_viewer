@@ -52,22 +52,31 @@ def error_preview_pixmap(Globals):
     painter.end()
     Globals.ERROR_PREVIEW_PIXMAP = ERROR_PREVIEW_PIXMAP
 
-def not_supported_pixmap(Globals):
+def label_preview(Globals, text):
 
-    NOT_SUPPORTED_PIXMAP = QPixmap(200, 200)
-    NOT_SUPPORTED_PIXMAP.fill(Qt.black)
+    PIXMAP = QPixmap(200, 200)
+    PIXMAP.fill(Qt.black)
     painter = QPainter()
-    painter.begin(NOT_SUPPORTED_PIXMAP)
+    painter.begin(PIXMAP)
     painter.setPen(QPen(Qt.red, 5))
     font = painter.font()
     font.setPixelSize(100)
     painter.setFont(font)
-    r = NOT_SUPPORTED_PIXMAP.rect().adjusted(20, 20, -20, -20)
+    r = PIXMAP.rect().adjusted(20, 20, -20, -20)
     # painter.drawLine(r.topLeft(), r.bottomRight())
     # painter.drawLine(r.bottomLeft(), r.topRight())
-    painter.drawText(NOT_SUPPORTED_PIXMAP.rect(), Qt.AlignCenter | Qt.AlignVCenter, "?!")
+    painter.drawText(PIXMAP.rect(), Qt.AlignCenter | Qt.AlignVCenter, text)
     painter.end()
-    Globals.NOT_SUPPORTED_PIXMAP = NOT_SUPPORTED_PIXMAP
+
+    return PIXMAP
+
+def not_supported_pixmap(Globals):
+
+    Globals.NOT_SUPPORTED_PIXMAP = label_preview(Globals, "?!")
+
+def audio_video_pixmap(Globals):
+
+    Globals.AUDIO_VIDEO_PIXMAP = label_preview(Globals, "AV")
 
 def fav_big_icon(Globals):
 
@@ -477,6 +486,7 @@ def generate_pixmaps(Globals, Settings):
     default_thumbnail(Globals, Settings)
     error_preview_pixmap(Globals)
     not_supported_pixmap(Globals)
+    audio_video_pixmap(Globals)
     fav_big_icon(Globals)
     tag_big_icon(Globals)
     comments_big_icon(Globals)
