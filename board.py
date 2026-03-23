@@ -1659,13 +1659,13 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_ctrl_z(self):
         for bi in self.board_get_selected_or_visible_items():
             self.board_retrieve_transform_back_from_history(bi)
-        self.update_selection_bouding_box()
+        self.board_update_selection_box()
 
     def board_reset_items_to_layout_transforms(self):
         for bi in self.board_get_selected_or_visible_items():
             self.board_stash_current_transform_to_history(bi)
             self.board_apply_layout_transforms(bi)
-        self.update_selection_bouding_box()
+        self.board_update_selection_box()
 
     def board_stash_current_transform_to_history(self, board_item):
         # item_key = board_item.board_index
@@ -3107,7 +3107,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_CANCEL_selected_items_TRANSLATION(self):
         if self.translation_ongoing:
             self.board_FINISH_selected_items_TRANSLATION(None, cancel=True)
-            self.update_selection_bouding_box()
+            self.board_update_selection_box()
             self.transform_cancelled = True
             print('cancel translation')
 
@@ -3228,7 +3228,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for board_item in folder_data.board.items_list:
             if board_item._selected:
                 self.selected_items.append(board_item)
-        self.update_selection_bouding_box()
+        self.board_update_selection_box()
 
     def board_unselect_all_items(self):
         cf = self.LibraryData().current_folder()
@@ -3242,7 +3242,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._selected = True
         self.update()
 
-    def update_selection_bouding_box(self, transformation_ongoing=False, debug_mw=None):
+    def board_update_selection_box(self, transformation_ongoing=False, debug_mw=None):
         self.selection_box = None
         if len(self.selected_items) == 1:
             self.selection_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
@@ -3349,9 +3349,9 @@ class BoardMixin(BoardTextEditItemMixin):
         debug_mw = self
         debug_mw = None
         if len(self.selected_items) == 1:
-            self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
+            self.board_update_selection_box(transformation_ongoing=True, debug_mw=debug_mw)
         else:
-            self.update_selection_bouding_box(transformation_ongoing=True, debug_mw=debug_mw)
+            self.board_update_selection_box(transformation_ongoing=True, debug_mw=debug_mw)
         translate_to_coord_origin = QTransform()
         translate_back_to_place = QTransform()
 
@@ -3376,7 +3376,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_CANCEL_selected_items_ROTATION(self):
         if self.rotation_ongoing:
             self.board_FINISH_selected_items_ROTATION(None, cancel=True)
-            self.update_selection_bouding_box()
+            self.board_update_selection_box()
             self.transform_cancelled = True
             print('cancel rotation')
 
@@ -3581,7 +3581,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.mapped_scaling_vector = mapped_scaling_vector
 
         # bounding box update
-        self.update_selection_bouding_box()
+        self.board_update_selection_box()
         self.autoscroll_activate_board_item_transform_autoscroll()
 
     def board_FINISH_selected_items_SCALING(self, event, cancel=False):
@@ -3603,7 +3603,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_CANCEL_selected_items_SCALING(self):
         if self.scaling_ongoing:
             self.board_FINISH_selected_items_SCALING(None, cancel=True)
-            self.update_selection_bouding_box()
+            self.board_update_selection_box()
             self.transform_cancelled = True
             print('cancel scaling')
 
@@ -3734,7 +3734,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
                     self.board_START_selected_items_TRANSLATION(event.pos())
-                    self.update_selection_bouding_box()
+                    self.board_update_selection_box()
 
                 else:
                     self.selection_start_point = QPointF(event.pos())
@@ -3794,7 +3794,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif self.translation_ongoing:
                 self.board_DO_selected_items_TRANSLATION(event.pos())
-                self.update_selection_bouding_box()
+                self.board_update_selection_box()
 
             elif self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseMoveEvent(event)
@@ -3812,7 +3812,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 start_value = self.canvas_origin
                 # delta = end_value-start_value
                 self.canvas_origin = end_value
-                self.update_selection_bouding_box()
+                self.board_update_selection_box()
 
         elif event.buttons() == Qt.NoButton:
             bi = self.board_item_under_mouse
@@ -4021,9 +4021,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.rotation_ongoing:
             self.board_DO_selection_box_ROTATION()
         elif self.scaling_ongoing:
-            self.update_selection_bouding_box()
+            self.board_update_selection_box()
         else:
-            self.update_selection_bouding_box()
+            self.board_update_selection_box()
 
         self.update()
 

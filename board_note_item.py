@@ -304,7 +304,7 @@ class BoardTextEditItemMixin():
 
         self.board_TextElementRecalculateGabarit(ae)
         self.board_TextElementDefineSelectionRects()
-        self.update_selection_bouding_box()
+        self.board_update_selection_box()
 
         self.update()
 

@@ -5557,7 +5557,7 @@ class MainWindow(QMainWindow,
                 self.image_center_position += delta
             elif self.is_board_page_active():
                 self.canvas_origin += delta
-                self.update_selection_bouding_box()
+                self.board_update_selection_box()
 
 
         if self.is_start_page_active():

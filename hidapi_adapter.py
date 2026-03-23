@@ -427,7 +427,7 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
         if offset:
             offset *= MainWindowObj.STNG.gamepad_move_stick_speed
             MainWindowObj.canvas_origin -= offset
-            MainWindowObj.update_selection_bouding_box()
+            MainWindowObj.board_update_selection_box()
         MainWindowObj.left_stick_vec = QPointF(data[2], data[3])
 
     elif key == SignalConstants.BOARD_SCALE_DATA:
@@ -436,7 +436,7 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
             pivot = MainWindowObj.rect().center()
             scale_speed = fit(abs(scroll_value), 0.0, 1.0, 0.000001, 0.02)
             MainWindowObj.do_scale_board(-scroll_value, False, False, True, pivot=pivot, scale_speed=scale_speed)
-            MainWindowObj.update_selection_bouding_box()
+            MainWindowObj.board_update_selection_box()
         MainWindowObj.right_stick_vec = QPointF(data[2], data[3])
 
     elif key == SignalConstants.LISTENING_STOP:
@@ -457,11 +457,11 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
                 def reset_position():
                     MainWindowObj.board_viewport_reset(scale=False, to_item=True)
                     MainWindowObj.show_center_label('viewport position is reset!')
-                    MainWindowObj.update_selection_bouding_box()
+                    MainWindowObj.board_update_selection_box()
                 def reset_scale():
                     MainWindowObj.board_viewport_reset(position=False, scale=False, scale_inplace=True)
                     MainWindowObj.show_center_label('viewport scale is reset!')
-                    MainWindowObj.update_selection_bouding_box()
+                    MainWindowObj.board_update_selection_box()
                 if button == SignalConstants.BUTTON_LEFT_STICK:
                     if thread.is_sticks_roles_swapped:
                         reset_scale()
