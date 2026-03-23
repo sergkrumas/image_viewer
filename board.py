@@ -1140,7 +1140,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if fd.board.prepareBoardOnFileLoad:
             if found_pi.preparePluginBoard:
                 found_pi.preparePluginBoard(self, found_pi, file_loading=True)
-        self.init_selection_box_widget(fd)
+        self.prepare_selection_box_widget(fd)
         self.build_board_bounding_rect(fd)
 
         return fd
@@ -1535,7 +1535,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_make_board_current(__folder_data)
             if not back_to_referer:
                 self.LibraryData().current_folder().board.referer_board_folder = cf
-            self.init_selection_box_widget(__folder_data)
+            self.prepare_selection_box_widget(__folder_data)
         else:
             self.show_center_label(_("No place to return"), error=True)
         self.update()
@@ -2790,7 +2790,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._selected = False
         for item in items:
             item._selected = True
-        self.init_selection_box_widget(current_folder)
+        self.prepare_selection_box_widget(current_folder)
 
     def board_load_highres(self):
         with self.show_longtime_process_ongoing(self, _("Loading hires images")):
@@ -2831,7 +2831,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.move_items_to_group(item_group=gi, items=self.selected_items)
 
-        self.init_selection_box_widget(cf)
+        self.prepare_selection_box_widget(cf)
         self.update()
 
     def get_removed_items_group(self, folder_data):
@@ -3080,7 +3080,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         if board_item.type == BoardItem.types.ITEM_FRAME:
                             for ch_bi in board_item._children_items:
                                 ch_bi.position = ch_bi._position + delta
-                self.init_selection_box_widget(current_folder)
+                self.prepare_selection_box_widget(current_folder)
                 self.check_item_group_under_mouse()
                 self.autoscroll_activate_board_item_transform_autoscroll()
         else:
@@ -3221,9 +3221,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         board_item._selected = False
                     else:
                         board_item._selected = is_under_mouse
-        self.init_selection_box_widget(current_folder)
+        self.prepare_selection_box_widget(current_folder)
 
-    def init_selection_box_widget(self, folder_data):
+    def prepare_selection_box_widget(self, folder_data):
         self.selected_items = []
         for board_item in folder_data.board.items_list:
             if board_item._selected:
@@ -3234,7 +3234,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         for board_item in cf.board.items_list:
             board_item._selected = False
-        self.init_selection_box_widget(cf)
+        self.prepare_selection_box_widget(cf)
 
     def board_select_all_items(self):
         cf = self.LibraryData().current_folder()
@@ -3369,7 +3369,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.rotation = bi._rotation_init
                 bi.position = QPointF(bi._position_init)
         else:
-            self.init_selection_box_widget(cf)
+            self.prepare_selection_box_widget(cf)
             self.build_board_bounding_rect(cf)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
 
@@ -3596,7 +3596,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.scale_y = bi._scale_y_init
                 bi.position = QPointF(bi._position_init)
         else:
-            self.init_selection_box_widget(cf)
+            self.prepare_selection_box_widget(cf)
             self.build_board_bounding_rect(cf)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
 
@@ -3967,7 +3967,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 delta = new_item.position - selection_center
                 new_item.position = rel_cursor_pos + delta
                 new_item._selected = True
-            self.init_selection_box_widget(cf)
+            self.prepare_selection_box_widget(cf)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.1):
@@ -4414,7 +4414,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 offset -= QPointF(bi_width, 0)
 
         self.build_board_bounding_rect(folder_data)
-        self.init_selection_box_widget(folder_data)
+        self.prepare_selection_box_widget(folder_data)
         self.update()
 
     def board_open_in_google_chrome(self):
@@ -5419,7 +5419,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         cf = self.LibraryData().current_folder()
         self.build_board_bounding_rect(cf)
-        self.init_selection_box_widget(cf)
+        self.prepare_selection_box_widget(cf)
         self.update()
 
 
