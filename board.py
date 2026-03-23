@@ -551,7 +551,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.selection_start_point = None
         self.selection_ongoing = False
         self.selected_items = []
-        self.selection_bounding_box = None
+        self.selection_box = None
 
         self.board_show_minimap = False
         self.images_drawn = 0
@@ -1140,7 +1140,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if fd.board.prepareBoardOnFileLoad:
             if found_pi.preparePluginBoard:
                 found_pi.preparePluginBoard(self, found_pi, file_loading=True)
-        self.init_selection_bounding_box_widget(fd)
+        self.init_selection_box_widget(fd)
         self.build_board_bounding_rect(fd)
 
         return fd
@@ -1535,7 +1535,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_make_board_current(__folder_data)
             if not back_to_referer:
                 self.LibraryData().current_folder().board.referer_board_folder = cf
-            self.init_selection_bounding_box_widget(__folder_data)
+            self.init_selection_box_widget(__folder_data)
         else:
             self.show_center_label(_("No place to return"), error=True)
         self.update()
@@ -2377,24 +2377,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_selection_transform_box(self, painter):
         self.rotation_activation_areas = []
-        if self.selection_bounding_box is not None:
+        if self.selection_box is not None:
 
             painter.setOpacity(self.board_selection_transform_box_opacity)
             pen = QPen(self.selection_color, 4)
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
-            painter.drawPolygon(self.selection_bounding_box)
+            painter.drawPolygon(self.selection_box)
 
             default_pen = painter.pen()
 
             # rotation activation areas
             painter.setPen(QPen(Qt.red))
-            for index, point in enumerate(self.selection_bounding_box):
-                points_count = self.selection_bounding_box.size()
+            for index, point in enumerate(self.selection_box):
+                points_count = self.selection_box.size()
                 prev_point_index = (index-1) % points_count
                 next_point_index = (index+1) % points_count
-                prev_point = self.selection_bounding_box[prev_point_index]
-                next_point = self.selection_bounding_box[next_point_index]
+                prev_point = self.selection_box[prev_point_index]
+                next_point = self.selection_box[next_point_index]
 
                 a = QVector2D(point - prev_point).normalized().toPointF()
                 b = QVector2D(point - next_point).normalized().toPointF()
@@ -2417,7 +2417,7 @@ class BoardMixin(BoardTextEditItemMixin):
             default_pen.setCapStyle(Qt.RoundCap)
             painter.setPen(default_pen)
 
-            for index, point in enumerate(self.selection_bounding_box):
+            for index, point in enumerate(self.selection_box):
                 painter.drawPoint(point)
 
             if self.board_debug_transform_widget and self.scaling_ongoing and self.scaling_pivot_point is not None:
@@ -2628,7 +2628,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.setCursor(Qt.OpenHandCursor)
         elif self.board_TextElementCursorSetterNeeded():
             self.board_TextElementCursorSetter()
-        elif self.selection_bounding_box is not None:
+        elif self.selection_box is not None:
             if self.is_over_scaling_activation_area(self.mapped_cursor_pos()):
                 cursor = self.get_widget_cursor(self.scale_rastr_source, self.board_get_cursor_angle())
                 self.setCursor(cursor)
@@ -2790,7 +2790,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._selected = False
         for item in items:
             item._selected = True
-        self.init_selection_bounding_box_widget(current_folder)
+        self.init_selection_box_widget(current_folder)
 
     def board_load_highres(self):
         with self.show_longtime_process_ongoing(self, _("Loading hires images")):
@@ -2831,7 +2831,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.move_items_to_group(item_group=gi, items=self.selected_items)
 
-        self.init_selection_bounding_box_widget(cf)
+        self.init_selection_box_widget(cf)
         self.update()
 
     def get_removed_items_group(self, folder_data):
@@ -3006,7 +3006,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_select_items([group_item])
 
     def board_add_item_frame(self):
-        if self.selection_bounding_box is None:
+        if self.selection_box is None:
             self.show_center_label(_("No items selected!"), error=True)
         else:
             folder_data = self.LibraryData().current_folder()
@@ -3014,7 +3014,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.board_index = self.retrieve_new_board_item_index()
             folder_data.board.items_list.append(bi)
 
-            selection_bounding_rect = self.selection_bounding_box.boundingRect()
+            selection_bounding_rect = self.selection_box.boundingRect()
             bi.position = self.board_MapToBoard(selection_bounding_rect.center())
             bi.width = selection_bounding_rect.width() / self.canvas_scale_x
             bi.height = selection_bounding_rect.height() / self.canvas_scale_y
@@ -3080,7 +3080,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         if board_item.type == BoardItem.types.ITEM_FRAME:
                             for ch_bi in board_item._children_items:
                                 ch_bi.position = ch_bi._position + delta
-                self.init_selection_bounding_box_widget(current_folder)
+                self.init_selection_box_widget(current_folder)
                 self.check_item_group_under_mouse()
                 self.autoscroll_activate_board_item_transform_autoscroll()
         else:
@@ -3221,9 +3221,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         board_item._selected = False
                     else:
                         board_item._selected = is_under_mouse
-        self.init_selection_bounding_box_widget(current_folder)
+        self.init_selection_box_widget(current_folder)
 
-    def init_selection_bounding_box_widget(self, folder_data):
+    def init_selection_box_widget(self, folder_data):
         self.selected_items = []
         for board_item in folder_data.board.items_list:
             if board_item._selected:
@@ -3234,7 +3234,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         for board_item in cf.board.items_list:
             board_item._selected = False
-        self.init_selection_bounding_box_widget(cf)
+        self.init_selection_box_widget(cf)
 
     def board_select_all_items(self):
         cf = self.LibraryData().current_folder()
@@ -3243,9 +3243,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def update_selection_bouding_box(self, transformation_ongoing=False, debug_mw=None):
-        self.selection_bounding_box = None
+        self.selection_box = None
         if len(self.selected_items) == 1:
-            self.selection_bounding_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
+            self.selection_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
         elif len(self.selected_items) > 1:
             bounding_box = QRectF()
             for board_item in self.selected_items:
@@ -3255,7 +3255,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         skip_rotation=transformation_ongoing,
                         debug_mw=debug_mw).boundingRect()
                 )
-            self.selection_bounding_box = QPolygonF([
+            self.selection_box = QPolygonF([
                 bounding_box.topLeft(),
                 bounding_box.topRight(),
                 bounding_box.bottomRight(),
@@ -3274,18 +3274,18 @@ class BoardMixin(BoardTextEditItemMixin):
         self.rotation_ongoing = True
         mtb = self.board_MapToBoard
 
-        self.__selection_bounding_box = QPolygonF(self.selection_bounding_box)
-        pivot = mtb(self.selection_bounding_box.boundingRect().center())
+        self.__selection_box = QPolygonF(self.selection_box)
+        pivot = mtb(self.selection_box.boundingRect().center())
         radius_vector = mtb(QPointF(event_pos)) - pivot
         self.rotation_start_angle_rad = math.atan2(radius_vector.y(), radius_vector.x())
 
-        points_count = self.selection_bounding_box.size()
+        points_count = self.selection_box.size()
         index = self.widget_active_point_index
         pivot_point_index = (index+2) % points_count
         self.rotation_pivot_index = pivot_point_index
 
-        self.rotation_pivot_corner_pos = mtb(QPointF(self.__selection_bounding_box[self.rotation_pivot_index]))
-        self.rotation_pivot_center_pos = mtb(self.__selection_bounding_box.boundingRect().center())
+        self.rotation_pivot_corner_pos = mtb(QPointF(self.__selection_box[self.rotation_pivot_index]))
+        self.rotation_pivot_center_pos = mtb(self.__selection_box.boundingRect().center())
 
         for bi in self.selected_items:
             bi._rotation = bi.rotation
@@ -3342,10 +3342,10 @@ class BoardMixin(BoardTextEditItemMixin):
         # bounding box transformation
         self.mtb_rotation_pivot = pivot
         self.rotation_transform = rotation
-        self.board_DO_selection_bounding_box_ROTATION()
+        self.board_DO_selection_box_ROTATION()
         self.autoscroll_activate_board_item_transform_autoscroll()
 
-    def board_DO_selection_bounding_box_ROTATION(self):
+    def board_DO_selection_box_ROTATION(self):
         debug_mw = self
         debug_mw = None
         if len(self.selected_items) == 1:
@@ -3359,7 +3359,7 @@ class BoardMixin(BoardTextEditItemMixin):
         translate_to_coord_origin.translate(-offset.x(), -offset.y())
         translate_back_to_place.translate(offset.x(), offset.y())
         transform = translate_to_coord_origin * self.rotation_transform * translate_back_to_place
-        self.selection_bounding_box = transform.map(self.selection_bounding_box)
+        self.selection_box = transform.map(self.selection_box)
 
     def board_FINISH_selected_items_ROTATION(self, event, cancel=False):
         self.rotation_ongoing = False
@@ -3369,7 +3369,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.rotation = bi._rotation_init
                 bi.position = QPointF(bi._position_init)
         else:
-            self.init_selection_bounding_box_widget(cf)
+            self.init_selection_box_widget(cf)
             self.build_board_bounding_rect(cf)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
 
@@ -3381,8 +3381,8 @@ class BoardMixin(BoardTextEditItemMixin):
             print('cancel rotation')
 
     def is_over_scaling_activation_area(self, position):
-        if self.selection_bounding_box is not None:
-            enumerated = list(enumerate(self.selection_bounding_box))
+        if self.selection_box is not None:
+            enumerated = list(enumerate(self.selection_box))
             enumerated.insert(0, enumerated.pop(2))
             for index, point in enumerated:
                 diff = point - QPointF(position)
@@ -3404,14 +3404,14 @@ class BoardMixin(BoardTextEditItemMixin):
         return math.degrees(math.atan2(__vector.y(), __vector.x()))
 
     def board_SCALING_pivot_data(self, index, map_to_board=False):
-        points_count = self.selection_bounding_box.size()
+        points_count = self.selection_box.size()
 
         pivot_point_index = (index+2) % points_count
         prev_point_index = (pivot_point_index-1) % points_count
         next_point_index = (pivot_point_index+1) % points_count
-        prev_point = QPointF(self.selection_bounding_box[prev_point_index])
-        next_point = QPointF(self.selection_bounding_box[next_point_index])
-        pivot_point = QPointF(self.selection_bounding_box[pivot_point_index])
+        prev_point = QPointF(self.selection_box[prev_point_index])
+        next_point = QPointF(self.selection_box[next_point_index])
+        pivot_point = QPointF(self.selection_box[pivot_point_index])
 
         if map_to_board:
             prev_point = self.board_MapToBoard(prev_point)
@@ -3426,18 +3426,18 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_START_selected_items_SCALING(self, event):
         self.scaling_ongoing = True
 
-        bbw = self.selection_bounding_box.boundingRect().width()
-        bbh = self.selection_bounding_box.boundingRect().height()
-        self.selection_bounding_box_aspect_ratio = bbw/bbh
+        bbw = self.selection_box.boundingRect().width()
+        bbh = self.selection_box.boundingRect().height()
+        self.selection_box_aspect_ratio = bbw/bbh
 
-        points_count = self.selection_bounding_box.size()
+        points_count = self.selection_box.size()
 
         if True:
             # заранее высчитываем пивот и оси для скейла относительно центра выделения (включается модификатором Alt);
             # для удобства вычислений заимствуем оси у нулевой точки и укорачиваем их в два раза
             index = 0
             __x_axis, __y_axis, pivot_point = self.board_SCALING_pivot_data(index, map_to_board=True)
-            self.scaling_pivot_CENTER_point = self.board_MapToBoard(self.selection_bounding_box.boundingRect().center())
+            self.scaling_pivot_CENTER_point = self.board_MapToBoard(self.selection_box.boundingRect().center())
 
             self.scaling_from_center_x_axis = __x_axis/2.0
             self.scaling_from_center_y_axis = __y_axis/2.0
@@ -3532,7 +3532,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 x_sign = math.copysign(1.0, QVector2D.dotProduct(x_axis, QVector2D(self.scaling_vector).normalized()))
                 y_sign = math.copysign(1.0, QVector2D.dotProduct(y_axis, QVector2D(self.scaling_vector).normalized()))
                 if multi_item_mode:
-                    aspect_ratio = self.selection_bounding_box_aspect_ratio
+                    aspect_ratio = self.selection_box_aspect_ratio
                 else:
                     aspect_ratio = bi.aspect_ratio()
                 psv = x_sign*aspect_ratio*x_axis.toPointF() + y_sign*y_axis.toPointF()
@@ -3596,7 +3596,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi.scale_y = bi._scale_y_init
                 bi.position = QPointF(bi._position_init)
         else:
-            self.init_selection_bounding_box_widget(cf)
+            self.init_selection_box_widget(cf)
             self.build_board_bounding_rect(cf)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
 
@@ -3616,7 +3616,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_SCALE_selected_items_draw_monitor(self, painter):
         if not self.PTWS_draw_monitor:
             return
-        if self.selection_bounding_box is None:
+        if self.selection_box is None:
             return
         if self.PTWS_scaling_active_point_index is None:
             return
@@ -3624,27 +3624,27 @@ class BoardMixin(BoardTextEditItemMixin):
         cursor_pos = self.mapFromGlobal(QCursor().pos())
         index = self.PTWS_scaling_active_point_index
         if index == 4:
-            pivot_pos = self.__selection_bounding_box_qpolygon_centroid()
+            pivot_pos = self.__selection_box_qpolygon_centroid()
         else:
-            pivot_pos = self.selection_bounding_box[index]
+            pivot_pos = self.selection_box[index]
 
         painter.save()
         painter.setPen(QPen(Qt.red, 2))
         painter.drawLine(cursor_pos, pivot_pos)
         painter.restore()
 
-    def __selection_bounding_box_qpolygon_centroid(self):
+    def __selection_box_qpolygon_centroid(self):
         c = QPointF(0, 0)
-        for p in self.selection_bounding_box:
+        for p in self.selection_box:
             c += p
         c /= 4.0
         return c
 
     def board_SCALE_selected_items_choose_nearest_corner(self):
         position = self.mapFromGlobal(QCursor().pos())
-        if self.selection_bounding_box is not None:
-            enumerated = list(enumerate(self.selection_bounding_box))
-            enumerated.append((4, self.__selection_bounding_box_qpolygon_centroid()))
+        if self.selection_box is not None:
+            enumerated = list(enumerate(self.selection_box))
+            enumerated.append((4, self.__selection_box_qpolygon_centroid()))
             diffs = {}
             for index, point in enumerated:
                 diffs[index] = QVector2D(point - QPointF(position)).length()
@@ -3653,9 +3653,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.PTWS_scaling_active_point_index = index
             if index == 4:
                 # выбираем первую, но по идее, можно было бы выбрать любую другую
-                self.PTWS_scaling_active_point_pos = self.selection_bounding_box[0]
+                self.PTWS_scaling_active_point_pos = self.selection_box[0]
             else:
-                self.PTWS_scaling_active_point_pos = self.selection_bounding_box[index]
+                self.PTWS_scaling_active_point_pos = self.selection_box[index]
 
     def board_SCALE_selected_items(self, up=False, down=False, toggle_monitor=False):
 
@@ -3674,7 +3674,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_SCALE_selected_items_choose_nearest_corner()
 
             direction = QVector2D(self.PTWS_scaling_active_point_pos -
-                                    self.__selection_bounding_box_qpolygon_centroid()).normalized()
+                                    self.__selection_box_qpolygon_centroid()).normalized()
             direction *= VECTOR_LENGTH_FACTOR
             pos = self.PTWS_scaling_active_point_pos
             parameter_pos = pos + direction.toPointF()
@@ -3953,7 +3953,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_paste_selected_items(self):
         selected_items = []
-        selection_center = self.board_MapToBoard(self.selection_bounding_box.boundingRect().center())
+        selection_center = self.board_MapToBoard(self.selection_box.boundingRect().center())
         rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
         for bi in self.LibraryData().current_folder().board.items_list:
             if bi._selected:
@@ -3967,7 +3967,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 delta = new_item.position - selection_center
                 new_item.position = rel_cursor_pos + delta
                 new_item._selected = True
-            self.init_selection_bounding_box_widget(cf)
+            self.init_selection_box_widget(cf)
 
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.1):
@@ -4019,7 +4019,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_selection_callback(QApplication.queryKeyboardModifiers() == Qt.ShiftModifier)
 
         if self.rotation_ongoing:
-            self.board_DO_selection_bounding_box_ROTATION()
+            self.board_DO_selection_box_ROTATION()
         elif self.scaling_ongoing:
             self.update_selection_bouding_box()
         else:
@@ -4290,12 +4290,12 @@ class BoardMixin(BoardTextEditItemMixin):
             canvas_scale_x = self.canvas_scale_x
             canvas_scale_y = self.canvas_scale_y
 
-            if (self.selection_bounding_box is None or not self.selected_items) and use_selection:
+            if (self.selection_box is None or not self.selected_items) and use_selection:
                 self.show_center_label(_('No items selected!'))
                 return
 
             if use_selection:
-                content_pos = self.selection_bounding_box.boundingRect().center() - self.canvas_origin
+                content_pos = self.selection_box.boundingRect().center() - self.canvas_origin
             else:
                 if board_item is not None:
                     pass
@@ -4307,7 +4307,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_origin = - content_pos + viewport_center_pos
 
             if use_selection:
-                content_rect = self.selection_bounding_box.boundingRect().toRect()
+                content_rect = self.selection_box.boundingRect().toRect()
             else:
                 content_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(content_rect, self.rect())
@@ -4414,7 +4414,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 offset -= QPointF(bi_width, 0)
 
         self.build_board_bounding_rect(folder_data)
-        self.init_selection_bounding_box_widget(folder_data)
+        self.init_selection_box_widget(folder_data)
         self.update()
 
     def board_open_in_google_chrome(self):
@@ -5419,7 +5419,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         cf = self.LibraryData().current_folder()
         self.build_board_bounding_rect(cf)
-        self.init_selection_bounding_box_widget(cf)
+        self.init_selection_box_widget(cf)
         self.update()
 
 
