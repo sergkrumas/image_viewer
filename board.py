@@ -345,7 +345,6 @@ class BoardItem():
             apply_global_scale=True,
             apply_translation=True,
             transformation_ongoing=False,
-            skip_rotation=False,
             debug_mw=None):
 
         size_rect = self.get_size_rect()
@@ -362,7 +361,6 @@ class BoardItem():
             apply_global_scale=apply_global_scale,
             apply_translation=apply_translation,
             transformation_ongoing=transformation_ongoing,
-            skip_rotation=skip_rotation,
             debug_mw=debug_mw
         )
         return transform.map(polygon)
@@ -372,7 +370,6 @@ class BoardItem():
                         apply_translation=True,
                         apply_global_scale=True,
                         transformation_ongoing=False,
-                        skip_rotation=False,
                         debug_mw=None):
 
         local_scaling = QTransform()
@@ -3275,7 +3272,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 bounding_box = bounding_box.united(
                     board_item.get_selection_area(canvas=self,
                         transformation_ongoing=transformation_ongoing,
-                        skip_rotation=transformation_ongoing,
                         debug_mw=debug_mw).boundingRect()
                 )
             self.selection_box = QPolygonF([
