@@ -129,18 +129,33 @@ class AutoscrollMixin():
                 if self.AUTOSCROLL.board_item_transform:
                     o, i = self.autoscroll_activation_zones_for_board_item_transform()
                     # у внешних границ должна быть максимальная скорость, у внутренних - минимальная, то есть нулевая
-                    s1 = fit(cursor_pos.y(), o.top(), i.top(), 1.0, 0.0)
-                    s2 = fit(cursor_pos.y(), i.bottom(), o.bottom(), 0.0, 1.0)
-                    s3 = fit(cursor_pos.x(), o.left(), i.left(), 1.0, 0.0)
-                    s4 = fit(cursor_pos.x(), i.right(), o.right(), 0.0, 1.0)
-                    sf = max((s1, s2, s3, s4))
-                    speed_factor *= sf
+                    v1 = fit(cursor_pos.y(), o.top(), i.top(), 1.0, 0.0)
+                    v2 = fit(cursor_pos.y(), i.bottom(), o.bottom(), 0.0, 1.0)
+                    h1 = fit(cursor_pos.x(), o.left(), i.left(), 1.0, 0.0)
+                    h2 = fit(cursor_pos.x(), i.right(), o.right(), 0.0, 1.0)
+
                     # переназначем изначальную скорость, отводим "курсор" из центра до верхней границы окна
                     length = QVector2D(self.AUTOSCROLL.startpos - QPoint(self.AUTOSCROLL.startpos.x(), 0)).length()
                     velocity_vec = QVector2D(velocity_vec).normalized().toPointF()*length
+
+                    if True:
+                        # корректировка направления автоскролла
+                        # для self.AUTOSCROLL.board_item_transform,
+                        # можно отключить её заменив True на False.
+                        # Корректировка задаёт более интуитивное направление автопрокрутки.
+                        # В результате её применения нискосок перемещаться можно
+                        # только в прилегающих к границе окна углах-квадратах,
+                        # а в прилегающих к границе окна прямоугольниках
+                        # только вертикально или горизонтально
+                        # в зависимости от положения прямоугольника.
+                        velocity_vec.setX(velocity_vec.x()*max(h1, h2))
+                        velocity_vec.setY(velocity_vec.y()*max(v1, v2))
+
+                    sf = max((v1, v2, h1, h2))
+                    speed_factor *= sf
                     # и не так быстро: уменьшаем заодно и множитель
                     speed_factor /= 4.0
-                    # self.show_center_label(f'{sf}: {s1} {s2} {s3} {s4}')
+                    # self.show_center_label(f'{sf}: {v1} {v2} {h1} {h2}')
 
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
                 if self.AUTOSCROLL.board_item_transform:
