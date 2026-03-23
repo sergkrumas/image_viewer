@@ -177,11 +177,13 @@ class BoardItem():
     class types():
         ITEM_UNDEFINED = 0
         ITEM_IMAGE = 1
-        ITEM_FOLDER = 2
-        ITEM_GROUP = ITEM_NODE = 3
-        ITEM_FRAME = 4
-        ITEM_NOTE = 5
-        ITEM_EDITING_TABLE = 6
+        ITEM_AV = 2
+        ITEM_FOLDER = 3
+        ITEM_GROUP = 4
+        ITEM_NODE = 5
+        ITEM_FRAME = 6
+        ITEM_NOTE = 7
+        ITEM_EDITING_TABLE = 8
 
     def __init__(self, item_type, visible=True):
         super().__init__()
