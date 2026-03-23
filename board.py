@@ -298,12 +298,10 @@ class BoardItem():
         elif self.type == self.types.ITEM_NOTE:
             return _('TEXT NOTE')
 
-    def calculate_viewport_position(self, canvas=None, rel_pos=None):
-        _scale_x = canvas.canvas_scale_x
-        _scale_y = canvas.canvas_scale_y
-        if rel_pos is None:
-            rel_pos = self.position
-        return QPointF(canvas.canvas_origin) + QPointF(rel_pos.x()*_scale_x, rel_pos.y()*_scale_y)
+    def calculate_viewport_position(self, canvas, pos=None):
+        if pos is None:
+            pos = self.position
+        return canvas.board_MapToViewport(pos)
 
     def aspect_ratio(self):
         rect = self.get_size_rect(scaled=False)
@@ -389,11 +387,11 @@ class BoardItem():
                 if debug_mw:
                     debug_mw.show_center_label(f'set_old_pos {transformation_ongoing} {_pos}')
             if transformation_ongoing and _pos is not None:
-                pos = self.calculate_viewport_position(canvas=canvas, rel_pos=_pos)
+                pos = self.calculate_viewport_position(canvas, pos=_pos)
                 translation.translate(pos.x(), pos.y())
             else:
                 if apply_global_scale:
-                    pos = self.calculate_viewport_position(canvas=canvas)
+                    pos = self.calculate_viewport_position(canvas)
                     translation.translate(pos.x(), pos.y())
                 else:
                     translation.translate(self.position.x(), self.position.y())
@@ -2128,7 +2126,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.pixmap is None:
             return
 
-        dist = QVector2D(self.get_center_position() - board_item.calculate_viewport_position(canvas=self)).length()
+        dist = QVector2D(self.get_center_position() - self.board_MapToViewport(board_item)).length()
 
         if dist > 10000.0:
             board_item.pixmap = None
@@ -4473,7 +4471,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cursor_pos = self.get_center_position() if by_window_center else self.mapped_cursor_pos()
         items = folder_data.board.items_list
         def min_key_function(board_item):
-            item_pos = board_item.calculate_viewport_position(canvas=self)
+            item_pos = self.board_MapToViewport(board_item.position)
             distance = QVector2D(item_pos - cursor_pos).length()
             return distance
         if items:
@@ -4498,7 +4496,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             first_item = _list[0]
             second_item = _list[1]
-            pos = first_item.calculate_viewport_position(canvas=self)
+            pos = self.board_MapToViewport(first_item.position)
             distance = QVector2D(pos - self.get_center_position()).length()
             if distance < 5.0:
                 # если цент картинки практически совпадает с центром вьюпорта, то выбираем следующую картинку
