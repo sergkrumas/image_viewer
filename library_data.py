@@ -804,7 +804,14 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @classmethod
     def is_audio_video_file(cls, filepath):
-        return filepath.lower().endswith(cls._audio_video_exts())
+        fl = filepath.lower()
+        is_av = False
+        is_video = fl.endswith(cls.video_exts())
+        if is_video:
+            is_av = True
+        else:
+            is_av = fl.endswith(cls._audio_video_exts())
+        return is_av, is_video
 
     @staticmethod
     def is_interest_file(filepath):
@@ -1457,7 +1464,7 @@ class FolderData():
         LibraryData().remove_progressbar()
         for image_data in self.images_list:
             image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
-            image_data.is_audio_video_filetype = LibraryData.is_audio_video_file(image_data.filepath)
+            image_data.is_audio_video_filetype, image_data.is_video_filetype = LibraryData.is_audio_video_file(image_data.filepath)
 
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
@@ -1808,6 +1815,7 @@ class ImageData():
         self.image_rotation = 0
         self.is_supported_filetype = True
         self.is_audio_video_filetype = False
+        self.is_video_filetype = False
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
         self.filename = os.path.basename(filepath)

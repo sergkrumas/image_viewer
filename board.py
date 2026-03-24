@@ -192,6 +192,8 @@ class BoardItem():
         self.pixmap = None
         self.animated = False
         self.audiovideo_file = False
+        self.audio = False
+        self.video = False
 
         self.visible = visible
 
@@ -1787,6 +1789,8 @@ class BoardMixin(BoardTextEditItemMixin):
             # fill attributes and overlays
             board_item.animated_file = image_data.is_animated_file
             board_item.audiovideo_file = image_data.is_audio_video_filetype
+            board_item.video = image_data.is_audio_video_filetype
+            board_item.audio = image_data.is_audio_video_filetype and not image_data.is_video_filetype
             board_item.board_index = self.retrieve_new_board_item_index()
             if direction == 1:
                 _set_position(board_item, image_data, offset)
@@ -2178,13 +2182,16 @@ class BoardMixin(BoardTextEditItemMixin):
             show_msg(filepath)
 
         def __load_audio_video(filepath):
-            board_item.pixmap = load_ffmpeg_preview(self.STNG.ffmpeg_exe_filepath, filepath)
-            board_item.animated = False
-            # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
-            image_data = board_item.image_data
-            pixmap = board_item.pixmap
-            self.LibraryData().make_preview(self.Globals, image_data, pixmap, pixmap.size(), set_source_size=False)
-            self.LibraryData().make_thumbnail(self.Globals, image_data, image_data.preview)
+            if board_item.video:
+                board_item.pixmap = load_ffmpeg_preview(self.STNG.ffmpeg_exe_filepath, filepath)
+                board_item.animated = False
+                # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
+                image_data = board_item.image_data
+                pixmap = board_item.pixmap
+                self.LibraryData().make_preview(self.Globals, image_data, pixmap, pixmap.size(), set_source_size=False)
+                self.LibraryData().make_thumbnail(self.Globals, image_data, image_data.preview)
+            elif board_item.audio:
+                board_item.pixmap = QPixmap()
             show_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
