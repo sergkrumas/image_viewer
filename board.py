@@ -2183,7 +2183,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def __load_audio_video(filepath):
             if board_item.video:
-                board_item.pixmap = load_ffmpeg_preview(self.STNG.ffmpeg_exe_filepath, filepath)
+                board_item.pixmap = load_ffmpeg_preview(self.STNG.ffmpeg_exe_filepath, filepath, self.Globals.FFMPEG_NOT_FOUND)
                 board_item.animated = False
                 # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
                 image_data = board_item.image_data

@@ -126,6 +126,8 @@ class Globals():
     app_title = _("Krumassan Image Viewer v0.90 Alpha by Sergei Krumas")
     github_repo = _("https://github.com/sergkrumas/image_viewer")
 
+    ffmpeg_not_found_label = _("FFMPEG.EXE\nNOT\nFOUND")
+
 
 class HookConsoleOutput:
     messages = []

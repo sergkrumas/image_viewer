@@ -52,7 +52,7 @@ def error_preview_pixmap(Globals):
     painter.end()
     Globals.ERROR_PREVIEW_PIXMAP = ERROR_PREVIEW_PIXMAP
 
-def label_preview(Globals, text):
+def label_preview(Globals, text, small_pixel_size=False):
 
     PIXMAP = QPixmap(200, 200)
     PIXMAP.fill(Qt.black)
@@ -60,12 +60,15 @@ def label_preview(Globals, text):
     painter.begin(PIXMAP)
     painter.setPen(QPen(Qt.red, 5))
     font = painter.font()
-    font.setPixelSize(100)
+    if small_pixel_size:
+        font.setPixelSize(20)
+    else:
+        font.setPixelSize(100)
     painter.setFont(font)
     r = PIXMAP.rect().adjusted(20, 20, -20, -20)
     # painter.drawLine(r.topLeft(), r.bottomRight())
     # painter.drawLine(r.bottomLeft(), r.topRight())
-    painter.drawText(PIXMAP.rect(), Qt.AlignCenter | Qt.AlignVCenter, text)
+    painter.drawText(PIXMAP.rect(), Qt.AlignCenter | Qt.AlignVCenter | Qt.TextWordWrap, text)
     painter.end()
 
     return PIXMAP
@@ -73,6 +76,10 @@ def label_preview(Globals, text):
 def not_supported_pixmap(Globals):
 
     Globals.NOT_SUPPORTED_PIXMAP = label_preview(Globals, "?!")
+
+def ffmpeg_not_found_pixmap(Globals):
+
+    Globals.FFMPEG_NOT_FOUND = label_preview(Globals, Globals.ffmpeg_not_found_label, small_pixel_size=True)
 
 def audio_video_pixmap(Globals):
 
@@ -487,6 +494,7 @@ def generate_pixmaps(Globals, Settings):
     error_preview_pixmap(Globals)
     not_supported_pixmap(Globals)
     audio_video_pixmap(Globals)
+    ffmpeg_not_found_pixmap(Globals)
     fav_big_icon(Globals)
     tag_big_icon(Globals)
     comments_big_icon(Globals)

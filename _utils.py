@@ -872,21 +872,37 @@ class RectHelper():
     def right_center(self):
         return QPointF(self.r.right(), self.c.y())
 
-def load_ffmpeg_preview(ffmpeg_path_exe, video_path):
-    proc = subprocess.Popen([
-            ffmpeg_path_exe,
-            "-ss", "2",
-            "-i", video_path,
-            "-vframes", "1",
-            "-f", "image2pipe",
-            "-vcodec", "png",
-            "pipe:1"
-        ],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        creationflags=subprocess.CREATE_NO_WINDOW
-    )
-    bytes_out, bytes_err = proc.communicate()
-    # TODO: (24 мар 26) заведомо не буду тут обрабатаывать ошибки, займусь этим потом
-    pixmap = QPixmap()
-    pixmap.loadFromData(bytes_out)
+class FFMPEG_Check():
+
+    valid = False
+    tested = False
+
+    @classmethod
+    def is_valid(cls, path):
+        if not cls.tested:
+            cls.valid = os.path.exists(path) and os.path.isfile(path) and path.lower().endswith(".exe")
+            cls.tested = True
+        return cls.valid
+
+def load_ffmpeg_preview(ffmpeg_path_exe, video_path, ffmpeg_not_found_pixmap):
+    ffmpeg_ok = FFMPEG_Check.is_valid(ffmpeg_path_exe)
+    if ffmpeg_ok:
+        proc = subprocess.Popen([
+                ffmpeg_path_exe,
+                "-ss", "2",
+                "-i", video_path,
+                "-vframes", "1",
+                "-f", "image2pipe",
+                "-vcodec", "png",
+                "pipe:1"
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+        bytes_out, bytes_err = proc.communicate()
+        # TODO: (24 мар 26) заведомо не буду тут обрабатаывать ошибки, займусь этим потом
+        pixmap = QPixmap()
+        pixmap.loadFromData(bytes_out)
+    else:
+        pixmap = ffmpeg_not_found_pixmap
     return pixmap
