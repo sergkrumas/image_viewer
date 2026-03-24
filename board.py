@@ -3171,12 +3171,72 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_items_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
 
-
         if not self.selected_items:
             self.show_center_label('skipping', error=True)
             return cursor_pos
 
-        self.SNAPPING.targets = []
+        class SnapAnchor():
+            def __init__(self, item, offset, place):
+                self.offset = offset
+                self.snapped = False
+                self.cursor_pos = None
+                self.place = place
+                self.item = item
+
+            def draw(self, canvas, painter):
+                point = self.place + self.offset
+                point = canvas.board_MapToViewport(point)
+                painter.setPen(QPen(Qt.white, 20))
+                painter.drawPoint(point)
+
+        self.board_snapping_set_targets()
+
+        item = self.selected_items[0]
+        if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
+            sa = item.get_selection_area(canvas=self, apply_global_scale=False)
+            sa_br = sa.boundingRect()
+            center = sa_br.center()
+            self.SNAPPING.anchors = [
+                SnapAnchor(item, QPointF(0, 0), center),
+                SnapAnchor(item, sa_br.bottomLeft() - center, center),
+                SnapAnchor(item, sa_br.topLeft() - center, center),
+                SnapAnchor(item, sa_br.bottomRight() - center, center),
+                SnapAnchor(item, sa_br.topRight() - center, center),
+                SnapAnchor(item, sa[0] - center, center),
+                SnapAnchor(item, sa[1] - center, center),
+                SnapAnchor(item, sa[2] - center, center),
+                SnapAnchor(item, sa[3] - center, center),
+            ]
+            # self.show_center_label(f'updating anchors for {item}')
+
+        ACTIVATION_RADIUS = 100.0
+
+        for st in self.SNAPPING.targets:
+            for snap_anchor in self.SNAPPING.anchors:
+                snap_offset = snap_anchor.offset
+                dist = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position))
+                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+                if snap_dist < ACTIVATION_RADIUS:
+                    if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                        snap_anchor.snapped = False
+                        snap_anchor.cursor_pos = None
+                        return cursor_pos
+                    offset = QPointF(item._position) + snap_offset
+                    result = self.start_translation_pos - offset + st.point(cursor_pos)
+                    if snap_anchor.cursor_pos is None:
+                        snap_anchor.snapped = True
+                        snap_anchor.cursor_pos = QPointF(cursor_pos)
+                        snap_anchor.st = st
+                    return result
+        return cursor_pos
+
+    def board_snapping_map_dist_to_viewport(self, dist_vector):
+        return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
+
+    def board_snapping_set_targets(self):
+        self.SNAPPING.targets.clear()
+
+        canvas_self = self
 
         class SnappingTarget():
             class types():
@@ -3237,68 +3297,23 @@ class BoardMixin(BoardTextEditItemMixin):
                         painter.drawLine(QPointF(pos_x, 0), QPointF(pos_x, canvas_rect.height()))
 
             def get_deactivation_length(self, snap_pos, cursor_pos):
+                dist = QVector2D()
                 if self.type == SnappingTarget.types.POINT:
-                    return QVector2D(snap_pos - cursor_pos).length()
+                    dist = QVector2D(snap_pos - cursor_pos)
                 elif self.type == SnappingTarget.types.LINE:
                     if self.x_snapping is None:
-                        return QVector2D(QPointF(0, snap_pos.y()) - QPointF(0, cursor_pos.y())).length()
+                        dist = QVector2D(QPointF(0, snap_pos.y()) - QPointF(0, cursor_pos.y()))
                     elif self.y_snapping is None:
-                        return QVector2D(QPointF(snap_pos.x(), 0) - QPointF(cursor_pos.x(), 0)).length()
-
-        class SnapAnchor():
-            def __init__(self, item, offset, place):
-                self.offset = offset
-                self.snapped = False
-                self.cursor_pos = None
-                self.place = place
-                self.item = item
-
-            def draw(self, canvas, painter):
-                point = self.place + self.offset
-                point = canvas.board_MapToViewport(point)
-                painter.setPen(QPen(Qt.white, 20))
-                painter.drawPoint(point)
+                        dist = QVector2D(QPointF(snap_pos.x(), 0) - QPointF(cursor_pos.x(), 0))
+                return canvas_self.board_snapping_map_dist_to_viewport(dist).length()
 
         self.SNAPPING.targets = [
             # SnappingTarget(0.0, 0.0),
             SnappingTarget(0.0, 500.0),
             # SnappingTarget(100.0, 0.0),
-            # SnappingTarget(100.0, None),
-            # SnappingTarget(None, 500.0),
+            SnappingTarget(100.0, None),
+            SnappingTarget(None, 500.0),
         ]
-
-        item = self.selected_items[0]
-        if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
-            br = item.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
-            center = br.center()
-            self.SNAPPING.anchors = [
-                SnapAnchor(item, QPointF(0, 0), center),
-                SnapAnchor(item, br.bottomLeft() - center, center),
-                SnapAnchor(item, br.topLeft() - center, center),
-                SnapAnchor(item, br.bottomRight() - center, center),
-                SnapAnchor(item, br.topRight() - center, center),
-            ]
-            # self.show_center_label(f'updating anchors for {item}')
-
-        ACTIVATION_RADIUS = 100.0
-
-        for st in self.SNAPPING.targets:
-            for snap_anchor in self.SNAPPING.anchors:
-                snap_offset = snap_anchor.offset
-                snap_length = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position)).length()
-                if snap_length < ACTIVATION_RADIUS:
-                    if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
-                        snap_anchor.snapped = False
-                        snap_anchor.cursor_pos = None
-                        return cursor_pos
-                    offset = QPointF(item._position) + snap_offset
-                    result = self.start_translation_pos - offset + st.point(cursor_pos)
-                    if snap_anchor.cursor_pos is None:
-                        snap_anchor.snapped = True
-                        snap_anchor.cursor_pos = QPointF(cursor_pos)
-                        snap_anchor.st = st
-                    return result
-        return cursor_pos
 
     def is_context_menu_executed_over_group_item(self):
         self.check_item_group_under_mouse(use_context_menu_exec_point=True)
