@@ -915,6 +915,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if set_source_size:
             image_data.source_width = ow
             image_data.source_height = oh
+        if image_data.is_video_filetype:
+            image_data.source_width = 1000
+            image_data.source_height = 1000
+        elif image_data.is_audio_video_filetype:
+            image_data.source_width = 500
+            image_data.source_height = 500
+
         if LibraryData().is_svg_file(image_data.filepath):
             image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
             image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
