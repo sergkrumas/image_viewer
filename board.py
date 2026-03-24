@@ -3149,7 +3149,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_snapping_targets(self, painter):
         painter.save()
-        painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
         for target in self.SNAPPING.targets:
             target.draw(self, painter)
 
@@ -3173,6 +3172,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if not self.selected_items:
             self.show_center_label('skipping', error=True)
+            # ситуация возникает, если начинаешь тащить айтем, который не был выделен перед этим
+            # на самом деле это плохо, надо исправлять эти баги, но пока тут побудет костыль
+            # (24 мар 26) TODO: избавиться от этого костыля
             return cursor_pos
 
         class SnapAnchor():
@@ -3187,7 +3189,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 point = self.place + self.offset
                 point = canvas.board_MapToViewport(point)
                 painter.setPen(QPen(Qt.white, 20))
-                painter.drawPoint(point)
+                # painter.drawPoint(point)
+                painter.drawText(point, 'A')
 
         self.board_snapping_set_targets()
 
@@ -3197,9 +3200,9 @@ class BoardMixin(BoardTextEditItemMixin):
             sa_br = sa.boundingRect()
             center = sa_br.center()
             self.SNAPPING.anchors = [
-                SnapAnchor(item, QPointF(0, 0), center),
                 SnapAnchor(item, sa_br.bottomLeft() - center, center),
                 SnapAnchor(item, sa_br.topLeft() - center, center),
+                SnapAnchor(item, QPointF(0, 0), center), # позиция этого якоря влияет на срабатывание его самого и других якорей
                 SnapAnchor(item, sa_br.bottomRight() - center, center),
                 SnapAnchor(item, sa_br.topRight() - center, center),
                 SnapAnchor(item, sa[0] - center, center),
@@ -3234,7 +3237,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
 
     def board_snapping_set_targets(self):
-        self.SNAPPING.targets.clear()
+        # self.SNAPPING.targets.clear()
 
         canvas_self = self
 
@@ -3271,6 +3274,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     pass
 
                 elif self.type == SnappingTarget.types.POINT:
+                    painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
                     pos = canvas.board_MapToViewport(QPointF(self.x_snapping, self.y_snapping))
                     vertical = QPointF(0, 100)
                     horizontal = QPointF(100, 0)
@@ -3281,6 +3285,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.drawRect(rect)
 
                 elif self.type == SnappingTarget.types.LINE:
+                    painter.setPen(QPen(QColor(220, 100, 100, 50), 1, Qt.DashLine))
                     if self.x_snapping is None:
                         x = 0
                         y = self.y_snapping
@@ -3307,13 +3312,46 @@ class BoardMixin(BoardTextEditItemMixin):
                         dist = QVector2D(QPointF(snap_pos.x(), 0) - QPointF(cursor_pos.x(), 0))
                 return canvas_self.board_snapping_map_dist_to_viewport(dist).length()
 
-        self.SNAPPING.targets = [
-            # SnappingTarget(0.0, 0.0),
-            SnappingTarget(0.0, 500.0),
-            # SnappingTarget(100.0, 0.0),
-            SnappingTarget(100.0, None),
-            SnappingTarget(None, 500.0),
-        ]
+        if not self.SNAPPING.targets:
+            if False:
+                self.SNAPPING.targets = [
+                    # SnappingTarget(0.0, 0.0),
+                    SnappingTarget(0.0, 500.0),
+                    # SnappingTarget(100.0, 0.0),
+                    SnappingTarget(100.0, None),
+                    SnappingTarget(None, 500.0),
+                ]
+            else:
+                cf = self.LibraryData().current_folder()
+                viewport_rect = self.rect()
+                board_mapped_viewport_rect = QRectF(
+                    self.board_MapToBoard(viewport_rect.topLeft()),
+                    self.board_MapToBoard(viewport_rect.bottomRight())
+                ).toRect()
+                def append(*args):
+                    self.SNAPPING.targets.append(SnappingTarget(*args))
+                self.SNAPPING.targets = []
+                for bi in cf.board.items_list:
+                    if bi not in self.selected_items:
+                        sa = bi.get_selection_area(canvas=self, apply_global_scale=False)
+                        sa_br = sa.boundingRect().toRect()
+                        if sa_br.intersects(board_mapped_viewport_rect):
+                            # TODO: (24 мар 26) лейаут создаётся так,
+                            # что айтемы прилегают вплотную друг к другу,
+                            # поэтому для одной и той же позициии может быть два таргета,
+                            # и значит, надо как-то удалять дубликаты,
+                            # Можно было бы воспользоваться свойстом лэйаута и брать только левые две точки
+                            # у каждого айтема, и не брать превые две точки, но у них у всех разный размер,
+                            # да и их могут переместить и это свойство уже не будет работать.
+                            append(None, sa_br.top())
+                            append(None, sa_br.bottom())
+                            append(sa_br.left(), None)
+                            append(sa_br.right(), None)
+
+                            append(sa_br.left(), sa_br.top())
+                            append(sa_br.left(), sa_br.bottom())
+                            append(sa_br.right(), sa_br.top())
+                            append(sa_br.right(), sa_br.bottom())
 
     def is_context_menu_executed_over_group_item(self):
         self.check_item_group_under_mouse(use_context_menu_exec_point=True)
