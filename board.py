@@ -620,8 +620,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.rotation_pivot_index = None
 
-        self.snapping_targets = list()
-        self.snap_anchors = list()
+        self.board_snapping_init()
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -2302,17 +2301,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
 
-    def board_draw_snapping_targets(self, painter):
-        painter.save()
-        painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
-        for target in self.snapping_targets:
-            target.draw(self, painter)
-
-        for anchor in self.snap_anchors:
-            anchor.draw(self, painter)
-
-        painter.restore()
-
     def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
         if self.Globals.DEBUG:
             o, i = self.autoscroll_activation_zones_for_board_item_transform()
@@ -3158,6 +3146,21 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_update_selection_box_widget()
             self.transform_cancelled = True
             print('cancel translation')
+
+    def board_draw_snapping_targets(self, painter):
+        painter.save()
+        painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
+        for target in self.snapping_targets:
+            target.draw(self, painter)
+
+        for anchor in self.snap_anchors:
+            anchor.draw(self, painter)
+
+        painter.restore()
+
+    def board_snapping_init(self):
+        self.snapping_targets = list()
+        self.snap_anchors = list()
 
     def board_items_snapping_finish(self):
         self.show_center_label('finished')
