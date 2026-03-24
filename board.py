@@ -2033,20 +2033,24 @@ class BoardMixin(BoardTextEditItemMixin):
                 ))
                 if full_quality:
                     self.trigger_board_item_pixmap_loading(board_item)
-                    if board_item.type == BoardItem.types.ITEM_AV:
-                        image_to_draw = image_data.preview
-                    else:
-                        image_to_draw = board_item.pixmap
+                    image_to_draw = board_item.pixmap
                 else:
                     image_to_draw = image_data.preview
+
+                before_item_rect = None
+                if board_item.type == BoardItem.types.ITEM_AV:
+                    before_item_rect = item_rect
+                    item_rect = fit_rect_into_rect(QRectF(0, 0, image_to_draw.width(), image_to_draw.height()), item_rect, float_mode=True)
+                    item_rect.moveCenter(QPointF(0, 0))
+
 
                 if board_item._marked_item:
                     pass
 
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
-                    if board_item.type == BoardItem.types.ITEM_AV and full_quality:
-                        painter.drawText(item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.image_data.filename)
+                    if board_item.type == BoardItem.types.ITEM_AV and full_quality and before_item_rect:
+                        painter.drawText(before_item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.image_data.filename)
 
                 painter.setOpacity(1.0)
                 case1 = board_item.type == BoardItem.types.ITEM_IMAGE
@@ -2174,9 +2178,13 @@ class BoardMixin(BoardTextEditItemMixin):
             show_msg(filepath)
 
         def __load_audio_video(filepath):
-            # TODO: написать извлечение превьюшки через ffmpeg для видео, дла аудио пока не знаю что делать
-            board_item.pixmap = QPixmap()
+            board_item.pixmap = load_ffmpeg_preview(self.STNG.ffmpeg_exe_filepath, filepath)
             board_item.animated = False
+            # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
+            image_data = board_item.image_data
+            pixmap = board_item.pixmap
+            self.LibraryData().make_preview(self.Globals, image_data, pixmap, pixmap.size(), set_source_size=False)
+            self.LibraryData().make_thumbnail(self.Globals, image_data, image_data.preview)
             show_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:

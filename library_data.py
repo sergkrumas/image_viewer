@@ -853,6 +853,26 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         )
         return filepath.lower().endswith(exts)
 
+
+    @classmethod
+    def load_videoframe_via_ffmpeg(FFMPEG_PATH_EXE, video_path):
+        cmd = [
+            FFMPEG_PATH_EXE,
+            "-ss", "2",
+            "-i", video_path,
+            "-vframes", "1",
+            "-f", "image2pipe",
+            "-vcodec", "png",
+            "pipe:1"
+        ]
+
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        bytes_out, bytes_err = proc.communicate()
+
+        pixmap = QPixmap()
+        pixmap.loadFromData(bytes_out)
+        return pixmap
+
     @staticmethod
     def list_interest_files(folder_path, deep_scan=False, all_allowed=None, check_windows_explorer_window=False):
         filepaths = []
@@ -882,9 +902,12 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         image_data.set_thumbnail(thumbnail)
 
     @staticmethod
-    def make_preview(Globals, image_data, source_pixmap, original_pixmap_size):
-        image_data.source_width = ow = original_pixmap_size.width()
-        image_data.source_height = oh = original_pixmap_size.height()
+    def make_preview(Globals, image_data, source_pixmap, original_pixmap_size, set_source_size=True):
+        ow = original_pixmap_size.width()
+        oh = original_pixmap_size.height()
+        if set_source_size:
+            image_data.source_width = ow
+            image_data.source_height = oh
         if LibraryData().is_svg_file(image_data.filepath):
             image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
             image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR

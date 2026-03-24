@@ -276,7 +276,7 @@ class CustomSlider(QWidget):
 
 UI_LANG_SETTING_ID = 'ui_lang'
 INFRAMED_FOLDERPATH_SETTING_ID = 'inframed_folderpath'
-
+FFMPEG_EXE_FILEPATH_SETTING_ID = 'ffmpeg_exe_filepath'
 
 class SettingsWindow(QWidget):
 
@@ -1092,6 +1092,8 @@ class Settings(SettingsWindow):
 
             '---paths': _('Paths'),
             INFRAMED_FOLDERPATH_SETTING_ID: ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
+            FFMPEG_EXE_FILEPATH_SETTING_ID: (".", _('ffmpeg.exe location')),
+
         }
         return matrix
 
