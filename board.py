@@ -4126,8 +4126,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     break
 
     def board_MapToViewport(self, canvas_pos):
-        scaled_rel_pos = QPointF(canvas_pos.x()*self.canvas_scale_x, canvas_pos.y()*self.canvas_scale_y)
-        viewport_pos = self.canvas_origin + scaled_rel_pos
+        scaled_board_pos = QPointF(canvas_pos.x()*self.canvas_scale_x, canvas_pos.y()*self.canvas_scale_y)
+        viewport_pos = self.canvas_origin + scaled_board_pos
         return viewport_pos
 
     def board_MapToBoard(self, viewport_pos):
