@@ -454,6 +454,7 @@ class SettingsWindow(QWidget):
         # ui init
         main_style = "color: white; font-size: 11pt;"
         main_style_bold = main_style + 'font-weight: bold;'
+        main_style_btn = "color: black; font-size: 11pt;"
 
         self.checkboxes = dict()
         self.sliders = dict()
@@ -553,13 +554,32 @@ class SettingsWindow(QWidget):
 
             elif isinstance(current_val, str) and len(params) == 2:
 
+                def form_path_label_text(value):
+                    return f"<b>{os.path.abspath(value)}</b>"
+
+                def buttonCallback(callback, path_label):
+                    value = callback()
+                    path_label.setText(form_path_label_text(value))
+
                 label = QLabel()
-                label.setText(f"{text}: <b>{os.path.abspath(current_val)}</b>")
+                label.setText(f"{text}: ")
                 label.setStyleSheet(main_style)
+                second_label = QLabel()
+                second_label.setText(form_path_label_text(current_val))
+                second_label.setStyleSheet(main_style)
                 layout = QHBoxLayout()
                 layout.addWidget(label)
+                layout.addWidget(second_label, alignment=Qt.AlignRight)
+                button = QPushButton(_("Change..."))
+                button.setStyleSheet(main_style_btn)
+                if id == INFRAMED_FOLDERPATH_SETTING_ID:
+                    callback = lambda not_used, cb=self.set_path_for_saved_pictures, path_label=second_label: buttonCallback(cb, path_label)
+                elif id == FFMPEG_EXE_FILEPATH_SETTING_ID:
+                    callback = lambda not_used, cb=self.set_path_for_ffmpeg_executable, path_label=second_label: buttonCallback(cb, path_label)
+                button.clicked.connect(callback)
+                layout.addWidget(button)
+                button.setFixedWidth(100)
                 central_widget_layout.addWidget(add_line_widget(layout))
-
 
             elif isinstance(current_val, bool):
 
@@ -1091,7 +1111,7 @@ class Settings(SettingsWindow):
 
 
             '---paths': _('Paths'),
-            INFRAMED_FOLDERPATH_SETTING_ID: ('.', _('Folder to put framed images in (could be changed in dialog by pressing Ctrl+R)')),
+            INFRAMED_FOLDERPATH_SETTING_ID: ('.', _('Folder to put framed images in')),
             FFMPEG_EXE_FILEPATH_SETTING_ID: (".", _('ffmpeg.exe location')),
 
         }
@@ -1138,6 +1158,40 @@ class Settings(SettingsWindow):
         else:
             window.show()
             window.activateWindow()
+
+    @classmethod
+    def get_path_for_saved_pictures(cls):
+        return cls.get(INFRAMED_FOLDERPATH_SETTING_ID)
+
+    @classmethod
+    def set_path_for_saved_pictures(cls):
+        return cls.set_path(
+            INFRAMED_FOLDERPATH_SETTING_ID,
+            _("Choose folder to put images in"),
+        )
+
+    @classmethod
+    def set_path_for_ffmpeg_executable(cls):
+        return cls.set_path(
+            FFMPEG_EXE_FILEPATH_SETTING_ID,
+            _("Find path to ffmpeg.exe executable file!"),
+            directory=False,
+        )
+
+    @classmethod
+    def set_path(cls, setting_id, dialog_title, directory=True):
+        current_path_value = cls.get(setting_id)
+        path = None
+        if directory:
+            path = QFileDialog.getExistingDirectory(None, dialog_title, current_path_value)
+        else:
+            path = QFileDialog.getOpenFileName(None, dialog_title, current_path_value)
+            path = path[0]
+        if path:
+            if os.path.exists(path):
+                cls.set(setting_id, path)
+                return path
+        return current_path_value
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

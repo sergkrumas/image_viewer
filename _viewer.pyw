@@ -5670,9 +5670,9 @@ class MainWindow(QMainWindow,
         if not ext.lower().endswith((".png", ".jpg", ".jpeg",)):
             ext = ".png"
         formated_datetime = datetime.datetime.now().strftime("%d-%m-%Y %H-%M-%S")
-        rootpath = Settings.get("inframed_folderpath")
+        rootpath = Settings.get_path_for_saved_pictures()
         if reset_path:
-            _path = self.set_path_for_saved_pictures(rootpath)
+            _path = Settings.set_path_for_saved_pictures()
             if _path:
                 rootpath = _path
             else:
@@ -5685,15 +5685,6 @@ class MainWindow(QMainWindow,
         save_pixmap.save(new_path)
         _new_path_msg = _("The image is saved in file")
         self.show_center_label(f"{_new_path_msg}\n{new_path}")
-
-    def set_path_for_saved_pictures(self, init_path):
-        msg = _("Choose folder to put images in")
-        path = QFileDialog.getExistingDirectory(None, msg, init_path)
-        if os.path.exists(path):
-            rootpath = str(path)
-            Settings.set('inframed_folderpath', rootpath)
-            return rootpath
-        return None
 
     def save_image_as(self, format_ext):
         content_filepath = self.image_filepath
