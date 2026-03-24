@@ -907,3 +907,18 @@ class FFMPEG():
         else:
             pixmap = ffmpeg_not_found_pixmap
         return pixmap
+
+    # TODO:
+    # import ffmpeg
+    # def get_video_resolution(filename):
+    #     probe = ffmpeg.probe(filename)
+    #     video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+        
+    #     if video_stream:
+    #         width = int(video_stream['width'])
+    #         height = int(video_stream['height'])
+    #         return width, height
+    #     return None
+
+    # res = get_video_resolution('input.mp4')
+    # print(f"Resolution: {res[0]}x{res[1]}") # e.g., 1920x1080
