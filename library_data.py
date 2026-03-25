@@ -278,7 +278,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @staticmethod
     def is_avif_file(filepath):
-        return filepath.lower().endswith((".avif", ".heif", ".heic"))
+        return filepath.lower().endswith((".avif", ".avf", ".heif", ".heic"))
 
     @staticmethod
     def is_apng_file_animated(filepath):
@@ -855,7 +855,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             ".cur",
             ".tif", ".tiff",
             ".webp",
-            ".avif", ".heif", ".heic",
+            ".avif", ".avf", ".heif", ".heic",
             ".apng",
         )
         return filepath.lower().endswith(exts)

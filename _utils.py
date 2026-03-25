@@ -646,7 +646,7 @@ def fit01(t, output_a, output_b):
     return fit(t, 0.0, 1.0, output_a, output_b)
 
 def load_image_respect_orientation(filepath, highres_svg=False):
-    if filepath.lower().endswith((".avif", ".heif", ".heic")):
+    if filepath.lower().endswith((".avif", ".avf", ".heif", ".heic")):
         return read_AVIF_to_QPixmap(filepath)
     elif highres_svg:
         return load_svg(filepath)
