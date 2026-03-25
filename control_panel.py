@@ -348,7 +348,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def show_settings_window(self):
         MW = self.globals.main_window
-        MW.open_settings_window()
+        MW.toggle_settings_window()
 
     def toggle_help(self):
         MW = self.globals.main_window
