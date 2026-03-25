@@ -328,7 +328,7 @@ class AppMixin():
 
         if Globals.aftercrash:
             filepath = cls.APP_get_crashlog_filepath()
-            crashfileinfo = _("Crash info save to file\n\t{0}").format(filepath)
+            crashfileinfo = _("Crash info saved to file\n\t{0}").format(filepath)
             msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
             ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
             if ret == QMessageBox.Yes:
