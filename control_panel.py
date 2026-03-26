@@ -680,6 +680,12 @@ class ControlPanel(QWidget, UtilsMixin):
             setOpacity(self.window_opacity)
             return
 
+        if MW.is_board_page_active():
+            if MW.board_is_items_transformation_ongoing():
+                self.window_opacity = 0.0
+                setOpacity(self.window_opacity)
+                return
+
         if not MW.isActiveWindow():
             self.window_opacity = 0.0
             setOpacity(self.window_opacity)
