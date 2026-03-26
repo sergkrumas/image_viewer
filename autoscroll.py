@@ -369,6 +369,9 @@ class AutoscrollMixin():
     def autoscroll_is_cursor_activated(self):
         return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone
 
+    def autoscroll_is_ongoing(self):
+        return self.AUTOSCROLL.timer.isActive()
+
     def autoscroll_set_cursor(self):
         self.setCursor(self.autoscroll_get_cursor())
 

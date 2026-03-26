@@ -681,7 +681,7 @@ class ControlPanel(QWidget, UtilsMixin):
             return
 
         if MW.is_board_page_active():
-            if MW.board_is_items_transformation_ongoing():
+            if MW.board_is_items_transformation_ongoing() or MW.autoscroll_is_ongoing():
                 self.window_opacity = 0.0
                 setOpacity(self.window_opacity)
                 return
