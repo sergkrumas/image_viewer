@@ -116,7 +116,7 @@ def get_cycled_pairs_slideshow(input_list):
     images_list = input_list[:]
     count = len(images_list)
 
-    start_empty_image = namedtuple("ImageData", "filepath")
+    start_empty_image = namedtuple("FileData", "filepath")
     start_empty_image.filepath = ""
 
     filename = os.path.basename(input_list[0].filepath)

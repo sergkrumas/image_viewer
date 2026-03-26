@@ -611,7 +611,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
         self.multirow_scroll_y = 0
 
-        self.underMouseImageData = None
+        self.underMouseFileData = None
 
         self.setMouseTracking(True)
 
@@ -638,13 +638,13 @@ class ControlPanel(QWidget, UtilsMixin):
 
         elif MW.is_board_page_active():
 
-            if self.underMouseImageData is not None:
-                image_data = self.underMouseImageData
+            if self.underMouseFileData is not None:
+                imd = self.underMouseFileData
 
-                w = image_data.source_width
-                h = image_data.source_height
-                filename = image_data.filename
-                foldername = image_data.folder_data.folder_name
+                w = imd.source_width
+                h = imd.source_height
+                filename = imd.filename
+                foldername = imd.folder_data.folder_name
 
                 text = f"{foldername} \\ {filename} {w} x {h}"
             else:
@@ -969,7 +969,7 @@ class ControlPanel(QWidget, UtilsMixin):
         else:
 
             if not is_call_from_main_window:
-                self.underMouseImageData = None
+                self.underMouseFileData = None
 
             # отрисовка одного ряда в панели управления, в истории прсмотров и в папках библиотеки
             for image_index, image_data in enumerate(images_list):
@@ -1016,7 +1016,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 if library_page_rect.contains(thumb_rect_.topRight()):
                     highlighted = thumb_rect.contains(cursor_pos)
                     if highlighted and not is_call_from_main_window:
-                        self.underMouseImageData = image_data
+                        self.underMouseFileData = image_data
                     cases = (
                                 highlighted,
                                 is_call_from_main_window,

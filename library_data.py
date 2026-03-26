@@ -86,7 +86,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.folderslist_scroll_offset = 0
             i.fav_folder = None
             i.viewed_list = []
-            i.phantom_image = ImageData("", None)
+            i.phantom_image = FileData("", None)
             i.phantom_image._is_phantom = True
             i.fav_folder = ...
             i.comments_folder = ...
@@ -125,7 +125,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return content_path
 
     def create_image_data(self, *args):
-        return ImageData(*args)
+        return FileData(*args)
 
     def update_progressbar(self):
         app = QApplication.instance()
@@ -357,7 +357,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             cf = folder_data
         ci = cf.current_image()
-        if ci in cf.images_list: #служебные объекты ImageData не находятся в списке
+        if ci in cf.images_list: #служебные объекты FileData не находятся в списке
             if cf.virtual and not force:
                 MW.show_center_label(_("Deleting images from virtual folders is not allowed"), error=True)
                 return
@@ -1240,7 +1240,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @classmethod
     def add_image_to_folderdata(cls, image_path, folder_data):
-        image_data = ImageData(image_path, folder_data)
+        image_data = FileData(image_path, folder_data)
         folder_data.images_list.append(image_data)
 
 
@@ -1456,7 +1456,7 @@ class FolderData():
                 if prev:
                     im_data = self.find_in_prev(filepath, prev)
                 if not im_data:
-                    im_data = ImageData(filepath, self)
+                    im_data = FileData(filepath, self)
                 LibraryData().update_progressbar()
                 self.images_list.append(im_data)
         self.original_list = self.images_list[:]
@@ -1562,7 +1562,7 @@ class FolderData():
         try:
             return self.images_list[self._index]
         except:
-            return ImageData("", None)
+            return FileData("", None)
 
     def next_image(self):
         if self._index < len(self.images_list)-1:
@@ -1791,7 +1791,7 @@ class FolderData():
             elif page == MW.pages.LIBRARY_PAGE:
                 folder_data.library_previews = pg
 
-class ImageData():
+class FileData():
     def get_creation_date(self):
         path_to_file = self.filepath
         if platform.system() == 'Windows':
@@ -1887,7 +1887,7 @@ class ImageData():
             LD = LibraryData
             # is_apng_file_animated читает файл для своей работы,
             # лучше закешировать результат её вызова и вызывать только раз,
-            # и то, если данные потребовались, а не просто при создании экземпляра ImageData
+            # и то, если данные потребовались, а не просто при создании экземпляра FileData
             self._is_animated_apng = LD.is_apng_file_animated(self.filepath)
         return self._is_animated_apng
 

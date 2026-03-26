@@ -21,7 +21,7 @@
 from _utils import *
 
 
-from library_data import (LibraryData, FolderData, ImageData, BoardData,
+from library_data import (LibraryData, FolderData, FileData, BoardData,
              BoardNonAutoSerializedData, ThumbnailsPreviewsThread, MakingThumbnailsPreviewsStages)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
@@ -988,7 +988,7 @@ class MainWindow(QMainWindow,
 
         self.Globals = Globals
         self.LibraryData = LibraryData
-        self.ImageData = ImageData
+        self.FileData = FileData
         self.FolderData = FolderData
         self.BoardData = BoardData
         self.BoardNonAutoSerializedData = BoardNonAutoSerializedData
@@ -1240,7 +1240,7 @@ class MainWindow(QMainWindow,
         else:
             mime_data = event.mimeData()
             if mime_data.hasImage():
-                image = QImage(event.mimeData().imageData())
+                image = QImage(event.mimeData().FileData())
                 image.save("data.png")
             elif event.mimeData().hasUrls():
                 event.setDropAction(Qt.CopyAction)

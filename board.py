@@ -888,7 +888,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_dropEventDefault(self, event):
         mime_data = event.mimeData()
         if mime_data.hasImage():
-            image = QImage(event.mimeData().imageData())
+            image = QImage(event.mimeData().FileData())
             image.save("data.png")
         elif event.mimeData().hasUrls():
             event.setDropAction(Qt.CopyAction)
@@ -1189,7 +1189,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
                 attr_value = None
 
-            elif attr_type == 'ImageData':
+            elif attr_type == 'FileData':
                 filepath, source_width, source_height = attr_data
                 image_data = self.LibraryData().create_image_data(filepath, fd)
                 fd.images_list.append(image_data)
@@ -1270,7 +1270,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = []
                 attr_type = 'list'
 
-            elif isinstance(attr_value, self.ImageData):
+            elif isinstance(attr_value, self.FileData):
                 attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
 
             elif isinstance(attr_value, self.FolderData):
@@ -4454,7 +4454,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     pixmap = load_svg(filepath, scale_factor=20)
 
         elif mdata and mdata.hasImage():
-            pixmap = QPixmap().fromImage(mdata.imageData())
+            pixmap = QPixmap().fromImage(mdata.FileData())
             filepath = os.path.join(cf.folder_path, f'{time.time()}.jpg')
 
             pixmap.save(filepath)
