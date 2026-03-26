@@ -673,6 +673,9 @@ class ControlPanel(QWidget, UtilsMixin):
             setOpacity(self.window_opacity)
             return
 
+        # forced_touched_value задаётся, чтобы добиться плавных затуханий и появлений
+        self.forced_touched_value = None
+
         # для поддержки UX-фичи, которая даёт возможность начать выделение миниатюрок
         # на территории главного окна, а не на территории окна миниатюрок
         if self.group_selecting:
@@ -681,17 +684,17 @@ class ControlPanel(QWidget, UtilsMixin):
             return
 
         if MW.is_board_page_active():
-            if MW.board_is_items_transformation_ongoing() or MW.autoscroll_is_ongoing():
-                self.window_opacity = 0.0
-                setOpacity(self.window_opacity)
-                return
+            if MW.autoscroll_is_ongoing():
+                self.forced_touched_value = -1
+            if MW.board_is_items_transformation_ongoing():
+                self.forced_touched_value = -1
 
         if not MW.isActiveWindow():
             self.window_opacity = 0.0
             setOpacity(self.window_opacity)
             return
 
-        if self.underMouse():
+        if self.underMouse() and not self.forced_touched_value:
             self.window_opacity = self.DELAY_OPACITY
             setOpacity(self.window_opacity)
             return
@@ -700,15 +703,16 @@ class ControlPanel(QWidget, UtilsMixin):
         delta = (cursor_pos - self.last_cursor_pos).y()
         self.last_cursor_pos = cursor_pos
 
-        if delta > 0+self.MOUSE_SENSITIVITY:
-            if self.touched == 0:
-                self.touched = 1
+        if not self.forced_touched_value:
+            if delta > 0+self.MOUSE_SENSITIVITY:
+                if self.touched == 0:
+                    self.touched = 1
 
-        elif delta < 0-self.MOUSE_SENSITIVITY and delta != 0:
-            if self.touched == 0:
-                self.touched = -1
+            elif delta < 0-self.MOUSE_SENSITIVITY and delta != 0:
+                if self.touched == 0:
+                    self.touched = -1
 
-        if not MW.underMouse():
+        if not MW.underMouse() and not self.forced_touched_value:
             # чтобы не реагировало,
             # когда мышка на другом мониторе
             self.touched = 0
@@ -718,6 +722,9 @@ class ControlPanel(QWidget, UtilsMixin):
         if self.quick_show_flag:
             self.quick_show_flag = False
             self.touched = 1
+
+        if self.forced_touched_value:
+            self.touched = self.forced_touched_value
 
         if self.touched == 0:
             self.window_opacity -= 0.10
