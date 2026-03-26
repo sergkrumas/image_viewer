@@ -616,13 +616,12 @@ class ControlPanel(QWidget, UtilsMixin):
         self.setMouseTracking(True)
 
     def control_panel_timer_handler(self):
-        self.opacity_handler()
 
-        # если обновлять здесь,
-        # то активно будет сжираться CPU
-        # обновлять лучше внутри opacity_handler и делать это только тогда,
-        # когда значение opacity меняется, а равняется одному и тому же значению
-        # self.update()
+        # если вызывать self.update() здесь,
+        # то активно будет сжираться CPU;
+        # обновлять лучше внутри self.opacity_handler(),
+        # и делать это только когда значение opacity изменяется
+        self.opacity_handler()
 
     def label_text_update(self):
         MW = self.globals.main_window
