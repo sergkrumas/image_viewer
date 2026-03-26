@@ -1907,7 +1907,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for bli in folder_data.board.link_items_list:
             _to = bli.to_item
             _from = bli.from_item
-            painter.setPen(QPen(Qt.white, bli.link_width, Qt.DashLine))
+            painter.setPen(QPen(Qt.white, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
             painter.drawLine(
                 _to.calculate_viewport_position(canvas=self),
                 _from.calculate_viewport_position(canvas=self)
@@ -3138,8 +3138,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if item:
             if item in self.item_magazin:
                 self.item_magazin.remove(item)
+                self.show_center_label(_('This item was removed to stack'))
             else:
                 self.item_magazin.append(item)
+                self.show_center_label(_('This item was added to stack'))
             if len(self.item_magazin) == 2:
                 self.board_create_link_item(*self.item_magazin)
                 self.item_magazin.clear()
@@ -3158,6 +3160,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             pos = self.board_MapToBoard(self.rect().center())
         bi.position = pos
+        self.build_board_bounding_rect(cf)
         # self.board_select_items([bi])
 
     def board_create_link_item(self, from_item, to_item):
@@ -3206,6 +3209,7 @@ class BoardMixin(BoardTextEditItemMixin):
         bli.scale_x = max(1.0, bli.scale_x)
         bli.scale_y = bli.scale_x
         self.update()
+        self.board_update_selection_box_widget()
         return True
 
     def board_change_link_width(self, event, scroll_value):
