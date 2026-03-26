@@ -627,6 +627,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_snapping_init()
 
+        self.item_magazin = []
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -3130,7 +3132,17 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_invoke_pos = viewport_pos
 
     def board_invoke_create_link_item(self):
-        self.board_create_link_item()
+
+        cf = self.LibraryData().current_folder()
+        item = self.find_min_area_item(cf, self.mapped_cursor_pos())
+        if item:
+            if item in self.item_magazin:
+                self.item_magazin.remove(item)
+            else:
+                self.item_magazin.append(item)
+            if len(self.item_magazin) == 2:
+                self.board_create_link_item(*self.item_magazin)
+                self.item_magazin.clear()
 
     def board_create_node_item(self):
         cf = self.LibraryData().current_folder()
@@ -3148,12 +3160,12 @@ class BoardMixin(BoardTextEditItemMixin):
         bi.position = pos
         # self.board_select_items([bi])
 
-    def board_create_link_item(self):
+    def board_create_link_item(self, from_item, to_item):
         cf = self.LibraryData().current_folder()
         bli = BoardItem(BoardItem.types.ITEM_LINK)
         cf.board.link_items_list.append(bli)
-        bli.from_item = cf.board.items_list[0]
-        bli.to_item = cf.board.items_list[1]
+        bli.from_item = from_item
+        bli.to_item = to_item
         self.update()
 
     def board_is_dist_to_link_ok(self, li, cursor_pos):
