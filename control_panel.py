@@ -666,13 +666,9 @@ class ControlPanel(QWidget, UtilsMixin):
                 else:
                     self.update()
 
-        main_window = self.globals.main_window
-        if main_window.is_library_page_active():
-            self.window_opacity = 0.0
-            setOpacity(self.window_opacity)
-            return
+        MW = self.globals.main_window
 
-        if not main_window.STNG.autohide_control_panel:
+        if not MW.STNG.autohide_control_panel:
             self.window_opacity = 1.0
             setOpacity(self.window_opacity)
             return
@@ -684,7 +680,7 @@ class ControlPanel(QWidget, UtilsMixin):
             setOpacity(self.window_opacity)
             return
 
-        if not main_window.isActiveWindow():
+        if not MW.isActiveWindow():
             self.window_opacity = 0.0
             setOpacity(self.window_opacity)
             return
@@ -706,11 +702,11 @@ class ControlPanel(QWidget, UtilsMixin):
             if self.touched == 0:
                 self.touched = -1
 
-        if not main_window.underMouse():
+        if not MW.underMouse():
             # чтобы не реагировало,
             # когда мышка на другом мониторе
             self.touched = 0
-        if main_window.image_translating:
+        if MW.image_translating:
             self.touched = 0
 
         if self.quick_show_flag:
