@@ -79,14 +79,14 @@ def preparePluginBoard(self, plugin_info):
                         is_library_file = self.LibraryData.is_interest_file(filepath)
                         if os.path.isfile(filepath) and is_library_file:
                             bi = self.board_create_new_board_item_image(filepath, cf, place_at_cursor=False, make_previews=False)
-                            imd = bi.image_data
+                            imd = bi.file_data
                             if imd.creation_date == 0:
                                 imd.creation_date = imd.get_creation_date()
                             dt = datetime.datetime.fromtimestamp(imd.creation_date)
                             bi.status = dt.strftime("%A, %d %B %Y %X").capitalize()
                             items.append(bi)
 
-                    items = list(sorted(items, key=lambda x: x.image_data.creation_date, reverse=True))
+                    items = list(sorted(items, key=lambda x: x.file_data.creation_date, reverse=True))
 
                     # вызов нужен, чтобы bi.get_size_rect вернул актуальные значения
                     self.LibraryData().make_thumbnails_and_previews(cf, None)

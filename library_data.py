@@ -32,7 +32,7 @@ import operator
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
-ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time folder_data image_data progressive_grid_layout progressive_board_layout stage")
+ThreadRuntimeData = namedtuple("ThreadData", "id current count ui_name time folder_data file_data progressive_grid_layout progressive_board_layout stage")
 
 class MakingThumbnailsPreviewsStages():
     START = 0
@@ -124,7 +124,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 content_path = None
         return content_path
 
-    def create_image_data(self, *args):
+    def create_file_data(self, *args):
         return FileData(*args)
 
     def update_progressbar(self):
@@ -380,21 +380,21 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.show_center_label(_("You're not allowed to delete this!"), error=True)
         MW.update()
 
-    def show_that_imd_on_viewer_page(self, image_data):
-        self.prepare_image_change(image_data)
+    def show_that_imd_on_viewer_page(self, file_data):
+        self.prepare_image_change(file_data)
         # change mode to preview
         MW = self.globals.main_window
         MW.change_page(MW.pages.VIEWER_PAGE)
 
-    def prepare_image_change(self, image_data):
-        fd = image_data.folder_data
+    def prepare_image_change(self, file_data):
+        fd = file_data.folder_data
         self._index = self.folders.index(fd)
         self._current_folder = self.folders[self._index]
         self.on_current_folder_changed()
-        fd._index = fd.images_list.index(image_data)
+        fd._index = fd.images_list.index(file_data)
 
-    def prepare_modal_viewer_mode(self, image_data):
-        self.prepare_image_change(image_data)
+    def prepare_modal_viewer_mode(self, file_data):
+        self.prepare_image_change(file_data)
 
     def show_next_image(self):
         MW = self.globals.main_window
@@ -574,9 +574,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         cf.init_images(files, prev=old_images)
         if cf.images_list:
             is_set = False
-            for image_data in cf.images_list:
-                if os.path.normpath(image_data.filepath) == os.path.normpath(current_filepath):
-                    cf._index = cf.images_list.index(image_data)
+            for file_data in cf.images_list:
+                if os.path.normpath(file_data.filepath) == os.path.normpath(current_filepath):
+                    cf._index = cf.images_list.index(file_data)
                     is_set = True
                     break
             if not is_set:
@@ -734,29 +734,29 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return [a.filepath for a in self.get_fav_virtual_folder().images_list]
 
     def manage_favorite_list(self):
-        # image_data = LibraryData().current_folder().current_image()
-        image_data = self.globals.main_window.image_data
-        if not image_data.filepath:
+        # file_data = LibraryData().current_folder().current_image()
+        file_data = self.globals.main_window.file_data
+        if not file_data.filepath:
             return
-        if not LibraryData.is_interest_file(image_data.filepath):
+        if not LibraryData.is_interest_file(file_data.filepath):
             return "rejected"
         fav_folder = self.get_fav_virtual_folder()
-        if image_data.filepath in self.fav_list_filepaths():
+        if file_data.filepath in self.fav_list_filepaths():
             for im_data in self.get_fav_virtual_folder().images_list:
-                if im_data.filepath == image_data.filepath:
+                if im_data.filepath == file_data.filepath:
                     break
             fav_folder.images_list.remove(im_data)
             self.store_fav_list()
             LibraryData.update_previews_grid(fav_folder)
             return "removed"
         else:
-            fav_folder.images_list.append(image_data)
+            fav_folder.images_list.append(file_data)
             self.store_fav_list()
             LibraryData.update_previews_grid(fav_folder)
             return "added"
 
-    def is_in_fav_list(self, image_data):
-        return image_data.filepath in self.fav_list_filepaths()
+    def is_in_fav_list(self, file_data):
+        return file_data.filepath in self.fav_list_filepaths()
 
     @staticmethod
     def is_text_file(filepath):
@@ -903,35 +903,35 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return filepaths
 
     @staticmethod
-    def make_thumbnail(Globals, image_data, source_pixmap):
+    def make_thumbnail(Globals, file_data, source_pixmap):
         THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
         thumbnail = source_pixmap.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-        image_data.set_thumbnail(thumbnail)
+        file_data.set_thumbnail(thumbnail)
 
     @staticmethod
-    def make_preview(Globals, image_data, source_pixmap, original_pixmap_size, set_source_size=True):
+    def make_preview(Globals, file_data, source_pixmap, original_pixmap_size, set_source_size=True):
         ow = original_pixmap_size.width()
         oh = original_pixmap_size.height()
         if set_source_size:
-            image_data.source_width = ow
-            image_data.source_height = oh
-        if image_data.is_video_filetype:
-            image_data.source_width = 1000
-            image_data.source_height = 1000
-        elif image_data.is_audio_video_filetype:
-            image_data.source_width = 500
-            image_data.source_height = 500
+            file_data.source_width = ow
+            file_data.source_height = oh
+        if file_data.is_video_filetype:
+            file_data.source_width = 1000
+            file_data.source_height = 1000
+        elif file_data.is_audio_video_filetype:
+            file_data.source_width = 500
+            file_data.source_height = 500
 
-        if LibraryData().is_svg_file(image_data.filepath):
-            image_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
-            image_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
+        if LibraryData().is_svg_file(file_data.filepath):
+            file_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
+            file_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
         preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
-        image_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
+        file_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
         if ow != 0:
             preview = source_pixmap.scaled(Globals.PREVIEW_WIDTH, preview_height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            image_data.preview = preview
+            file_data.preview = preview
         else:
-            image_data.preview = ERROR_PREVIEW_PIXMAP
+            file_data.preview = ERROR_PREVIEW_PIXMAP
 
     @staticmethod
     def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False,
@@ -969,8 +969,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if do_progressive_board_layout:
                 MW.board_progressive_layout_start(folder_data)
 
-        for n, image_data in enumerate(images_list):
-            if image_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
+        for n, file_data in enumerate(images_list):
+            if file_data.thumbnail != Globals.DEFAULT_THUMBNAIL:
                 continue
 
             if thread_instance is not None:
@@ -979,38 +979,38 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             start_time = time.time()
             if from_board_items:
-                source = image_data.board_item.pixmap
-                image_data.preview_error = False
-            elif image_data.is_audio_video_filetype:
+                source = file_data.board_item.pixmap
+                file_data.preview_error = False
+            elif file_data.is_audio_video_filetype:
                 source = Globals.AUDIO_VIDEO_PIXMAP
-                image_data.preview_error = False                
-            elif not image_data.is_supported_filetype:
+                file_data.preview_error = False                
+            elif not file_data.is_supported_filetype:
                 source = Globals.NOT_SUPPORTED_PIXMAP
-                image_data.preview_error = True
+                file_data.preview_error = True
             else:
                 try:
                     # try for .avif-files only
-                    source = load_image_respect_orientation(image_data.filepath)
-                    image_data.preview_error = False
+                    source = load_image_respect_orientation(file_data.filepath)
+                    file_data.preview_error = False
                 except:
                     source = QPixmap()
-                    image_data.preview_error = True
+                    file_data.preview_error = True
 
             if source.isNull():
                 source = Globals.ERROR_PREVIEW_PIXMAP
-                image_data.preview_error = True
+                file_data.preview_error = True
 
             if False:
                 # thumbnail
-                LibraryData().make_thumbnail(Globals, image_data, source)
+                LibraryData().make_thumbnail(Globals, file_data, source)
                 # preview
-                LibraryData().make_preview(Globals, image_data, source, source.size())
+                LibraryData().make_preview(Globals, file_data, source, source.size())
 
             else:
                 # preview
-                LibraryData().make_preview(Globals, image_data, source, source.size())
+                LibraryData().make_preview(Globals, file_data, source, source.size())
                 # thumbnail
-                LibraryData().make_thumbnail(Globals, image_data, image_data.preview)
+                LibraryData().make_thumbnail(Globals, file_data, file_data.preview)
 
             pass_time = time.time() - start_time
             LibraryData().total_TIME += pass_time
@@ -1024,16 +1024,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                     thread_instance.ui_name,
                     LibraryData().total_TIME,
                     folder_data,
-                    image_data,
+                    file_data,
                     do_progressive_grid_layout,
                     do_progressive_board_layout,
                     MakingThumbnailsPreviewsStages.ITERATION_DONE
                 ))
             else:
                 if do_progressive_grid_layout:
-                    FolderData.PreviewsGrid.step(folder_data, image_data)
+                    FolderData.PreviewsGrid.step(folder_data, file_data)
                 if do_progressive_board_layout:
-                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, image_data)
+                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, file_data)
 
         if thread_instance is not None:
             thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -1116,10 +1116,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if os.path.exists(filepath):
             os.remove(filepath)
         data = []
-        for image_data in cf.images_list:
-            rotation = image_data.image_rotation
+        for file_data in cf.images_list:
+            rotation = file_data.image_rotation
             if rotation != 0:
-                dir_path = os.path.basename(image_data.filepath)
+                dir_path = os.path.basename(file_data.filepath)
                 imd_r_str = f"{dir_path}\n{rotation}\n"
                 data.append(imd_r_str)
         if os.path.exists(filepath):
@@ -1203,8 +1203,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.handle_input_data_epilog_callback(MW, fd, is_file, input_path, dragNdrop)
 
         elif fd and pre_load and content_hash:
-            for n, image_data in enumerate(fd.images_list):
-                if compare_md5_strings(image_data.md5, content_hash):
+            for n, file_data in enumerate(fd.images_list):
+                if compare_md5_strings(file_data.md5, content_hash):
                     fd.set_current_index(n)
                     break
 
@@ -1240,8 +1240,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @classmethod
     def add_image_to_folderdata(cls, image_path, folder_data):
-        image_data = FileData(image_path, folder_data)
-        folder_data.images_list.append(image_data)
+        file_data = FileData(image_path, folder_data)
+        folder_data.images_list.append(file_data)
 
 
 class BoardNonAutoSerializedData():
@@ -1351,9 +1351,9 @@ class FolderData():
 
     def save_images_order(self):
         data_to_write = []
-        for image_data in self.images_list:
-            if image_data.md5:
-                data_to_write.append(image_data.md5)
+        for file_data in self.images_list:
+            if file_data.md5:
+                data_to_write.append(file_data.md5)
         data_to_write = "\n".join(data_to_write)
         filepath = self.get_images_order_filepath()
 
@@ -1443,9 +1443,9 @@ class FolderData():
         return True
 
     def find_in_prev(self, filepath, prev):
-        for image_data in prev:
-            if os.path.normpath(filepath) == os.path.normpath(image_data.filepath):
-                return image_data
+        for file_data in prev:
+            if os.path.normpath(filepath) == os.path.normpath(file_data.filepath):
+                return file_data
         return None
 
     def init_images(self, files, prev=None, library_loading=False):
@@ -1464,14 +1464,14 @@ class FolderData():
         self.sort_type_reversed = False
         if not self.virtual:
             items = LibraryData.read_user_rotations_for_folder(self)
-            for image_data in self.images_list:
+            for file_data in self.images_list:
                 for filename, value in items:
-                    if os.path.basename(image_data.filepath) == filename:
-                        image_data.image_rotation = value
+                    if os.path.basename(file_data.filepath) == filename:
+                        file_data.image_rotation = value
         LibraryData().remove_progressbar()
-        for image_data in self.images_list:
-            image_data.is_supported_filetype = LibraryData.is_interest_file(image_data.filepath)
-            image_data.is_audio_video_filetype, image_data.is_video_filetype = LibraryData.is_audio_video_file(image_data.filepath)
+        for file_data in self.images_list:
+            file_data.is_supported_filetype = LibraryData.is_interest_file(file_data.filepath)
+            file_data.is_audio_video_filetype, file_data.is_video_filetype = LibraryData.is_audio_video_file(file_data.filepath)
 
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
@@ -1492,10 +1492,10 @@ class FolderData():
                 self.sort_type = 'reordered'
 
     def _find_image_by_hash_and_retrieve(self, hash_value, temp_list):
-        for image_data in self.images_list:
-            if compare_md5_strings(image_data.md5, hash_value):
-                temp_list.append(image_data)
-                self.images_list.remove(image_data)
+        for file_data in self.images_list:
+            if compare_md5_strings(file_data.md5, hash_value):
+                temp_list.append(file_data)
+                self.images_list.remove(file_data)
                 break
 
     modifiers_attrs = [
@@ -1533,7 +1533,7 @@ class FolderData():
             # print(to_print)
 
     def do_sort(self, sort_type, reversed=False):
-        image_data = self.current_image()
+        file_data = self.current_image()
         key_function = None
         if sort_type != "original":
             if sort_type == "filename":
@@ -1547,7 +1547,7 @@ class FolderData():
             ))
         else:
             self.images_list = self.original_list[:]
-        self._index = self.images_list.index(image_data)
+        self._index = self.images_list.index(file_data)
         self.sort_type = sort_type
         self.sort_type_reversed = reversed
 
@@ -1677,12 +1677,12 @@ class FolderData():
                     self.images_data = []
                     self.height = 0
 
-                def add_image(self, image_data, gap_height):
+                def add_image(self, file_data, gap_height):
                     if not self.images_data:
                         gap_height = 0
-                    image_data._waterfall_preview_column_absolute_offset = int(self.height)
-                    self.images_data.append(image_data)
-                    self.height += image_data.preview_size.height() + gap_height
+                    file_data._waterfall_preview_column_absolute_offset = int(self.height)
+                    self.images_data.append(file_data)
+                    self.height += file_data.preview_size.height() + gap_height
 
             self.columns = [LibraryModeImageColumn() for i in range(self.number_of_columns)]
             self.any_image = False
@@ -1693,14 +1693,14 @@ class FolderData():
         def set_column_width(self, width):
             self.column_width = width
 
-        def add_image(self, image_data, remember=True):
-            if self.filter and image_data.preview_error:
+        def add_image(self, file_data, remember=True):
+            if self.filter and file_data.preview_error:
                 pass
             else:
                 min_content_height_col = min(self.columns, key=lambda col: col.height)
-                min_content_height_col.add_image(image_data, self.gap)
+                min_content_height_col.add_image(file_data, self.gap)
                 if remember:
-                    self._images_data_in_layout.append(image_data)
+                    self._images_data_in_layout.append(file_data)
                 self.any_image = True
 
         def set_filter(self, value):
@@ -1731,11 +1731,11 @@ class FolderData():
             folder_data.library_previews = cls(0, pages.LIBRARY_PAGE)
 
         @classmethod
-        def step(cls, folder_data, image_data):
-            folder_data.waterfall_previews.progressively_fill_layout(image_data)
-            folder_data.library_previews.progressively_fill_layout(image_data)
+        def step(cls, folder_data, file_data):
+            folder_data.waterfall_previews.progressively_fill_layout(file_data)
+            folder_data.library_previews.progressively_fill_layout(file_data)
 
-        def progressively_fill_layout(self, image_data):
+        def progressively_fill_layout(self, file_data):
             """
                 Этот метод рассчитывает столбцы ВО ВРЕМЯ ГЕНЕРАЦИИ ПРЕВЬЮШЕК,
                 тем самым сетка с превьюшками заполняется во время генерации
@@ -1754,7 +1754,7 @@ class FolderData():
                 for imd in self._images_data_in_layout:
                     self.add_image(imd, remember=False)
 
-            self.add_image(image_data)
+            self.add_image(file_data)
 
         @classmethod
         def create_grid(cls, folder_data, page):
@@ -1783,8 +1783,8 @@ class FolderData():
             else:
                 images_list = folder_data.images_list
 
-            for n, image_data in enumerate(images_list):
-                pg.add_image(image_data, remember=False)
+            for n, file_data in enumerate(images_list):
+                pg.add_image(file_data, remember=False)
 
             if page == MW.pages.WATERFALL_PAGE:
                 folder_data.waterfall_previews = pg
@@ -2240,8 +2240,8 @@ class FinderWindow(QWidget):
                 elif r_type == 'comment':
                     LibraryData().restore_comment_record(found_path, filepath, md5_str, disk_size)
                     already_exists = False
-                    for image_data in comms_folder.images_list:
-                        if md5_str == image_data.md5:
+                    for file_data in comms_folder.images_list:
+                        if md5_str == file_data.md5:
                             already_exists = True
                             break
                     if not already_exists:

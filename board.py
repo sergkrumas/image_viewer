@@ -264,12 +264,12 @@ class BoardItem():
         r = self.get_size_rect(scaled=True)
         return abs(r.width() * r.height())
 
-    def retrieve_image_data(self):
+    def retrieve_file_data(self):
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
-            image_data = self.image_data
+            file_data = self.file_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-            image_data = self.item_folder_data.current_image()
-        return image_data
+            file_data = self.item_folder_data.current_image()
+        return file_data
 
     def make_copy(self, board, folder_data):
         copied_item = BoardItem(self.type)
@@ -285,8 +285,8 @@ class BoardItem():
 
     def info_text(self):
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
-            image_data = self.image_data
-            text = f'{image_data.filename}\n{image_data.source_width} x {image_data.source_height}'
+            file_data = self.file_data
+            text = f'{file_data.filename}\n{file_data.source_width} x {file_data.source_height}'
             if self.image_source_url is not None:
                 text = f'{text}\n{self.image_source_url}'
             return text
@@ -330,7 +330,7 @@ class BoardItem():
             scale_x = 1.0
             scale_y = 1.0
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
-            return QRectF(0, 0, self.image_data.source_width*scale_x, self.image_data.source_height*scale_y)
+            return QRectF(0, 0, self.file_data.source_width*scale_x, self.file_data.source_height*scale_y)
         elif self.type == self.types.ITEM_FOLDER:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
         elif self.type == self.types.ITEM_GROUP:
@@ -773,10 +773,10 @@ class BoardMixin(BoardTextEditItemMixin):
                             self.board_TextElementActivateEditMode(board_item)
                             break
                         elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
-                            self.LibraryData().show_that_imd_on_viewer_page(board_item.image_data)
+                            self.LibraryData().show_that_imd_on_viewer_page(board_item.file_data)
                             self.show_center_label(_('You\'re on viewer page now'))
                         elif board_item.type == BoardItem.types.ITEM_AV:
-                            execute_clickable_text(board_item.image_data.filepath)
+                            execute_clickable_text(board_item.file_data.filepath)
                         else:
                             self.board_fit_content_on_screen(None, board_item=board_item)
                         break
@@ -1191,12 +1191,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif attr_type == 'FileData':
                 filepath, source_width, source_height = attr_data
-                image_data = self.LibraryData().create_image_data(filepath, fd)
-                fd.images_list.append(image_data)
-                obj.image_data = image_data
-                image_data.board_item = obj
-                image_data.source_width = source_width
-                image_data.source_height = source_height
+                file_data = self.LibraryData().create_file_data(filepath, fd)
+                fd.images_list.append(file_data)
+                obj.file_data = file_data
+                file_data.board_item = obj
+                file_data.source_width = source_width
+                file_data.source_height = source_height
                 continue # не нужна дальнейшая обработка
 
             elif attr_type == 'FolderData':
@@ -1504,16 +1504,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 movie = item.movie
                 offset = QPointF(0, 0)
-                create_image_data = self.LibraryData().create_image_data
+                create_file_data = self.LibraryData().create_file_data
                 for i in range(movie.frameCount()):
                     movie.jumpToFrame(i)
                     pixmap = item.movie.currentPixmap()
                     fd_bi = BoardItem(BoardItem.types.ITEM_IMAGE)
                     fd_bi.pixmap = pixmap
 
-                    fd_bi.image_data = create_image_data("", fd_bi)
-                    fd_bi.image_data.board_item = fd_bi
-                    fd.images_list.append(fd_bi.image_data)
+                    fd_bi.file_data = create_file_data("", fd_bi)
+                    fd_bi.file_data.board_item = fd_bi
+                    fd.images_list.append(fd_bi.file_data)
 
                     fd.board.items_list.append(fd_bi)
                     fd_bi.board_index = i
@@ -1717,7 +1717,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.force_vertical_layout = False
 
-    def board_progressive_fill_layout(self, folder_data, image_data):
+    def board_progressive_fill_layout(self, folder_data, file_data):
         """
             Превьюшки могут генерится в совершенно произвольном порядке,
             но нам всё-таки надо сохранить порядок,
@@ -1736,12 +1736,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pbp.direction = 1
         if pbp.pivot_index is not None:
-            if folder_data.images_list.index(image_data) < pbp.pivot_index:
+            if folder_data.images_list.index(file_data) < pbp.pivot_index:
                 pbp.direction = -1
             else:
                 pbp.direction = 1
 
-        bi = self.board_prepare_board_item(board, image_data,
+        bi = self.board_prepare_board_item(board, file_data,
             pbp.forward_offset if pbp.direction == 1 else pbp.backward_offset,
             pbp.direction
         )
@@ -1749,18 +1749,18 @@ class BoardMixin(BoardTextEditItemMixin):
             if pbp.pivot_index is None:
                 self.progressive_layout_ongoing = True
                 # пивот-индекс задаём именно тут, а не выше, где происходит инициализация pbp,
-                # ибо board_prepare_board_item создаёт айтем не для каждого image_data
-                pbp.pivot_index = folder_data.images_list.index(image_data)
-                self.board_fit_content_on_screen(image_data)
+                # ибо board_prepare_board_item создаёт айтем не для каждого file_data
+                pbp.pivot_index = folder_data.images_list.index(file_data)
+                self.board_fit_content_on_screen(file_data)
                 self.DEFAULT_CANVAS_ORIGIN = QPointF(self.canvas_origin)
                 self.DEFAULT_CANVAS_SCALE = self.canvas_scale_x, self.canvas_scale_y
             self.build_board_bounding_rect(folder_data)
-            bi.sort_index = folder_data.images_list.index(image_data) - pbp.pivot_index
+            bi.sort_index = folder_data.images_list.index(file_data) - pbp.pivot_index
 
         if self.is_board_page_active() and self.Globals.DEBUG:
-            self.show_center_label(str(image_data.filepath))
+            self.show_center_label(str(file_data.filepath))
 
-    def board_prepare_board_item(self, board, image_data, offset, direction):
+    def board_prepare_board_item(self, board, file_data, offset, direction):
 
         def _set_position(bi, imd, offset):
             bi.position = offset + QPointF(imd.source_width, imd.source_height)/2
@@ -1773,35 +1773,35 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 offset += QPointF(direction*imd.source_width, 0)
 
-        if image_data.preview_error:
+        if file_data.preview_error:
             return None
         else:
-            if image_data.is_audio_video_filetype:
+            if file_data.is_audio_video_filetype:
                 item_type = BoardItem.types.ITEM_AV
             else:
                 item_type = BoardItem.types.ITEM_IMAGE
             board_item = BoardItem(item_type, visible=False)
             # linking board and image data
-            board_item.image_data = image_data
-            image_data.board_item = board_item
+            board_item.file_data = file_data
+            file_data.board_item = board_item
             board.items_list.append(board_item)
             # fill attributes and overlays
-            board_item.animated_file = image_data.is_animated_file
-            board_item.audiovideo_file = image_data.is_audio_video_filetype
-            board_item.video = image_data.is_audio_video_filetype
-            board_item.audio = image_data.is_audio_video_filetype and not image_data.is_video_filetype
+            board_item.animated_file = file_data.is_animated_file
+            board_item.audiovideo_file = file_data.is_audio_video_filetype
+            board_item.video = file_data.is_audio_video_filetype
+            board_item.audio = file_data.is_audio_video_filetype and not file_data.is_video_filetype
             board_item.board_index = self.retrieve_new_board_item_index()
             if direction == 1:
-                _set_position(board_item, image_data, offset)
-                _offset_anchor(image_data)
+                _set_position(board_item, file_data, offset)
+                _offset_anchor(file_data)
 
             elif direction == -1:
-                _offset_anchor(image_data)
-                _set_position(board_item, image_data, offset)
+                _offset_anchor(file_data)
+                _set_position(board_item, file_data, offset)
 
             if not self.Globals.lite_mode:
-                board_item._tags = self.LibraryData().get_tags_for_image_data(image_data)
-                board_item._comments = self.LibraryData().get_comments_for_image(image_data)
+                board_item._tags = self.LibraryData().get_tags_for_file_data(file_data)
+                board_item._comments = self.LibraryData().get_comments_for_image(file_data)
             board_item.visible = True
             return board_item
 
@@ -1814,8 +1814,8 @@ class BoardMixin(BoardTextEditItemMixin):
             offset = QPointF(0, 0)
         board = folder_data.board
         board.items_list = []
-        for image_data in folder_data.images_list:
-            self.board_prepare_board_item(board, image_data, offset, 1)
+        for file_data in folder_data.images_list:
+            self.board_prepare_board_item(board, file_data, offset, 1)
 
         # for board items map
         self.build_board_bounding_rect(folder_data)
@@ -1977,7 +1977,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         else:
 
-            image_data = board_item.retrieve_image_data()
+            file_data = board_item.retrieve_file_data()
 
             selection_area = board_item.get_selection_area(canvas=self)
 
@@ -2000,7 +2000,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_rect = board_item.get_size_rect()
 
                 if board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-                    item_rect = fit_rect_into_rect(QRectF(0, 0, image_data.source_width, image_data.source_height), item_rect, float_mode=True)
+                    item_rect = fit_rect_into_rect(QRectF(0, 0, file_data.source_width, file_data.source_height), item_rect, float_mode=True)
 
                 item_rect.moveCenter(QPointF(0, 0))
 
@@ -2038,7 +2038,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
                 else:
-                    image_to_draw = image_data.preview
+                    image_to_draw = file_data.preview
 
                 before_item_rect = None
                 if board_item.type == BoardItem.types.ITEM_AV:
@@ -2053,7 +2053,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
                     if board_item.type == BoardItem.types.ITEM_AV and full_quality and before_item_rect:
-                        painter.drawText(before_item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.image_data.filename)
+                        painter.drawText(before_item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.file_data.filename)
 
                 painter.setOpacity(1.0)
                 case1 = board_item.type == BoardItem.types.ITEM_IMAGE
@@ -2142,8 +2142,8 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.pixmap = None
             board_item.movie = None
 
-            image_data = board_item.retrieve_image_data()
-            filepath = image_data.filepath
+            file_data = board_item.retrieve_file_data()
+            filepath = file_data.filepath
             msg = f'unloaded from board: {filepath}'
             print(msg)
 
@@ -2156,7 +2156,7 @@ class BoardMixin(BoardTextEditItemMixin):
             print(msg)
 
         def __load_animated(filepath):
-            if board_item.image_data.is_animated_apng:
+            if board_item.file_data.is_animated_apng:
                 board_item.movie = APNGMovie(filepath)
             else:
                 board_item.movie = QMovie(filepath)
@@ -2182,16 +2182,16 @@ class BoardMixin(BoardTextEditItemMixin):
             if board_item.video:
                 board_item.pixmap = FFMPEG.load_one_of_the_first_frames_from_video(self.STNG.ffmpeg_exe_filepath, filepath, self.Globals.FFMPEG_NOT_FOUND)
                 # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
-                image_data = board_item.image_data
+                file_data = board_item.file_data
                 pixmap = board_item.pixmap
-                self.LibraryData().make_preview(self.Globals, image_data, pixmap, pixmap.size(), set_source_size=False)
-                self.LibraryData().make_thumbnail(self.Globals, image_data, image_data.preview)
+                self.LibraryData().make_preview(self.Globals, file_data, pixmap, pixmap.size(), set_source_size=False)
+                self.LibraryData().make_thumbnail(self.Globals, file_data, file_data.preview)
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
             show_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
-            filepath = board_item.image_data.filepath
+            filepath = board_item.file_data.filepath
         elif board_item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             filepath = board_item.item_folder_data.current_image().filepath
 
@@ -2736,7 +2736,7 @@ class BoardMixin(BoardTextEditItemMixin):
             for board_item in cf.board.items_list:
 
                 # крашится на item_frame-ах, потому что у них изображений нет
-                # image_data = board_item.retrieve_image_data()
+                # file_data = board_item.retrieve_file_data()
 
                 delta = board_item.position - self.board_bounding_rect.topLeft()
                 delta = QPointF(
@@ -2905,7 +2905,7 @@ class BoardMixin(BoardTextEditItemMixin):
             item_folder_data.board.items_list.remove(bi)
 
             current_board.items_list.append(bi)
-            bi.image_data.folder_data = current_folder
+            bi.file_data.folder_data = current_folder
             current_folder.images_list.append(im_data)
 
             pos = self.board_MapToBoard(gi.get_selection_area(canvas=self).boundingRect().topRight())
@@ -3025,9 +3025,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue
             group_board_item_list.append(bi)
             if bi.type is bi.types.ITEM_IMAGE:
-                items_folder.images_list.remove(bi.image_data)
-                item_fd.images_list.append(bi.image_data)
-                bi.image_data.folder_data = item_fd
+                items_folder.images_list.remove(bi.file_data)
+                item_fd.images_list.append(bi.file_data)
+                bi.file_data.folder_data = item_fd
 
             rect = bi.get_size_rect(scaled=True)
             width = rect.width()
@@ -4386,7 +4386,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_marked_items_filepaths_to_clipboard(self):
         cf = self.LibraryData().current_folder()
-        filepaths = [bi.image_data.filepath for bi in cf.board.items_list if bi._marked_item]
+        filepaths = [bi.file_data.filepath for bi in cf.board.items_list if bi._marked_item]
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText("\n".join(filepaths), mode=cb.Clipboard)
@@ -4506,26 +4506,26 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_create_new_board_item_image(filepath, cf, source_url=url)
 
     def board_create_new_board_item_image(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
-        image_data = self.LibraryData().create_image_data(filepath, current_folder)
+        file_data = self.LibraryData().create_file_data(filepath, current_folder)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-        board_item.image_data = image_data
+        board_item.file_data = file_data
         board_item.image_source_url = source_url
-        image_data.board_item = board_item
+        file_data.board_item = board_item
         current_folder.board.items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
         if place_at_cursor:
             board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
-        current_folder.images_list.append(image_data)
+        current_folder.images_list.append(file_data)
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
             self.LibraryData().make_thumbnails_and_previews(current_folder, None)
         return board_item
 
-    def board_thumbnails_click_handler(self, image_data):
-        self.board_fit_content_on_screen(image_data)
+    def board_thumbnails_click_handler(self, file_data):
+        self.board_fit_content_on_screen(file_data)
 
-    def board_fit_content_on_screen(self, image_data, board_item=None, use_selection=False):
+    def board_fit_content_on_screen(self, file_data, board_item=None, use_selection=False):
 
-        if board_item is None and (image_data is not None) and image_data.board_item is None:
+        if board_item is None and (file_data is not None) and file_data.board_item is None:
             self.show_center_label(_("This element is not presented on the board"), error=True)
         else:
             canvas_scale_x = self.canvas_scale_x
@@ -4541,7 +4541,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_item is not None:
                     pass
                 else:
-                    board_item = image_data.board_item
+                    board_item = file_data.board_item
                 content_pos = QPointF(board_item.position.x()*canvas_scale_x, board_item.position.y()*canvas_scale_y)
             viewport_center_pos = self.get_center_position()
 
@@ -4591,7 +4591,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if item is not None:
             if item.type == BoardItem.types.ITEM_IMAGE:
                 pass
-                filepath = item.image_data.filepath
+                filepath = item.file_data.filepath
             elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
                 pass
                 filepath = item.item_folder_data.current_image().filepath
@@ -4663,7 +4663,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if item is not None:
             if item.type == BoardItem.types.ITEM_IMAGE:
                 pass
-                filepath = item.image_data.filepath
+                filepath = item.file_data.filepath
             elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
                 pass
                 filepath = item.item_folder_data.current_image().filepath
@@ -5189,8 +5189,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 # удаляем информацию о загруженной папке
                 self.LibraryData().delete_current_folder()
 
-        for image_data in cf.images_list:
-            image_data.folder_data = cf
+        for file_data in cf.images_list:
+            file_data.folder_data = cf
 
         if not cf.images_list:
             self.show_center_label(_("No images found in selected folders!"), error=True)

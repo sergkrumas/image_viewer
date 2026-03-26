@@ -145,13 +145,13 @@ class TaggingLibraryDataMixin():
         create_pathsubfolders_if_not_exist(folderpath)
         return folderpath
 
-    def get_tags_for_image_data(self, image_data):
+    def get_tags_for_file_data(self, file_data):
         return_list = list()
         for key, tag in Vars.TAGS_BASE.items():
             for record in tag.records:
-                if compare_md5_strings(record.md5_str, image_data.md5):
+                if compare_md5_strings(record.md5_str, file_data.md5):
                     return_list.append(tag)
-        # status_string = f"{len(return_list)} get_tags_for_image_data {image_data.filepath}"
+        # status_string = f"{len(return_list)} get_tags_for_file_data {file_data.filepath}"
         # print(status_string)
         return return_list
 
@@ -270,9 +270,9 @@ class TaggingLibraryDataMixin():
 
         if found_folder_data is not None:
             if delete:
-                for _image_data in found_folder_data.images_list[:]:
-                    if compare_md5_strings(_image_data.md5, im_data.md5):
-                        found_folder_data.images_list.remove(_image_data)
+                for _file_data in found_folder_data.images_list[:]:
+                    if compare_md5_strings(_file_data.md5, im_data.md5):
+                        found_folder_data.images_list.remove(_file_data)
                         break
 
             else:
@@ -287,7 +287,7 @@ class TaggingLibraryDataMixin():
             else:
                 raise Exception("impossible")
 
-    def apply_new_tag_list_to_current_image_data(self, before_tags_list, new_tags_list):
+    def apply_new_tag_list_to_current_file_data(self, before_tags_list, new_tags_list):
 
         im_data = self.current_folder().current_image()
 
@@ -358,7 +358,7 @@ class TaggingLibraryDataMixin():
                     self.update_or_create_tag_virtual_folder(im_data, tag, delete=True)
 
         # обновление тегов у board_item
-        tags_list = self.get_tags_for_image_data(im_data)
+        tags_list = self.get_tags_for_file_data(im_data)
         bi = im_data.board_item
         if bi is not None:
             bi.set_tags(tags_list[:])
@@ -896,7 +896,7 @@ class TaggingForm(QWidget):
         #     return
         tagslist_raw_string = self.tagslist_edit.document().toPlainText()
         new_tags_list = text_to_list(tagslist_raw_string)
-        tags_list = LibraryData().apply_new_tag_list_to_current_image_data(main_window.tags_list, new_tags_list)
+        tags_list = LibraryData().apply_new_tag_list_to_current_file_data(main_window.tags_list, new_tags_list)
         main_window.tags_list = tags_list
         main_window.toggle_tags_overlay()
 

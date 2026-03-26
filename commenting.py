@@ -96,8 +96,8 @@ class CommentingLibraryDataMixin():
         with open(self.get_comments_list_path(), "w+", encoding="utf8") as comments_file:
             comments_file.write(data_to_write)
 
-    def image_data_comment_id(self, image_data):
-        return (image_data.md5, image_data.disk_size)
+    def file_data_comment_id(self, file_data):
+        return (file_data.md5, file_data.disk_size)
 
     def delete_comment(self, comment):
         ret = QMessageBox.question(None, _("Comment removing"),
@@ -107,7 +107,7 @@ class CommentingLibraryDataMixin():
             return
 
         ci = self.current_folder().current_image()
-        _id = self.image_data_comment_id(ci)
+        _id = self.file_data_comment_id(ci)
         try:
             self.comments_storage[_id].remove(comment)
         except:
@@ -120,13 +120,13 @@ class CommentingLibraryDataMixin():
                     comments_folder.images_list.remove(image)
         self.store_comments_list()
 
-    def add_image_to_comments_folder(self, image_data):
+    def add_image_to_comments_folder(self, file_data):
         comments_folder = None
         for folder_data in self.folders:
             if folder_data.comm:
                 comments_folder = folder_data
                 break
-        comments_folder.images_list.append(image_data)
+        comments_folder.images_list.append(file_data)
 
     def retrieve_lost_records_in_comments(self):
         lost_records = []
@@ -149,7 +149,7 @@ class CommentingLibraryDataMixin():
     def get_comments_for_image(self, imd=None):
         if imd is None:
             imd = self.current_folder().current_image()
-        _id = self.image_data_comment_id(imd)
+        _id = self.file_data_comment_id(imd)
         return self.comments_storage[_id]
 
 class CommentingMixin():
@@ -349,13 +349,13 @@ class CommentData(object):
             return self.text
 
     @classmethod
-    def create_comment(cls, LibraryData, image_data, left, top, right, bottom):
+    def create_comment(cls, LibraryData, file_data, left, top, right, bottom):
         comm = CommentData()
 
-        comm.md5 = image_data.md5
-        comm.disk_size = int(image_data.disk_size)
+        comm.md5 = file_data.md5
+        comm.disk_size = int(file_data.disk_size)
 
-        comm.filepath = image_data.filepath
+        comm.filepath = file_data.filepath
         comm.date = time.time()
         comm.date_edited = None
         comm.update_strings()
@@ -368,17 +368,17 @@ class CommentData(object):
 
         comm.separator_field = ""
 
-        _id = LibraryData().image_data_comment_id(image_data)
+        _id = LibraryData().file_data_comment_id(file_data)
         LibraryData().comments_storage[_id].append(comm)
 
         # добавление в папку
         comments_folder = LibraryData().comments_folder
         found = False
         for image in comments_folder.images_list:
-            if compare_md5_strings(image.md5, image_data.md5) and image.disk_size == image_data.disk_size:
+            if compare_md5_strings(image.md5, file_data.md5) and image.disk_size == file_data.disk_size:
                 found = True
         if not found:
-            comments_folder.images_list.append(image_data)
+            comments_folder.images_list.append(file_data)
 
         return comm
 

@@ -1270,20 +1270,20 @@ class MainWindow(QMainWindow,
             done = data.current == data.count
             # self.threads_info[data.id] = (done, f"{data.current}/{data.count} {data.ui_name}, {data.time}")
             stage = data.stage
-            image_data = data.image_data
+            file_data = data.file_data
             folder_data = data.folder_data
             if data.progressive_grid_layout:
                 if stage == MakingThumbnailsPreviewsStages.START:
                     FolderData.PreviewsGrid.start_grids(folder_data)
                 elif stage == MakingThumbnailsPreviewsStages.ITERATION_DONE:
-                    FolderData.PreviewsGrid.step(folder_data, image_data)
+                    FolderData.PreviewsGrid.step(folder_data, file_data)
                 elif stage == MakingThumbnailsPreviewsStages.FINISH:
                     FolderData.PreviewsGrid.finish_grids(folder_data)
             if data.progressive_board_layout:
                 if stage == MakingThumbnailsPreviewsStages.START:
                     self.board_progressive_layout_start(folder_data)
                 elif stage == MakingThumbnailsPreviewsStages.ITERATION_DONE:
-                    self.board_progressive_fill_layout(folder_data, image_data)
+                    self.board_progressive_fill_layout(folder_data, file_data)
                 elif stage == MakingThumbnailsPreviewsStages.FINISH:
                     self.board_progressive_layout_finish(folder_data)
 
@@ -2195,7 +2195,7 @@ class MainWindow(QMainWindow,
             self.image_scale = max_scale_to_fit
 
     def restore_image_transformations(self, correct=True):
-        self.image_rotation = self.image_data.image_rotation
+        self.image_rotation = self.file_data.image_rotation
         # self.get_rotated_pixmap(force_update=True)
         self.image_scale = 1.0
         self.image_center_position = self.get_center_position()
@@ -2210,7 +2210,7 @@ class MainWindow(QMainWindow,
 
     def tick_animation(self):
         delta = (time.time() - self.frame_time) * 1000
-        is_playing = not self.image_data.anim_paused
+        is_playing = not self.file_data.anim_paused
         movie = self.movie
         is_animation = movie.frameCount() > 1
         if delta > self.frame_delay and is_playing and is_animation:
@@ -2252,7 +2252,7 @@ class MainWindow(QMainWindow,
     def show_svg(self, filepath):
         self.image_filepath = filepath
         self.transformations_allowed = True
-        self.pixmap = load_svg(filepath, scale_factor=self.image_data.svg_scale_factor)
+        self.pixmap = load_svg(filepath, scale_factor=self.file_data.svg_scale_factor)
         self.svg_rendered = True
 
     def show_static(self, filepath, pass_=1):
@@ -2275,12 +2275,12 @@ class MainWindow(QMainWindow,
     def is_not_modal_viewer_mode(self):
         return self.is_viewer_page_active() or not self.viewer_modal
 
-    def show_image(self, image_data, only_set_thumbnails_offset=False):
+    def show_image(self, file_data, only_set_thumbnails_offset=False):
         # reset
         self.rotated_pixmap = None
-        self.image_data = image_data
+        self.file_data = file_data
         self.copied_from_clipboard = False
-        filepath = self.image_data.filepath
+        filepath = self.file_data.filepath
         self.viewer_reset(simple=True)
         # setting new image
         self.viewer_error = False
@@ -2297,7 +2297,7 @@ class MainWindow(QMainWindow,
                     animated = animated or LibraryData().is_webp_file_animated(filepath)
                     animated = animated or LibraryData().is_apng_file_animated(filepath)
                     if animated:
-                        self.show_animated(filepath, image_data.is_animated_apng)
+                        self.show_animated(filepath, file_data.is_animated_apng)
                     elif LibraryData().is_svg_file(filepath):
                         self.show_svg(filepath)
                     else:
@@ -2306,23 +2306,23 @@ class MainWindow(QMainWindow,
                     self.error_pixmap_and_reset(_("The file is corrupted"), traceback.format_exc())
         if self.is_not_modal_viewer_mode():
             if not self.viewer_error:
-                self.read_image_metadata(image_data)
+                self.read_image_metadata(file_data)
         self.restore_image_transformations()
         if self.is_not_modal_viewer_mode():
-            self.update_thumbnails_row_relative_offset(image_data.folder_data, only_set=only_set_thumbnails_offset)
+            self.update_thumbnails_row_relative_offset(file_data.folder_data, only_set=only_set_thumbnails_offset)
             self.set_window_title(self.current_image_details())
             if self.viewer_error:
                 self.tags_list = []
             else:
-                self.tags_list = LibraryData().get_tags_for_image_data(image_data)
+                self.tags_list = LibraryData().get_tags_for_file_data(file_data)
             self.update_control_panel_label_text()
         self.update()
 
     def error_pixmap_and_reset(self, title, message, no_background=False):
         self.viewer_error = True
-        if not self.image_data.is_supported_filetype:
-            if LibraryData.is_text_file(self.image_data.filepath):
-                with open(self.image_data.filepath, "rb") as file:
+        if not self.file_data.is_supported_filetype:
+            if LibraryData.is_text_file(self.file_data.filepath):
+                with open(self.file_data.filepath, "rb") as file:
                     message = file.read(500).decode("utf-8", "ignore") + "..."
                     title = ""
         self.pixmap = generate_info_pixmap(title, message, no_background=no_background)
@@ -2351,22 +2351,22 @@ class MainWindow(QMainWindow,
     def set_loading_text(self):
         self.loading_text = _('LOADING')
 
-    def read_image_metadata(self, image_data):
-        if not image_data.image_metadata:
+    def read_image_metadata(self, file_data):
+        if not file_data.image_metadata:
             if Settings.get('show_image_metadata'):
-                image_data.image_metadata = read_meta_info(image_data.filepath)
+                file_data.image_metadata = read_meta_info(file_data.filepath)
                 out = []
-                for key, data in dict(image_data.image_metadata).items():
+                for key, data in dict(file_data.image_metadata).items():
                     data_ = data
                     # if isinstance(data, bytes):
                     #     # data = "BYTES"
                     #     data_ = data.decode('unicode_escape')
                     text = f'{key} : {data_}'
                     out.append(text)
-                image_data.image_metadata_info = "\n".join(out)
+                file_data.image_metadata_info = "\n".join(out)
             else:
-                image_data.image_metadata = dict()
-                image_data.image_metadata_info = ""
+                file_data.image_metadata = dict()
+                file_data.image_metadata_info = ""
 
     def current_image_details(self):
         w, h = None, None
@@ -2374,7 +2374,7 @@ class MainWindow(QMainWindow,
             w = self.pixmap.width()
             h = self.pixmap.height()
         if self.animated or self.pixmap:
-            name = os.path.basename(self.image_data.filepath)
+            name = os.path.basename(self.file_data.filepath)
             if w and h:
                 try:
                     n = LibraryData().current_folder()._index + 1
@@ -2790,9 +2790,9 @@ class MainWindow(QMainWindow,
         self.hide_center_label()
         if self.waterfall_block_active_item:
             cf = LibraryData().current_folder()
-            image_data = cf.current_image()
-            if image_data and not image_data.preview_ui_rect.isNull():
-                self.waterfall_previews_list_active_item = image_data
+            file_data = cf.current_image()
+            if file_data and not file_data.preview_ui_rect.isNull():
+                self.waterfall_previews_list_active_item = file_data
                 Globals._timer = QTimer.singleShot(1000, self.waterfall_unblock_active_item)
             else:
                 self.waterfall_unblock_active_item()
@@ -5257,7 +5257,7 @@ class MainWindow(QMainWindow,
 
     def toggle_animation_playback(self):
         if self.animated:
-            im_data = self.image_data
+            im_data = self.file_data
             im_data.anim_paused = not im_data.anim_paused
         self.update()
 
@@ -5648,10 +5648,10 @@ class MainWindow(QMainWindow,
         self.save_inframed_image(shift_pressed, ctrl_pressed)
 
     def save_inframed_image(self, use_screen_scale, reset_path):
-        if not self.image_data.filepath or self.viewer_error:
+        if not self.file_data.filepath or self.viewer_error:
             self.show_center_label(_("Unable to save: no source file or source file is not found"), error=True)
             return
-        path = self.image_data.filepath
+        path = self.file_data.filepath
         pixmap = self.get_rotated_pixmap()
         save_pixmap = QPixmap(self.size())
         save_pixmap.fill(Qt.transparent)
@@ -5799,7 +5799,7 @@ class MainWindow(QMainWindow,
 
         factors = [1, 5, 10, 20, 30, 40, 50, 80, 100]
         actions = []
-        current_factor = self.image_data.svg_scale_factor
+        current_factor = self.file_data.svg_scale_factor
         for factor in factors:
             action = contextMenu.addAction(f"x{factor}")
             action.setCheckable(True)
@@ -5811,8 +5811,8 @@ class MainWindow(QMainWindow,
         if cur_action is not None:
             for (action, factor) in actions:
                 if cur_action == action:
-                    self.image_data.svg_scale_factor = factor
-                    self.show_image(self.image_data)
+                    self.file_data.svg_scale_factor = factor
+                    self.show_image(self.file_data)
                     self.get_rotated_pixmap(force_update=True)
                     w = self.pixmap.width()
                     h = self.pixmap.height()
@@ -5999,7 +5999,7 @@ class MainWindow(QMainWindow,
 
         elif self.is_viewer_page_active():
 
-            if self.image_data and not self.image_data.is_supported_filetype:
+            if self.file_data and not self.file_data.is_supported_filetype:
                 addItem(_("Open unsupported file..."), self.open_unsupported_file)
 
             sep()
@@ -6099,7 +6099,7 @@ class MainWindow(QMainWindow,
 
     def open_unsupported_file(self):
         import win32api
-        win32api.ShellExecute(0, "open", self.image_data.filepath, None, ".", 1)
+        win32api.ShellExecute(0, "open", self.file_data.filepath, None, ".", 1)
 
     def closeEvent(self, event):
         if Globals.DEBUG:

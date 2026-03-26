@@ -397,7 +397,7 @@ class ControlPanel(QWidget, UtilsMixin):
         angles = [0, 90, 180, 270, 0]
         new_index = angles.index(MW.image_rotation) + 1
         MW.image_rotation = angles[new_index]
-        imd = MW.image_data
+        imd = MW.file_data
         if imd and not MW.copied_from_clipboard:
             imd.image_rotation = MW.image_rotation
         MW.get_rotated_pixmap(force_update=True)
@@ -410,7 +410,7 @@ class ControlPanel(QWidget, UtilsMixin):
         angles = [0, 270, 180, 90, 0]
         new_index = angles.index(MW.image_rotation) + 1
         MW.image_rotation = angles[new_index]
-        imd = MW.image_data
+        imd = MW.file_data
         if imd and not MW.copied_from_clipboard:
             imd.image_rotation = MW.image_rotation
         MW.get_rotated_pixmap(force_update=True)
@@ -798,8 +798,8 @@ class ControlPanel(QWidget, UtilsMixin):
         if event.buttons() == Qt.LeftButton:
             if event.modifiers() & Qt.ControlModifier:
                 folder_data = self.LibraryData().current_folder()
-                for image_data in folder_data.images_list:
-                    image_data._touched = False
+                for file_data in folder_data.images_list:
+                    file_data._touched = False
 
                 self.group_selecting = True
                 pos = self.mapped_cursor_pos()
@@ -824,8 +824,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.thumbnails_click(selection_rect=selection_rect)
 
                 folder_data = self.LibraryData().current_folder()
-                for image_data in folder_data.images_list:
-                    image_data._touched = False
+                for file_data in folder_data.images_list:
+                    file_data._touched = False
 
         self.update()
 
@@ -935,8 +935,8 @@ class ControlPanel(QWidget, UtilsMixin):
         if multirow:
 
             # отрисовка рядов в полноэкранном режиме
-            for image_index, image_data in enumerate(images_list):
-                thumbnail = image_data.get_thumbnail()
+            for image_index, file_data in enumerate(images_list):
+                thumbnail = file_data.get_thumbnail()
                 if not thumbnail:
                     continue
 
@@ -945,7 +945,7 @@ class ControlPanel(QWidget, UtilsMixin):
                         QSizeF(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
                     ).toRect()
 
-                if image_data._selected:
+                if file_data._selected:
                     thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
                     # специальные параметры, чтобы увеличенное изоражение не косоёбило
                     # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
@@ -972,8 +972,8 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.underMouseFileData = None
 
             # отрисовка одного ряда в панели управления, в истории прсмотров и в папках библиотеки
-            for image_index, image_data in enumerate(images_list):
-                thumbnail = image_data.get_thumbnail()
+            for image_index, file_data in enumerate(images_list):
+                thumbnail = file_data.get_thumbnail()
                 if not thumbnail:
                     continue
                 offset_x = 0
@@ -996,7 +996,7 @@ class ControlPanel(QWidget, UtilsMixin):
                         offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
-                if image_data._selected and not is_call_from_main_window:
+                if file_data._selected and not is_call_from_main_window:
                     thumb_rect_ = thumb_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
                     # специальные параметры, чтобы увеличенное изоражение не косоёбило
                     # _offset высчитывает смещение в координатах s_thumb_rect через проекцию
@@ -1016,7 +1016,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 if library_page_rect.contains(thumb_rect_.topRight()):
                     highlighted = thumb_rect.contains(cursor_pos)
                     if highlighted and not is_call_from_main_window:
-                        self.underMouseFileData = image_data
+                        self.underMouseFileData = file_data
                     cases = (
                                 highlighted,
                                 is_call_from_main_window,
@@ -1031,7 +1031,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                         painter.drawRect(thumb_rect)
 
-                    if image_data._selected:
+                    if file_data._selected:
                         painter.setOpacity(1.0)
 
                     painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
@@ -1104,7 +1104,7 @@ class ControlPanel(QWidget, UtilsMixin):
             image_index_draw = -1
             image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
             for ri, image_row in enumerate(image_rows):
-                for iri, image_data in enumerate(image_row):
+                for iri, file_data in enumerate(image_row):
 
                     _ROW_LENGTH = ROW_LENGTH + 1
                     image_index_draw += 1
@@ -1136,7 +1136,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
         else:
 
-            for image_index, image_data in enumerate(folder_data.get_phantomed_image_list()):
+            for image_index, file_data in enumerate(folder_data.get_phantomed_image_list()):
 
                 relative_offset_x = folder_data.relative_thumbnails_row_offset_x
 
@@ -1236,7 +1236,7 @@ class ControlPanel(QWidget, UtilsMixin):
             image_index_draw = -1
             image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
             for ri, image_row in enumerate(image_rows):
-                for iri, image_data in enumerate(image_row):
+                for iri, file_data in enumerate(image_row):
 
                     # обратить внимание, что именно здесь фантомный элемент в рачёт не берём,
                     # поэтому здесь единица не прибавляется
@@ -1252,7 +1252,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
                     d_rect.adjust(5, 0, -5, 0) # немного сплющиваем
 
-                    if image_data._selected:
+                    if file_data._selected:
                         d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
 
                     case1 = d_rect.contains(cursor_pos) and selection_rect is None
@@ -1263,17 +1263,17 @@ class ControlPanel(QWidget, UtilsMixin):
                             return True
                         elif select:
                             # не нужно, потому что прямоугольное выделение решает и этот частный случай
-                            toggle_selection_flag(image_data)
+                            toggle_selection_flag(file_data)
                             return
                         elif selection_rect:
-                            if not image_data._touched:
-                                image_data._touched = True
-                                toggle_selection_flag(image_data)
+                            if not file_data._touched:
+                                file_data._touched = True
+                                toggle_selection_flag(file_data)
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
                         elif click_handler:
-                            click_handler(image_data)
+                            click_handler(file_data)
                             return
 
 
@@ -1282,8 +1282,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
         else:
 
-            for image_index, image_data in enumerate(images_list):
-                thumbnail = image_data.get_thumbnail()
+            for image_index, file_data in enumerate(images_list):
+                thumbnail = file_data.get_thumbnail()
                 # ради анимационного эффекта пришлось разделить выражение
                 # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
                 # на зависимую и независимую от current_index части
@@ -1298,7 +1298,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
 
-                if image_data._selected:
+                if file_data._selected:
                     d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
 
                 case1 = d_rect.contains(cursor_pos) and selection_rect is None
@@ -1308,17 +1308,17 @@ class ControlPanel(QWidget, UtilsMixin):
                         if define_cursor_shape:
                             return True
                         # elif select:
-                        #     toggle_selection_flag(image_data)
+                        #     toggle_selection_flag(file_data)
                         #     return
                         elif selection_rect:
-                            if not image_data._touched:
-                                image_data._touched = True
-                                toggle_selection_flag(image_data)
+                            if not file_data._touched:
+                                file_data._touched = True
+                                toggle_selection_flag(file_data)
                         elif click:
                             self.LibraryData().jump_to_image(image_index)
                             return
                         elif click_handler:
-                            click_handler(image_data)
+                            click_handler(file_data)
                             return
 
 
