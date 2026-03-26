@@ -4182,6 +4182,18 @@ class BoardMixin(BoardTextEditItemMixin):
                     execute_clickable_text(note_content)
                     break
 
+    def board_MapRectToViewport(self, rect):
+        return QRectF(
+            self.board_MapToViewport(rect.topLeft()),
+            self.board_MapToViewport(rect.bottomRight())
+        )
+
+    def board_MapRectToBoard(self, rect):
+        return QRectF(
+            self.board_MapToBoard(rect.topLeft()),
+            self.board_MapToBoard(rect.bottomRight())
+        )
+
     def board_MapToViewport(self, canvas_pos):
         scaled_board_pos = QPointF(canvas_pos.x()*self.canvas_scale_x, canvas_pos.y()*self.canvas_scale_y)
         viewport_pos = self.canvas_origin + scaled_board_pos

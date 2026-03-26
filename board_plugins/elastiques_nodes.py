@@ -175,7 +175,7 @@ if not RUN_AS_STANDALONE_PYQT_APP:
             self._scene_rect = QRectF(*args)
 
         def sceneRect(self):
-            rect = board_MapRectToViewport(board_widget, self._scene_rect)
+            rect = board_widget.board_MapRectToViewport(self._scene_rect)
             return rect
 
         def addItem(self, item):
@@ -875,11 +875,6 @@ class PluginNodeEditor():
 
 
 
-def board_MapRectToViewport(self, rect):
-    return QRectF(
-        self.board_MapToViewport(rect.topLeft()),
-        self.board_MapToViewport(rect.bottomRight())
-    )
 
 def get_plugin_data_filepath(self):
     return self.get_user_data_filepath('elastiques_nodes.data.txt')
