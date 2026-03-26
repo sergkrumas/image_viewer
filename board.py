@@ -3156,6 +3156,44 @@ class BoardMixin(BoardTextEditItemMixin):
         bli.to_item = cf.board.items_list[1]
         self.update()
 
+    def board_is_dist_to_link_ok(self, li, cursor_pos):
+        a = li.from_item.calculate_viewport_position(canvas=self)
+        b = li.to_item.calculate_viewport_position(canvas=self)
+
+        def dot(vec1, vec2):
+            return vec1.x()*vec2.x() + vec1.y()*vec2.y()
+
+        def get_projection(p, v1, v2):
+            seg = v1-v2
+            len_squared = dot(seg, seg)
+            factor = dot(p-v1, v2-v1)/len_squared
+            projection = v1 + factor * (v2 - v1)
+            return projection, factor
+
+        m, factor = get_projection(cursor_pos, a, b)
+        dist = QVector2D(m-cursor_pos).length()
+
+        if 0.0 < factor < 1.0 and dist < 30:
+            return True
+        else:
+            return False
+
+    def board_change_link_width(self, event, scroll_value):
+        cf = self.LibraryData().current_folder()
+        cursor_pos = event.pos()
+        for bli in cf.board.link_items_list:
+            if self.board_is_dist_to_link_ok(bli, cursor_pos):
+                break
+        else:
+            return False
+        if scroll_value > 0:
+            bli.link_width += 1.0
+        else:
+            bli.link_width -= 1.0
+        self.update()
+        bli.link_width = max(1.0, bli.link_width)
+        return True
+
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
 
@@ -4467,6 +4505,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if control_panel_undermouse:
             return
         elif self.board_camera_translation_ongoing:
+            return
+        elif self.board_change_link_width(event, scroll_value):
             return
         elif self.AUTOSCROLL.timer.isActive():
             self.board_autoscroll_wheelEventHandler(scroll_value)
