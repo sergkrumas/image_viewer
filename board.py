@@ -1279,13 +1279,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
             attr_type = type(attr_value).__name__
 
-            if attr_name.startswith("__"):
+            if attr_name.startswith("_"):
                 continue
 
             elif exclude is not None and attr_name in exclude:
                 continue
 
-            elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized']:
+            elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized', 'progressive_board_preparation']:
                 attr_data = None
                 attr_type = 'NoneType'
 
