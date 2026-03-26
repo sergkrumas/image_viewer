@@ -6132,16 +6132,19 @@ class MainWindow(QMainWindow,
             self.show_center_label(_("No images to show"), error=True)
         self.update()
 
-    def modal_input_field_show(self):
+    def modal_input_field_show(self, callback, text):
         lineEdit = self.lineEdit
+        self.lineEditCallback = callback
         lineEdit.setGeometry(self.rect().adjusted(200, 200, -200, -200))
         lineEdit.setParent(self)
         lineEdit.setFocus()
         lineEdit.show()
+        lineEdit.setText(text)
+        lineEdit.selectAll()
 
     def modal_input_field_init(self):
         lineEdit = self.lineEdit = QLineEdit()
-        lineEdit.setText('Example')
+        lineEdit.setText('')
         lineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         lineEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         lineEdit.setStyleSheet('color: white; font: 20pt; background: rgba(50, 50, 50, 100); border-radius: 30px; border: 1px solid gray;')
@@ -6156,8 +6159,14 @@ class MainWindow(QMainWindow,
     def modal_input_field_handler(self, close=True):
         self.setWindowTitle(self.lineEdit.text())
         if close:
+            if self.lineEditCallback:
+                self.lineEditCallback()
             self.modal_input_field_hide()
+            self.update()
         return True
+
+    def modal_input_field_text(self):
+        return self.lineEdit.text()
 
 
 def main():

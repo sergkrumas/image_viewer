@@ -173,6 +173,7 @@ class BoardLibraryDataMixin():
 class BoardItem():
 
     FRAME_PADDING = 40.0
+    NODE_SIZE = 40.0
 
     class types():
         ITEM_UNDEFINED = 0
@@ -181,9 +182,10 @@ class BoardItem():
         ITEM_FOLDER = 3
         ITEM_GROUP = 4
         ITEM_NODE = 5
-        ITEM_FRAME = 6
-        ITEM_NOTE = 7
-        ITEM_EDITING_TABLE = 8
+        ITEM_LINK = 6
+        ITEM_FRAME = 7
+        ITEM_NOTE = 8
+        ITEM_EDITING_TABLE = 9
 
     def __init__(self, item_type, visible=True):
         super().__init__()
@@ -216,6 +218,9 @@ class BoardItem():
 
         self.width = 1000
         self.height = 1000
+
+        self.from_item = None
+        self.to_item = None
 
         self.image_source_url = None
 
@@ -269,6 +274,8 @@ class BoardItem():
             file_data = self.file_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             file_data = self.item_folder_data.current_image()
+        elif self.type == BoardItem.types.ITEM_NODE:
+            file_data = self.label
         return file_data
 
     def make_copy(self, board, folder_data):
@@ -326,18 +333,15 @@ class BoardItem():
             elif self.type == self.types.ITEM_NOTE:
                 scale_x = self.scale_x
                 scale_y = self.scale_y
+            elif self.type == self.types.ITEM_NODE:
+                scale_x = self.scale_x
+                scale_y = self.scale_y
         else:
             scale_x = 1.0
             scale_y = 1.0
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             return QRectF(0, 0, self.file_data.source_width*scale_x, self.file_data.source_height*scale_y)
-        elif self.type == self.types.ITEM_FOLDER:
-            return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
-        elif self.type == self.types.ITEM_GROUP:
-            return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
-        elif self.type == self.types.ITEM_FRAME:
-            return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
-        elif self.type == self.types.ITEM_NOTE:
+        elif self.type in [self.types.ITEM_FOLDER, self.types.ITEM_GROUP, self.types.ITEM_FRAME, self.types.ITEM_NOTE, self.types.ITEM_NODE]:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
 
     def get_selection_area(self, canvas=None,
@@ -780,6 +784,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         else:
                             self.board_fit_content_on_screen(None, board_item=board_item)
                         break
+                else:
+                    # если цикл дошёл до конца, то есть break не был вызван
+                    self.board_invoke_create_node_item(event.pos())
 
     def board_keyPressEventDefault(self, event):
         key = event.key()
@@ -881,6 +888,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_ctrl_z()
         elif check_scancode_for(event, "N"):
             self.board_invoke_create_node_item()
+        elif check_scancode_for(event, "L"):
+            self.board_invoke_create_link_item()
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
@@ -1876,6 +1885,8 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(12)
         painter.setFont(font)
 
+        self.board_draw_content_links(painter, folder_data, pre=True)
+
         self.images_drawn = 0
         self.board_item_under_mouse = None
         for board_item in folder_data.board.items_list:
@@ -1883,7 +1894,21 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_draw_item(painter, board_item)
         self.draw_selection(painter, folder_data)
 
+        self.board_draw_content_links(painter, folder_data, post=True)
+
         painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
+
+    def board_draw_content_links(self, painter, folder_data, pre=False, post=False):
+        if pre:
+            return
+        painter.setPen(QPen(Qt.white, 3, Qt.DashLine))
+        for bli in folder_data.board.link_items_list:
+            _to = bli.to_item
+            _from = bli.from_item
+            painter.drawLine(
+                _to.calculate_viewport_position(canvas=self),
+                _from.calculate_viewport_position(canvas=self)
+            )
 
     def draw_selection(self, painter, folder_data):
         painter.save()
@@ -1938,7 +1963,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.restore()
             board_item.countdown_red_frame -= 1
 
-        if board_item.type in [BoardItem.types.ITEM_FRAME]:
+        if board_item.type == BoardItem.types.ITEM_FRAME:
             FRAME_PADDING = BoardItem.FRAME_PADDING
 
             area = board_item.get_selection_area(canvas=self)
@@ -1977,7 +2002,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             painter.setFont(before_font)
 
-        elif board_item.type in [BoardItem.types.ITEM_NOTE]:
+        elif board_item.type == BoardItem.types.ITEM_NOTE:
 
             if self.Globals.DISABLE_ITEM_DISTORTION_FIXER:
                 self.board_TextElementDrawOnCanvas(painter, board_item, False)
@@ -1985,6 +2010,35 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.enable_distortion_fixer()
                 self.board_TextElementDrawOnCanvas(painter, board_item, False)
                 board_item.disable_distortion_fixer()
+
+        elif board_item.type == BoardItem.types.ITEM_NODE:
+
+            transform = board_item.get_transform_obj(canvas=self)
+            painter.setTransform(transform)
+
+            item_rect = board_item.get_size_rect()
+            item_rect.moveCenter(QPointF(0, 0))
+            pen = painter.pen()
+            pen.setStyle(Qt.DashLine)
+            painter.setPen(pen)
+            painter.drawEllipse(item_rect)
+
+            before_font = painter.font()
+            font = QFont(before_font)
+            font.setPixelSize(30)
+            painter.setFont(font)
+
+            label_text = board_item.label
+            label_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, label_text)
+            pos = (item_rect.topLeft() + item_rect.topRight())/2.0
+            pos -= QPointF(0, label_rect.height())
+            label_rect.moveCenter(pos)
+
+            alignment = Qt.AlignVCenter | Qt.AlignHCenter
+            painter.drawText(label_rect, alignment, label_text)
+            painter.setFont(before_font)
+
+            painter.resetTransform()
 
         else:
 
@@ -3070,8 +3124,36 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_invoke_create_node_item(self):
-        self.modal_input_field_show()
+    def board_invoke_create_node_item(self, viewport_pos=None):
+        self.modal_input_field_show(self.board_create_node_item, _('Node label'))
+        self.board_invoke_pos = viewport_pos
+
+    def board_invoke_create_link_item(self):
+        self.board_create_link_item()
+
+    def board_create_node_item(self):
+        cf = self.LibraryData().current_folder()
+        bi = BoardItem(BoardItem.types.ITEM_NODE)
+        bi.board_index = self.retrieve_new_board_item_index()
+        cf.board.items_list.append(bi)
+        bi.label = self.modal_input_field_text()
+        bi.width = BoardItem.NODE_SIZE
+        bi.height = BoardItem.NODE_SIZE
+        if self.board_invoke_pos:
+            pos = self.board_MapToBoard(self.board_invoke_pos)
+            self.board_invoke_pos = None
+        else:
+            pos = self.board_MapToBoard(self.rect().center())
+        bi.position = pos
+        # self.board_select_items([bi])
+
+    def board_create_link_item(self):
+        cf = self.LibraryData().current_folder()
+        bli = BoardItem(BoardItem.types.ITEM_LINK)
+        cf.board.link_items_list.append(bli)
+        bli.from_item = cf.board.items_list[0]
+        bli.to_item = cf.board.items_list[1]
+        self.update()
 
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
