@@ -289,7 +289,8 @@ class AutoscrollMixin():
 
         painter.setOpacity(0.7)
         gray = QColor(100, 100, 100)
-        painter.setPen(gray)
+        darker_color = QColor(10, 10, 10, 200)
+        painter.setPen(darker_color)
         painter.setBrush(QBrush(Qt.white))
         el_rect = QRectF(0, 0, 9, 9)
         el_rect.moveCenter(self.AUTOSCROLL.startpos)
@@ -311,10 +312,13 @@ class AutoscrollMixin():
 
         painter.setBrush(Qt.NoBrush)
 
-        painter.setPen(QPen(Qt.white, 2))
+
         el_rect = QRectF(0, 0, 49, 49)
         el_rect.moveCenter(self.AUTOSCROLL.startpos)
+        painter.setPen(QPen(darker_color, 4))
+        painter.drawEllipse(el_rect)
         painter.setBrush(QBrush(QColor(255, 255, 255, 100)))
+        painter.setPen(QPen(Qt.white, 2))
         painter.drawEllipse(el_rect)
 
         painter.restore()
@@ -335,7 +339,7 @@ class AutoscrollMixin():
         center_el = QRect(0, 0, 9, 9)
         center_el.moveCenter(center)
         painter.setBrush(QBrush(color))
-        painter.setPen(Qt.gray)
+        painter.setPen(QColor(10, 10, 10, 200))
         painter.drawEllipse(center_el)
 
 
@@ -355,16 +359,24 @@ class AutoscrollMixin():
         return QCursor(pixmap)
 
     def autoscroll_draw_arrow(self, painter, center, norm_direction, distance):
-        color = QColor(255, 255, 255, 200)
-        pen = QPen(color, 4)
-        pen.setCapStyle(Qt.RoundCap)
-        painter.setPen(pen)
 
         c1 = center + QPointF(norm_direction)*(0.0 + distance)
         a = c1 + QPointF(norm_direction.y(), -norm_direction.x())*6.5
         b = c1 + QPointF(-norm_direction.y(), norm_direction.x())*6.5
         c2 = c1 + QPointF(norm_direction)*6.0
+
+        color = QColor(10, 10, 10, 200)
+        pen = QPen(color, 5)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
         painter.drawPolyline(a, c2, b)
+
+        color = QColor(255, 255, 255, 200)
+        pen = QPen(color, 4)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+        painter.drawPolyline(a, c2, b)
+
 
     def autoscroll_is_cursor_activated(self):
         return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone
