@@ -809,13 +809,12 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_fly_over(user_call=True)
 
         elif check_scancode_for(event, "O"):
-            if only_shift_mod:
+            if only_ctrl_mode:
+                self.board_loadBoard()
+            elif only_shift_mod:
                 self.board_marked_items_filepaths_to_clipboard()
             else:
                 self.board_toggle_item_mark()
-
-        elif check_scancode_for(event, "O") and only_ctrl_mode:
-            self.board_loadBoard()
 
         elif check_scancode_for(event, "S") and only_ctrl_mode:
             self.board_saveBoard()
