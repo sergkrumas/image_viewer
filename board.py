@@ -3324,10 +3324,7 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 cf = self.LibraryData().current_folder()
                 viewport_rect = self.rect()
-                board_mapped_viewport_rect = QRectF(
-                    self.board_MapToBoard(viewport_rect.topLeft()),
-                    self.board_MapToBoard(viewport_rect.bottomRight())
-                ).toRect()
+                board_mapped_viewport_rect = self.board_MapRectToBoard(viewport_rect).toRect()
                 def append(*args):
                     self.SNAPPING.targets.append(SnappingTarget(*args))
                 self.SNAPPING.targets = []
@@ -5261,10 +5258,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 )):
                 painter.setPen(QPen(QColor(200, 50, 50, 100), pen_width))
                 painter.setBrush(Qt.NoBrush)
-                bbr_viewport_mapped = QRectF(
-                    self.board_MapToViewport(bbr.topLeft()),
-                    self.board_MapToViewport(bbr.bottomRight())
-                )
+                bbr_viewport_mapped = self.board_MapRectToViewport(bbr)
                 painter.drawRect(bbr_viewport_mapped)
                 text = _("Whole board")
                 font = painter.font()
@@ -5405,11 +5399,7 @@ class BoardMixin(BoardTextEditItemMixin):
         def get_target(get_func, result_func):
 
             if align_type == AlignType.ALIGN_TO_VIEWPORT:
-                r = self.rect()
-                vr = QRectF(
-                    self.board_MapToBoard(r.topLeft()),
-                    self.board_MapToBoard(r.bottomRight())
-                )
+                vr = self.board_MapToBoard(self.rect())
                 return get_func(vr)
 
             elif align_type == AlignType.ALIGN_TO_SELECTION:
@@ -5424,11 +5414,7 @@ class BoardMixin(BoardTextEditItemMixin):
         def boundingBox(bihs):
 
             if align_type == AlignType.ALIGN_TO_VIEWPORT:
-                r = self.rect()
-                return QRectF(
-                    self.board_MapToBoard(r.topLeft()),
-                    self.board_MapToBoard(r.bottomRight())
-                )
+                return self.board_MapRectToBoard(self.rect())
 
             elif align_type == AlignType.ALIGN_TO_SELECTION:
                 left = min(i.left() for i in bihs)
@@ -5446,11 +5432,7 @@ class BoardMixin(BoardTextEditItemMixin):
         def get_distribute_inputs(input_items, get_func, get_min_func, get_max_func):
 
             if align_type == AlignType.ALIGN_TO_VIEWPORT:
-                r = self.rect()
-                br = QRectF(
-                    self.board_MapToBoard(r.topLeft()),
-                    self.board_MapToBoard(r.bottomRight())
-                )
+                br = self.board_MapRectToBoard(self.rect())
                 return (
                     sum(get_func(item) for item in input_items),
                     get_min_func(br),
