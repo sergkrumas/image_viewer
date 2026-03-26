@@ -1001,6 +1001,8 @@ class MainWindow(QMainWindow,
 
         self.start_page_lang_btns = []
 
+        self.modal_input_field_init()
+
         self.set_loading_text()
 
         self.prepare_secret_hints()
@@ -6129,6 +6131,33 @@ class MainWindow(QMainWindow,
         else:
             self.show_center_label(_("No images to show"), error=True)
         self.update()
+
+    def modal_input_field_show(self):
+        lineEdit = self.lineEdit
+        lineEdit.setGeometry(self.rect().adjusted(200, 200, -200, -200))
+        lineEdit.setParent(self)
+        lineEdit.setFocus()
+        lineEdit.show()
+
+    def modal_input_field_init(self):
+        lineEdit = self.lineEdit = QLineEdit()
+        lineEdit.setText('Example')
+        lineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        lineEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        lineEdit.setStyleSheet('color: white; font: 20pt; background: rgba(50, 50, 50, 100); border-radius: 30px; border: 1px solid gray;')
+        lineEdit.returnPressed.connect(self.modal_input_field_handler)
+        lineEdit.textChanged.connect(lambda: self.modal_input_field_handler(close=False))
+        self.lineEditWasEnabled = False
+
+    def modal_input_field_hide(self):
+        lineEdit = self.lineEdit
+        lineEdit.setParent(None)
+
+    def modal_input_field_handler(self, close=True):
+        self.setWindowTitle(self.lineEdit.text())
+        if close:
+            self.modal_input_field_hide()
+        return True
 
 
 def main():

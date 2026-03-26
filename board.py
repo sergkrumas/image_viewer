@@ -788,6 +788,10 @@ class BoardMixin(BoardTextEditItemMixin):
         only_shift_mod = bool(event.modifiers() == Qt.ShiftModifier)
         only_ctrl_mode = bool(event.modifiers() == Qt.ControlModifier)
 
+        if self.lineEdit.parent():
+            event.setAccepted(True)
+            return
+
         if self.board_TextElementKeyPressEventHandler(event):
             return
 
@@ -842,11 +846,16 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_keyReleaseEventDefault(self, event):
         key = event.key()
 
+        if self.lineEdit.parent():
+            event.setAccepted(True)
+            self.lineEditWasEnabled = True
+            return
+
         if key == Qt.Key_Control:
             # for not item selection drag&drop
             self.board_cursor_setter()
 
-        if key in [Qt.Key_Return, Qt.Key_Enter]:
+        if key in [Qt.Key_Return, Qt.Key_Enter] and not self.lineEditWasEnabled:
             if self.board_show_minimap:
                 self.board_navigate_camera_via_minimap()
             else:
@@ -870,6 +879,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_toggle_full_forcing(reset=shift)
         elif check_scancode_for(event, "Z") and event.modifiers() & Qt.ControlModifier:
             self.board_ctrl_z()
+        elif check_scancode_for(event, "N"):
+            self.board_invoke_create_node_item()
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
@@ -3058,6 +3069,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_select_items([bi])
 
         self.update()
+
+    def board_invoke_create_node_item(self):
+        self.modal_input_field_show()
 
     def isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
