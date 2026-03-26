@@ -221,6 +221,7 @@ class BoardItem():
 
         self.from_item = None
         self.to_item = None
+        self.link_width = 10
 
         self.image_source_url = None
 
@@ -1901,10 +1902,10 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_content_links(self, painter, folder_data, pre=False, post=False):
         if pre:
             return
-        painter.setPen(QPen(Qt.white, 3, Qt.DashLine))
         for bli in folder_data.board.link_items_list:
             _to = bli.to_item
             _from = bli.from_item
+            painter.setPen(QPen(Qt.white, bli.link_width, Qt.DashLine))
             painter.drawLine(
                 _to.calculate_viewport_position(canvas=self),
                 _from.calculate_viewport_position(canvas=self)
