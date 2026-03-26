@@ -3190,6 +3190,24 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             return False
 
+    def board_change_node_radius(self, event, scroll_value):
+        cf = self.LibraryData().current_folder()
+        cursor_pos = event.pos()
+        items = self.find_all_items_under_this_pos(cf, cursor_pos)
+        for bli in items:
+            if bli.type == BoardItem.types.ITEM_NODE:
+                break
+        else:
+            return False
+        if scroll_value > 0:
+            bli.scale_x *= 1.1
+        else:
+            bli.scale_x /= 1.1
+        bli.scale_x = max(1.0, bli.scale_x)
+        bli.scale_y = bli.scale_x
+        self.update()
+        return True
+
     def board_change_link_width(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
@@ -3202,8 +3220,8 @@ class BoardMixin(BoardTextEditItemMixin):
             bli.link_width += 1.0
         else:
             bli.link_width -= 1.0
-        self.update()
         bli.link_width = max(1.0, bli.link_width)
+        self.update()
         return True
 
     def isLeftClickAndNoModifiers(self, event):
@@ -4517,6 +4535,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if control_panel_undermouse:
             return
         elif self.board_camera_translation_ongoing:
+            return
+        elif self.board_change_node_radius(event, scroll_value):
             return
         elif self.board_change_link_width(event, scroll_value):
             return
