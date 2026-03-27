@@ -2050,10 +2050,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             sbr_ = selection_area.boundingRect()
 
-            if not self.boards_resolve_rects_intersection(
-                                                            self.rect(),
-                                                            selection_area.boundingRect().toRect()
-                                                                                                ):
+            if not self.boards_resolve_rects_intersection(self.rect(), sbr_.toRect()):
 
                 if self.STNG.board_unloading:
                     self.trigger_board_item_pixmap_unloading(board_item)
