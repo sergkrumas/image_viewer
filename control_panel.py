@@ -346,6 +346,44 @@ class ControlPanelButton(QPushButton):
             self.set_font(painter, special=34)
             r = painter.drawText(self.rect(), Qt.AlignCenter, "BACK")
 
+        elif self.id == "align":
+
+            self.set_font(painter, special=38)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "ALIGN\nDISTR")
+
+        elif self.id == "vh":
+
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "VH")
+
+        elif self.id == "mb":
+
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "MB")
+
+        elif self.id == "folder":
+
+            self.set_font(painter, special=32)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "FLDR")
+
+        elif self.id == "group":
+
+            self.set_font(painter, special=32)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "GRP")
+
+        elif self.id == "frame":
+            
+            self.set_font(painter, special=32)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "FRM")
+
+        elif self.id == "note":
+
+            self.set_font(painter, special=32)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "NT")
+
+        elif self.id == "go":
+
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "GO")
+
+
 
         elif self.id == "space":
             pass
@@ -502,6 +540,20 @@ class ControlPanel(QWidget, UtilsMixin):
     def board_back(self):
         pass
 
+
+    def board_create_mb(self):
+        pass
+    def board_add_folder(self):
+        pass
+    def board_add_group(self):
+        pass
+    def board_add_frame(self):
+        pass
+    def board_add_note(self):
+        pass
+    def board_go(self):
+        pass
+
     def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -574,8 +626,27 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
+                ControlPanelButton("align", _("Align & Distribute"), callback=self.board_dive),
+                ControlPanelButton("vh", _("Place items in column/row"), callback=self.board_back),
+
+                self.space_btn_generator(),
+
+                ControlPanelButton("mb", _("Create multifolder board"), callback=self.board_create_mb),
+                ControlPanelButton("folder", _("Add folder item"), callback=self.board_add_folder),
+
+                ControlPanelButton("group", _("Add group item"), callback=self.board_add_group),
+                ControlPanelButton("frame", _("Add frame item"), callback=self.board_add_frame),
+                ControlPanelButton("note", _("Add note item"), callback=self.board_add_note),
+
+                self.space_btn_generator(),
+
+                ControlPanelButton("go", _("Go to the link"), callback=self.board_go),
+
+                self.space_btn_generator(),
 
                 ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
+
+
             ]
         else:
             self.all_buttons = []
