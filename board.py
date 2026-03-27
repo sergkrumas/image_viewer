@@ -3597,6 +3597,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return undermouse_items
 
     def board_selection_callback(self, add_to_selection):
+        # (27 мар 26) выделениями также занимается функция any_item_area_under_mouse
         if self.is_flyover_ongoing():
             return
         current_folder = self.LibraryData().current_folder()
