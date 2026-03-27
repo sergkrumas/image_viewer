@@ -1887,7 +1887,7 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(12)
         painter.setFont(font)
 
-        self.board_draw_content_links(painter, folder_data, pre=True)
+        self.board_draw_content_links(painter, folder_data, True, False)
 
         self.images_drawn = 0
         self.board_item_under_mouse = None
@@ -1896,11 +1896,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_draw_item(painter, board_item)
         self.draw_selection(painter, folder_data)
 
-        self.board_draw_content_links(painter, folder_data, post=True)
+        self.board_draw_content_links(painter, folder_data, False, True)
 
         painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
-    def board_draw_content_links(self, painter, folder_data, pre=False, post=False):
+    def board_draw_content_links(self, painter, folder_data, pre, post):
         if pre:
             return
         for bli in folder_data.board.link_items_list:
@@ -2245,7 +2245,7 @@ class BoardMixin(BoardTextEditItemMixin):
         def __load_audio_video(filepath):
             if board_item.video:
                 board_item.pixmap = FFMPEG.load_one_of_the_first_frames_from_video(self.STNG.ffmpeg_exe_filepath, filepath, self.Globals.FFMPEG_NOT_FOUND)
-                # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим 
+                # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим
                 file_data = board_item.file_data
                 pixmap = board_item.pixmap
                 self.LibraryData().make_preview(self.Globals, file_data, pixmap, pixmap.size(), set_source_size=False)
@@ -3128,7 +3128,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_invoke_pos = viewport_pos
 
     def board_invoke_create_link_item(self):
-
         cf = self.LibraryData().current_folder()
         item = self.find_min_area_item(cf, self.mapped_cursor_pos())
         if item:
@@ -3202,8 +3201,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bli.scale_x *= 1.1
         else:
             bli.scale_x /= 1.1
-        bli.scale_x = max(1.0, bli.scale_x)
-        bli.scale_y = bli.scale_x
+        bli.scale_y = bli.scale_x = max(1.0, bli.scale_x)
         self.update()
         self.board_update_selection_box_widget()
         return True
@@ -4841,10 +4839,8 @@ class BoardMixin(BoardTextEditItemMixin):
         item = self.retrieve_selected_item()
         if item is not None:
             if item.type == BoardItem.types.ITEM_IMAGE:
-                pass
                 filepath = item.file_data.filepath
             elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
-                pass
                 filepath = item.item_folder_data.current_image().filepath
             open_in_google_chrome(filepath)
 
