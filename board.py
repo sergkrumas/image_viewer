@@ -1017,6 +1017,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
+        addItem(_('Place items in column/row'), self.board_place_items_in_column_or_row)
+
         addItem(_('Align && Distribute...'), self.board_show_AD_toolbox)
 
         addItem(_('Multifolder board...'), self.board_prepare_multifolder_board)
@@ -1036,8 +1038,6 @@ class BoardMixin(BoardTextEditItemMixin):
         addItem(_("Note"), self.board_add_item_note)
 
         addItem(_("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
-
-        addItem(_('Place items in column/row'), self.board_place_items_in_column_or_row)
 
         addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
 
