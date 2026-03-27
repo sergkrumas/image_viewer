@@ -36,9 +36,11 @@ class ControlPanelButton(QPushButton):
         if callback:
             self.clicked.connect(callback)
 
-    def set_font(self, painter, large=True):
+    def set_font(self, painter, large=True, special=None):
         font = painter.font()
-        if large:
+        if special is not None:
+            offset = special
+        elif large:
             offset = 15
         else:
             offset = 30
@@ -324,6 +326,16 @@ class ControlPanelButton(QPushButton):
             painter.drawLine(QPoint(0, w), QPoint(w, 0))
             painter.setClipping(False)
 
+        elif self.id == "node":
+
+            self.set_font(painter, special=34)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "NODE")
+
+        elif self.id == "link":
+
+            self.set_font(painter, special=34)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "LINK")
+
         elif self.id == "space":
             pass
 
@@ -467,6 +479,12 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         MW.do_scale_board(1.0, False, False, True, pivot=MW.get_center_position())
 
+    def board_add_node(self):
+        pass
+
+    def board_add_link(self):
+        pass
+
     def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -528,6 +546,12 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("zoom_in", _("Image zoom in"), callback=self.board_zoom_in),
 
                 self.space_btn_generator(),
+
+                ControlPanelButton("node", _("Add Node"), callback=self.board_add_node),
+                ControlPanelButton("link", _("Add Link"), callback=self.board_add_link),
+
+                self.space_btn_generator(),
+
                 ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
             ]
         else:
