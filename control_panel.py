@@ -336,6 +336,17 @@ class ControlPanelButton(QPushButton):
             self.set_font(painter, special=34)
             r = painter.drawText(self.rect(), Qt.AlignCenter, "LINK")
 
+        elif self.id == "dive":
+
+            self.set_font(painter, special=34)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "DIVE")
+
+        elif self.id == "back":
+
+            self.set_font(painter, special=34)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "BACK")
+
+
         elif self.id == "space":
             pass
 
@@ -485,6 +496,12 @@ class ControlPanel(QWidget, UtilsMixin):
     def board_add_link(self):
         pass
 
+    def board_dive(self):
+        pass
+
+    def board_back(self):
+        pass
+
     def __init__(self, *args, requested_page=None, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -551,6 +568,12 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("link", _("Add Link"), callback=self.board_add_link),
 
                 self.space_btn_generator(),
+
+                ControlPanelButton("dive", _("Dive into item board"), callback=self.board_dive),
+                ControlPanelButton("back", _("Go back from item board"), callback=self.board_back),
+
+                self.space_btn_generator(),
+
 
                 ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
             ]
@@ -650,17 +673,22 @@ class ControlPanel(QWidget, UtilsMixin):
     def label_text_update(self):
         MW = self.globals.main_window
 
-        # control panel label
-        text = ""
-        if MW.is_viewer_page_active():
+        def default():
             text = None
             for btn in self.buttons_list:
                 if btn.underMouse():
                     text = btn.property("tooltip_text").replace("\n", " ")
                     break
-            text = text or MW.current_image_details()
+            return text
+
+        # control panel label
+        text = ""
+        if MW.is_viewer_page_active():
+            text = default() or MW.current_image_details()
 
         elif MW.is_board_page_active():
+
+            btn_text = default()
 
             if self.underMouseFileData is not None:
                 imd = self.underMouseFileData
@@ -671,6 +699,10 @@ class ControlPanel(QWidget, UtilsMixin):
                 foldername = imd.folder_data.folder_name
 
                 text = f"{foldername} \\ {filename} {w} x {h}"
+
+            elif btn_text:
+                text = btn_text
+
             else:
                 text = _("board page")
 
