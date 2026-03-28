@@ -2999,30 +2999,32 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         if root_item is None:
-            folder_data = cf
+            fd = cf
         else:
-            folder_data = cf.board.root_folder
+            fd = cf.board.root_folder
 
-        gi = self.get_removed_items_group(folder_data)
+        if self.selected_items:
+            gi = self.get_removed_items_group(fd)
 
-        # здесь решаем что удалить безвозвратно
-        for bi in self.selected_items:
-            if bi.type is BoardItem.types.ITEM_FRAME:
-                items_list.remove(bi)
-            if bi.type is BoardItem.types.ITEM_IMAGE:
-                pass
-            if bi.type is BoardItem.types.ITEM_GROUP:
-                if bi.board_group_index > 9:
-                    self.move_items_to_group(
-                        item_group=gi,
-                        items=bi.item_folder_data.board.items_list,
-                        items_folder=bi.item_folder_data
-                    )
+            # здесь решаем что удалить безвозвратно
+            for bi in self.selected_items:
+                if bi.type == BoardItem.types.ITEM_FRAME:
                     items_list.remove(bi)
+                if bi.type == BoardItem.types.ITEM_IMAGE:
+                    pass
+                if bi.type == BoardItem.types.ITEM_GROUP:
+                    if bi.board_group_index > 9:
+                        self.move_items_to_group(
+                            item_group=gi,
+                            items=bi.item_folder_data.board.items_list,
+                            items_folder=bi.item_folder_data
+                        )
+                        items_list.remove(bi)
 
-        self.move_items_to_group(item_group=gi, items=self.selected_items)
+            self.move_items_to_group(item_group=gi, items=self.selected_items)
 
-        self.prepare_selection_box_widget(cf)
+            self.prepare_selection_box_widget(cf)
+
         self.update()
 
     def get_removed_items_group(self, folder_data):
