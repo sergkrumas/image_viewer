@@ -659,6 +659,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.item_magazin = []
 
+        self.links_draw_before_items = True
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -925,6 +927,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_toggle_directional_notd_for_links()
             else:
                 self.board_toggle_links_direction()
+        elif key == Qt.Key_F8:
+            self.board_change_links_draw_order()
 
         self.lineEditSkip = False
 
@@ -1946,8 +1950,11 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
     def board_draw_content_links(self, painter, folder_data, pre, post):
-        if pre:
+        if self.links_draw_before_items and post:
             return
+        if not self.links_draw_before_items and pre:
+            return
+
         pos = self.mapped_cursor_pos()
         for bli in folder_data.board.link_items_list:
             _to = bli.to_item
@@ -2094,7 +2101,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             item_rect = board_item.get_size_rect()
             item_rect.moveCenter(QPointF(0, 0))
-            pen = painter.pen()
+            pen = QPen()
             pen.setStyle(Qt.DashLine)
             if is_cursor_over:
                 pen.setColor(self.selection_color)
@@ -3237,6 +3244,9 @@ class BoardMixin(BoardTextEditItemMixin):
         for bli in fd.board.link_items_list:
             if bli._selected:
                 bli.to_item, bli.from_item = bli.from_item, bli.to_item
+
+    def board_change_links_draw_order(self):
+        self.links_draw_before_items = not self.links_draw_before_items
 
     def board_create_node_item(self):
         cf = self.LibraryData().current_folder()
