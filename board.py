@@ -368,6 +368,11 @@ class BoardItem():
         elif self.type in [self.types.ITEM_FOLDER, self.types.ITEM_GROUP, self.types.ITEM_FRAME, self.types.ITEM_NOTE, self.types.ITEM_NODE]:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
 
+    def get_selection_line(self, canvas=None):
+        p1 = self.calculate_viewport_position(canvas=canvas, pos=self.to_item.position)
+        p2 = self.calculate_viewport_position(canvas=canvas, pos=self.from_item.position)
+        return QPolygonF([p1, p2, p1])
+
     def get_selection_area(self, canvas=None,
             place_center_at_origin=True,
             apply_global_scale=True,
@@ -1951,7 +1956,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 color = selected_color2
             elif bli._selected and is_near:
                 color = selected_color
-            if is_near:
+            elif is_near:
                 color = self.selection_color
             else:
                 color = QColor(255, 255, 255, 255-100)
@@ -4397,6 +4402,11 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_clear_selection(self):
         self.board_unselect_all_items()
 
+    def board_clear_links_selection(self):
+        cf = self.LibraryData().current_folder()
+        for link in cf.board.link_items_list:
+            link._selected = False
+
     def right_click_selection_init(self):
         self.RCS = RCS = type('RightClickSelectionData', (), {})()
         RCS.selection_points = QPolygonF()
@@ -4414,7 +4424,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_item not in im:
                     im.append(board_item)
         for link_item in cf.board.link_items_list:
-            if link_item.get_selection_area(canvas=self).intersects(RCS.selection_points):
+            if link_item.get_selection_line(canvas=self).intersects(RCS.selection_points):
                 link_item._selected = True
 
     def right_click_selection_pressEvent(self, event, shift_pressed):
@@ -4437,13 +4447,14 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.ongoing = False
         RCS.selection_points.append(event.pos())
         spbb = RCS.selection_points.boundingRect()
-        if spbb.width() > 30 or spbb.height() > 30:
-            self.context_menu_allowed = False
         if all(i.type != i.types.ITEM_LINK for i in self.item_magazin):
             for first, second in zip(self.item_magazin, self.item_magazin[1:]):
                 self.board_create_link_item(first, second)
         if RCS.clear_magazin:
             self.item_magazin.clear()
+            self.board_clear_links_selection()
+        if spbb.width() > 30 or spbb.height() > 30:
+            self.context_menu_allowed = False
         self.update()
 
     def right_click_selection_drawEvent(self, painter):
