@@ -3160,7 +3160,7 @@ class BoardMixin(BoardTextEditItemMixin):
             with self.show_longtime_process_ongoing(self, _("Loading folder to the board")):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
                 item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
-                self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
+                self.LibraryData().make_thumbnails_and_previews(item_folder_data, None, do_progressive_grid_layout=True, do_progressive_board_layout=True)
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
                 fi.board_index = self.retrieve_new_board_item_index()
