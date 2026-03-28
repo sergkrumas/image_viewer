@@ -1013,6 +1013,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.STNG.board_items_snapping,
                 partial(self.toggle_boolean_var_generic, self.STNG, 'board_items_snapping')
             ),
+            (
+                _('Show point snapping targets'),
+                self.SNAPPING.show_point_targets,
+                partial(self.toggle_boolean_var_generic, self.SNAPPING, 'show_point_targets')
+            ),
         ))
         sep = contextMenu.addSeparator
         sep()
@@ -3323,6 +3328,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.STNG.board_items_snapping:
             painter.save()
             for target in self.SNAPPING.targets:
+                if target.type == target.types.POINT and not self.SNAPPING.show_point_targets:
+                    continue
                 target.draw(self, painter)
 
             for anchor in self.SNAPPING.anchors:
@@ -3333,6 +3340,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.SNAPPING = SNAPPING = type('SnappingData', (), {})()
         SNAPPING.targets = list()
         SNAPPING.anchors = list()
+        SNAPPING.show_point_targets = False
 
     def board_items_snapping_finish(self):
         self.show_center_label('snapping finished')
