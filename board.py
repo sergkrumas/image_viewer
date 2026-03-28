@@ -2071,6 +2071,9 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(pen)
             painter.drawEllipse(item_rect)
 
+            painter.resetTransform()
+
+
             before_font = painter.font()
             font = QFont(before_font)
             font.setPixelSize(30)
@@ -2078,15 +2081,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
             label_text = board_item.label
             label_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, label_text)
-            pos = (item_rect.topLeft() + item_rect.topRight())/2.0
-            pos -= QPointF(0, label_rect.height())
-            label_rect.moveCenter(pos)
+            # pos = (item_rect.topLeft() + item_rect.topRight())/2.0
+            # pos -= QPointF(0, label_rect.height())
+            # label_rect.moveCenter(pos)
+            label_rect.moveBottomLeft(sa_br.topLeft())
 
             alignment = Qt.AlignVCenter | Qt.AlignHCenter
             painter.drawText(label_rect, alignment, label_text)
             painter.setFont(before_font)
-
-            painter.resetTransform()
 
         else:
 
