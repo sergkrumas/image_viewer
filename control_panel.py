@@ -566,9 +566,10 @@ class ControlPanel(QWidget, UtilsMixin):
         effect.setYOffset(0)
         self.control_panel_label.setGraphicsEffect(effect)
 
-        main_window = self.parent()
+        MW = self.parent()
 
-        if requested_page is None or requested_page == main_window.pages.VIEWER_PAGE:
+
+        if requested_page is None or requested_page == MW.pages.VIEWER_PAGE:
             self.favorite_btn = ControlPanelButton("favorite", _("Favorites"),
                                                         callback=self.manage_favorite_list)
             self.all_buttons = [
@@ -591,7 +592,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
                 self.space_btn_generator(),
             ]
-        elif requested_page == main_window.pages.BOARD_PAGE:
+        elif requested_page == MW.pages.BOARD_PAGE:
             self.all_buttons = [
                 ControlPanelButton("settings", _("Settings"), callback=self.show_settings_window),
                 ControlPanelButton("help", _("Help"), callback=self.toggle_help),
@@ -604,17 +605,17 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("dive", _("Dive into item board"), callback=main_window.board_dive_inside_board_item),
-                ControlPanelButton("back", _("Go back from item board"), callback=partial(main_window.board_dive_inside_board_item, back_to_referer=True)),
+                ControlPanelButton("dive", _("Dive into item board"), callback=MW.board_dive_inside_board_item),
+                ControlPanelButton("back", _("Go back from item board"), callback=partial(MW.board_dive_inside_board_item, back_to_referer=True)),
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("align", _("Align & Distribute"), callback=partial(main_window.board_show_AD_toolbox, viewport_center=True)),
-                ControlPanelButton("vh", _("Place items in column/row"), callback=main_window.board_place_items_in_column_or_row),
+                ControlPanelButton("align", _("Align & Distribute"), callback=partial(MW.board_show_AD_toolbox, viewport_center=True)),
+                ControlPanelButton("vh", _("Place items in column/row"), callback=MW.board_place_items_in_column_or_row),
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("mb", _("Create multifolder board"), callback=self.board_create_mb),
+                ControlPanelButton("mb", _("Create multifolder board"), callback=MW.board_prepare_multifolder_board),
                 ControlPanelButton("folder", _("Add folder item"), callback=self.board_add_folder),
 
                 ControlPanelButton("group", _("Add group item"), callback=self.board_add_group),
