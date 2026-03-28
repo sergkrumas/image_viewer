@@ -609,8 +609,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("vh", _("Place items in column/row"), callback=self.board_back),
                 ControlPanelButton("align", _("Align & Distribute"), callback=partial(main_window.board_show_AD_toolbox, viewport_center=True)),
+                ControlPanelButton("vh", _("Place items in column/row"), callback=main_window.board_place_items_in_column_or_row),
 
                 self.space_btn_generator(),
 
