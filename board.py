@@ -1078,7 +1078,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         addItem(_('Multifolder board...'), self.board_prepare_multifolder_board)
 
-        addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
 
         addItem(_("Folder..."), self.board_add_item_folder)
 
@@ -1106,10 +1105,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         sep()
 
+        addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
+
         addItem(_("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
 
         addItem(_("Open in Google Chrome"), self.board_open_in_google_chrome)
 
+        sep()
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(
@@ -4542,7 +4544,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_go_to_note(self, event):
         for sel_item in self.selected_items:
             if sel_item.type == BoardItem.types.ITEM_NOTE:
-                if sel_item.get_selection_area(canvas=self).containsPoint(event.pos(), Qt.WindingFill):
+                if (event and sel_item.get_selection_area(canvas=self).containsPoint(event.pos(), Qt.WindingFill)) or not event:
                     note_content = sel_item.plain_text
                     execute_clickable_text(note_content)
                     break

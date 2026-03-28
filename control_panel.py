@@ -529,8 +529,6 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         MW.do_scale_board(1.0, False, False, True, pivot=MW.get_center_position())
 
-    def board_create_mb(self):
-        pass
     def board_add_folder(self):
         pass
     def board_add_group(self):
@@ -616,15 +614,15 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.space_btn_generator(),
 
                 ControlPanelButton("mb", _("Create multifolder board"), callback=MW.board_prepare_multifolder_board),
-                ControlPanelButton("folder", _("Add folder item"), callback=self.board_add_folder),
 
+                ControlPanelButton("folder", _("Add folder item"), callback=self.board_add_folder),
                 ControlPanelButton("group", _("Add group item"), callback=self.board_add_group),
                 ControlPanelButton("frame", _("Add frame item"), callback=self.board_add_frame),
                 ControlPanelButton("note", _("Add note item"), callback=self.board_add_note),
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("go", _("Go to the link"), callback=self.board_go),
+                ControlPanelButton("go", _("Go to the link"), callback=partial(MW.board_go_to_note, None)),
 
                 self.space_btn_generator(),
 
