@@ -35,7 +35,7 @@ class ControlPanelButton(QPushButton):
         # для того, чтобы подсказка изменялась в лейбле панели управления
         self.setMouseTracking(True)
         if callback:
-            self.clicked.connect(callback)
+            self.clicked.connect(lambda: callback())
 
     def set_font(self, painter, large=True, special=None):
         font = painter.font()
@@ -604,10 +604,10 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 ControlPanelButton("mb", _("Create multifolder board"), callback=MW.board_prepare_multifolder_board),
 
-                ControlPanelButton("folder", _("Add folder item"), callback=lambda: None),
+                ControlPanelButton("folder", _("Add folder item"), callback=partial(MW.board_add_item_folder)),
                 ControlPanelButton("group", _("Add group item"), callback=MW.board_add_item_group_noargs),
                 ControlPanelButton("frame", _("Add frame item"), callback=MW.board_add_item_frame),
-                ControlPanelButton("note", _("Add note item"), callback=MW.board_add_item_note),
+                ControlPanelButton("note", _("Add note item"), callback=partial(MW.board_add_item_note)),
 
                 self.space_btn_generator(),
 

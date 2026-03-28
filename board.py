@@ -3155,7 +3155,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_add_item_folder(self, folder_path=None):
         if folder_path is None:
-            folder_path = str(QFileDialog.getExistingDirectory(None, _("Choose folder with images in it")))
+            folder_path = QFileDialog.getExistingDirectory(None, _("Choose folder with images in it"), '.')
         if folder_path:
             with self.show_longtime_process_ongoing(self, _("Loading folder to the board")):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
