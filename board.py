@@ -884,6 +884,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_keyReleaseEventDefault(self, event):
         key = event.key()
+        shift_only = event.modifiers() == Qt.ShiftModifier
+        shift = event.modifiers() & Qt.ShiftModifier
 
         if self.lineEdit.parent():
             event.setAccepted(True)
@@ -913,14 +915,16 @@ class BoardMixin(BoardTextEditItemMixin):
             elif check_scancode_for(event, "R"):
                 self.board_do_scale(1)
         elif check_scancode_for(event, "F"):
-            shift = event.modifiers() & Qt.ShiftModifier
             self.board_toggle_full_forcing(reset=shift)
         elif check_scancode_for(event, "Z") and event.modifiers() & Qt.ControlModifier:
             self.board_ctrl_z()
         elif check_scancode_for(event, "N"):
             self.board_invoke_create_node_item()
         elif check_scancode_for(event, "L"):
-            self.board_invoke_create_link_item()
+            if shift_only:
+                self.board_toggle_directional_notd_for_links()
+            else:
+                self.board_toggle_links_direction()
 
         self.lineEditSkip = False
 
@@ -1967,15 +1971,15 @@ class BoardMixin(BoardTextEditItemMixin):
             center_pos = (to_pos + from_pos)/2.0
             painter.drawLine(to_pos, from_pos)
 
-            d = center_pos - from_pos
-            v = QVector2D(d).normalized()
-            pd1 = QVector2D(-v.y(), v.x())
-            pd2 = QVector2D(v.y(), -v.x())
-            back_d = (-v*20).toPointF()
-            a1 = (pd1*20).toPointF() + back_d + center_pos
-            a2 = (pd2*20).toPointF() + back_d + center_pos
-            painter.drawLine(center_pos, a2)
-            painter.drawLine(center_pos, a1)
+            if bli.is_directional:
+                v = QVector2D(center_pos - from_pos).normalized()
+                pd1 = QVector2D(-v.y(), v.x())
+                pd2 = QVector2D(v.y(), -v.x())
+                back_d = (-v*20).toPointF()
+                a1 = (pd1*20).toPointF() + back_d + center_pos
+                a2 = (pd2*20).toPointF() + back_d + center_pos
+                painter.drawLine(center_pos, a2)
+                painter.drawLine(center_pos, a1)
 
     def draw_selection(self, painter, folder_data):
         painter.save()
