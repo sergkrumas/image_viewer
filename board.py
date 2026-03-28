@@ -1008,6 +1008,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 hidapi_adapter.is_gamepad_input_ready(self),
                 partial(hidapi_adapter.toggle_gamepad_inputs, self)
             ),
+            (
+                _('Items snapping'),
+                self.STNG.board_items_snapping,
+                partial(self.toggle_boolean_var_generic, self.STNG, 'board_items_snapping')
+            ),
         ))
         sep = contextMenu.addSeparator
         sep()
@@ -3315,14 +3320,14 @@ class BoardMixin(BoardTextEditItemMixin):
             print('cancel translation')
 
     def board_draw_snapping_targets(self, painter):
-        painter.save()
-        for target in self.SNAPPING.targets:
-            target.draw(self, painter)
+        if self.STNG.board_items_snapping:
+            painter.save()
+            for target in self.SNAPPING.targets:
+                target.draw(self, painter)
 
-        for anchor in self.SNAPPING.anchors:
-            anchor.draw(self, painter)
-
-        painter.restore()
+            for anchor in self.SNAPPING.anchors:
+                anchor.draw(self, painter)
+            painter.restore()
 
     def board_snapping_init(self):
         self.SNAPPING = SNAPPING = type('SnappingData', (), {})()
@@ -3336,6 +3341,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_items_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
+
+        if not self.STNG.board_items_snapping:
+            return board_mapped_cursor_pos
 
         if not self.selected_items:
             self.show_center_label('skipping', error=True)
