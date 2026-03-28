@@ -649,8 +649,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.progressive_layout_ongoing = False
 
-        self.force_vertical_layout = False
-
         ToolWindow.init_AD_toolbox_attrs(self)
 
         self.rotation_pivot_index = None
@@ -1786,8 +1784,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("The board is prepared"), duration=1.0)
         self.progressive_layout_ongoing = False
 
-        self.force_vertical_layout = False
-
     def board_progressive_fill_layout(self, folder_data, file_data):
         """
             Превьюшки могут генерится в совершенно произвольном порядке,
@@ -1814,7 +1810,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         bi = self.board_prepare_board_item(board, file_data,
             pbp.forward_offset if pbp.direction == 1 else pbp.backward_offset,
-            pbp.direction
+            pbp.direction,
+            folder_data.board.force_vertical_layout
         )
         if bi is not None:
             if pbp.pivot_index is None:
@@ -1831,7 +1828,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.is_board_page_active() and self.Globals.DEBUG:
             self.show_center_label(str(file_data.filepath))
 
-    def board_prepare_board_item(self, board, file_data, offset, direction):
+    def board_prepare_board_item(self, board, file_data, offset, direction, force_vertical_layout):
 
         def _set_position(bi, imd, offset):
             bi.position = offset + QPointF(imd.source_width, imd.source_height)/2
@@ -1839,7 +1836,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def _offset_anchor(imd):
             nonlocal offset
-            if self.STNG.board_vertical_items_layout or self.force_vertical_layout:
+            if force_vertical_layout or self.STNG.board_vertical_items_layout:
                 offset += QPointF(0, direction*imd.source_height)
             else:
                 offset += QPointF(direction*imd.source_width, 0)
@@ -1886,7 +1883,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board = folder_data.board
         board.items_list = []
         for file_data in folder_data.images_list:
-            self.board_prepare_board_item(board, file_data, offset, 1)
+            self.board_prepare_board_item(board, file_data, offset, 1, board.force_vertical_layout)
 
         # for board items map
         self.build_board_bounding_rect(folder_data)
@@ -5573,7 +5570,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().make_folder_current(cf, write_view_history=False)
 
         if self.Globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT:
-            self.force_vertical_layout = True # будет сброшен после окончания прогрессивной раскладки
+            cf.board.force_vertical_layout = True # будет сброшен после окончания прогрессивной раскладки
             cf.previews_done = False
             self.Globals.ThumbnailsPreviewsThread(cf, self.Globals).start()
         else:

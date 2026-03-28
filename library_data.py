@@ -1278,6 +1278,8 @@ class BoardData():
 
         self.generation_time = time.time()
 
+        self.force_vertical_layout = False
+
 
 class FolderData():
 
