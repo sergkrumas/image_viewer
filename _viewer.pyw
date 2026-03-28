@@ -6143,6 +6143,15 @@ class MainWindow(QMainWindow,
         lineEdit.selectAll()
 
     def modal_input_field_init(self):
+        # MW = self
+        # class SpecialQLineEdit(QLineEdit):
+        #     def event(self, event):
+        #         if hasattr(event, 'key') and event.key() == Qt.Key_Return:
+        #             event.accept()
+        #             MW.modal_input_field_handler()
+        #             return True
+        #         else:
+        #             return QLineEdit.event(lineEdit, event)
         lineEdit = self.lineEdit = QLineEdit()
         lineEdit.setText('')
         lineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
@@ -6151,10 +6160,12 @@ class MainWindow(QMainWindow,
         lineEdit.returnPressed.connect(self.modal_input_field_handler)
         lineEdit.textChanged.connect(lambda: self.modal_input_field_handler(close=False))
         self.lineEditWasEnabled = False
+        self.lineEditSkip = False
 
     def modal_input_field_hide(self):
         lineEdit = self.lineEdit
         lineEdit.setParent(None)
+        self.lineEditSkip = True
 
     def modal_input_field_handler(self, close=True):
         self.setWindowTitle(self.lineEdit.text())

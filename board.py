@@ -887,7 +887,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # for not item selection drag&drop
             self.board_cursor_setter()
 
-        if key in [Qt.Key_Return, Qt.Key_Enter] and not self.lineEditWasEnabled:
+        if key in [Qt.Key_Return, Qt.Key_Enter] and (not self.lineEditWasEnabled) and (not self.lineEditSkip):
             if self.board_show_minimap:
                 self.board_navigate_camera_via_minimap()
             else:
@@ -915,6 +915,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_invoke_create_node_item()
         elif check_scancode_for(event, "L"):
             self.board_invoke_create_link_item()
+
+        self.lineEditSkip = False
 
     def board_dragEnterEventDefault(self, event):
         mime_data = event.mimeData()
