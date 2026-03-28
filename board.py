@@ -1581,8 +1581,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     item = bi
                     break
 
-            case1 = bi.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
-            case2 = bi.type == BoardItem.types.ITEM_IMAGE and bi.animated
+            case1 = item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
+            case2 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
             if not (case1 or case2):
                 msg = _("You can dive inside groups, folders and animated items only!")
                 self.show_center_label(msg, error=True)
@@ -1591,7 +1591,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 __folder_data = item.item_folder_data
             elif case2:
                 __folder_data = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
-                bi.item_folder_data = fd
+                item.item_folder_data = fd
 
                 movie = item.movie
                 offset = QPointF(0, 0)
