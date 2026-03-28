@@ -170,6 +170,14 @@ class BoardLibraryDataMixin():
         if os.path.exists(self.get_boards_data_root()):
             print("loading boards data")
 
+    def load_paths_for_forced_board_vertical_layout(self):
+        data_filepath = os.path.join(self.get_boards_data_root(), 'forced_vertical_layout_paths.data.txt')
+        if os.path.exists(data_filepath):
+            paths = []
+            with open(data_filepath, 'r', encoding="utf8") as file:
+                paths = file.read().split("\n")
+            self.vertical_layout_paths = tuple(os.path.normpath(p) for p in paths if os.path.exists(p))
+
 class BoardItem():
 
     FRAME_PADDING = 40.0

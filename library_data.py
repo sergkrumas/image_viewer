@@ -99,6 +99,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 i.load_tags()
                 i.load_session_file()
             i.load_boards()
+            i.load_paths_for_forced_board_vertical_layout()
         return cls.instance
 
     @classmethod
@@ -1300,7 +1301,7 @@ class FolderData():
 
         self.virtual = virtual
         self.tag_data = None
-        self.folder_path = folder_path
+        self.folder_path = os.path.normpath(folder_path)
         self.folder_name = os.path.basename(folder_path)
         self._index = -1
         self.before_index = -1

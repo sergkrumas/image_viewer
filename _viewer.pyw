@@ -489,6 +489,11 @@ class AppMixin():
             LibraryData().add_current_image_to_view_history()
 
         if self.is_board_page_active():
+
+            vl_paths = LibraryData().vertical_layout_paths
+            if vl_paths and folder_data.folder_path.startswith(vl_paths):
+                folder_data.board.force_vertical_layout = True
+
             # (11 мар 26) для снятия блокировки перемещения
             self.change_page(self.pages.BOARD_PAGE, force=True, init_force=True)
 
