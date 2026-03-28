@@ -4416,7 +4416,12 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS = self.RCS
         if RCS.ongoing:
             painter.save()
-            painter.setPen(QPen(self.selection_color, 2))
+            pen = QPen(self.selection_color, 4)
+            painter.setPen(pen)
+            painter.drawPolyline(RCS.selection_points)
+            pen.setColor(Qt.black)
+            pen.setWidth(1)
+            painter.setPen(pen)
             painter.drawPolyline(RCS.selection_points)
             painter.restore()
 
