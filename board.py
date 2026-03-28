@@ -5709,8 +5709,10 @@ class BoardMixin(BoardTextEditItemMixin):
         return False
 
     def board_AD_toolbox_doubleClickEvent(self, event):
-        if ToolWindow.is_toolbox_inactive_area_click(self, event):
+        check = ToolWindow.is_toolbox_inactive_area_click(self, event)
+        if check:
             self.board_hide_AD_toolbox()
+        return check
 
     def board_AD_do_align_and_distribute(self, btn_id, action_id, align_type):
 
