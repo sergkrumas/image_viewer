@@ -529,14 +529,6 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         MW.do_scale_board(1.0, False, False, True, pivot=MW.get_center_position())
 
-
-    def board_dive(self):
-        pass
-
-    def board_back(self):
-        pass
-
-
     def board_create_mb(self):
         pass
     def board_add_folder(self):
@@ -617,8 +609,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("align", _("Align & Distribute"), callback=self.board_dive),
                 ControlPanelButton("vh", _("Place items in column/row"), callback=self.board_back),
+                ControlPanelButton("align", _("Align & Distribute"), callback=partial(main_window.board_show_AD_toolbox, viewport_center=True)),
 
                 self.space_btn_generator(),
 

@@ -5591,14 +5591,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_show_AD_toolbox(self):
+    def board_show_AD_toolbox(self, viewport_center=False):
         if self.AD_TOOLBOX.visible:
             self.board_hide_AD_toolbox()
         self.AD_TOOLBOX.visible = True
         if not self.AD_TOOLBOX.pos:
             # задаём положение только в первый раз,
             # чтобы далее положение сохранялось между следующими вызовами
-            self.AD_TOOLBOX.pos = self.mapped_cursor_pos()
+            if viewport_center:
+                pos = self.rect().center()
+            else:
+                pos = self.mapped_cursor_pos()
+            self.AD_TOOLBOX.pos = pos
             self.AD_TOOLBOX.buttons_handler = self.board_AD_do_align_and_distribute
 
         self.update()
