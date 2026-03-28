@@ -2051,6 +2051,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif board_item.type == BoardItem.types.ITEM_NODE:
 
+            cursor_pos = self.mapped_cursor_pos()
+            sa_br = board_item.get_selection_area(canvas=self).boundingRect()
+            radius = min(sa_br.width(), sa_br.height())/2.0
+            is_cursor_over = QVector2D(sa_br.center() - cursor_pos).length() < radius
+
             transform = board_item.get_transform_obj(canvas=self)
             painter.setTransform(transform)
 
@@ -2058,6 +2063,10 @@ class BoardMixin(BoardTextEditItemMixin):
             item_rect.moveCenter(QPointF(0, 0))
             pen = painter.pen()
             pen.setStyle(Qt.DashLine)
+            if is_cursor_over:
+                pen.setColor(Qt.white)
+            else:
+                pen.setColor(Qt.gray)
             painter.setPen(pen)
             painter.drawEllipse(item_rect)
 
