@@ -223,6 +223,7 @@ class BoardItem():
         self.from_item = None
         self.to_item = None
         self.link_width = 2
+        self.is_directional = True
 
         self.image_source_url = None
 
@@ -1961,10 +1962,20 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 color = QColor(255, 255, 255, 255-100)
             painter.setPen(QPen(color, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
-            painter.drawLine(
-                _to.calculate_viewport_position(canvas=self),
-                _from.calculate_viewport_position(canvas=self)
-            )
+            to_pos = _to.calculate_viewport_position(canvas=self)
+            from_pos = _from.calculate_viewport_position(canvas=self)
+            center_pos = (to_pos + from_pos)/2.0
+            painter.drawLine(to_pos, from_pos)
+
+            d = center_pos - from_pos
+            v = QVector2D(d).normalized()
+            pd1 = QVector2D(-v.y(), v.x())
+            pd2 = QVector2D(v.y(), -v.x())
+            back_d = (-v*20).toPointF()
+            a1 = (pd1*20).toPointF() + back_d + center_pos
+            a2 = (pd2*20).toPointF() + back_d + center_pos
+            painter.drawLine(center_pos, a2)
+            painter.drawLine(center_pos, a1)
 
     def draw_selection(self, painter, folder_data):
         painter.save()
