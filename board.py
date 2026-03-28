@@ -1943,6 +1943,14 @@ class BoardMixin(BoardTextEditItemMixin):
             _to = bli.to_item
             _from = bli.from_item
             is_near = bli.is_near_link(self, pos)
+
+            selected_color = QColor(127, 18, 34)
+            selected_color2 = QColor(selected_color)
+            selected_color2.setAlpha(255-100)
+            if bli._selected and not is_near:
+                color = selected_color2
+            elif bli._selected and is_near:
+                color = selected_color
             if is_near:
                 color = self.selection_color
             else:
@@ -4198,7 +4206,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.update()
 
         elif event.buttons() == Qt.RightButton:
-            self.right_click_selection_pressEvent(event)
+            self.right_click_selection_pressEvent(event, shift)
 
         self.update()
 
@@ -4386,21 +4394,42 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.prevent_item_deselection = False
 
+    def board_clear_selection(self):
+        self.board_unselect_all_items()
+
     def right_click_selection_init(self):
         self.RCS = RCS = type('RightClickSelectionData', (), {})()
         RCS.selection_points = QPolygonF()
         RCS.ongoing = False
+        RCS.clear_magazin = True
 
-    def right_click_selection_pressEvent(self, event):
+    def right_click_selection_input_callback(self):
+        RCS = self.RCS
+        cf = self.LibraryData().current_folder()
+        items = cf.board.items_list
+        im = self.item_magazin
+        for board_item in items:
+            if board_item.get_selection_area(canvas=self).intersects(RCS.selection_points):
+                # board_item._selected = True
+                if board_item not in im:
+                    im.append(board_item)
+        for link_item in cf.board.link_items_list:
+            if link_item.get_selection_area(canvas=self).intersects(RCS.selection_points):
+                link_item._selected = True
+
+    def right_click_selection_pressEvent(self, event, shift_pressed):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.clear()
+        self.board_clear_selection()
         RCS.selection_points.append(event.pos())
+        RCS.clear_magazin = not shift_pressed
 
     def right_click_selection_moveEvent(self, event):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.append(event.pos())
+        self.right_click_selection_input_callback()
         self.update()
 
     def right_click_selection_releaseEvent(self, event):
@@ -4410,6 +4439,11 @@ class BoardMixin(BoardTextEditItemMixin):
         spbb = RCS.selection_points.boundingRect()
         if spbb.width() > 30 or spbb.height() > 30:
             self.context_menu_allowed = False
+        if all(i.type != i.types.ITEM_LINK for i in self.item_magazin):
+            for first, second in zip(self.item_magazin, self.item_magazin[1:]):
+                self.board_create_link_item(first, second)
+        if RCS.clear_magazin:
+            self.item_magazin.clear()
         self.update()
 
     def right_click_selection_drawEvent(self, painter):
