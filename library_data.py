@@ -984,7 +984,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 file_data.preview_error = False
             elif file_data.is_audio_video_filetype:
                 source = Globals.AUDIO_VIDEO_PIXMAP
-                file_data.preview_error = False                
+                file_data.preview_error = False
             elif not file_data.is_supported_filetype:
                 source = Globals.NOT_SUPPORTED_PIXMAP
                 file_data.preview_error = True

@@ -3041,7 +3041,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         items_list.remove(bi)
                 if bi.type == BoardItem.types.ITEM_NODE:
                     self.board_delete_nonlink_item_info(bi, cf=cf)
-                    items_list.remove(bi) 
+                    items_list.remove(bi)
 
             self.move_items_to_group(item_group=gi, items=self.selected_items)
 
