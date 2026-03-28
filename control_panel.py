@@ -528,11 +528,6 @@ class ControlPanel(QWidget, UtilsMixin):
         MW = self.globals.main_window
         MW.do_scale_board(1.0, False, False, True, pivot=MW.get_center_position())
 
-    def board_add_node(self):
-        pass
-
-    def board_add_link(self):
-        pass
 
     def board_dive(self):
         pass
@@ -613,11 +608,6 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("orig_scale", _("1:1"), callback=self.board_set_default_scale),
                 ControlPanelButton("zoom_out", _("Image zoom out"), callback=self.board_zoom_out),
                 ControlPanelButton("zoom_in", _("Image zoom in"), callback=self.board_zoom_in),
-
-                self.space_btn_generator(),
-
-                ControlPanelButton("node", _("Add Node"), callback=self.board_add_node),
-                ControlPanelButton("link", _("Add Link"), callback=self.board_add_link),
 
                 self.space_btn_generator(),
 
