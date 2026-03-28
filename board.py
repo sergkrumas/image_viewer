@@ -1942,7 +1942,10 @@ class BoardMixin(BoardTextEditItemMixin):
             _to = bli.to_item
             _from = bli.from_item
             is_near = bli.is_near_link(self, pos)
-            color = QColor(255, 255, 255, 255-100+100*is_near)
+            if is_near:
+                color = self.selection_color
+            else:
+                color = QColor(255, 255, 255, 255-100)
             painter.setPen(QPen(color, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
             painter.drawLine(
                 _to.calculate_viewport_position(canvas=self),
@@ -2065,7 +2068,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pen = painter.pen()
             pen.setStyle(Qt.DashLine)
             if is_cursor_over:
-                pen.setColor(Qt.white)
+                pen.setColor(self.selection_color)
             else:
                 pen.setColor(Qt.gray)
             painter.setPen(pen)
