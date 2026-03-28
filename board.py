@@ -580,6 +580,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.selection_ongoing = False
         self.selected_items = []
         self.selection_box = None
+        self.right_click_selection_init()
 
         self.board_show_minimap = False
         self.images_drawn = 0
@@ -2393,6 +2394,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_selection_mouse_rect(painter)
         self.board_draw_selection_transform_box(painter)
+        self.right_click_selection_drawEvent(painter)
         self.board_region_zoom_in_draw(painter)
 
         if self.Globals.DEBUG or self.STNG.board_draw_origin_compass:
@@ -4195,6 +4197,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.start_origin_pos = self.canvas_origin
                 self.update()
 
+        elif event.buttons() == Qt.RightButton:
+            self.right_click_selection_pressEvent(event)
+
         self.update()
 
     def update(self, *args):
@@ -4260,6 +4265,9 @@ class BoardMixin(BoardTextEditItemMixin):
             bi = self.board_item_under_mouse
             if bi:
                 special_update = self.board_item_cursor_scrubbing(bi, event)
+
+        elif event.buttons() == Qt.RightButton:
+            self.right_click_selection_moveEvent(event)
 
         if self.PTWS_draw_monitor:
             self.board_SCALE_selected_items_choose_nearest_corner()
@@ -4373,7 +4381,44 @@ class BoardMixin(BoardTextEditItemMixin):
                 if self.transformations_allowed:
                     self.set_default_boardviewport_scale(keep_position=True)
 
+        elif event.button() == Qt.RightButton:
+            self.right_click_selection_releaseEvent(event)
+
         self.prevent_item_deselection = False
+
+    def right_click_selection_init(self):
+        self.RCS = RCS = type('RightClickSelectionData', (), {})()
+        RCS.selection_points = QPolygonF()
+        RCS.ongoing = False
+
+    def right_click_selection_pressEvent(self, event):
+        RCS = self.RCS
+        RCS.ongoing = True
+        RCS.selection_points.clear()
+        RCS.selection_points.append(event.pos())
+
+    def right_click_selection_moveEvent(self, event):
+        RCS = self.RCS
+        RCS.ongoing = True
+        RCS.selection_points.append(event.pos())
+        self.update()
+
+    def right_click_selection_releaseEvent(self, event):
+        RCS = self.RCS
+        RCS.ongoing = False
+        RCS.selection_points.append(event.pos())
+        spbb = RCS.selection_points.boundingRect()
+        if spbb.width() > 30 or spbb.height() > 30:
+            self.context_menu_allowed = False
+        self.update()
+
+    def right_click_selection_drawEvent(self, painter):
+        RCS = self.RCS
+        if RCS.ongoing:
+            painter.save()
+            painter.setPen(QPen(self.selection_color, 2))
+            painter.drawPolyline(RCS.selection_points)
+            painter.restore()
 
     def board_go_to_note(self, event):
         for sel_item in self.selected_items:
