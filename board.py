@@ -2120,6 +2120,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             label_text = board_item.label
             label_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, label_text)
+            # для отрисовки внутри board_item.get_transform_obj
             # pos = (item_rect.topLeft() + item_rect.topRight())/2.0
             # pos -= QPointF(0, label_rect.height())
             # label_rect.moveCenter(pos)
