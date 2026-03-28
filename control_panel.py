@@ -612,8 +612,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("back", _("Go back from item board"), callback=self.board_back),
                 ControlPanelButton("dive", _("Dive into item board"), callback=main_window.board_dive_inside_board_item),
+                ControlPanelButton("back", _("Go back from item board"), callback=partial(main_window.board_dive_inside_board_item, back_to_referer=True)),
 
                 self.space_btn_generator(),
 
