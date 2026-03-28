@@ -174,6 +174,7 @@ class BoardItem():
 
     FRAME_PADDING = 40.0
     NODE_SIZE = 40.0
+    LINK_ACTIVATION_DIST = 20.0
 
     class types():
         ITEM_UNDEFINED = 0
@@ -221,7 +222,7 @@ class BoardItem():
 
         self.from_item = None
         self.to_item = None
-        self.link_width = 10
+        self.link_width = 2
 
         self.image_source_url = None
 
@@ -250,6 +251,28 @@ class BoardItem():
 
     def set_tags(self, tags):
         self._tags = tags
+
+    def is_near_link(self, canvas, pos):
+        a = self.from_item.calculate_viewport_position(canvas=canvas)
+        b = self.to_item.calculate_viewport_position(canvas=canvas)
+
+        def dot(vec1, vec2):
+            return vec1.x()*vec2.x() + vec1.y()*vec2.y()
+
+        def get_projection(p, v1, v2):
+            seg = v1-v2
+            len_squared = dot(seg, seg)
+            factor = dot(p-v1, v2-v1)/len_squared
+            projection = v1 + factor * (v2 - v1)
+            return projection, factor
+
+        m, factor = get_projection(pos, a, b)
+        dist = QVector2D(m-pos).length()
+
+        if 0.0 < factor < 1.0 and dist < self.LINK_ACTIVATION_DIST:
+            return True
+        else:
+            return False
 
     def calc_local_data(self):
         if self.type in [self.types.ITEM_NOTE]:
@@ -1913,10 +1936,13 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_content_links(self, painter, folder_data, pre, post):
         if pre:
             return
+        pos = self.mapped_cursor_pos()
         for bli in folder_data.board.link_items_list:
             _to = bli.to_item
             _from = bli.from_item
-            painter.setPen(QPen(Qt.white, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
+            is_near = bli.is_near_link(self, pos)
+            color = QColor(255, 255, 255, 255-100+100*is_near)
+            painter.setPen(QPen(color, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
             painter.drawLine(
                 _to.calculate_viewport_position(canvas=self),
                 _from.calculate_viewport_position(canvas=self)
@@ -3180,28 +3206,6 @@ class BoardMixin(BoardTextEditItemMixin):
         bli.to_item = to_item
         self.update()
 
-    def board_is_dist_to_link_ok(self, li, cursor_pos):
-        a = li.from_item.calculate_viewport_position(canvas=self)
-        b = li.to_item.calculate_viewport_position(canvas=self)
-
-        def dot(vec1, vec2):
-            return vec1.x()*vec2.x() + vec1.y()*vec2.y()
-
-        def get_projection(p, v1, v2):
-            seg = v1-v2
-            len_squared = dot(seg, seg)
-            factor = dot(p-v1, v2-v1)/len_squared
-            projection = v1 + factor * (v2 - v1)
-            return projection, factor
-
-        m, factor = get_projection(cursor_pos, a, b)
-        dist = QVector2D(m-cursor_pos).length()
-
-        if 0.0 < factor < 1.0 and dist < 30:
-            return True
-        else:
-            return False
-
     def board_change_node_radius(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
@@ -3224,7 +3228,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
         for bli in cf.board.link_items_list:
-            if self.board_is_dist_to_link_ok(bli, cursor_pos):
+            if bli.is_near_link(self, cursor_pos):
                 break
         else:
             return False
