@@ -3226,6 +3226,18 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_create_link_item(*self.item_magazin)
                 self.item_magazin.clear()
 
+    def board_toggle_directional_notd_for_links(self):
+        fd = self.LibraryData().current_folder()
+        for bli in fd.board.link_items_list:
+            if bli._selected:
+                bli.is_directional = not bli.is_directional
+
+    def board_toggle_links_direction(self):
+        fd = self.LibraryData().current_folder()
+        for bli in fd.board.link_items_list:
+            if bli._selected:
+                bli.to_item, bli.from_item = bli.from_item, bli.to_item
+
     def board_create_node_item(self):
         cf = self.LibraryData().current_folder()
         bi = BoardItem(BoardItem.types.ITEM_NODE)
