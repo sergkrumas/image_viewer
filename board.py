@@ -840,7 +840,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if key == Qt.Key_Space:
             self.board_fly_over(user_call=True)
 
-        elif check_scancode_for(event, "O"):
+        elif check_scancode_for(event, Qt.Key_O):
             if only_ctrl_mode:
                 self.board_loadBoard()
             elif only_shift_mod:
@@ -848,25 +848,25 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 self.board_toggle_item_mark()
 
-        elif check_scancode_for(event, "S") and only_ctrl_mode:
+        elif check_scancode_for(event, Qt.Key_S) and only_ctrl_mode:
             self.board_saveBoard()
 
-        elif check_scancode_for(event, "M"):
+        elif check_scancode_for(event, Qt.Key_M):
             self.board_toggle_minimap()
 
-        elif check_scancode_for(event, "I"):
+        elif check_scancode_for(event, Qt.Key_I):
             self.board_toggle_item_info_overlay()
 
-        elif check_scancode_for(event, "A") and ctrl_mod:
+        elif check_scancode_for(event, Qt.Key_A) and ctrl_mod:
             self.board_select_all_items()
 
-        elif check_scancode_for(event, "C") and ctrl_mod:
+        elif check_scancode_for(event, Qt.Key_C) and ctrl_mod:
             self.board_control_c()
 
-        elif check_scancode_for(event, "V") and ctrl_mod:
+        elif check_scancode_for(event, Qt.Key_V) and ctrl_mod:
             self.board_control_v()
 
-        elif check_scancode_for(event, "B") and ctrl_mod:
+        elif check_scancode_for(event, Qt.Key_B) and ctrl_mod:
             self.grab().save('grab.png')
 
         elif key == Qt.Key_Home:
@@ -911,18 +911,18 @@ class BoardMixin(BoardTextEditItemMixin):
                 up=key==Qt.Key_Asterisk,
                 down=key==Qt.Key_Slash,
                 toggle_monitor=key==Qt.Key_Minus)
-        elif check_scancode_for(event, ("E", "R")):
-            if check_scancode_for(event, "E"):
+        elif check_scancode_for(event, (Qt.Key_E, Qt.Key_R)):
+            if check_scancode_for(event, Qt.Key_E):
                 self.board_do_scale(-1)
-            elif check_scancode_for(event, "R"):
+            elif check_scancode_for(event, Qt.Key_R):
                 self.board_do_scale(1)
-        elif check_scancode_for(event, "F"):
+        elif check_scancode_for(event, Qt.Key_F):
             self.board_toggle_full_forcing(reset=shift)
-        elif check_scancode_for(event, "Z") and event.modifiers() & Qt.ControlModifier:
+        elif check_scancode_for(event, Qt.Key_Z) and event.modifiers() & Qt.ControlModifier:
             self.board_ctrl_z()
-        elif check_scancode_for(event, "N"):
+        elif check_scancode_for(event, Qt.Key_N):
             self.board_invoke_create_node_item()
-        elif check_scancode_for(event, "L"):
+        elif check_scancode_for(event, Qt.Key_L):
             if shift_only:
                 self.board_toggle_directional_notd_for_links()
             else:

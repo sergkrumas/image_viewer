@@ -5341,7 +5341,7 @@ class MainWindow(QMainWindow,
                 self.do_toggle_two_monitors_wide()
 
             if self.LET_tool_activated():
-                if check_scancode_for(event, 'C') and ctrl_only:
+                if check_scancode_for(event, Qt.Key_C) and ctrl_only:
                     self.LET_copy_current_color_to_clipboard()
 
         if self.is_waterfall_page_active() or self.is_viewer_page_active():
@@ -5381,12 +5381,12 @@ class MainWindow(QMainWindow,
                 LibraryData().choose_doom_scroll()
             elif key == Qt.Key_Delete:
                 LibraryData().delete_current_folder()
-            elif check_scancode_for(event, "U"):
+            elif check_scancode_for(event, Qt.Key_U):
                 LibraryData().update_current_folder()
 
         elif self.is_waterfall_page_active():
 
-            if key in [Qt.Key_Enter, Qt.Key_Return] or check_scancode_for(event, 'F'):
+            if key in [Qt.Key_Enter, Qt.Key_Return] or check_scancode_for(event, Qt.Key_F):
                 if self.viewer_modal:
                     self.leave_modal_viewer()
                 else:
@@ -5507,13 +5507,13 @@ class MainWindow(QMainWindow,
 
 
 
-        if check_scancode_for(event, "Y") and not self.active_element:
+        if check_scancode_for(event, Qt.Key_Y) and not self.active_element:
             if self.frameless_mode:
                 self.toggle_to_frame_mode()
             else:
                 self.toggle_to_frameless_mode()
 
-        elif check_scancode_for(event, "G") and not self.active_element:
+        elif check_scancode_for(event, Qt.Key_G) and not self.active_element:
 
             board_status = f'translation ongoing: {self.translation_ongoing}, rotation ongoing: {self.rotation_ongoing}, scale ongoing: {self.scaling_ongoing}, start_translation_pos: {self.start_translation_pos}'
             print(board_status)
@@ -5524,7 +5524,7 @@ class MainWindow(QMainWindow,
             # time = time.time()
             # LibraryData().create_folder_data(f"{time}", [], virtual=True)
 
-        elif check_scancode_for(event, "Q") and not self.active_element:
+        elif check_scancode_for(event, Qt.Key_Q) and not self.active_element:
             LibraryData().show_finder_window()
 
 
@@ -5543,19 +5543,19 @@ class MainWindow(QMainWindow,
         elif key == Qt.Key_5 and not self.active_element:
             self.change_page(self.pages.WATERFALL_PAGE)
 
-        elif check_scancode_for(event, ("W", "S", "A", "D")) and not ctrl_mod and not self.board_TextElementIsActiveElement():
+        elif check_scancode_for(event, (Qt.Key_W, Qt.Key_S, Qt.Key_A, Qt.Key_D)) and not ctrl_mod and not self.board_TextElementIsActiveElement():
             length = 1.0
             if event.modifiers() & Qt.ShiftModifier:
                 length *= 100.0
                 if event.modifiers() & Qt.AltModifier:
                     length /= 5.0
-            if check_scancode_for(event, "W"):
+            if check_scancode_for(event, Qt.Key_W):
                 delta =  QPoint(0, 1) * length
-            elif check_scancode_for(event, "S"):
+            elif check_scancode_for(event, Qt.Key_S):
                 delta =  QPoint(0, -1) * length
-            elif check_scancode_for(event, "A"):
+            elif check_scancode_for(event, Qt.Key_A):
                 delta =  QPoint(1, 0) * length
-            elif check_scancode_for(event, "D"):
+            elif check_scancode_for(event, Qt.Key_D):
                 delta =  QPoint(-1, 0) * length
             if self.is_viewer_page_active():
                 self.image_center_position += delta
@@ -5574,19 +5574,19 @@ class MainWindow(QMainWindow,
             if self.viewer_modal:
                 if key == Qt.Key_Space:
                     self.toggle_animation_playback()
-                elif check_scancode_for(event, "I"):
+                elif check_scancode_for(event, Qt.Key_I):
                     self.invert_image = not self.invert_image
-                elif check_scancode_for(event, "R"):
+                elif check_scancode_for(event, Qt.Key_R):
                     self.start_inframed_image_saving(event)
-                elif check_scancode_for(event, "M"):
+                elif check_scancode_for(event, Qt.Key_M):
                     self.mirror_current_image(ctrl_mod)
             else:
-                if check_scancode_for(event, "U"):
+                if check_scancode_for(event, Qt.Key_U):
                     LibraryData().update_current_folder()
 
         elif self.is_viewer_page_active():
 
-            if check_scancode_for(event, "U"):
+            if check_scancode_for(event, Qt.Key_U):
                 LibraryData().update_current_folder()
 
             elif key == Qt.Key_Backtab:
@@ -5599,19 +5599,19 @@ class MainWindow(QMainWindow,
                 LibraryData().jump_to_last()
             elif key == Qt.Key_Space:
                 self.toggle_animation_playback()
-            elif check_scancode_for(event, "F"):
+            elif check_scancode_for(event, Qt.Key_F):
                 Globals.control_panel.manage_favorite_list()
-            elif check_scancode_for(event, "C"):
+            elif check_scancode_for(event, Qt.Key_C):
                 self.STNG.show_image_center = not self.STNG.show_image_center
-            elif check_scancode_for(event, "D"):
+            elif check_scancode_for(event, Qt.Key_D):
                 self.STNG.show_thirds = not self.STNG.show_thirds
-            elif check_scancode_for(event, "T"):
+            elif check_scancode_for(event, Qt.Key_T):
                 self.toggle_tags_overlay()
-            elif check_scancode_for(event, "I"):
+            elif check_scancode_for(event, Qt.Key_I):
                 self.invert_image = not self.invert_image
-            elif check_scancode_for(event, "R"):
+            elif check_scancode_for(event, Qt.Key_R):
                 self.start_inframed_image_saving(event)
-            elif check_scancode_for(event, "M"):
+            elif check_scancode_for(event, Qt.Key_M):
                 self.mirror_current_image(ctrl_mod)
 
 
