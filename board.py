@@ -3021,12 +3021,18 @@ class BoardMixin(BoardTextEditItemMixin):
                         )
                         items_list.remove(bi)
                 if bi.type == BoardItem.types.ITEM_NODE:
-                    self.board_delete_nonlink_item_info(bi)
+                    self.board_delete_nonlink_item_info(bi, cf=cf)
                     items_list.remove(bi) 
 
             self.move_items_to_group(item_group=gi, items=self.selected_items)
 
-            self.prepare_selection_box_widget(cf)
+
+
+        for li in fd.board.link_items_list[:]:
+            if li._selected:
+                self.board_delete_link_item(li, cf=cf)
+
+        self.prepare_selection_box_widget(cf)
 
         self.update()
 
@@ -3224,6 +3230,14 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_invoke_create_node_item(self, viewport_pos=None):
         self.modal_input_field_show(self.board_create_node_item, _('Node label'))
         self.board_invoke_pos = viewport_pos
+
+    def board_delete_link_item(self, item, cf=None):
+        cf = cf or self.LibraryData().current_folder()
+        links = cf.board.link_items_list
+        if item in links:
+            links.remove(item)
+        item.from_item = None
+        item.to_item = None
 
     def board_delete_nonlink_item_info(self, item, cf=None):
         cf = cf or self.LibraryData().current_folder()
