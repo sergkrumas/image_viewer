@@ -24,6 +24,7 @@
 
 from _utils import *
 import help_text
+from functools import partial
 
 __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 
@@ -611,8 +612,8 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 self.space_btn_generator(),
 
-                ControlPanelButton("dive", _("Dive into item board"), callback=self.board_dive),
                 ControlPanelButton("back", _("Go back from item board"), callback=self.board_back),
+                ControlPanelButton("dive", _("Dive into item board"), callback=main_window.board_dive_inside_board_item),
 
                 self.space_btn_generator(),
 
