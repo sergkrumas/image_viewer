@@ -57,34 +57,34 @@ __import__('builtins').__dict__['_'] = __import__('gettext').gettext
 DEFAULT_SVG_SCALE_FACTOR = 20
 
 SCANCODES_FROM_LATIN_CHAR = {
-    "Q": 16,
-    "W": 17,
-    "E": 18,
-    "R": 19,
-    "T": 20,
-    "Y": 21,
-    "U": 22,
-    "I": 23,
-    "O": 24,
-    "P": 25,
-    "A": 30,
-    "S": 31,
-    "D": 32,
-    "F": 33,
-    "G": 34,
-    "H": 35,
-    "J": 36,
-    "K": 37,
-    "L": 38,
-    "Z": 44,
-    "X": 45,
-    "C": 46,
-    "V": 47,
-    "B": 48,
-    "N": 49,
-    "M": 50,
-    "[": 26,
-    "]": 27,
+    Qt.Key_Q: 16,
+    Qt.Key_W: 17,
+    Qt.Key_E: 18,
+    Qt.Key_R: 19,
+    Qt.Key_T: 20,
+    Qt.Key_Y: 21,
+    Qt.Key_U: 22,
+    Qt.Key_I: 23,
+    Qt.Key_O: 24,
+    Qt.Key_P: 25,
+    Qt.Key_A: 30,
+    Qt.Key_S: 31,
+    Qt.Key_D: 32,
+    Qt.Key_F: 33,
+    Qt.Key_G: 34,
+    Qt.Key_H: 35,
+    Qt.Key_J: 36,
+    Qt.Key_K: 37,
+    Qt.Key_L: 38,
+    Qt.Key_Z: 44,
+    Qt.Key_X: 45,
+    Qt.Key_C: 46,
+    Qt.Key_V: 47,
+    Qt.Key_B: 48,
+    Qt.Key_N: 49,
+    Qt.Key_M: 50,
+    Qt.Key_BracketLeft: 26,
+    Qt.Key_BracketRight: 27,
 }
 
 def execute_clickable_text(text):
@@ -106,8 +106,7 @@ def check_scancode_for(event, data):
     if data is None:
         return False
     code = event.nativeScanCode()
-    if isinstance(data, str):
-        data = data.upper()[0]
+    if isinstance(data, int):
         return SCANCODES_FROM_LATIN_CHAR[data] == code
     elif isinstance(data, (list, tuple)):
         return any(SCANCODES_FROM_LATIN_CHAR[ch] == code for ch in data)
