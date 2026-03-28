@@ -880,14 +880,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.lineEdit.parent():
             event.setAccepted(True)
-            self.lineEditWasEnabled = True
             return
 
         if key == Qt.Key_Control:
             # for not item selection drag&drop
             self.board_cursor_setter()
 
-        if key in [Qt.Key_Return, Qt.Key_Enter] and (not self.lineEditWasEnabled) and (not self.lineEditSkip):
+        if key in [Qt.Key_Return, Qt.Key_Enter] and (not self.lineEditSkip):
             if self.board_show_minimap:
                 self.board_navigate_camera_via_minimap()
             else:

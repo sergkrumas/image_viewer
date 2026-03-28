@@ -6159,7 +6159,6 @@ class MainWindow(QMainWindow,
         lineEdit.setStyleSheet('color: white; font: 20pt; background: rgba(50, 50, 50, 100); border-radius: 30px; border: 1px solid gray;')
         lineEdit.returnPressed.connect(self.modal_input_field_handler)
         lineEdit.textChanged.connect(lambda: self.modal_input_field_handler(close=False))
-        self.lineEditWasEnabled = False
         self.lineEditSkip = False
 
     def modal_input_field_hide(self):
