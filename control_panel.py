@@ -606,7 +606,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 ControlPanelButton("folder", _("Add folder item"), callback=lambda: None),
                 ControlPanelButton("group", _("Add group item"), callback=lambda: None),
-                ControlPanelButton("frame", _("Add frame item"), callback=lambda: None),
+                ControlPanelButton("frame", _("Add frame item"), callback=MW.board_add_item_frame),
                 ControlPanelButton("note", _("Add note item"), callback=lambda: None),
 
                 self.space_btn_generator(),
