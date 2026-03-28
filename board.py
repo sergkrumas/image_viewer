@@ -3343,9 +3343,10 @@ class BoardMixin(BoardTextEditItemMixin):
         SNAPPING.show_point_targets = False
 
     def board_items_snapping_finish(self):
-        self.show_center_label('snapping finished')
-        self.SNAPPING.targets.clear()
-        self.SNAPPING.anchors.clear()
+        if self.STNG.board_items_snapping:
+            self.show_center_label('snapping finished')
+            self.SNAPPING.targets.clear()
+            self.SNAPPING.anchors.clear()
 
     def board_items_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
