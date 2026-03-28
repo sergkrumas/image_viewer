@@ -1072,6 +1072,28 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
+        submenu = contextMenu.addMenu(_('Actions'))
+        self.board_contextSubMenu(submenu)
+
+        sep()
+
+        addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
+
+        addItem(_("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
+
+        addItem(_("Open in Google Chrome"), self.board_open_in_google_chrome)
+
+        sep()
+
+    def board_contextSubMenu(self, menu):
+
+        sep = menu.addSeparator
+        menu.setStyleSheet(self.context_menu_stylesheet)
+        menu.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        def addItem(*args):
+            return self.addItemToMenu(menu, *args)
+
         addItem(_('Place items in column/row'), self.board_place_items_in_column_or_row)
 
         addItem(_('Align && Distribute...'), self.board_show_AD_toolbox)
@@ -1091,10 +1113,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         addItem(_("Note"), self.board_add_item_note)
 
+
         addItem(_("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
 
         addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
-
 
         frame_item = self.board_menuActivatedOverFrameItem()
         if frame_item:
@@ -1102,16 +1124,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if bool(self.is_context_menu_executed_over_group_item()):
             addItem(_('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
-
-        sep()
-
-        addItem(_("Go to the link in the note (Explorer or Browser)"), partial(self.board_go_to_note, event))
-
-        addItem(_("Open in viewer in separated app copy running in lite mode"), self.board_open_in_app_copy)
-
-        addItem(_("Open in Google Chrome"), self.board_open_in_google_chrome)
-
-        sep()
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(
