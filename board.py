@@ -3130,7 +3130,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.root_item = gi
         # располагаем центр в координате вызова контекстеного меню
         if item_position is None:
-            gi.position = self.board_MapToBoard(self.context_menu_exec_point)
+            gi.position = self.board_MapToBoard(self.rect().center())
         else:
             gi.position = item_position
         if move_selection_to_group and self.board_selected_items_count() > 0:
@@ -3148,7 +3148,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
         ni.board_index = self.retrieve_new_board_item_index()
         current_folder_data.board.items_list.append(ni)
-        ni.position = self.board_MapToBoard(self.context_menu_exec_point)
+        ni.position = self.board_MapToBoard(self.rect().center())
         self.board_TextElementAttributesInitOnCreation(ni)
         self.board_select_items([ni])
         self.update()
