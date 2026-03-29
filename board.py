@@ -1981,37 +1981,55 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         pos = self.mapped_cursor_pos()
-        for bli in folder_data.board.link_items_list:
-            _to = bli.to_item
-            _from = bli.from_item
-            is_near = bli.is_near_link(self, pos)
+        # ITEM_LINK
+        for slot_id, slot in folder_data.board.link_slots_list.items():
 
-            selected_color = QColor(127, 18, 34)
-            selected_color2 = QColor(selected_color)
-            selected_color2.setAlpha(255-100)
-            if bli._selected and not is_near:
-                color = selected_color2
-            elif bli._selected and is_near:
-                color = selected_color
-            elif is_near:
-                color = self.selection_color
-            else:
-                color = QColor(255, 255, 255, 255-100)
-            painter.setPen(QPen(color, bli.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
-            to_pos = _to.calculate_viewport_position(canvas=self)
-            from_pos = _from.calculate_viewport_position(canvas=self)
-            center_pos = (to_pos + from_pos)/2.0
-            painter.drawLine(to_pos, from_pos)
+            for li in slot:
+                is_near = li.is_near_link(self, pos)
 
-            if bli.is_directional:
-                v = QVector2D(center_pos - from_pos).normalized()
-                pd1 = QVector2D(-v.y(), v.x())
-                pd2 = QVector2D(v.y(), -v.x())
-                back_d = (-v*20).toPointF()
-                a1 = (pd1*20).toPointF() + back_d + center_pos
-                a2 = (pd2*20).toPointF() + back_d + center_pos
-                painter.drawLine(center_pos, a2)
-                painter.drawLine(center_pos, a1)
+                _to = li.to_item
+                _from = li.from_item
+                to_pos = _to.calculate_viewport_position(canvas=self)
+                from_pos = _from.calculate_viewport_position(canvas=self)
+                center_pos = (to_pos + from_pos)/2.0
+
+                selected_color = QColor(127, 18, 34)
+                selected_color2 = QColor(selected_color)
+                selected_color2.setAlpha(255-100)
+                if li._selected and not is_near:
+                    color = selected_color2
+                elif li._selected and is_near:
+                    color = selected_color
+                elif is_near:
+                    color = self.selection_color
+                else:
+                    color = QColor(255, 255, 255, 255-100)
+                painter.setPen(QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
+                painter.drawLine(to_pos, from_pos)
+
+                if li.is_directional:
+                    v = QVector2D(center_pos - from_pos).normalized()
+                    pd1 = QVector2D(-v.y(), v.x())
+                    pd2 = QVector2D(v.y(), -v.x())
+                    back_d = (-v*20).toPointF()
+                    a1 = (pd1*20).toPointF() + back_d + center_pos
+                    a2 = (pd2*20).toPointF() + back_d + center_pos
+                    painter.drawLine(center_pos, a2)
+                    painter.drawLine(center_pos, a1)
+
+            links_count = f'{len(slot)}'
+
+            count_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, links_count)
+            size = max(count_rect.width(), count_rect.height())
+            count_rect.setWidth(size)
+            count_rect.setHeight(size)
+            count_rect.adjust(-4, -4, 4, 4)
+            count_rect.moveCenter(center_pos + QPointF(0, -25))
+
+            painter.setPen(Qt.NoPen)
+            painter.drawEllipse(count_rect)
+            painter.setPen(QPen(Qt.white, 1))
+            painter.drawText(count_rect, Qt.AlignVCenter | Qt.AlignHCenter, links_count)
 
     def draw_selection(self, painter, folder_data):
         painter.save()
@@ -3320,10 +3338,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_create_link_item(self, from_item, to_item):
         cf = self.LibraryData().current_folder()
-        bli = BoardItem(BoardItem.types.ITEM_LINK)
-        cf.board.link_items_list.append(bli)
-        bli.from_item = from_item
-        bli.to_item = to_item
+        board = cf.board
+        # link
+        li = BoardItem(BoardItem.types.ITEM_LINK)
+        li.from_item = from_item
+        li.to_item = to_item
+        board.link_items_list.append(li)
+        # add to slot
+        indexes = (from_item.board_index, to_item.board_index)
+        ordered_indexes_key = (min(indexes), max(indexes))
+        link_slot = board.link_slots_list[ordered_indexes_key]
+        link_slot.append(li)
+        li._slot = link_slot
         self.update()
 
     def board_change_node_radius(self, event, scroll_value):
