@@ -6160,10 +6160,12 @@ class MainWindow(QMainWindow,
         self.lineEditCallback = callback
         lineEdit.setGeometry(self.rect().adjusted(200, 200, -200, -200))
         lineEdit.setParent(self)
-        lineEdit.setFocus()
         lineEdit.show()
         lineEdit.setText(text)
         lineEdit.selectAll()
+        lineEdit.setFocus()
+        # lineEdit.grabKeyboard()
+        # lineEdit.grabMouse()
 
     def modal_input_field_init(self):
         # MW = self
@@ -6187,6 +6189,8 @@ class MainWindow(QMainWindow,
     def modal_input_field_hide(self):
         lineEdit = self.lineEdit
         lineEdit.setParent(None)
+        # lineEdit.releaseKeyboard()
+        # lineEdit.releaseMouse()
         self.lineEditSkip = True
 
     def modal_input_field_handler(self, close=True):
