@@ -4635,6 +4635,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     im.append(board_item)
 
         def check_near_link(li):
+            # TODO: это конечно полный провал,
+            # надо рефакторить RCS.selection_points,
+            # потому что там слишком много точек
             for po in RCS.selection_points:
                 if li.is_near_link(self, po):
                     li._selected = True
