@@ -2128,8 +2128,9 @@ class BoardMixin(BoardTextEditItemMixin):
         pen = QPen(self.selection_color, 1)
         painter.setPen(pen)
         painter.setBrush(Qt.NoBrush)
+        ITEM_NODE = BoardItem.types.ITEM_NODE
         for board_item in folder_data.board.items_list:
-            if board_item._selected:
+            if board_item._selected and not board_item.type == ITEM_NODE:
                 painter.drawPolygon(board_item.get_selection_area(canvas=self))
         painter.restore()
 
@@ -2238,11 +2239,12 @@ class BoardMixin(BoardTextEditItemMixin):
             item_rect.moveCenter(QPointF(0, 0))
             pen = QPen()
             pen.setStyle(Qt.DashLine)
-            if is_cursor_over:
+            if is_cursor_over or board_item._selected:
                 pen.setColor(self.selection_color)
             else:
                 pen.setColor(Qt.gray)
             painter.setPen(pen)
+            painter.setBrush(QBrush(QColor(50, 50, 50)))
             painter.drawEllipse(item_rect)
 
             painter.resetTransform()
