@@ -232,6 +232,7 @@ class BoardItem():
         self.to_item = None
         self.link_width = 2
         self.is_directional = True
+        self._node_ui_rect = None
 
         self.image_source_url = None
 
@@ -810,20 +811,25 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
             else:
                 cf = self.LibraryData().current_folder()
-                for board_item in cf.board.items_list:
-                    item_selection_area = board_item.get_selection_area(canvas=self)
-                    is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
+                cursor_pos = self.mapped_cursor_pos()
+                for bi in cf.board.items_list:
+                    item_selection_area = bi.get_selection_area(canvas=self)
+                    is_under_mouse = item_selection_area.containsPoint(cursor_pos, Qt.WindingFill)
+                    is_over_text_ui_rect = bi._node_ui_rect and bi._node_ui_rect.contains(cursor_pos)
+                    if is_over_text_ui_rect:
+                        self.board_change_item_text(bi)
+                        break
                     if is_under_mouse:
-                        if board_item.type == BoardItem.types.ITEM_NOTE:
-                            self.board_TextElementActivateEditMode(board_item)
+                        if bi.type == BoardItem.types.ITEM_NOTE:
+                            self.board_TextElementActivateEditMode(bi)
                             break
-                        elif board_item.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
-                            self.LibraryData().show_that_imd_on_viewer_page(board_item.file_data)
+                        elif bi.type == BoardItem.types.ITEM_IMAGE and (event.modifiers() & Qt.ShiftModifier):
+                            self.LibraryData().show_that_imd_on_viewer_page(bi.file_data)
                             self.show_center_label(_('You\'re on viewer page now'))
-                        elif board_item.type == BoardItem.types.ITEM_AV:
-                            execute_clickable_text(board_item.file_data.filepath)
+                        elif bi.type == BoardItem.types.ITEM_AV:
+                            execute_clickable_text(bi.file_data.filepath)
                         else:
-                            self.board_fit_content_on_screen(None, board_item=board_item)
+                            self.board_fit_content_on_screen(None, board_item=bi)
                         break
                 else:
                     # если цикл дошёл до конца, то есть break не был вызван
@@ -2144,6 +2150,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # pos -= QPointF(0, label_rect.height())
             # label_rect.moveCenter(pos)
             label_rect.moveBottomLeft(sa_br.topLeft())
+            board_item._node_ui_rect = label_rect
 
             alignment = Qt.AlignVCenter | Qt.AlignHCenter
             painter.drawText(label_rect, alignment, label_text)
@@ -6058,6 +6065,19 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cf)
         self.prepare_selection_box_widget(cf)
         self.update()
+
+    def board_do_change_item_text(self, board_item):
+        board_item.label = self.modal_input_field_text()
+
+    def board_change_item_text(self, board_item):
+        if board_item.type == BoardItem.types.ITEM_NODE:
+            self.modal_input_field_show(
+                partial(self.board_do_change_item_text, board_item),
+                board_item.label,
+            )
+        else:
+            self.show_center_label(_('This item not supported!'), error=True)
+
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
