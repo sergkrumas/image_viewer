@@ -5498,7 +5498,9 @@ class MainWindow(QMainWindow,
 
 
         if key == Qt.Key_Escape:
-            if self.board_TextElementTextSelectionDragNDropOngoing():
+            if self.modal_input_field_try_cancel():
+                pass
+            elif self.board_TextElementTextSelectionDragNDropOngoing():
                 self.board_TextElementCancelTextSelectionDragNDrop()
             elif self.start_translation_pos or self.translation_ongoing:
                 self.board_CANCEL_selected_items_TRANSLATION()
@@ -6192,6 +6194,7 @@ class MainWindow(QMainWindow,
         if close:
             if self.lineEditCallback:
                 self.lineEditCallback()
+                self.lineEditCallback = None
             self.modal_input_field_hide()
             self.update()
         return True
@@ -6199,6 +6202,14 @@ class MainWindow(QMainWindow,
     def modal_input_field_text(self):
         return self.lineEdit.text()
 
+    def modal_input_field_try_cancel(self):
+        lineEdit = self.lineEdit
+        is_activated = bool(lineEdit.parent())
+        if is_activated:
+            self.modal_input_field_hide()
+            self.lineEditSkip = False
+            self.lineEditCallback = None
+        return is_activated
 
 def main():
     try:
