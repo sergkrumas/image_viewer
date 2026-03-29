@@ -233,6 +233,7 @@ class BoardItem():
         self.link_width = 2
         self.is_directional = True
         self._node_ui_rect = None
+        self._is_curved_link = False
 
         self.image_source_url = None
 
@@ -263,14 +264,24 @@ class BoardItem():
         self._tags = tags
 
     def is_near_link(self, canvas, pos):
-        a = self.from_item.calculate_viewport_position(canvas=canvas)
-        b = self.to_item.calculate_viewport_position(canvas=canvas)
+        if self._is_curved_link:
+            return True
+        else:
+            return self.segment_dist(
+                self.from_item.calculate_viewport_position(canvas=canvas),
+                self.to_item.calculate_viewport_position(canvas=canvas),
+                pos,
+                self.LINK_ACTIVATION_DIST,
+            )
+
+    @staticmethod
+    def segment_dist(a, b, pos, dist_threshold):
 
         def dot(vec1, vec2):
             return vec1.x()*vec2.x() + vec1.y()*vec2.y()
 
         def get_projection(p, v1, v2):
-            seg = v1-v2
+            seg = v2-v1
             len_squared = dot(seg, seg)
             factor = dot(p-v1, v2-v1)/len_squared
             projection = v1 + factor * (v2 - v1)
@@ -279,7 +290,7 @@ class BoardItem():
         m, factor = get_projection(pos, a, b)
         dist = QVector2D(m-pos).length()
 
-        if 0.0 < factor < 1.0 and dist < self.LINK_ACTIVATION_DIST:
+        if 0.0 < factor < 1.0 and dist < dist_threshold:
             return True
         else:
             return False
