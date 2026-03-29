@@ -273,12 +273,13 @@ class BoardItem():
             QLineF(viewport_rect.bottomLeft(), viewport_rect.topLeft())
         ]
         line = QLineF(a, b)
-        point = QPointF()
         for side in sides:
             result, point = line.intersects(side)
-            if result != QLineF.NoIntersection:
+            if result == QLineF.BoundedIntersection:
                 return True
         else:
+            if viewport_rect.contains(a.toPoint()) or viewport_rect.contains(b.toPoint()):
+                return True
             return False
 
     def is_near_link(self, canvas, pos):
@@ -287,11 +288,16 @@ class BoardItem():
         if not self.visible_in_viewport(canvas, a, b):
             return False
         if self._is_curved_link:
-            return True
+            poly = canvas.board_util_path_to_polygone(self._path)
+            for a, b in zip(poly, poly[1:]):
+                if self.segment_dist(a, b, pos, self.LINK_ACTIVATION_DIST):
+                    return True
+            return False
+
         else:
             return self.segment_dist(a, b,
                 pos,
-                self.LINK_ACTIVATION_DIST,
+                self.LINK_ACTIVATION_DIST
             )
 
     @staticmethod
@@ -2007,6 +2013,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
+    def board_util_path_to_polygone(self, path):
+        def float_range(start, stop, step):
+            while start < stop:
+                yield start
+                start += step
+        points = [path.pointAtPercent(t) for t in float_range(0.0, 1.0, 0.05)]
+        points.append(path.pointAtPercent(1.0))
+        return QPolygonF(points)
+
     def board_draw_content_links(self, painter, folder_data, pre, post):
         if self.links_draw_before_items and post:
             return
@@ -2052,18 +2067,38 @@ class BoardMixin(BoardTextEditItemMixin):
                     color = self.selection_color
                 else:
                     color = gray_color
-                painter.setPen(QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
-                if pivot_index == slot_index_offset and is_odd:
-                    painter.drawLine(to_pos, from_pos)
-                else:
+                style = Qt.DashLine
+                style = Qt.SolidLine
+                painter.setPen(QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), style))
+                li._is_curved_link = not (pivot_index == slot_index_offset and is_odd)
+                if li._is_curved_link:
+
                     if check_to_item is _to:
                         pd = pd1
                     else:
                         pd = pd2
                     center_pos = center_pos + (pd*slot_index_offset*50).toPointF()
-                    painter.drawLine(to_pos, center_pos)
-                    painter.drawLine(center_pos, from_pos)
+                    if False:
+                        painter.drawLine(to_pos, center_pos)
+                        painter.drawLine(center_pos, from_pos)
+                    else:
+                        path = QPainterPath()
+                        path.moveTo(to_pos)
+                        a = QPointF(to_pos) + (pd*slot_index_offset*50).toPointF() + (-v*30).toPointF()
+                        b = QPointF(from_pos) + (pd*slot_index_offset*50).toPointF() + (v*30).toPointF()
+                        path.cubicTo(a, b, from_pos)
+                        painter.setBrush(Qt.NoBrush)
+                        painter.drawPath(path)
+                        li._path = path
+                        # painter.drawPoint(a)
+                        # painter.drawPoint(b)
+                        # correction for arrow
+                        center_pos = path.pointAtPercent(0.5)
+                else:
+                    painter.drawLine(to_pos, from_pos)
 
+
+                # arrow
                 if li.is_directional:
                     back_d = (-v*20).toPointF()
                     a1 = (pd1*20).toPointF() + back_d + center_pos
