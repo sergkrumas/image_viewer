@@ -3786,7 +3786,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_update_selection_box_widget(self, transformation_ongoing=False, debug_mw=None):
         self.selection_box = None
         if len(self.selected_items) == 1:
-            self.selection_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
+            if self.selected_items[0].type != BoardItem.types.ITEM_NODE:
+                self.selection_box = self.selected_items[0].get_selection_area(canvas=self, transformation_ongoing=transformation_ongoing, debug_mw=debug_mw)
         elif len(self.selected_items) > 1:
             bounding_box = QRectF()
             for board_item in self.selected_items:
