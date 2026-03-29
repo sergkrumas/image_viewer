@@ -327,25 +327,8 @@ class AppMixin():
             app.setQuitOnLastWindowClosed(True)
 
         if Globals.aftercrash:
-            filepath = cls.APP_get_crashlog_filepath()
-            crashfileinfo = _("Crash info saved to file\n\t{0}").format(filepath)
-            msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle(_('Fatal Error!'))
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setText(msg)
-            yes_btn = msgBox.addButton(_('Yes'), QMessageBox.YesRole)
-            no_btn = msgBox.addButton(_('No'), QMessageBox.NoRole)
-            open_btn = msgBox.addButton(_('Open'), QMessageBox.NoRole)
-            msgBox.exec()
-            btn = msgBox.clickedButton()
-            if btn == yes_btn:
-                cls.APP_restart()
-            elif btn == no_btn:
-                pass
-            elif btn == open_btn:
-                execute_clickable_text(filepath)
-            sys.exit(0)
+            cls.APP_aftercrash_dialog()
+
 
         if not Globals.lite_mode:
             path = cls.APP_run_as_IPC_server_or_IPC_client(path)
@@ -395,6 +378,34 @@ class AppMixin():
         if sti:
             sti.hide()
         sys.exit(exit_code)
+
+    @classmethod
+    def APP_aftercrash_dialog(cls, open_button=True):
+        filepath = cls.APP_get_crashlog_filepath()
+        crashfileinfo = _("Crash info saved to file\n\t{0}").format(filepath)
+        msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(_('Fatal Error!'))
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText(msg)
+        yes_btn = msgBox.addButton(_('Yes'), QMessageBox.YesRole)
+        no_btn = msgBox.addButton(_('No'), QMessageBox.NoRole)
+        if open_button:
+            open_btn = msgBox.addButton(_('Open'), QMessageBox.ActionRole)
+        else:
+            open_btn = ...
+        msgBox.exec()
+        btn = msgBox.clickedButton()
+        if btn is None:
+            pass
+        elif btn == yes_btn:
+            cls.APP_restart()
+        elif btn == no_btn:
+            pass
+        elif btn == open_btn:
+            execute_clickable_text(filepath)
+            cls.APP_aftercrash_dialog(open_button=False)
+        sys.exit(0)
 
     @classmethod
     def APP_prepare_page_on_appstart(cls, args, path, MW):
