@@ -330,9 +330,21 @@ class AppMixin():
             filepath = cls.APP_get_crashlog_filepath()
             crashfileinfo = _("Crash info saved to file\n\t{0}").format(filepath)
             msg = _("Application crash!\n{0}\n\nRestart app?").format(crashfileinfo)
-            ret = QMessageBox.question(None, _('Fatal Error!'), msg, QMessageBox.Yes | QMessageBox.No)
-            if ret == QMessageBox.Yes:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(_('Fatal Error!'))
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(msg)
+            yes_btn = msgBox.addButton(_('Yes'), QMessageBox.YesRole)
+            no_btn = msgBox.addButton(_('No'), QMessageBox.NoRole)
+            open_btn = msgBox.addButton(_('Open'), QMessageBox.NoRole)
+            msgBox.exec()
+            btn = msgBox.clickedButton()
+            if btn == yes_btn:
                 cls.APP_restart()
+            elif btn == no_btn:
+                pass
+            elif btn == open_btn:
+                execute_clickable_text(filepath)
             sys.exit(0)
 
         if not Globals.lite_mode:

@@ -1096,7 +1096,7 @@ class Settings(SettingsWindow):
             'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
             'board_autoscroll_speed': (1.0, (0.5, 3.0), _('Board Page autoscroll speed')),
             'board_items_snapping': (False, _('Items snapping')),
-            
+
 
             '---pagestransparent': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),
