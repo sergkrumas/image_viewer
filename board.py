@@ -2042,10 +2042,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 pd1 = QVector2D(-v.y(), v.x())
                 pd2 = QVector2D(v.y(), -v.x())
 
-                if check_to_item is _to:
-                    pd = pd1
-                else:
-                    pd = pd2
 
                 is_near = li.is_near_link(self, pos)
                 if li._selected and not is_near:
@@ -2060,7 +2056,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 if pivot_index == slot_index_offset and is_odd:
                     painter.drawLine(to_pos, from_pos)
                 else:
-                    center_pos = center_pos + (pd*slot_index_offset*30).toPointF()
+                    if check_to_item is _to:
+                        pd = pd1
+                    else:
+                        pd = pd2
+                    center_pos = center_pos + (pd*slot_index_offset*50).toPointF()
                     painter.drawLine(to_pos, center_pos)
                     painter.drawLine(center_pos, from_pos)
 
