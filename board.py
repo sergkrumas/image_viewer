@@ -2036,6 +2036,8 @@ class BoardMixin(BoardTextEditItemMixin):
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
         for slot_id, slot in folder_data.board.link_slots_list.items():
+            if not slot:
+                continue
 
             links_count = len(slot)
             pivot_index = (links_count + 1)/2
@@ -3370,6 +3372,7 @@ class BoardMixin(BoardTextEditItemMixin):
         links = cf.board.link_items_list
         if item in links:
             links.remove(item)
+        item._slot.remove(item)
         item.from_item = None
         item.to_item = None
 
@@ -4655,7 +4658,8 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.selection_points.append(event.pos())
         spbb = RCS.selection_points.boundingRect()
         if all(i.type != i.types.ITEM_LINK for i in self.item_magazin):
-            for first, second in zip(self.item_magazin, self.item_magazin[1:]):
+            item_magazin = list(self.item_magazin)
+            for first, second in zip(item_magazin, item_magazin[1:]):
                 self.board_create_link_item(first, second)
         if RCS.clear_magazin:
             self.item_magazin.clear()
