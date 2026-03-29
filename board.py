@@ -5146,12 +5146,21 @@ class BoardMixin(BoardTextEditItemMixin):
             bx = fitted_rect.width()/item_rect.width()
             by = fitted_rect.height()/item_rect.height()
 
+            if self.check_scroll_lock():
+                # если включён scroll lock, то при переходе
+                # от картинки к картинке не изменяем масштаб вьюпорта
+                factor_x = 1.0
+                factor_y = 1.0
+            else:
+                factor_x = bx/self.canvas_scale_x
+                factor_y = by/self.canvas_scale_y
+
             new_canvas_scale_x, new_canvas_scale_y, new_canvas_origin = self.do_scale_board(1.0,
                 False,
                 False,
                 True,
-                factor_x=bx/self.canvas_scale_x,
-                factor_y=by/self.canvas_scale_y,
+                factor_x=factor_x,
+                factor_y=factor_y,
                 precalculate=True,
                 canvas_scale_x=self.canvas_scale_x,
                 canvas_scale_y=self.canvas_scale_y,
@@ -5159,12 +5168,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 pivot = self.get_center_position()
             )
 
+            anim_data = [
+                (self, "canvas_origin", pos1, new_canvas_origin, self.update),
+                (self, "canvas_scale_x", self.canvas_scale_x, new_canvas_scale_x, self.update),
+                (self, "canvas_scale_y", self.canvas_scale_y, new_canvas_scale_y, self.update),
+            ]
+
             self.animate_properties(
-                [
-                    (self, "canvas_origin", pos1, new_canvas_origin, self.update),
-                    (self, "canvas_scale_x", self.canvas_scale_x, new_canvas_scale_x, self.update),
-                    (self, "canvas_scale_y", self.canvas_scale_y, new_canvas_scale_y, self.update),
-                ],
+                anim_data,
                 anim_id="flying",
                 duration=0.7,
             )
