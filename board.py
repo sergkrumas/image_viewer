@@ -2261,6 +2261,8 @@ class BoardMixin(BoardTextEditItemMixin):
             # pos = (item_rect.topLeft() + item_rect.topRight())/2.0
             # pos -= QPointF(0, label_rect.height())
             # label_rect.moveCenter(pos)
+            if label_rect.isNull():
+                label_rect = QRectF(item_rect)
             label_rect.moveBottomLeft(sa_br.topLeft())
             board_item._node_ui_rect = label_rect
 
