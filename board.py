@@ -4633,9 +4633,19 @@ class BoardMixin(BoardTextEditItemMixin):
                 # board_item._selected = True
                 if board_item not in im:
                     im.append(board_item)
-        for link_item in cf.board.link_items_list:
-            if link_item.get_selection_line(canvas=self).intersects(RCS.selection_points):
-                link_item._selected = True
+
+        def check_near_link(li):
+            for po in RCS.selection_points:
+                if li.is_near_link(self, po):
+                    li._selected = True
+                    break
+
+        for li in cf.board.link_items_list:
+            if li._is_curved_link:
+                check_near_link(li)
+
+            elif li.get_selection_line(canvas=self).intersects(RCS.selection_points):
+                li._selected = True
 
     def right_click_selection_pressEvent(self, event, shift_pressed):
         RCS = self.RCS
@@ -4643,7 +4653,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.selection_points.clear()
         self.board_clear_selection()
         RCS.selection_points.append(event.pos())
-        RCS.clear_magazin = not shift_pressed
+        RCS.clear_selection = not shift_pressed
 
     def right_click_selection_moveEvent(self, event):
         RCS = self.RCS
@@ -4661,8 +4671,8 @@ class BoardMixin(BoardTextEditItemMixin):
             item_magazin = list(self.item_magazin)
             for first, second in zip(item_magazin, item_magazin[1:]):
                 self.board_create_link_item(first, second)
-        if RCS.clear_magazin:
-            self.item_magazin.clear()
+        self.item_magazin.clear()
+        if RCS.clear_selection:
             self.board_clear_links_selection()
         if spbb.width() > 30 or spbb.height() > 30:
             self.context_menu_allowed = False
