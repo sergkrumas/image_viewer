@@ -1617,6 +1617,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 if is_under_mouse:
                     item = bi
                     break
+            if item is None:
+                return
 
             case1 = item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
             case2 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
@@ -2014,20 +2016,36 @@ class BoardMixin(BoardTextEditItemMixin):
         selected_color = QColor(127, 18, 34)
         selected_color2 = QColor(selected_color)
         selected_color2.setAlpha(255-100)
+        gray_color = QColor(255, 255, 255, 255-100)
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
         for slot_id, slot in folder_data.board.link_slots_list.items():
 
             links_count = len(slot)
+            pivot_index = (links_count + 1)/2
 
-            for li in slot:
+            is_odd = bool(links_count % 2 == 1)
+
+            check_to_item = slot[0].to_item
+
+            for n, li in enumerate(slot):
                 _to = li.to_item
                 _from = li.from_item
                 to_pos = _to.calculate_viewport_position(canvas=self)
                 from_pos = _from.calculate_viewport_position(canvas=self)
                 center_pos = (to_pos + from_pos)/2.0
 
+                slot_index_offset = pivot_index - (n + 1)
+
+                v = QVector2D(center_pos - from_pos).normalized()
+                pd1 = QVector2D(-v.y(), v.x())
+                pd2 = QVector2D(v.y(), -v.x())
+
+                if check_to_item is _to:
+                    pd = pd1
+                else:
+                    pd = pd2
 
                 is_near = li.is_near_link(self, pos)
                 if li._selected and not is_near:
@@ -2037,14 +2055,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif is_near:
                     color = self.selection_color
                 else:
-                    color = QColor(255, 255, 255, 255-100)
+                    color = gray_color
                 painter.setPen(QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), Qt.DashLine))
-                painter.drawLine(to_pos, from_pos)
+                if pivot_index == slot_index_offset and is_odd:
+                    painter.drawLine(to_pos, from_pos)
+                else:
+                    center_pos = center_pos + (pd*slot_index_offset*30).toPointF()
+                    painter.drawLine(to_pos, center_pos)
+                    painter.drawLine(center_pos, from_pos)
 
                 if li.is_directional:
-                    v = QVector2D(center_pos - from_pos).normalized()
-                    pd1 = QVector2D(-v.y(), v.x())
-                    pd2 = QVector2D(v.y(), -v.x())
                     back_d = (-v*20).toPointF()
                     a1 = (pd1*20).toPointF() + back_d + center_pos
                     a2 = (pd2*20).toPointF() + back_d + center_pos
