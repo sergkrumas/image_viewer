@@ -2090,6 +2090,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         painter.setBrush(Qt.NoBrush)
                         painter.drawPath(path)
                         li._path = path
+                        # lowpoly
                         # painter.drawPoint(a)
                         # painter.drawPoint(b)
                         # correction for arrow
