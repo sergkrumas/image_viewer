@@ -263,13 +263,33 @@ class BoardItem():
     def set_tags(self, tags):
         self._tags = tags
 
+    def visible_in_viewport(self, canvas, a, b):
+        # TODO: это надо оптимизировать будет, это не ок
+        viewport_rect = canvas.rect()
+        sides = [
+            QLineF(viewport_rect.topLeft(), viewport_rect.topRight()),
+            QLineF(viewport_rect.topRight(), viewport_rect.bottomRight()),
+            QLineF(viewport_rect.bottomRight(), viewport_rect.bottomLeft()),
+            QLineF(viewport_rect.bottomLeft(), viewport_rect.topLeft())
+        ]
+        line = QLineF(a, b)
+        point = QPointF()
+        for side in sides:
+            result, point = line.intersects(side)
+            if result != QLineF.NoIntersection:
+                return True
+        else:
+            return False
+
     def is_near_link(self, canvas, pos):
+        a = self.from_item.calculate_viewport_position(canvas=canvas)
+        b = self.to_item.calculate_viewport_position(canvas=canvas)
+        if not self.visible_in_viewport(canvas, a, b):
+            return False
         if self._is_curved_link:
             return True
         else:
-            return self.segment_dist(
-                self.from_item.calculate_viewport_position(canvas=canvas),
-                self.to_item.calculate_viewport_position(canvas=canvas),
+            return self.segment_dist(a, b,
                 pos,
                 self.LINK_ACTIVATION_DIST,
             )
@@ -1991,22 +2011,25 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.links_draw_before_items and pre:
             return
 
+        selected_color = QColor(127, 18, 34)
+        selected_color2 = QColor(selected_color)
+        selected_color2.setAlpha(255-100)
+
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
         for slot_id, slot in folder_data.board.link_slots_list.items():
 
-            for li in slot:
-                is_near = li.is_near_link(self, pos)
+            links_count = len(slot)
 
+            for li in slot:
                 _to = li.to_item
                 _from = li.from_item
                 to_pos = _to.calculate_viewport_position(canvas=self)
                 from_pos = _from.calculate_viewport_position(canvas=self)
                 center_pos = (to_pos + from_pos)/2.0
 
-                selected_color = QColor(127, 18, 34)
-                selected_color2 = QColor(selected_color)
-                selected_color2.setAlpha(255-100)
+
+                is_near = li.is_near_link(self, pos)
                 if li._selected and not is_near:
                     color = selected_color2
                 elif li._selected and is_near:
@@ -2028,9 +2051,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.drawLine(center_pos, a2)
                     painter.drawLine(center_pos, a1)
 
-            links_count = f'{len(slot)}'
+            links_count_str = f'{links_count}'
 
-            count_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, links_count)
+            count_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, links_count_str)
             size = max(count_rect.width(), count_rect.height())
             count_rect.setWidth(size)
             count_rect.setHeight(size)
@@ -2040,7 +2063,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(Qt.NoPen)
             painter.drawEllipse(count_rect)
             painter.setPen(QPen(Qt.white, 1))
-            painter.drawText(count_rect, Qt.AlignVCenter | Qt.AlignHCenter, links_count)
+            painter.drawText(count_rect, Qt.AlignVCenter | Qt.AlignHCenter, links_count_str)
 
     def draw_selection(self, painter, folder_data):
         painter.save()
