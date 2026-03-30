@@ -2309,7 +2309,14 @@ class BoardMixin(BoardTextEditItemMixin):
             font.setPixelSize(30)
             painter.setFont(font)
 
-            label_text = board_item.label
+            item_folder_data = getattr(board_item, 'item_folder_data', None)
+            if item_folder_data:
+                item_folder_data = board_item.item_folder_data
+                board = item_folder_data.board
+                items_count = len(board.items_list)
+                label_text = f'({items_count}) {board_item.label}'
+            else:
+                label_text = board_item.label
             label_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, label_text)
             # для отрисовки внутри board_item.get_transform_obj
             # pos = (item_rect.topLeft() + item_rect.topRight())/2.0
