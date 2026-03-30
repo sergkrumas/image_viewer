@@ -1666,13 +1666,14 @@ class BoardMixin(BoardTextEditItemMixin):
                     item = bi
                     break
             if item is None:
+                self.show_center_label(_("Place mouse cursor on item!"), error=True)
                 return
 
             case1 = item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
             case2 = item.type == BoardItem.types.ITEM_NODE
             case3 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
             if not (case1 or case2 or case3):
-                msg = _("You can dive inside groups, folders and animated items only!")
+                msg = _("You can dive inside groups, folders, nodes and animated items only!")
                 self.show_center_label(msg, error=True)
                 return
 
@@ -1721,9 +1722,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.root_folder = cf
                 fd.board.root_item = item
 
-            else:
-                self.show_center_label(_("Place mouse cursor on item!"), error=True)
-                return
+
+
         if BOARD_FOLDER_DATA is not None:
             self.board_make_board_current(BOARD_FOLDER_DATA)
             if not back_to_referer:
