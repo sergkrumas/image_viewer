@@ -388,11 +388,11 @@ class AppMixin():
         msgBox.setWindowTitle(_('Fatal Error!'))
         msgBox.setIcon(QMessageBox.Warning)
         msgBox.setText(msg)
-        yes_btn = msgBox.addButton(_('Yes'), QMessageBox.YesRole)
         if open_button:
-            open_btn = msgBox.addButton(_('Open'), QMessageBox.ActionRole)
+            open_btn = msgBox.addButton(_('Open file'), QMessageBox.NoRole)
         else:
             open_btn = ...
+        yes_btn = msgBox.addButton(_('Yes'), QMessageBox.YesRole)
         no_btn = msgBox.addButton(_('No'), QMessageBox.NoRole)
         msgBox.exec()
         btn = msgBox.clickedButton()
