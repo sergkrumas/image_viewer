@@ -4683,15 +4683,11 @@ class BoardMixin(BoardTextEditItemMixin):
             area = bi.get_selection_area(canvas=self).boundingRect()
             for po in RCS.selection_points:
                 if area.contains(po):
-                    print('.............................')
                     im.append(bi)
 
         for bi in items:
             if bi not in im:
                 check_polygon_point_inside_selection_area(bi)
-                # if bi.get_selection_area(canvas=self).intersects(RCS.selection_points):
-                #     # bi._selected = True
-                #     im.append(bi)
 
         def check_near_link(li):
             # TODO: это конечно полный провал,
