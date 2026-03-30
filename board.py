@@ -1673,7 +1673,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label(msg, error=True)
                 return
 
-            if hasattr(item, 'item_folder_data'):
+            item_folder_data = getattr(item, 'item_folder_data', None)
+            if item_folder_data:
                 BOARD_FOLDER_DATA = item.item_folder_data
 
             elif case2:
