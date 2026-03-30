@@ -1711,16 +1711,14 @@ class BoardMixin(BoardTextEditItemMixin):
                     offset += QPointF(pixmap.width(), 0)
                 self.LibraryData().make_thumbnails_and_previews(fd, None, from_board_items=True)
 
-
                 self.build_board_bounding_rect(fd)
-
                 fd.previews_done = True
                 fd.board.ready = True
                 fd.board.root_folder = cf
-                fd.board.root_item = bi
+                fd.board.root_item = item
 
             else:
-                self.show_center_label(_("Place cursor above a group item!"), error=True)
+                self.show_center_label(_("Place mouse cursor on item!"), error=True)
                 return
         if BOARD_FOLDER_DATA is not None:
             self.board_make_board_current(BOARD_FOLDER_DATA)
