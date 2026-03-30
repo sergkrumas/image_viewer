@@ -4727,7 +4727,8 @@ class BoardMixin(BoardTextEditItemMixin):
             item_magazin = list(self.item_magazin)
             # включаем очистку принудительно,
             # если будут создаваться линки, ибо уже надоело
-            RCS.clear_selection = bool(item_magazin)
+            if item_magazin:
+                RCS.clear_selection = True
             for first, second in zip(item_magazin, item_magazin[1:]):
                 self.board_create_link_item(first, second)
         self.item_magazin.clear()
