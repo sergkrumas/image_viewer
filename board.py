@@ -1666,8 +1666,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
             case1 = item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
-            case2 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
-            case3 = item.type == BoardItem.types.ITEM_NODE
+            case2 = item.type == BoardItem.types.ITEM_NODE
+            case3 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
             if not (case1 or case2 or case3):
                 msg = _("You can dive inside groups, folders and animated items only!")
                 self.show_center_label(msg, error=True)
@@ -1675,9 +1675,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if item is not None and hasattr(item, 'item_folder_data'):
                 BOARD_FOLDER_DATA = item.item_folder_data
-            elif case3:
-                pass
             elif case2:
+                pass
+            elif case3:
                 BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
 
