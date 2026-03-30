@@ -313,6 +313,10 @@ class BoardItem():
             projection = v1 + factor * (v2 - v1)
             return projection, factor
 
+        seg = b-a
+        if dot(seg, seg) == 0.0:
+            return False
+
         m, factor = get_projection(pos, a, b)
         dist = QVector2D(m-pos).length()
 
@@ -4638,11 +4642,19 @@ class BoardMixin(BoardTextEditItemMixin):
         items = cf.board.items_list
         im = self.item_magazin
 
+        def check_polygon_point_inside_selection_area(bi):
+            area = bi.get_selection_area(canvas=self).boundingRect()
+            for po in RCS.selection_points:
+                if area.contains(po):
+                    print('.............................')
+                    im.append(bi)
+
         for bi in items:
             if bi not in im:
-                if bi.get_selection_area(canvas=self).intersects(RCS.selection_points):
-                    # bi._selected = True
-                    im.append(bi)
+                check_polygon_point_inside_selection_area(bi)
+                # if bi.get_selection_area(canvas=self).intersects(RCS.selection_points):
+                #     # bi._selected = True
+                #     im.append(bi)
 
         def check_near_link(li):
             # TODO: это конечно полный провал,
