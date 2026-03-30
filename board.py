@@ -2044,7 +2044,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
-        for slot_id, slot in folder_data.board.link_slots_list.items():
+        for slot_id, slot in folder_data.board._link_slots_list.items():
             if not slot:
                 continue
 
@@ -3453,7 +3453,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # add to slot
         indexes = (from_item.board_index, to_item.board_index)
         ordered_indexes_key = (min(indexes), max(indexes))
-        link_slot = board.link_slots_list[ordered_indexes_key]
+        link_slot = board._link_slots_list[ordered_indexes_key]
         link_slot.append(li)
         li._slot = link_slot
         self.update()
