@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2026-03-30 18:56+0300\n"
-"PO-Revision-Date: 2026-03-30 18:56+0300\n"
+"PO-Revision-Date: 2026-03-30 20:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -516,7 +516,7 @@ msgstr "Доска виртуальной папки: {}"
 
 #: board.py:2701
 msgid "Board folder: {}"
-msgstr "Папка доски {}"
+msgstr "Папка этой доски: {}"
 
 #: board.py:2704
 msgid "File-plugin name: {}"
