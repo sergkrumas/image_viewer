@@ -4651,14 +4651,16 @@ class BoardMixin(BoardTextEditItemMixin):
             for po in RCS.selection_points:
                 if li.is_near_link(self, po):
                     li._selected = True
-                    break
+                    # раньше тут стоял break, но он, кажется,
+                    # выходит и из внешнего цикла тоже
+                    return
 
         for li in cf.board.link_items_list:
-            if li._is_curved_link:
-                check_near_link(li)
+            check_near_link(li)
+            # if li._is_curved_link:
 
-            elif li.get_selection_line(canvas=self).intersects(RCS.selection_points):
-                li._selected = True
+            # elif li.get_selection_line(canvas=self).intersects(RCS.selection_points):
+            #     li._selected = True
 
     def right_click_selection_pressEvent(self, event, shift_pressed):
         RCS = self.RCS
