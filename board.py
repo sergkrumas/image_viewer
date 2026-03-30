@@ -1490,7 +1490,8 @@ class BoardMixin(BoardTextEditItemMixin):
         board_folder_data.update({'is_virtual':  fd.virtual})
         board_folder_data.update({'folder_name': fd.folder_name})
         # сохранение атрибутов доски
-        self.board_object_attributes_to_serial(board, board_attributes, exclude=('items_list', 'user_points'))
+        self.board_object_attributes_to_serial(board, board_attributes,
+                                    exclude=('items_list', 'user_points', 'link_items_list'))
 
         # сохранение юзер-поинтов отдельно,
         # т.к. QPoinF не сериализуется самостоятельно в tuple
