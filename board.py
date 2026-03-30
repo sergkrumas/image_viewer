@@ -1673,7 +1673,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label(msg, error=True)
                 return
 
-            if item is not None and hasattr(item, 'item_folder_data'):
+            if hasattr(item, 'item_folder_data'):
                 BOARD_FOLDER_DATA = item.item_folder_data
             elif case2:
                 pass
