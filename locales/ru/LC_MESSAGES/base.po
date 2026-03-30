@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-03-30 18:45+0300\n"
-"PO-Revision-Date: 2026-03-30 18:51+0300\n"
+"POT-Creation-Date: 2026-03-30 18:56+0300\n"
+"PO-Revision-Date: 2026-03-30 18:56+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1713,13 +1713,9 @@ msgstr ""
 "Информация о краше сохранена в файл\n"
 "\t{0}"
 
-#: _viewer.pyw:391
+#: _viewer.pyw:395
 msgid "Yes"
 msgstr "Да"
-
-#: _viewer.pyw:393
-msgid "Open"
-msgstr "Открыть"
 
 #: _viewer.pyw:396
 msgid "No"
@@ -1800,3 +1796,7 @@ msgstr "Добавить айтем-заметку"
 #: control_panel.py:614
 msgid "Go to the link"
 msgstr "Пройтись по ссылке в заметке"
+
+#: _viewer.pyw:392
+msgid "Open file"
+msgstr "Открыть файл"

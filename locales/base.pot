@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-30 18:45+0300\n"
+"POT-Creation-Date: 2026-03-30 18:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,12 +58,12 @@ msgstr ""
 msgid "Fatal Error!"
 msgstr ""
 
-#: _viewer.pyw:391
-msgid "Yes"
+#: _viewer.pyw:392
+msgid "Open file"
 msgstr ""
 
-#: _viewer.pyw:393
-msgid "Open"
+#: _viewer.pyw:395
+msgid "Yes"
 msgstr ""
 
 #: _viewer.pyw:396
