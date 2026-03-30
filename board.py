@@ -1649,11 +1649,11 @@ class BoardMixin(BoardTextEditItemMixin):
             return
         self.board_TextElementDeactivateEditMode()
         cf = self.LibraryData().current_folder()
-        __folder_data = None
+        BOARD_FOLDER_DATA = None
         if back_to_referer:
             referer = cf.board.referer_board_folder
             if referer is not None:
-                __folder_data = referer
+                BOARD_FOLDER_DATA = referer
         else:
             item = None
             for bi in cf.board.items_list:
@@ -1667,14 +1667,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
             case1 = item.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]
             case2 = item.type == BoardItem.types.ITEM_IMAGE and item.animated
-            if not (case1 or case2):
+            case3 = item.type == BoardItem.types.ITEM_NODE
+            if not (case1 or case2 or case3):
                 msg = _("You can dive inside groups, folders and animated items only!")
                 self.show_center_label(msg, error=True)
                 return
+
             if item is not None and hasattr(item, 'item_folder_data'):
-                __folder_data = item.item_folder_data
+                BOARD_FOLDER_DATA = item.item_folder_data
+            elif case3:
+                pass
             elif case2:
-                __folder_data = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
 
                 movie = item.movie
@@ -1710,11 +1714,11 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 self.show_center_label(_("Place cursor above a group item!"), error=True)
                 return
-        if __folder_data is not None:
-            self.board_make_board_current(__folder_data)
+        if BOARD_FOLDER_DATA is not None:
+            self.board_make_board_current(BOARD_FOLDER_DATA)
             if not back_to_referer:
                 self.LibraryData().current_folder().board.referer_board_folder = cf
-            self.prepare_selection_box_widget(__folder_data)
+            self.prepare_selection_box_widget(BOARD_FOLDER_DATA)
         else:
             self.show_center_label(_("No place to return"), error=True)
         self.update()
