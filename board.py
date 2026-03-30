@@ -1844,7 +1844,10 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.layout_scale_y = board_item.scale_y
 
     def board_progressive_layout_start(self, folder_data):
-        pass
+        self.board_set_window_title(folder_data)
+
+    def board_set_window_title(self, folder_data):
+        self.set_window_title(folder_data.folder_path)
 
     def board_progressive_layout_finish(self, folder_data):
         if self.is_board_page_active():
@@ -1961,6 +1964,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.STNG.board_move_to_current_on_first_open:
             if folder_data.current_image().board_item is not None:
                 self.board_fit_content_on_screen(folder_data.current_image())
+
+        self.board_set_window_title(folder_data)
         self.update()
 
     def board_timer_handler(self):

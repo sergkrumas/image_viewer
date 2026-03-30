@@ -957,7 +957,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 -1,
                 thread_instance.ui_name,
                 LibraryData().total_TIME,
-                None,
+                folder_data,
                 None,
                 do_progressive_grid_layout,
                 do_progressive_board_layout,
