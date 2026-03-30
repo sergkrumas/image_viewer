@@ -234,6 +234,7 @@ class BoardItem():
         self.is_directional = True
         self._node_ui_rect = None
         self._is_curved_link = False
+        self._snapshot = None
 
         self.image_source_url = None
 
@@ -1651,8 +1652,10 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         BOARD_FOLDER_DATA = None
         if back_to_referer:
-            referer = cf.board.referer_board_folder
+            board = cf.board
+            referer = board.referer_board_folder
             if referer is not None:
+                board.root_item._snapshot = self.grab()
                 BOARD_FOLDER_DATA = referer
         else:
             item = None
@@ -2331,6 +2334,16 @@ class BoardMixin(BoardTextEditItemMixin):
             alignment = Qt.AlignVCenter | Qt.AlignHCenter
             painter.drawText(label_rect, alignment, label_text)
             painter.setFont(before_font)
+
+
+            snapshot = board_item._snapshot
+            if is_cursor_over and snapshot:
+                painter.setOpacity(0.5)
+                place_rect = self.rect()
+                place_rect.setTopLeft(place_rect.center())
+                place_rect = fit_rect_into_rect(QRectF(snapshot.rect()), place_rect, float_mode=True)
+                painter.drawPixmap(place_rect, snapshot, QRectF(QPointF(0, 0), QSizeF(snapshot.size())))
+                painter.setOpacity(1.0)
 
         else:
 
