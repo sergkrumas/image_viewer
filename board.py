@@ -1675,8 +1675,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if hasattr(item, 'item_folder_data'):
                 BOARD_FOLDER_DATA = item.item_folder_data
+
             elif case2:
-                pass
+                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+                item.item_folder_data = fd
+                self.build_board_bounding_rect(fd)
+                fd.previews_done = True
+                fd.board.ready = True
+                fd.board.root_folder = cf
+                fd.board.root_item = item
+
             elif case3:
                 BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
