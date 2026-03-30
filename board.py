@@ -1245,6 +1245,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_recreate_board_from_serial(self, board_dict, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
+        board_link_items = board_dict['board_link_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
         board_nonAutoSerialized = board_dict.get('board_nonAutoSerialized', {})
@@ -1269,9 +1270,15 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_SetCallbacks(fd)
         # айтемы доски
         for board_item_attributes in board_items:
-            board_item = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(board_item, board_item_attributes, fd=fd)
-            fd.board.items_list.append(board_item)
+            bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+            self.board_serial_to_object_attributes(bi, board_item_attributes, fd=fd)
+            fd.board.items_list.append(bi)
+        # линки доски
+        for link_item_attributes in board_link_items:
+            li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+            self.board_serial_to_object_attributes(li, link_item_attributes, fd=fd)
+            fd.board.link_items_list.append(li)
+            self.board_add_link_to_slot(fd, li)
 
         fd.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
@@ -1286,6 +1293,13 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(fd)
 
         return fd
+
+    def board_find_board_item_with_board_index(self, fd, index):
+        for bi in fd.board.items_list:
+            if bi.board_index == index:
+                return bi
+        else:
+            return None
 
     def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
@@ -1369,6 +1383,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
                 raise Exception(f"Unable to handle attribute, {status}")
 
+            if attr_name in ['from_item', 'to_item']:
+                if attr_value is not None:
+                    attr_value = self.board_find_board_item_with_board_index(fd, attr_value)
+
             setattr(obj, attr_name, attr_value)
 
         if isinstance(obj, self.BoardItem):
@@ -1407,6 +1425,14 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_type in ['_tags', '_comments']:
                 attr_data = []
                 attr_type = 'list'
+
+            elif attr_name in ['from_item', 'to_item']:
+                if attr_value is None:
+                    attr_data = None
+                    attr_type = 'NoneType'
+                else:
+                    attr_data = attr_value.board_index
+                    attr_type = 'int'
 
             elif isinstance(attr_value, self.FileData):
                 attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
@@ -1484,6 +1510,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_base = dict()
         board_attributes = list()
         board_items = list()
+        board_link_items = list()
         board_folder_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
@@ -1509,10 +1536,17 @@ class BoardMixin(BoardTextEditItemMixin):
             board_items.append(new_item_base)
             self.board_object_attributes_to_serial(item, new_item_base)
 
+        # сохранение линков доски
+        for item in board.link_items_list:
+            link_item_base = list()
+            board_link_items.append(link_item_base)
+            self.board_object_attributes_to_serial(item, link_item_base)
+
         board_nonAutoSerialized = self.board_dumpNonAutoSerialized(board.nonAutoSerialized)
 
         board_base.update({
             'board_items': board_items,
+            'board_link_items': board_link_items,
             'board_attributes': board_attributes,
             'board_folder_data': board_folder_data,
             'board_nonAutoSerialized': board_nonAutoSerialized,
@@ -3443,20 +3477,22 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cf)
         # self.board_select_items([bi])
 
+    def board_add_link_to_slot(self, folder_data, li):
+        indexes = (li.from_item.board_index, li.to_item.board_index)
+        ordered_indexes_key = (min(indexes), max(indexes))
+        link_slot = folder_data.board._link_slots_list[ordered_indexes_key]
+        link_slot.append(li)
+        li._slot = link_slot
+
     def board_create_link_item(self, from_item, to_item):
         cf = self.LibraryData().current_folder()
-        board = cf.board
-        # link
+        # creating link
         li = BoardItem(BoardItem.types.ITEM_LINK)
         li.from_item = from_item
         li.to_item = to_item
-        board.link_items_list.append(li)
+        cf.board.link_items_list.append(li)
         # add to slot
-        indexes = (from_item.board_index, to_item.board_index)
-        ordered_indexes_key = (min(indexes), max(indexes))
-        link_slot = board._link_slots_list[ordered_indexes_key]
-        link_slot.append(li)
-        li._slot = link_slot
+        self.board_add_link_to_slot(cf, li)
         self.update()
 
     def board_change_node_radius(self, event, scroll_value):
