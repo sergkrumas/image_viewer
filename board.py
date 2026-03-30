@@ -4637,11 +4637,12 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         items = cf.board.items_list
         im = self.item_magazin
-        for board_item in items:
-            if board_item.get_selection_area(canvas=self).intersects(RCS.selection_points):
-                # board_item._selected = True
-                if board_item not in im:
-                    im.append(board_item)
+
+        for bi in items:
+            if bi not in im:
+                if bi.get_selection_area(canvas=self).intersects(RCS.selection_points):
+                    # bi._selected = True
+                    im.append(bi)
 
         def check_near_link(li):
             # TODO: это конечно полный провал,
