@@ -358,9 +358,8 @@ class TaggingLibraryDataMixin():
                     self.update_or_create_tag_virtual_folder(im_data, tag, delete=True)
 
         # обновление тегов у board_item
-        tags_list = self.get_tags_for_file_data(im_data)
-        bi = im_data.board_item
-        if bi is not None:
+        tags_list = self.get_tags_for_file_data(im_data) 
+        for bi in im_data.board_items:
             bi.set_tags(tags_list[:])
 
         return tags_list

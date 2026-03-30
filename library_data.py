@@ -980,7 +980,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             start_time = time.time()
             if from_board_items:
-                source = file_data.board_item.pixmap
+                source = file_data.board_items[0].pixmap
                 file_data.preview_error = False
             elif file_data.is_audio_video_filetype:
                 source = Globals.AUDIO_VIDEO_PIXMAP
@@ -1861,7 +1861,7 @@ class FileData():
 
         self._waterfall_preview_column_absolute_offset = 0
 
-        self.board_item = None
+        self.board_items = []
 
         # UI
         self._touched = False               # обнуляется после отпускания кнопки мыши

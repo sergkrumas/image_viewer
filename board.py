@@ -1332,7 +1332,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 file_data = self.LibraryData().create_file_data(filepath, fd)
                 fd.images_list.append(file_data)
                 obj.file_data = file_data
-                file_data.board_item = obj
+                file_data.board_items.append(obj)
                 file_data.source_width = source_width
                 file_data.source_height = source_height
                 continue # не нужна дальнейшая обработка
@@ -1652,7 +1652,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     fd_bi.pixmap = pixmap
 
                     fd_bi.file_data = create_file_data("", fd_bi)
-                    fd_bi.file_data.board_item = fd_bi
+                    fd_bi.file_data.board_items.append(fd_bi)
                     fd.images_list.append(fd_bi.file_data)
 
                     fd.board.items_list.append(fd_bi)
@@ -1925,7 +1925,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item = BoardItem(item_type, visible=False)
             # linking board and image data
             board_item.file_data = file_data
-            file_data.board_item = board_item
+            file_data.board_items.append(board_item)
             board.items_list.append(board_item)
             # fill attributes and overlays
             board_item.animated_file = file_data.is_animated_file
@@ -1966,7 +1966,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # UX: viewport positioning and scaling
         if self.STNG.board_move_to_current_on_first_open:
-            if folder_data.current_image().board_item is not None:
+            if folder_data.current_image().board_items:
                 self.board_fit_content_on_screen(folder_data.current_image())
 
         self.board_set_window_title(folder_data)
@@ -3218,7 +3218,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if gi is not None:
             item_folder_data = gi.item_folder_data
             im_data = self.LibraryData().delete_current_image(item_folder_data, force=True)
-            bi = im_data.board_item
+            bi = im_data.board_items[0]
             item_folder_data.board.items_list.remove(bi)
 
             current_board.items_list.append(bi)
@@ -3342,7 +3342,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue
             group_board_item_list.append(bi)
             if bi.type is bi.types.ITEM_IMAGE:
-                items_folder.images_list.remove(bi.file_data)
+                # items_folder.images_list.remove(bi.file_data)
                 item_fd.images_list.append(bi.file_data)
                 bi.file_data.folder_data = item_fd
 
@@ -5066,7 +5066,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
         board_item.file_data = file_data
         board_item.image_source_url = source_url
-        file_data.board_item = board_item
+        file_data.board_items.append(board_item)
         current_folder.board.items_list.append(board_item)
         board_item.board_index = self.retrieve_new_board_item_index()
         if place_at_cursor:
@@ -5081,7 +5081,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_fit_content_on_screen(self, file_data, board_item=None, use_selection=False):
 
-        if board_item is None and (file_data is not None) and file_data.board_item is None:
+        if board_item is None and (file_data is not None) and not file_data.board_items:
             self.show_center_label(_("This element is not presented on the board"), error=True)
         else:
             canvas_scale_x = self.canvas_scale_x
@@ -5097,7 +5097,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_item is not None:
                     pass
                 else:
-                    board_item = file_data.board_item
+                    board_item = file_data.board_items[0]
                 content_pos = QPointF(board_item.position.x()*canvas_scale_x, board_item.position.y()*canvas_scale_y)
             viewport_center_pos = self.get_center_position()
 
