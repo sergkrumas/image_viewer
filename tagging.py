@@ -251,7 +251,7 @@ class TaggingLibraryDataMixin():
                             tag.records.append(TagListRecord(md5_str, disk_size, filepath))
                             tag_files.append(filepath)
 
-                folder_data = self.create_folder_data(f'#{name}', tag_files, virtual=True)
+                folder_data = self.create_folder_data(f'#{name}', '', tag_files, virtual=True)
                 folder_data.tag_data = tag
 
                 Vars.TAGS_BASE[id_int] = tag
@@ -282,7 +282,7 @@ class TaggingLibraryDataMixin():
             if not delete:
                 # создать новую папку
                 tag_files = [im_data.filepath, ]
-                folder_data = self.create_folder_data(f'#{tag.name}', tag_files, virtual=True, make_current=False)
+                folder_data = self.create_folder_data(f'#{tag.name}', '', tag_files, virtual=True, make_current=False)
                 folder_data.tag_data = tag
             else:
                 raise Exception("impossible")
