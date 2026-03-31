@@ -1249,6 +1249,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_link_items = board_dict['board_link_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
+        board_files_data = board_dict['board_files_data']
         board_nonAutoSerialized = board_dict.get('board_nonAutoSerialized', {})
 
         is_virtual = board_folder_data['is_virtual']
@@ -1260,40 +1261,48 @@ class BoardMixin(BoardTextEditItemMixin):
             folder_data_path = board_load_filepath
 
         # подготовка перед загрузкой данных
-        fd = self.LibraryData().create_folder_data(folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
+        fod = self.LibraryData().create_folder_data(folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
         if is_virtual:
-            fd.folder_name = folder_name
+            fod.folder_name = folder_name
+        id_to_filedata = dict()
+        for id_key, bfd in board_files_data.items():
+            filepath, source_width, source_height = bfd
+            fid = self.LibraryData().create_file_data(filepath, fod)
+            fid.source_width = source_width
+            fid.source_height = source_height
+            fod.images_list.append(fid)
+            id_to_filedata[int(id_key)] = fid
 
         # ЗАГРУЗКА ДАННЫХ
         # атрибуты доски
         # при загрузке доски могут использоваться колбэки и их нужно установить заранее
-        self.board_serial_to_object_attributes(fd.board, board_attributes)
-        self.board_SetCallbacks(fd)
+        self.board_serial_to_object_attributes(fod.board, board_attributes)
+        self.board_SetCallbacks(fod)
         # айтемы доски
         for board_item_attributes in board_items:
             bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(bi, board_item_attributes, fd=fd)
-            fd.board.items_list.append(bi)
+            self.board_serial_to_object_attributes(bi, board_item_attributes, fd=fod, id_to_filedata=id_to_filedata)
+            fod.board.items_list.append(bi)
         # линки доски
         for link_item_attributes in board_link_items:
             li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(li, link_item_attributes, fd=fd)
-            fd.board.link_items_list.append(li)
-            self.board_add_link_to_slot(fd, li)
+            self.board_serial_to_object_attributes(li, link_item_attributes, fd=fod, id_to_filedata=id_to_filedata)
+            fod.board.link_items_list.append(li)
+            self.board_add_link_to_slot(fod, li)
 
-        fd.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
+        fod.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
-        self.LibraryData().make_thumbnails_and_previews(fd, None)
-        fd.board.ready = True
+        self.LibraryData().make_thumbnails_and_previews(fod, None)
+        fod.board.ready = True
         self.LibraryData().load_board_data() #callbacks are set here
-        found_pi = self.board_FindPlugin(fd.board.plugin_filename)
-        if fd.board.prepareBoardOnFileLoad:
+        found_pi = self.board_FindPlugin(fod.board.plugin_filename)
+        if fod.board.prepareBoardOnFileLoad:
             if found_pi.preparePluginBoard:
                 found_pi.preparePluginBoard(self, found_pi, file_loading=True)
-        self.prepare_selection_box_widget(fd)
-        self.build_board_bounding_rect(fd)
+        self.prepare_selection_box_widget(fod)
+        self.build_board_bounding_rect(fod)
 
-        return fd
+        return fod
 
     def board_find_board_item_with_board_index(self, fd, index):
         for bi in fd.board.items_list:
@@ -1302,7 +1311,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             return None
 
-    def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None):
+    def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None, id_to_filedata=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
 
             if attr_type in ['QPoint']:
@@ -1343,14 +1352,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_value = None
 
             elif attr_type == 'FileData':
-                filepath, source_width, source_height = attr_data
-                file_data = self.LibraryData().create_file_data(filepath, fd)
-                fd.images_list.append(file_data)
-                obj.file_data = file_data
-                file_data.board_items.append(obj)
-                file_data.source_width = source_width
-                file_data.source_height = source_height
-                continue # не нужна дальнейшая обработка
+                attr_value = id_to_filedata[attr_data]
 
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
@@ -1436,7 +1438,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     attr_type = 'int'
 
             elif isinstance(attr_value, self.FileData):
-                attr_data = (attr_value.filepath, attr_value.source_width, attr_value.source_height)
+                attr_data = id(attr_value)
 
             elif isinstance(attr_value, self.FolderData):
                 if isinstance(obj, self.BoardItem):
@@ -1505,8 +1507,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
-    def board_serialize_board_data(self, fd):
-        board = fd.board
+    def board_serialize_board_data(self, fod):
+        board = fod.board
 
         board_base = dict()
         board_attributes = list()
@@ -1516,10 +1518,16 @@ class BoardMixin(BoardTextEditItemMixin):
         board_files_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
+        # сохранение атрибутов папки FolderData
         board_folder_data.update({
-            'is_virtual':  fd.virtual,
-            'folder_name': fd.folder_name,
+            'is_virtual':  fod.virtual,
+            'folder_name': fod.folder_name,
         })
+
+        # сохранение инфы о файлах FileData
+        for fid in fod.images_list:
+            board_files_data[id(fid)] = (fid.filepath, fid.source_width, fid.source_height)
+
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attributes,
                                     exclude=('items_list', 'user_points', 'link_items_list'))
