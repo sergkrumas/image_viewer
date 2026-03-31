@@ -1444,7 +1444,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         attr_data = None
                         attr_type = 'NoneType'
                     elif obj.type == self.BoardItem.types.ITEM_GROUP:
-                        attr_data = self.board_data_to_dict(obj.item_folder_data)
+                        attr_data = self.board_serialize_board_data(obj.item_folder_data)
                     elif obj.type == self.BoardItem.types.ITEM_FOLDER:
                         attr_data = attr_value.folder_path
                     else:
@@ -1505,7 +1505,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
-    def board_data_to_dict(self, fd):
+    def board_serialize_board_data(self, fd):
         board = fd.board
 
         board_base = dict()
@@ -1615,7 +1615,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().save_board_data()
 
         data_base = dict()
-        data_base['main_board'] = self.board_data_to_dict(cf)
+        data_base['main_board'] = self.board_serialize_board_data(cf)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG.use_cbor2_instead_of_json:
