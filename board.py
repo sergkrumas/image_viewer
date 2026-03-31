@@ -2710,7 +2710,7 @@ class BoardMixin(BoardTextEditItemMixin):
         lines = []
         board = current_folder.board
         if current_folder.virtual:
-            lines.append(_('Virtual folder board: {}').format(current_folder.folder_path))
+            lines.append(_('Virtual folder board: {}').format(current_folder.get_label_or_path()))
         else:
             lines.append(_('Board folder: {}').format(current_folder.folder_path))
         lines.append(_('Generation time: {}').format(datetime.datetime.fromtimestamp(board.generation_time).strftime("%d.%m.%Y %H:%M")))
@@ -2725,11 +2725,11 @@ class BoardMixin(BoardTextEditItemMixin):
         lines.append('')
 
         if board.referer_board_folder is not None:
-            lines.append(_("You've entered this board from the board of folder {}").format(board.referer_board_folder.folder_path))
+            lines.append(_("You've entered this board from the board of folder '{}'").format(board.referer_board_folder.get_label_or_path()))
         if board.root_folder is not None:
-            lines.append(_("Parent folder of this board {}").format(board.root_folder.folder_path))
+            lines.append(_("Parent folder of this board '{}'").format(board.root_folder.folder_path))
         if board.root_item is not None:
-            lines.append(_("This board parent item title {}").format(board.root_item.label))
+            lines.append(_("This board parent item title '{}'").format(board.root_item.label))
 
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
