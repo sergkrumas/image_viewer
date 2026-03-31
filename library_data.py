@@ -148,9 +148,9 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def get_fav_folder(self):
         return self.fav_folder
 
-    def create_folder_data(self, folder_path, files, image_filepath=None, virtual=False, library_loading=False, make_current=True):
+    def create_folder_data(self, folder_label, folder_path, files, image_filepath=None, virtual=False, library_loading=False, make_current=True):
 
-        folder_data = FolderData(folder_path, files,
+        folder_data = FolderData(folder_label, folder_path, files,
             image_filepath=image_filepath,
             virtual=virtual,
             library_loading=library_loading,
@@ -202,7 +202,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # sometimes self._current_folder returns None and it becomes the cause of applicaton crash at startup
         cl = self.__class__
         if not hasattr(cl, 'none_folder'):
-            cl.none_folder = FolderData("", [], virtual=True)
+            cl.none_folder = FolderData("NONE FOLDER", "", [], virtual=True)
         return cl.none_folder
 
     def current_folder(self):
@@ -701,7 +701,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def load_fav_list(self):
         files, __ = self.get_fav_files_list()
-        self.fav_folder = self.create_folder_data(_("Favorites"), files, image_filepath=None, virtual=True)
+        self.fav_folder = self.create_folder_data(_("Favorites"), "", files, image_filepath=None, virtual=True)
 
     def store_fav_list(self):
         images = self.get_fav_virtual_folder().images_list
@@ -721,7 +721,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def create_empty_virtual_folder(self):
         # создаётся одна виртуальная папка, чтобы приложение не крашилось при перелистывании страниц,
         # ведь код каждой из страниц подразумевает, что существует какая-то папка
-        self.empty_virtual_folder = self.create_folder_data(_("OnAppStart virtual folder"), [], image_filepath=None, virtual=True, make_current=True)
+        self.empty_virtual_folder = self.create_folder_data(_("OnAppStart virtual folder"), "", [], image_filepath=None, virtual=True, make_current=True)
         self.empty_virtual_folder.previews_done = True
         return self.empty_virtual_folder
 
@@ -1188,7 +1188,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         # creation
         if files:
-            fd = LibraryData().create_folder_data(folder_path, files, image_filepath=image_path, library_loading=library_loading)
+            fd = LibraryData().create_folder_data(folder_path[:], folder_path, files, image_filepath=image_path, library_loading=library_loading)
             if modifiers:
                 fd.set_modifiers(modifiers)
         else:
@@ -1291,7 +1291,7 @@ class FolderData():
         obj.id = cls.CURRENT_ID
         cls.CURRENT_ID += 1
 
-    def __init__(self, folder_path, files,
+    def __init__(self, folder_label, folder_path, files,
                     image_filepath=None,
                     virtual=False,
                     library_loading=False):
@@ -1302,8 +1302,13 @@ class FolderData():
 
         self.virtual = virtual
         self.tag_data = None
-        self.folder_path = os.path.normpath(folder_path)
+        if folder_path:
+            # os.path.normpath makes "" in folder_path to "."
+            self.folder_path = os.path.normpath(folder_path)
+        else:
+            self.folder_path = ""
         self.folder_name = os.path.basename(folder_path)
+        self.folder_label = folder_label[:]
         self._index = -1
         self.before_index = -1
         self.images_list = []
@@ -1337,6 +1342,9 @@ class FolderData():
             self._index = 0
 
         self.PreviewsGrid.set_empty_grids(self)
+
+    def get_label_or_path(self):
+        return self.folder_path or self.folder_label
 
     def check_insert_position(self, index):
         cf = self
