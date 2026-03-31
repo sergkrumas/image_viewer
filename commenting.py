@@ -65,7 +65,7 @@ class CommentingLibraryDataMixin():
                 print(to_print)
         files = list(set(files))
 
-        self.comments_folder = self.create_folder_data(_("Commented images"), files, image_filepath=None, virtual=True)
+        self.comments_folder = self.create_folder_data(_("Commented images"), "", files, image_filepath=None, virtual=True)
 
     def store_comments_list(self):
         elements = []
