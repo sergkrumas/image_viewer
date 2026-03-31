@@ -2340,6 +2340,8 @@ class BoardMixin(BoardTextEditItemMixin):
             if is_cursor_over and snapshot:
                 painter.setOpacity(0.5)
                 place_rect = self.rect()
+                # два раза вызывается setTopLeft - это не опечатка
+                place_rect.setTopLeft(place_rect.center())
                 place_rect.setTopLeft(place_rect.center())
                 place_rect = fit_rect_into_rect(QRectF(snapshot.rect()), place_rect, float_mode=True)
                 painter.drawPixmap(place_rect, snapshot, QRectF(QPointF(0, 0), QSizeF(snapshot.size())))
