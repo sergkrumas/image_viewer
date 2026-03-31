@@ -4630,7 +4630,8 @@ class MainWindow(QMainWindow,
 
             text_rect = QRect(left, int(scroll_offset + 24+n*H), LEFT_COL_WIDTH-left, 200)
             images_list_len = len(folder_data.images_list)
-            text = f"{images_list_len} {folder_data.folder_path}"
+            folder_label = folder_data.folder_path or folder_data.folder_label
+            text = f"{images_list_len} {folder_label}"
             painter.drawText(text_rect, Qt.AlignLeft, text)
 
             if folder_data.images_list:
@@ -5556,7 +5557,7 @@ class MainWindow(QMainWindow,
             # self.hide_center_label()
             # import time
             # time = time.time()
-            # LibraryData().create_folder_data(f"{time}", [], virtual=True)
+            # LibraryData().create_folder_data(f"{time}", '', [], virtual=True)
 
         elif check_scancode_for(event, Qt.Key_Q) and not self.active_element:
             LibraryData().show_finder_window()
