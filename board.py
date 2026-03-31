@@ -1513,10 +1513,13 @@ class BoardMixin(BoardTextEditItemMixin):
         board_items = list()
         board_link_items = list()
         board_folder_data = dict()
+        board_files_data = dict()
 
         # СОХРАНЕНИЕ ДАННЫХ
-        board_folder_data.update({'is_virtual':  fd.virtual})
-        board_folder_data.update({'folder_name': fd.folder_name})
+        board_folder_data.update({
+            'is_virtual':  fd.virtual,
+            'folder_name': fd.folder_name,
+        })
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attributes,
                                     exclude=('items_list', 'user_points', 'link_items_list'))
@@ -1550,6 +1553,7 @@ class BoardMixin(BoardTextEditItemMixin):
             'board_link_items': board_link_items,
             'board_attributes': board_attributes,
             'board_folder_data': board_folder_data,
+            'board_files_data': board_files_data,
             'board_nonAutoSerialized': board_nonAutoSerialized,
         })
         return board_base
