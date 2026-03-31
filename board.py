@@ -1524,16 +1524,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_object_attributes_to_serial(board, board_attributes,
                                     exclude=('items_list', 'user_points', 'link_items_list'))
 
-        # сохранение юзер-поинтов отдельно,
-        # т.к. QPointF не сериализуется самостоятельно в tuple
-        user_points_serialized = []
-        for user_point in board.user_points:
-            pos = user_point[0]
-            scale_x = user_point[1]
-            scale_y = user_point[2]
-            user_points_serialized.append(((pos.x(), pos.y()), scale_x, scale_y))
-        board_attributes.append(('user_points', 'BoardUserPointsList', user_points_serialized))
-
         # сохранение айтемов доски
         for item in board.items_list:
             new_item_base = list()
@@ -1545,6 +1535,16 @@ class BoardMixin(BoardTextEditItemMixin):
             link_item_base = list()
             board_link_items.append(link_item_base)
             self.board_object_attributes_to_serial(item, link_item_base)
+
+        # сохранение юзер-поинтов отдельно,
+        # т.к. QPointF не сериализуется самостоятельно в tuple
+        user_points_serialized = []
+        for user_point in board.user_points:
+            pos = user_point[0]
+            scale_x = user_point[1]
+            scale_y = user_point[2]
+            user_points_serialized.append(((pos.x(), pos.y()), scale_x, scale_y))
+        board_attributes.append(('user_points', 'BoardUserPointsList', user_points_serialized))
 
         board_nonAutoSerialized = self.board_dumpNonAutoSerialized(board.nonAutoSerialized)
 
