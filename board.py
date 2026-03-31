@@ -1175,7 +1175,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(
-            _("{0} Virtual Folder").format(plugin_name),
+            _("{0} Virtual Folder").format(plugin_name), "",
             [], image_filepath=None, make_current=False, virtual=True)
         fd.board.ready = True
         return fd
@@ -1261,7 +1261,7 @@ class BoardMixin(BoardTextEditItemMixin):
             folder_data_path = board_load_filepath
 
         # подготовка перед загрузкой данных
-        fod = self.LibraryData().create_folder_data(folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
+        fod = self.LibraryData().create_folder_data(folder_data_path[:], folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
         if is_virtual:
             fod.folder_name = folder_name
         id_to_filedata = dict()
@@ -1359,7 +1359,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     if obj.type == self.BoardItem.types.ITEM_FOLDER:
                         folder_path = attr_data
                         files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
-                        item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
+                        item_folder_data = self.LibraryData().create_folder_data(folder_path[:], folder_path, files, image_filepath=None, make_current=False)
                         self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
                         obj.item_folder_data = item_folder_data
                     elif obj.type in [self.BoardItem.types.ITEM_GROUP, self.BoardItem.types.ITEM_NODE]:
@@ -1694,7 +1694,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 BOARD_FOLDER_DATA = item.item_folder_data
 
             elif case2:
-                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
                 self.build_board_bounding_rect(fd)
                 fd.previews_done = True
@@ -1703,7 +1703,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.root_item = item
 
             elif case3:
-                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
 
                 movie = item.movie
@@ -3270,7 +3270,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if bi.board_group_index == 0:
                 return bi
 
-        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
 
         gi.item_folder_data = item_folder_data
@@ -3328,7 +3328,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if not virtual_allowed and current_folder_data.virtual:
             self.show_center_label(_("You cannot create group-item inside virtual folder board"), error=True)
             return
-        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), [], image_filepath=None, make_current=False, virtual=True)
+        item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
         gi.item_folder_data = item_folder_data
         gi.board_index = self.retrieve_new_board_item_index()
@@ -3369,7 +3369,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if folder_path:
             with self.show_longtime_process_ongoing(self, _("Loading folder to the board")):
                 files = self.LibraryData().list_interest_files(folder_path, deep_scan=False, all_allowed=False)
-                item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
+                item_folder_data = self.LibraryData().create_folder_data(folder_path[:], folder_path, files, image_filepath=None, make_current=False)
                 self.LibraryData().make_thumbnails_and_previews(item_folder_data, None, do_progressive_grid_layout=True, do_progressive_board_layout=True)
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
