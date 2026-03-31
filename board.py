@@ -1362,14 +1362,14 @@ class BoardMixin(BoardTextEditItemMixin):
                         item_folder_data = self.LibraryData().create_folder_data(folder_path, files, image_filepath=None, make_current=False)
                         self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
                         obj.item_folder_data = item_folder_data
-                    elif obj.type == self.BoardItem.types.ITEM_GROUP:
+                    elif obj.type in [self.BoardItem.types.ITEM_GROUP, self.BoardItem.types.ITEM_NODE]:
                         board_dict = attr_data
-                        _folder_data = self.board_recreate_board_from_serial(board_dict)
-                        obj.item_folder_data = _folder_data
-                        _folder_data.board.root_folder = fd
-                        _folder_data.board.root_item = obj
-                        self.LibraryData().make_thumbnails_and_previews(_folder_data, None)
-                        _folder_data.board.ready = True
+                        fod = self.board_recreate_board_from_serial(board_dict)
+                        obj.item_folder_data = fod
+                        fod.board.root_folder = fd
+                        fod.board.root_item = obj
+                        self.LibraryData().make_thumbnails_and_previews(fod, None)
+                        fod.board.ready = True
                 continue
 
             elif attr_type == 'BoardUserPointsList':
@@ -1445,7 +1445,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     if obj.type == self.BoardItem.types.ITEM_IMAGE:
                         attr_data = None
                         attr_type = 'NoneType'
-                    elif obj.type == self.BoardItem.types.ITEM_GROUP:
+                    elif obj.type in [self.BoardItem.types.ITEM_GROUP, self.BoardItem.types.ITEM_NODE]:
                         attr_data = self.board_serialize_board_data(obj.item_folder_data)
                     elif obj.type == self.BoardItem.types.ITEM_FOLDER:
                         attr_data = attr_value.folder_path
