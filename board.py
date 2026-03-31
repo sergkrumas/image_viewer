@@ -1522,7 +1522,7 @@ class BoardMixin(BoardTextEditItemMixin):
                                     exclude=('items_list', 'user_points', 'link_items_list'))
 
         # сохранение юзер-поинтов отдельно,
-        # т.к. QPoinF не сериализуется самостоятельно в tuple
+        # т.к. QPointF не сериализуется самостоятельно в tuple
         user_points_serialized = []
         for user_point in board.user_points:
             pos = user_point[0]
