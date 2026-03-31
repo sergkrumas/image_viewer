@@ -1449,7 +1449,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         attr_data = attr_value.folder_path
                     else:
                         status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_value}'"
-                        raise Exception('Error! Unable to handle folder data attribute: {status}')
+                        raise Exception(f'Error! Unable to handle folder data attribute: {status}')
                 else:
                     attr_data = None
                     attr_type = 'NoneType'
