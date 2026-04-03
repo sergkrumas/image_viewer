@@ -1245,6 +1245,30 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         folder_data.images_list.append(file_data)
 
 
+
+class CrossboardData():
+
+    i = None
+
+    def __init__(self):
+        self.current_item_index = 0
+        self.current_board_index = 0
+        self.node_boards_folder_data = []
+
+    def get_crossboard_board_index(self):
+        self.current_board_index += 1
+        return self.current_board_index
+
+    def get_crossboard_item_index(self):
+        self.current_item_index += 1
+        return self.current_item_index
+
+    @classmethod
+    def get(cls):
+        if cls.i is None:
+            cls.i = cls()
+        return cls.i
+
 class BoardNonAutoSerializedData():
     pass
 
@@ -1261,6 +1285,7 @@ class BoardData():
         self.items_list = []
         self.link_items_list = []
         self._link_slots_list = defaultdict(list)
+        self.force_vertical_layout = False
 
         self.plugin_filename = None
 
@@ -1271,6 +1296,10 @@ class BoardData():
         self.current_item_index = 0
         self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
+        cd = CrossboardData.get()
+        self._crossboard_data = cd
+        self.crossboard_board_index = cd.get_crossboard_board_index()
+
         self.root_folder = None
         self.root_item = None
 
@@ -1279,8 +1308,6 @@ class BoardData():
         self.prepareBoardOnFileLoad = False
 
         self.generation_time = time.time()
-
-        self.force_vertical_layout = False
 
 
 class FolderData():
