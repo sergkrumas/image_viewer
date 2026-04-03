@@ -35,6 +35,7 @@ class AutoscrollMixin():
         AUTOSCROLL.timer.timeout.connect(self.autoscroll_timer)
         AUTOSCROLL.inside_activation_zone = False
         AUTOSCROLL.is_moved_while_middle_button_pressed = False
+        AUTOSCROLL.dimenstions = [True, True]
 
         AUTOSCROLL.desactivation_pass = False
 
@@ -44,6 +45,27 @@ class AutoscrollMixin():
 
     def autoscroll_cursor_over_origin(self):
         return self.AUTOSCROLL.timer.isActive() and self.AUTOSCROLL.inside_activation_zone
+
+    def autoscroll_toggle_x(self):
+        self.autoscroll_change_dim(0)
+
+    def autoscroll_toggle_y(self):
+        self.autoscroll_change_dim(1)
+
+    def autoscroll_change_dim(self, index):
+        AUTOSCROLL = self.AUTOSCROLL
+        AUTOSCROLL.dimenstions[index] = not AUTOSCROLL.dimenstions[index]
+        value = AUTOSCROLL.dimenstions[index]
+        if index == 0:
+            axis = 'X'
+        elif index == 1:
+            axis = 'Y'
+        if value:
+            status = _('unblocked')
+        else:
+            status = _('blocked')
+        msg = _("{0} axis {1}").format(axis, status)
+        self.show_center_label(msg, duration=2.0)
 
     def autoscroll_set_speed_factor(self, scroll_value):
         if self.is_board_page_active():
@@ -157,7 +179,12 @@ class AutoscrollMixin():
                     speed_factor /= 4.0
                     # self.show_center_label(f'{sf}: {v1} {v2} {h1} {h2}')
 
+                else:
+                    velocity_vec.setX(velocity_vec.x()*self.AUTOSCROLL.dimenstions[0])
+                    velocity_vec.setY(velocity_vec.y()*self.AUTOSCROLL.dimenstions[1])
+
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
+
                 if self.AUTOSCROLL.board_item_transform:
                     if self.translation_ongoing:
                         self.board_DO_selected_items_TRANSLATION(cursor_pos)
@@ -376,7 +403,6 @@ class AutoscrollMixin():
         pen.setCapStyle(Qt.RoundCap)
         painter.setPen(pen)
         painter.drawPolyline(a, c2, b)
-
 
     def autoscroll_is_cursor_activated(self):
         return self.AUTOSCROLL.timer.isActive() and not self.AUTOSCROLL.inside_activation_zone

@@ -5546,7 +5546,7 @@ class MainWindow(QMainWindow,
 
 
 
-        if check_scancode_for(event, Qt.Key_Y) and not self.active_element:
+        if check_scancode_for(event, Qt.Key_Y) and not self.active_element and not self.autoscroll_is_ongoing():
             if self.frameless_mode:
                 self.toggle_to_frame_mode()
             else:

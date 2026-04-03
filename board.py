@@ -984,6 +984,12 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key == Qt.Key_F8:
             self.board_change_links_draw_order()
 
+        elif check_scancode_for(event, Qt.Key_X):
+            self.autoscroll_toggle_x()
+        elif check_scancode_for(event, Qt.Key_Y):
+            self.autoscroll_toggle_y()
+
+
         self.lineEditSkip = False
 
     def board_dragEnterEventDefault(self, event):
