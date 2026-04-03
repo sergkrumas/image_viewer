@@ -2109,6 +2109,8 @@ class BoardMixin(BoardTextEditItemMixin):
         selected_color2.setAlpha(255-100)
         gray_color = QColor(255, 255, 255, 255-100)
 
+        ito = self.board_is_items_transformation_ongoing()
+
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
         for slot_id, slot in folder_data.board._link_slots_list.items():
@@ -2137,6 +2139,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
                 is_near = li.is_near_link(self, pos)
+                is_near &= not ito #при трансформациях айтемов нод отключаем детектор близости курсора мыши
                 if li._selected and not is_near:
                     color = selected_color2
                 elif li._selected and is_near:
