@@ -1259,6 +1259,9 @@ class CrossboardData():
         self.current_board_index += 1
         return self.current_board_index
 
+    def add_board_folder_data(self, fod):
+        self.node_boards_folder_data.append(fod)
+
     def get_crossboard_item_index(self):
         self.current_item_index += 1
         return self.current_item_index

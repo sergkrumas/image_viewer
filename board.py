@@ -1708,6 +1708,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
+                fd.board._crossboard_data.add_board_folder_data(fd)
 
             elif case3:
                 BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
@@ -1740,6 +1741,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
+                fd.board._crossboard_data.add_board_folder_data(fd)
 
 
 
@@ -3298,6 +3300,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = folder_data
         item_folder_data.board.root_item = gi
+        item_folder_data.board._crossboard_data.add_board_folder_data(item_folder_data)
         gi.position = - QPointF(gi.width, gi.height)/2.0
 
         gi.update_corner_info()
@@ -3355,6 +3358,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = current_folder_data
         item_folder_data.board.root_item = gi
+        item_folder_data.board._crossboard_data.add_board_folder_data(item_folder_data)
         # располагаем центр в координате вызова контекстеного меню
         if item_position is None:
             gi.position = self.board_MapToBoard(self.rect().center())
