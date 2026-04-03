@@ -430,6 +430,8 @@ class AppMixin():
             pts = MW.STNG.page_on_app_launch_from_explorer
         elif path.lower().endswith(('.py', '.board')) or pts == pages.BOARD_PAGE:
             pass
+        elif is_path_exists and pts is not None:
+            pass
         else:
             pts = pages.START_PAGE
 
