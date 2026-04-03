@@ -1620,22 +1620,24 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_getBoardFilepath(self):
         return self.getBoardFilepathBoardCallback()
 
+    def board_get_root_folder(self, fod):
+        while fod.board.root_folder is not None:
+            fod = fod.board.root_folder
+        return fod
+
     def board_saveBoardDefault(self):
         cf = self.LibraryData().current_folder()
 
         # если находимся в зависимой доске,
         # то сохраняем корневую доску, а зависимая запишется вместе с ней
-        while cf.board.root_folder is not None:
-            print(f'saving... {cf.folder_name}::{cf.folder_path} is not root folder...')
-            cf = cf.board.root_folder
-
+        fod = self.board_get_root_folder()
         board_filepath = self.board_getBoardFilepath()
 
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
         self.LibraryData().save_board_data()
 
         data_base = dict()
-        data_base['main_board'] = self.board_serialize_board_data(cf)
+        data_base['main_board'] = self.board_serialize_board_data(fod)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG.use_cbor2_instead_of_json:
