@@ -225,6 +225,7 @@ class BoardItem():
         self.board_index = 0
         self.board_group_index = None
         self.cross_board_index = None
+        self._board = None
 
         self.width = 1000
         self.height = 1000
@@ -1853,6 +1854,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item.board_index = cf.board.current_item_index
         cd = folder_data.board._crossboard_data
         item.cross_board_index = cd.get_crossboard_item_index()
+        item._board = folder_data.board
 
     def retrieve_new_board_item_group_index(self):
         cf = self.LibraryData().current_folder()
