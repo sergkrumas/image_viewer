@@ -4752,7 +4752,8 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.clear()
-        self.board_clear_selection()
+        # сбрасывает выделение для контекстного меню
+        # self.board_clear_selection()
         RCS.selection_points.append(event.pos())
         RCS.clear_selection = not shift_pressed
 
