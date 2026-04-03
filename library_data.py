@@ -224,11 +224,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         MW.update()
 
     def make_folder_current(self, folder_data, write_view_history=True):
-        self._index = self.folders.index(folder_data)
-        self._current_folder = self.folders[self._index]
-        if write_view_history:
-            self.add_current_image_to_view_history()
-        self.on_current_folder_changed()
+        if folder_data not in self.folders:
+            # (3 апр 26) такое происходит когда folder_data это NONE_FOLDER
+            # нужно для загрузки досок-детей из файла в boards
+            pass
+        else:
+            self._index = self.folders.index(folder_data)
+            self._current_folder = self.folders[self._index]
+            if write_view_history:
+                self.add_current_image_to_view_history()
+            self.on_current_folder_changed()
 
     def on_current_folder_changed(self):
         mw = self.globals.main_window
@@ -1253,14 +1258,14 @@ class CrossboardData():
     def __init__(self):
         self.current_item_index = 0
         self.current_board_index = 0
-        self.node_boards_folder_data = []
+        self.children_boards_folder_data = []
 
     def get_crossboard_board_index(self):
         self.current_board_index += 1
         return self.current_board_index
 
     def add_board_folder_data(self, fod):
-        self.node_boards_folder_data.append(fod)
+        self.children_boards_folder_data.append(fod)
 
     def get_crossboard_item_index(self):
         self.current_item_index += 1

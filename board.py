@@ -1247,12 +1247,31 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
         main_board_dict = data['main_board']
-        self.board_recreate_board_from_serial(main_board_dict, main_board=True, board_load_filepath=board_filepath)
+        children_boards_dict = data['children_boards']
+
+        promises = []
+
+        children_boards = dict()
+        for fd_key, folder_data in children_boards_dict.items():
+            children_boards[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, main_board=False)
+
+        self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
 
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
 
-    def board_recreate_board_from_serial(self, board_dict, main_board=False, board_load_filepath=None):
+        for id_key, obj, attr_name in promises:
+            # (3 апр 26) TODO:
+            # а ведь здесь когда-нибудь может попасться ссылка на main_board,
+            # но её id у меня нигде не сохранён ещё! И если такое случится, то здесь прога крашнет
+            cfod = children_boards[id_key]
+            setattr(obj, attr_name, cfod)
+            cfod.board.root_folder = cfod
+            cfod.board.root_item = obj
+            self.LibraryData().make_thumbnails_and_previews(cfod, None)
+            cfod.board.ready = True
+
+    def board_recreate_board_from_serial(self, board_dict, promises, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
         board_link_items = board_dict['board_link_items']
         board_attributes = board_dict['board_attributes']
@@ -1284,17 +1303,17 @@ class BoardMixin(BoardTextEditItemMixin):
         # ЗАГРУЗКА ДАННЫХ
         # атрибуты доски
         # при загрузке доски могут использоваться колбэки и их нужно установить заранее
-        self.board_serial_to_object_attributes(fod.board, board_attributes)
+        self.board_serial_to_object_attributes(fod.board, board_attributes, promises)
         self.board_SetCallbacks(fod)
         # айтемы доски
         for board_item_attributes in board_items:
             bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(bi, board_item_attributes, fd=fod, id_to_filedata=id_to_filedata)
+            self.board_serial_to_object_attributes(bi, board_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
             fod.board.items_list.append(bi)
         # линки доски
         for link_item_attributes in board_link_items:
             li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(li, link_item_attributes, fd=fod, id_to_filedata=id_to_filedata)
+            self.board_serial_to_object_attributes(li, link_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
             fod.board.link_items_list.append(li)
             self.board_add_link_to_slot(fod, li)
 
@@ -1319,7 +1338,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             return None
 
-    def board_serial_to_object_attributes(self, obj, obj_attrs_list, fd=None, id_to_filedata=None):
+    def board_serial_to_object_attributes(self, obj, obj_attrs_list, promises, fd=None, id_to_filedata=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
 
             if attr_type in ['QPoint']:
@@ -1371,13 +1390,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.LibraryData().make_thumbnails_and_previews(item_folder_data, None)
                         obj.item_folder_data = item_folder_data
                     elif obj.type in [self.BoardItem.types.ITEM_GROUP, self.BoardItem.types.ITEM_NODE]:
-                        board_dict = attr_data
-                        fod = self.board_recreate_board_from_serial(board_dict)
-                        obj.item_folder_data = fod
-                        fod.board.root_folder = fd
-                        fod.board.root_item = obj
-                        self.LibraryData().make_thumbnails_and_previews(fod, None)
-                        fod.board.ready = True
+                        id_key = attr_data
+                        promises.append((id_key, obj, 'item_folder_data'))
                 continue
 
             elif attr_type == 'BoardUserPointsList':
@@ -1454,7 +1468,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         attr_data = None
                         attr_type = 'NoneType'
                     elif obj.type in [self.BoardItem.types.ITEM_GROUP, self.BoardItem.types.ITEM_NODE]:
-                        attr_data = self.board_serialize_board_data(obj.item_folder_data)
+                        attr_data = id(obj.item_folder_data)
                     elif obj.type == self.BoardItem.types.ITEM_FOLDER:
                         attr_data = attr_value.folder_path
                     else:
@@ -1625,6 +1639,12 @@ class BoardMixin(BoardTextEditItemMixin):
             fod = fod.board.root_folder
         return fod
 
+    def board_gather_children_boards(self, fod):
+        out = dict()
+        for fd in fod.board._crossboard_data.children_boards_folder_data:
+            out[id(fd)] = self.board_serialize_board_data(fd)
+        return out
+
     def board_saveBoardDefault(self):
         cf = self.LibraryData().current_folder()
 
@@ -1637,6 +1657,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().save_board_data()
 
         data_base = dict()
+        data_base['children_boards'] = self.board_gather_children_boards(fod)
         data_base['main_board'] = self.board_serialize_board_data(fod)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
