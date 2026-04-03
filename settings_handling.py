@@ -277,6 +277,7 @@ class CustomSlider(QWidget):
 UI_LANG_SETTING_ID = 'ui_lang'
 INFRAMED_FOLDERPATH_SETTING_ID = 'inframed_folderpath'
 FFMPEG_EXE_FILEPATH_SETTING_ID = 'ffmpeg_exe_filepath'
+DEBUG_PAGE_SETTING_ID = 'debug_page'
 
 class SettingsWindow(QWidget):
 
@@ -481,6 +482,10 @@ class SettingsWindow(QWidget):
 
             current_val = params[0]
             text = params[-1]
+
+            if (id == DEBUG_PAGE_SETTING_ID) and not self.globals.DEBUG:
+                 # настройку показываем только в режиме дебага
+                continue
 
             if id.startswith('---'):
 
@@ -1021,16 +1026,24 @@ class Settings(SettingsWindow):
     def get_all_pages_but_start(cls):
         return list(cls.pages.pages_names().items())[1:] # all but start page
 
+
+    @classmethod
+    def get_all_pages(cls):
+        return list(cls.pages.pages_names().items())
+
     @classmethod
     def generate_localized_matrix(cls):
 
         pages = cls.get_all_pages_but_start()
+
+        debug_pages = cls.get_all_pages()
 
         matrix = {
             '---general': _('General'),
             UI_LANG_SETTING_ID: ('en', _('UI language')),
             'page_on_app_launch_from_explorer': (cls.pages.VIEWER_PAGE, pages, _('Page on App Launch (when opened from Explorer)')),
             'page_to_open_on_drag_and_drop': (cls.pages.VIEWER_PAGE, pages, _('Page to open on Drag&Drop')),
+            DEBUG_PAGE_SETTING_ID: (cls.pages.START_PAGE, debug_pages, _('Page to open when run debug mode')),
             'run_on_windows_startup': (True, _('Run on Windows Startup')),
             'do_not_show_start_dialog': (True, _('Supress start dialog and run lite mode')),
             'show_fullscreen': (True, _('Full-screen mode on application start')),

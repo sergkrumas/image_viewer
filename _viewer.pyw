@@ -426,7 +426,9 @@ class AppMixin():
 
         is_path_exists = os.path.exists(path)
 
-        if is_path_exists and pts is None:
+        if Globals.DEBUG:
+            pts = MW.STNG.debug_page
+        elif is_path_exists and pts is None:
             pts = MW.STNG.page_on_app_launch_from_explorer
         elif path.lower().endswith(('.py', '.board')) or pts == pages.BOARD_PAGE:
             pass
