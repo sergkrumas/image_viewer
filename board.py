@@ -1630,7 +1630,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # если находимся в зависимой доске,
         # то сохраняем корневую доску, а зависимая запишется вместе с ней
-        fod = self.board_get_root_folder()
+        fod = self.board_get_root_folder(cf)
         board_filepath = self.board_getBoardFilepath()
 
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
