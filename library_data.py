@@ -1272,6 +1272,22 @@ class CrossboardData():
         return self.current_item_index
 
     @classmethod
+    def load(cls, data, children):
+        i = cls.i
+        i.current_item_index = data['current_item_index']
+        i.current_board_index = data['current_board_index']
+        i.children_boards_folder_data = children
+
+    @classmethod
+    def store(cls):
+        i = cls.i
+        data = dict()
+        data['current_item_index'] = i.current_item_index
+        data['current_board_index'] = i.current_board_index
+        # i.children_boards_folder_data сохраняется отдельно
+        return data
+
+    @classmethod
     def get(cls):
         if cls.i is None:
             cls.i = cls()

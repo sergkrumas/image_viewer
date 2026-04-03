@@ -1248,6 +1248,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         main_board_dict = data['main_board']
         children_boards_dict = data['children_boards']
+        crossboard_data = data['crossboard_data']
 
         promises = []
 
@@ -1255,7 +1256,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for fd_key, folder_data in children_boards_dict.items():
             children_boards[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, main_board=False)
 
-        self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
+        main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
 
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
@@ -1270,6 +1271,8 @@ class BoardMixin(BoardTextEditItemMixin):
             cfod.board.root_item = obj
             self.LibraryData().make_thumbnails_and_previews(cfod, None)
             cfod.board.ready = True
+
+        main_fod.board._crossboard_data.load(crossboard_data, list(children_boards.values()))
 
     def board_recreate_board_from_serial(self, board_dict, promises, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
@@ -1657,6 +1660,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().save_board_data()
 
         data_base = dict()
+        data_base['crossboard_data'] = fod.board._crossboard_data.store()
         data_base['children_boards'] = self.board_gather_children_boards(fod)
         data_base['main_board'] = self.board_serialize_board_data(fod)
 
