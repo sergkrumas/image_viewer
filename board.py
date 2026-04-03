@@ -2147,7 +2147,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     color = gray_color
                 style = Qt.DashLine
                 style = Qt.SolidLine
-                painter.setPen(QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), style))
+                pen = QPen(color, li.link_width*min(self.canvas_scale_x, self.canvas_scale_y), style)
+                pen.setJoinStyle(Qt.MiterJoin)
+                painter.setPen(pen)
                 li._is_curved_link = not (pivot_index == slot_index_offset and is_odd)
                 if li._is_curved_link:
 
@@ -2180,10 +2182,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 # arrow
                 if li.is_directional:
                     back_d = (-v*20).toPointF()
-                    a1 = (pd1*20).toPointF() + back_d + center_pos
-                    a2 = (pd2*20).toPointF() + back_d + center_pos
-                    painter.drawLine(center_pos, a2)
-                    painter.drawLine(center_pos, a1)
+                    a1 = (pd1*20).toPointF() + back_d
+                    a2 = (pd2*20).toPointF() + back_d
+
+                    a1 = QVector2D(a1).normalized()*(20+5*li.link_width)
+                    a2 = QVector2D(a2).normalized()*(20+5*li.link_width)
+                    painter.drawPolyline(center_pos+a1.toPointF(), center_pos, center_pos+a2.toPointF())
 
             links_count_str = f'{links_count}'
 
