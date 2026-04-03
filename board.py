@@ -3546,7 +3546,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # self.board_select_items([bi])
 
     def board_add_link_to_slot(self, folder_data, li):
-        indexes = (li.from_item.board_index, li.to_item.board_index)
+        indexes = (li.from_item.cross_board_index, li.to_item.cross_board_index)
         ordered_indexes_key = (min(indexes), max(indexes))
         link_slot = folder_data.board._link_slots_list[ordered_indexes_key]
         link_slot.append(li)
