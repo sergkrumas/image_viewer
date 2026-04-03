@@ -1312,6 +1312,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for board_item_attributes in board_items:
             bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
             self.board_serial_to_object_attributes(bi, board_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
+            bi._board = fod.board
             fod.board.items_list.append(bi)
         # линки доски
         for link_item_attributes in board_link_items:
