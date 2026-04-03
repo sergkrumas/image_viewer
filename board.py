@@ -2187,10 +2187,11 @@ class BoardMixin(BoardTextEditItemMixin):
                     back_d = (-v*20).toPointF()
                     a1 = (pd1*20).toPointF() + back_d
                     a2 = (pd2*20).toPointF() + back_d
-
                     a1 = QVector2D(a1).normalized()*(20+5*li.link_width)
                     a2 = QVector2D(a2).normalized()*(20+5*li.link_width)
-                    painter.drawPolyline(center_pos+a1.toPointF(), center_pos, center_pos+a2.toPointF())
+                    a1 = a1.toPointF() + center_pos
+                    a2 = a2.toPointF() + center_pos
+                    painter.drawPolyline(a1, center_pos, a2)
 
             links_count_str = f'{links_count}'
 
