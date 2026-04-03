@@ -2779,6 +2779,14 @@ class BoardMixin(BoardTextEditItemMixin):
         if board.root_item is not None:
             lines.append(_("This board parent item title '{}'").format(board.root_item.label))
 
+        if lines[-1] != "":
+            lines.append('')
+
+        cd = board._crossboard_data
+        lines.append(_('Current cross-board item index:: {}').format(cd.current_item_index))
+        lines.append(_('Current cross-board board index:: {}').format(cd.current_board_index))
+        lines.append(_('Children boards count:: {}').format(len(cd.children_boards_folder_data)))
+
         text = "\n".join(lines)
         painter.setPen(QPen(Qt.white, 1))
         font = painter.font()
