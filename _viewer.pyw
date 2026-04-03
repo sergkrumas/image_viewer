@@ -754,7 +754,7 @@ class AppMixin():
             app_path = __file__
         else:
             app_path = sys.argv[0]
-        args = [sys.executable, app_path, path, "-lite"]
+        args = [sys.executable, app_path, path, "-lite", "-viewer"]
         subprocess.Popen(args)
 
     @classmethod

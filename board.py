@@ -5234,8 +5234,6 @@ class BoardMixin(BoardTextEditItemMixin):
             elif item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
                 pass
                 filepath = item.item_folder_data.current_image().filepath
-            # TODO: когда сделаю задание стартовой страницы,
-            # тут надо ещё будет задавать и принудительное включение вьювера
             self.APP_start_lite_process(filepath)
 
     def board_place_items_in_column_or_row(self):
