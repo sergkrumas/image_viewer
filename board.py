@@ -363,7 +363,7 @@ class BoardItem():
             if type_obj is QPointF:
                 attr_value = type_obj(attr_value)
             setattr(copied_item, attr_name, attr_value)
-        board.board_retrieve_item_indexes(copied_item)
+        board.board_set_item_indexes(copied_item)
         folder_data.board.items_list.append(copied_item)
         return copied_item
 
@@ -1845,7 +1845,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.setBrush(Qt.NoBrush)
         painter.restore()
 
-    def board_retrieve_item_indexes(self, item):
+    def board_set_item_indexes(self, item):
         cf = self.LibraryData().current_folder()
         cf.board.current_item_index += 1
         item.board_index = cf.board.current_item_index
@@ -2000,7 +2000,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.audiovideo_file = file_data.is_audio_video_filetype
             board_item.video = file_data.is_audio_video_filetype
             board_item.audio = file_data.is_audio_video_filetype and not file_data.is_video_filetype
-            self.board_retrieve_item_indexes(board_item)
+            self.board_set_item_indexes(board_item)
             if direction == 1:
                 _set_position(board_item, file_data, offset)
                 _offset_anchor(file_data)
@@ -3289,7 +3289,7 @@ class BoardMixin(BoardTextEditItemMixin):
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
 
         gi.item_folder_data = item_folder_data
-        self.board_retrieve_item_indexes(gi)
+        self.board_set_item_indexes(gi)
         gi.board_group_index = 0 # index reserved for group of removed items
         folder_data.board.items_list.append(gi)
         item_folder_data.previews_done = True
@@ -3346,7 +3346,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data = self.LibraryData().create_folder_data(_("GROUP Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
         gi.item_folder_data = item_folder_data
-        self.board_retrieve_item_indexes(gi)
+        self.board_set_item_indexes(gi)
         gi.board_group_index = self.retrieve_new_board_item_group_index()
         current_folder_data.board.items_list.append(gi)
         item_folder_data.previews_done = True
@@ -3371,7 +3371,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("You cannot create note-item inside virtual folder board"), error=True)
             return
         ni = BoardItem(BoardItem.types.ITEM_NOTE)
-        self.board_retrieve_item_indexes(ni)
+        self.board_set_item_indexes(ni)
         current_folder_data.board.items_list.append(ni)
         ni.position = self.board_MapToBoard(self.rect().center())
         self.board_TextElementAttributesInitOnCreation(ni)
@@ -3388,7 +3388,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.LibraryData().make_thumbnails_and_previews(item_folder_data, None, do_progressive_grid_layout=True, do_progressive_board_layout=True)
                 fi = BoardItem(BoardItem.types.ITEM_FOLDER)
                 fi.item_folder_data = item_folder_data
-                self.board_retrieve_item_indexes(fi)
+                self.board_set_item_indexes(fi)
                 _fd = self.LibraryData().current_folder()
                 _fd.board.items_list.append(fi)
                 # располагаем в центре экрана
@@ -3457,7 +3457,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             folder_data = self.LibraryData().current_folder()
             bi = BoardItem(BoardItem.types.ITEM_FRAME)
-            self.board_retrieve_item_indexes(bi)
+            self.board_set_item_indexes(bi)
             folder_data.board.items_list.append(bi)
 
             selection_bounding_rect = self.selection_box.boundingRect()
@@ -3523,7 +3523,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_create_node_item(self):
         cf = self.LibraryData().current_folder()
         bi = BoardItem(BoardItem.types.ITEM_NODE)
-        self.board_retrieve_item_indexes(bi)
+        self.board_set_item_indexes(bi)
         cf.board.items_list.append(bi)
         bi.label = self.modal_input_field_text()
         bi.width = BoardItem.NODE_SIZE
@@ -5166,7 +5166,7 @@ class BoardMixin(BoardTextEditItemMixin):
         board_item.image_source_url = source_url
         file_data.board_items.append(board_item)
         current_folder.board.items_list.append(board_item)
-        self.board_retrieve_item_indexes(board_item)
+        self.board_set_item_indexes(board_item)
         if place_at_cursor:
             board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
         current_folder.images_list.append(file_data)
