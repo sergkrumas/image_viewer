@@ -696,8 +696,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.cursor_scrubbing_optimizer = False
 
-        self.board_item_ctrl_z_data = defaultdict(list)
-
         self.scroll_items_timestamp = time.time()
 
         self.progressive_layout_ongoing = False
@@ -1918,9 +1916,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_stash_current_transform_to_history(self, board_item):
         # item_key = board_item.board_index
+        cf = self.LibraryData().current_folder()
         item_key = id(board_item)
         BoardItemTransform = namedtuple('BoardItemTransform', 'position rotation scale_x scale_y')
-        self.board_item_ctrl_z_data[item_key].append(BoardItemTransform(
+        cf.board._item_ctrl_z_data[item_key].append(BoardItemTransform(
             QPointF(board_item.position),
             board_item.rotation,
             board_item.scale_x,
@@ -1929,8 +1928,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_retrieve_transform_back_from_history(self, board_item):
         # item_key = board_item.board_index
+        cf = self.LibraryData().current_folder()
         item_key = id(board_item)
-        transforms_list = self.board_item_ctrl_z_data.get(item_key, None)
+        transforms_list = cf.board._item_ctrl_z_data.get(item_key, None)
         if transforms_list:
             transform = transforms_list.pop()
             board_item.position = QPointF(transform.position)

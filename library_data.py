@@ -1324,6 +1324,8 @@ class BoardData():
         self._crossboard_data = cd
         self.crossboard_board_index = cd.get_crossboard_board_index()
 
+        self._item_ctrl_z_data = defaultdict(list)
+
         self.root_folder = None
         self.root_item = None
 
