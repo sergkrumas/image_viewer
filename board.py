@@ -1705,7 +1705,7 @@ class BoardMixin(BoardTextEditItemMixin):
             referer = board.referer_board_folder
             if referer is not None:
                 if do_snapshot:
-                    board.root_item._snapshot = self.grab()
+                    self.board_take_snapshot(cf)
                 BOARD_FOLDER_DATA = referer
         else:
             item = None
@@ -6425,6 +6425,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_enter_crossboard()
         else:
             self.board_leave_crossboard()
+
+    def board_take_snapshot(self, fod):
+        fod.board.root_item._snapshot = self.grab()
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
