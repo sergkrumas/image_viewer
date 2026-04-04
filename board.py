@@ -3624,7 +3624,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cursor_pos = event.pos()
         items = self.find_all_items_under_this_pos(cf, cursor_pos)
         for bli in items:
-            if bli.type == BoardItem.types.ITEM_NODE:
+            if bli.type == BoardItem.types.ITEM_NODE and bli._selected:
                 break
         else:
             return False
@@ -3640,16 +3640,16 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_change_link_width(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
-        for bli in cf.board.link_items_list:
-            if bli.is_near_link(self, cursor_pos):
+        for li in cf.board.link_items_list:
+            if li.is_near_link(self, cursor_pos) and li._selected:
                 break
         else:
             return False
         if scroll_value > 0:
-            bli.link_width += 1.0
+            li.link_width += 1.0
         else:
-            bli.link_width -= 1.0
-        bli.link_width = max(1.0, bli.link_width)
+            li.link_width -= 1.0
+        li.link_width = max(1.0, li.link_width)
         self.update()
         return True
 
