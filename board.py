@@ -1692,7 +1692,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementDeactivateEditMode()
         self._active_element = el
 
-    def board_dive_inside_board_item(self, back_to_referer=False):
+    def board_dive_inside_board_item(self, back_to_referer=False, do_snapshot=True):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
             msg = _("You cannot dive inside item when board operation is not finished!")
             self.show_center_label(msg, error=True)
@@ -1704,7 +1704,8 @@ class BoardMixin(BoardTextEditItemMixin):
             board = cf.board
             referer = board.referer_board_folder
             if referer is not None:
-                board.root_item._snapshot = self.grab()
+                if do_snapshot:
+                    board.root_item._snapshot = self.grab()
                 BOARD_FOLDER_DATA = referer
         else:
             item = None
@@ -6396,7 +6397,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementDeactivateEditMode()
 
         cufod = self.LibraryData().current_folder()
-        main_board_fod = self.board_get_main_board_folder()
+        main_board_fod = self.board_get_main_board_folder(cufod)
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         self.build_board_bounding_rect(cross_fod)
@@ -6408,7 +6409,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.prepare_selection_box_widget(cross_fod)
 
     def board_leave_crossboard(self):
-        self.board_dive_inside_board_item(back_to_referer=True)
+        cross_fod = self.LibraryData().current_folder()
+        self.board_dive_inside_board_item(back_to_referer=True, do_snapshot=False)
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
