@@ -1027,9 +1027,8 @@ class BoardMixin(BoardTextEditItemMixin):
                             self.show_center_label(_("No files, only folders supported"))
                 else:
                     url = url.url()
-                    if self.is_board_page_active():
-                        self.board_download_file(url)
-                        print(url)
+                    self.board_download_file(url)
+                    print(url)
             self.update()
         else:
             event.ignore()
