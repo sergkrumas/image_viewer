@@ -537,6 +537,31 @@ class BoardItem():
             self.scale_x, \
             self.scale_y = self._saved_data
 
+    def stash_transformation(self):
+        self.stash_or_restore('_stashed_', save=True)
+
+    def retrieve_transformation(self):
+        self.stash_or_restore('_stashed_', restore=True)
+
+    def stash_or_restore(self, prefix, save=False, restore=False):
+        transformation_attrs = (
+            'scale_x',
+            'scale_y',
+            'position',
+            'rotation',
+        )
+        for attr_name in transformation_attrs:
+            if restore:
+                source_name = f'{prefix}{attr_name}'
+                dest_name = attr_name
+            elif save:
+                source_name = attr_name
+                dest_name = f'{prefix}{attr_name}'
+            attr_value = getattr(self, source_name)
+            attr_type = type(attr_value)
+            setattr(self, dest_name, attr_type(attr_value))
+
+
 BoardCallbacksNames = [
     'mousePressEvent',
     'mouseMoveEvent',
