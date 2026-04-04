@@ -2401,7 +2401,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             alignment = Qt.AlignVCenter | Qt.AlignHCenter
             painter.drawText(label_rect, alignment, label_text)
-            painter.setFont(before_font)
 
 
             snapshot = board_item._snapshot
@@ -2414,6 +2413,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 place_rect = fit_rect_into_rect(QRectF(snapshot.rect()), place_rect, float_mode=True)
                 painter.drawPixmap(place_rect, snapshot, QRectF(QPointF(0, 0), QSizeF(snapshot.size())))
                 painter.setOpacity(1.0)
+
+
+            if sa_br.width() > 250 or sa_br.height() > 250:
+                painter.drawText(sa_br, alignment, label_text)
+
+            painter.setFont(before_font)
 
         else:
 
