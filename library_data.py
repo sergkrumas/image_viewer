@@ -82,7 +82,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i = cls.instance
             i._current_folder = None
             i.folders = []
-            i._index = -1
             i.folderslist_scroll_offset = 0
             i.fav_folder = None
             i.viewed_list = []
@@ -213,7 +212,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def remove_cross_fod(self, cross_fod):
         self.folders.remove(cross_fod)
-        self._index = self.folders.index(self._current_folder)
 
     def before_current_image_changed(self):
         im = LibraryData().current_folder().current_image()
@@ -233,8 +231,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             # нужно для загрузки досок-детей из файла в boards
             pass
         else:
-            self._index = self.folders.index(folder_data)
-            self._current_folder = self.folders[self._index]
+            self._current_folder = folder_data
             if write_view_history:
                 self.add_current_image_to_view_history()
             self.on_current_folder_changed()
@@ -252,23 +249,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             path = os.path.dirname(im.filepath)
         LibraryData().handle_input_data(path)
-
-    def choose_previous_folder(self):
-        # self.before_current_image_changed()
-        if self._index > 0:
-            self._index -= 1
-        else:
-            self._index = len(self.folders)-1
-        self._current_folder = self.folders[self._index]
-        # self.after_current_image_changed()
-        MW = self.globals.main_window
-        MW.library_previews_list_active_item = None
-        MW.waterfall_previews_list_active_item = None
-        MW.library_page_scroll_autoset_or_reset()
-        self.update_current_folder_previews_grids()
-        MW.update_control_panel_label_text()
-        self.on_current_folder_changed()
-        MW.update()
 
     @staticmethod
     def is_supported_file(filepath):
@@ -299,13 +279,30 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def is_webp_file_animated(filepath):
         return LibraryData().is_webp_file(filepath) and is_webp_file_animated(filepath)
 
+    def shift_current_folder(self, delta):
+        index = self.folders[self._current_folder]
+        if index > 0:
+            index += delta
+        else:
+            index = len(self.folders)-1
+        self._current_folder = self.folders[index]
+
+    def choose_previous_folder(self):
+        # self.before_current_image_changed()
+        self.shift_current_folder(-1)
+        # self.after_current_image_changed()
+        MW = self.globals.main_window
+        MW.library_previews_list_active_item = None
+        MW.waterfall_previews_list_active_item = None
+        MW.library_page_scroll_autoset_or_reset()
+        self.update_current_folder_previews_grids()
+        MW.update_control_panel_label_text()
+        self.on_current_folder_changed()
+        MW.update()
+
     def choose_next_folder(self):
         # self.before_current_image_changed()
-        if self._index < len(self.folders)-1:
-            self._index += 1
-        else:
-            self._index = 0
-        self._current_folder = self.folders[self._index]
+        self.shift_current_folder(1)
         # self.after_current_image_changed()
         MW = self.globals.main_window
         MW.library_previews_list_active_item = None
@@ -321,16 +318,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             return
         self.before_current_image_changed()
         self.save_board_data()
-        indexes_it = itertools.cycle(range(len(self.folders)))
-        index_ = None
-        while index_ != self._index:
-            index_ = next(indexes_it)
-        self._index = next(indexes_it)
-        self._current_folder = self.folders[self._index]
+        self.shift_current_folder(1)
         self.on_current_folder_changed()
         self.after_current_image_changed()
         self.load_board_data()
-        ThumbnailsPreviewsThread(self._current_folder, self.globals).start()
+        ThumbnailsPreviewsThread(self.current_folder(), self.globals).start()
         MW = self.globals.main_window
         MW.update_control_panel_label_text()
         MW.update()
@@ -398,8 +390,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     def prepare_image_change(self, file_data):
         fd = file_data.folder_data
-        self._index = self.folders.index(fd)
-        self._current_folder = self.folders[self._index]
+        self._current_folder = fd
         self.on_current_folder_changed()
         fd._index = fd.images_list.index(file_data)
 
@@ -513,7 +504,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             self.before_current_image_changed()
             new_fd = selected_im.folder_data
             self._current_folder = new_fd
-            self._index = self.folders.index(new_fd)
             self.after_current_image_changed()
             self.on_current_folder_changed()
 
