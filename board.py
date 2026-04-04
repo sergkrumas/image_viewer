@@ -1893,7 +1893,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item._board = board
 
         if item.type == BoardItem.types.ITEM_GROUP:
-            gi.board_group_index = self.LibraryData().current_folder().board.retrieve_group_index()
+            item.board_group_index = board.retrieve_group_index()
 
     def board_get_selected_or_visible_items(self, visible=False):
         cf = self.LibraryData().current_folder()
