@@ -583,13 +583,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         )
         cf.init_images(files, prev=old_images)
         if cf.images_list:
-            is_set = False
             for file_data in cf.images_list:
                 if os.path.normpath(file_data.filepath) == os.path.normpath(current_filepath):
                     cf._index = cf.images_list.index(file_data)
-                    is_set = True
                     break
-            if not is_set:
+            else:
                 cf._index = 0
             cf.previews_done = False
             ThumbnailsPreviewsThread(cf, self.globals).start()
