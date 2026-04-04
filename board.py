@@ -712,6 +712,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.links_draw_before_items = True
 
+        self.board_crossboard_init()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -991,6 +993,8 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, Qt.Key_Y):
             self.autoscroll_toggle_y()
 
+        elif key == Qt.Key_F6:
+            self.board_toggle_crossboard()
 
         self.lineEditSkip = False
 
@@ -6380,7 +6384,22 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.show_center_label(_('This item not supported!'), error=True)
 
+    def board_crossboard_init(self):
+        self.CB_DATA = CB_DATA = type('CBDATA', (), {})()
+        CB_DATA.crossboard_mode = False
 
+    def board_enter_crossboard(self):
+        pass
+
+    def board_leave_crossboard(self):
+        pass
+
+    def board_toggle_crossboard(self):
+        self.CB_DATA.crossboard_mode = not self.CB_DATA.crossboard_mode
+        if self.CB_DATA.crossboard_mode:
+            self.board_enter_crossboard()
+        else:
+            self.board_leave_crossboard()
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
