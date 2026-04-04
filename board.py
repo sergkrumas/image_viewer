@@ -6423,6 +6423,27 @@ class BoardMixin(BoardTextEditItemMixin):
         all_fods = [main_board_fod, *children_fods]
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+
+        cb_offset = QPointF(0, 0)
+        for fod in all_fods:
+            self.build_board_bounding_rect(fod)
+            for item in fod.board.items_list:
+                item.stash_transformation()
+
+            bbr = fod.board.bounding_rect
+            bbr_topleft = bbr.topLeft()
+            for item in fod.board.items_list:
+                relative_offset = item.position - bbr_topleft
+                item.position = cb_offset + relative_offset
+                cross_fod.board.items_list.append(item)
+
+            bbr_ = QRectF(bbr)
+            bbr_.moveTopLeft(cb_offset)
+            self.board_do_add_item_frame(cross_fod, bbr_).label = f'«{fod.folder_label}»'
+
+            cb_offset += QPointF(bbr.width() + 2.0*BoardItem.FRAME_PADDING, 0)
+
+
         self.build_board_bounding_rect(cross_fod)
         cross_fod.previews_done = True
         cross_fod.board.ready = True
