@@ -392,7 +392,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         fd = file_data.folder_data
         self._current_folder = fd
         self.on_current_folder_changed()
-        fd._index = fd.images_list.index(file_data)
+        fd._image_index = fd.images_list.index(file_data)
 
     def prepare_modal_viewer_mode(self, file_data):
         self.prepare_image_change(file_data)
@@ -575,14 +575,14 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if cf.images_list:
             for file_data in cf.images_list:
                 if os.path.normpath(file_data.filepath) == os.path.normpath(current_filepath):
-                    cf._index = cf.images_list.index(file_data)
+                    cf._image_index = cf.images_list.index(file_data)
                     break
             else:
-                cf._index = 0
+                cf._image_index = 0
             cf.previews_done = False
             ThumbnailsPreviewsThread(cf, self.globals).start()
         else:
-            cf._index = 0
+            cf._image_index = 0
         self.globals.main_window.update()
 
     @staticmethod
@@ -1354,7 +1354,7 @@ class FolderData():
             self.folder_path = ""
         self.folder_name = os.path.basename(folder_path)
         self.folder_label = folder_label[:]
-        self._index = -1
+        self._image_index = -1
         self.before_index = -1
         self.images_list = []
         self.modified_order_pivot_index = None
@@ -1377,14 +1377,14 @@ class FolderData():
         if image_filepath:
             for n, image in enumerate(self.images_list):
                 if os.path.normpath(image.filepath) == os.path.normpath(image_filepath):
-                    self._index = n
-            if self._index == -1:
+                    self._image_index = n
+            if self._image_index == -1:
                 # it happens when image_filepath points to non-image file
                 if self.images_list:
                     self.index = 0
                 # raise Exception("Should never happen")
         else:
-            self._index = 0
+            self._image_index = 0
 
         self.PreviewsGrid.set_empty_grids(self)
 
@@ -1605,44 +1605,44 @@ class FolderData():
             ))
         else:
             self.images_list = self.original_list[:]
-        self._index = self.images_list.index(file_data)
+        self._image_index = self.images_list.index(file_data)
         self.sort_type = sort_type
         self.sort_type_reversed = reversed
 
     def get_current_image_name(self):
         try:
-            im = self.images_list[self._index]
+            im = self.images_list[self._image_index]
             return os.path.basename(im.filepath)
         except:
             return ""
 
     def current_image(self):
         try:
-            return self.images_list[self._index]
+            return self.images_list[self._image_index]
         except:
             return FileData("", None)
 
     def next_image(self):
-        if self._index < len(self.images_list)-1:
-            # self._index += 1
-            self.set_current_index(self._index + 1)
+        if self._image_index < len(self.images_list)-1:
+            # self._image_index += 1
+            self.set_current_index(self._image_index + 1)
         return self.current_image()
 
     def previous_image(self):
-        if self._index > 0:
-            # self._index -= 1
-            self.set_current_index(self._index - 1)
+        if self._image_index > 0:
+            # self._image_index -= 1
+            self.set_current_index(self._image_index - 1)
         return self.current_image()
 
     def count(self):
         return len(self.images_list)
 
     def get_current_index(self):
-        return self._index
+        return self._image_index
 
     def set_current_index(self, index):
-        self.before_index = self._index
-        self._index = index
+        self.before_index = self._image_index
+        self._image_index = index
         # folder_data = self
         # mw = LibraryData.globals.main_window
         # mw.update_thumbnails_row_relative_offset(folder_data)
@@ -1665,7 +1665,7 @@ class FolderData():
             return LibraryData().globals.COMMENTS_BIG_ICON
         else:
             try:
-                return self.images_list[self._index].get_thumbnail()
+                return self.images_list[self._image_index].get_thumbnail()
             except:
                 path = os.path.join(os.path.dirname(__file__), "missing.jpg")
                 ico = QIcon()
