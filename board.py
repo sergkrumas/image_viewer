@@ -6385,8 +6385,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_('This item not supported!'), error=True)
 
     def board_crossboard_init(self):
-        self.CB_DATA = CB_DATA = type('CBDATA', (), {})()
-        CB_DATA.crossboard_mode = False
+        self.CROSSBOARD_DATA = CROSSBOARD_DATA = type('CBData', (), {})()
+        CROSSBOARD_DATA.crossboard_mode = False
 
     def board_enter_crossboard(self):
         pass
@@ -6395,9 +6395,9 @@ class BoardMixin(BoardTextEditItemMixin):
         pass
 
     def board_toggle_crossboard(self):
-        CB_DATA = self.CB_DATA
-        CB_DATA.crossboard_mode = not CB_DATA.crossboard_mode
-        if CB_DATA.crossboard_mode:
+        CROSSBOARD_DATA = self.CROSSBOARD_DATA
+        CROSSBOARD_DATA.crossboard_mode = not CROSSBOARD_DATA.crossboard_mode
+        if CROSSBOARD_DATA.crossboard_mode:
             self.board_enter_crossboard()
         else:
             self.board_leave_crossboard()
