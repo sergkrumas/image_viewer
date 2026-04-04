@@ -6415,6 +6415,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         cufod = self.LibraryData().current_folder()
         main_board_fod = self.board_get_main_board_folder(cufod)
+        children_fods = cufod.board._crossboard_data.children_boards_folder_data
+        all_fods = [main_board_fod]
+        all_fods.extend(children_fods)
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         self.build_board_bounding_rect(cross_fod)
@@ -6422,7 +6425,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cross_fod.board.ready = True
 
         self.board_make_board_current(cross_fod)
-        self.LibraryData().current_folder().board.referer_board_folder = cufod
+        cross_fod.board.referer_board_folder = cufod
         self.prepare_selection_box_widget(cross_fod)
 
     def board_leave_crossboard(self):
