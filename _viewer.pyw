@@ -21,7 +21,7 @@
 from _utils import *
 
 
-from library_data import (LibraryData, FolderData, FileData, BoardData,
+from library_data import (LibraryData, FolderData, FileData, BoardData, CrossboardData,
              BoardNonAutoSerializedData, ThumbnailsPreviewsThread, MakingThumbnailsPreviewsStages)
 from board import BoardMixin
 from help_text import HelpWidgetMixin
@@ -1024,6 +1024,7 @@ class MainWindow(QMainWindow,
 
         self.Globals = Globals
         self.LibraryData = LibraryData
+        self.CrossboardData = CrossboardData
         self.FileData = FileData
         self.FolderData = FolderData
         self.BoardData = BoardData

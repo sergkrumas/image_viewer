@@ -1256,6 +1256,11 @@ class BoardMixin(BoardTextEditItemMixin):
         main_board_dict = data['main_board']
         children_boards_dict = data['children_boards']
         crossboard_data = data['crossboard_data']
+        crossboard_links = data['crossboard_links']
+
+        cd = self.CrossboardData.get()
+        cd.children_boards_folder_data.clear()
+        cd.link_items_list.clear()
 
         promises = []
 
@@ -1265,8 +1270,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
         main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
 
-        msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
-        self.show_center_label(msg)
+        # обязательно делаем это до линков,
+        # иначе линки в дочерних досках крашнут загрузку вместе с приложением
+        main_fod.board._crossboard_data.load(crossboard_data, list(children_boards.values()))
+
+        # линки всех досок
+        for link_item_attributes in crossboard_links:
+            li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+            self.board_serial_to_object_attributes(li, link_item_attributes, promises)
+            cd.link_items_list.append(li)
+            self.board_add_link_to_slot(li)
 
         for id_key, obj, attr_name in promises:
             # (3 апр 26) TODO:
@@ -1279,11 +1292,11 @@ class BoardMixin(BoardTextEditItemMixin):
             self.LibraryData().make_thumbnails_and_previews(cfod, None)
             cfod.board.ready = True
 
-        main_fod.board._crossboard_data.load(crossboard_data, list(children_boards.values()))
+        msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
+        self.show_center_label(msg)
 
     def board_recreate_board_from_serial(self, board_dict, promises, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
-        board_link_items = board_dict['board_link_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
         board_files_data = board_dict['board_files_data']
@@ -1321,12 +1334,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_serial_to_object_attributes(bi, board_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
             bi._board = fod.board
             fod.board.items_list.append(bi)
-        # линки доски
-        for link_item_attributes in board_link_items:
-            li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(li, link_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
-            fod.board._crossboard_data.link_items_list.append(li)
-            self.board_add_link_to_slot(fod, li)
 
         fod.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
@@ -1342,10 +1349,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         return fod
 
-    def board_find_board_item_with_board_index(self, fd, index):
-        for bi in fd.board.items_list:
-            if bi.board_index == index:
-                return bi
+    def board_find_board_item_with_cross_board_index(self, cross_board_index):
+        # TODO: надо переделать на словарь это всё, иначе не дело
+        for fod in self.board_get_all_crossboard_fods():
+            for bi in fod.board.items_list:
+                if bi.cross_board_index == cross_board_index:
+                    return bi
         else:
             return None
 
@@ -1421,7 +1430,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if attr_name in ['from_item', 'to_item']:
                 if attr_value is not None:
-                    attr_value = self.board_find_board_item_with_board_index(fd, attr_value)
+                    attr_value = self.board_find_board_item_with_cross_board_index(attr_value)
+                    # QMessageBox.critical(None, '', f'{attr_name} :: {attr_value} :: {obj.type == BoardItem.types.ITEM_LINK}')
 
             setattr(obj, attr_name, attr_value)
 
@@ -1467,7 +1477,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     attr_data = None
                     attr_type = 'NoneType'
                 else:
-                    attr_data = attr_value.board_index
+                    attr_data = attr_value.cross_board_index
                     attr_type = 'int'
 
             elif isinstance(attr_value, self.FileData):
@@ -1546,7 +1556,6 @@ class BoardMixin(BoardTextEditItemMixin):
         board_base = dict()
         board_attributes = list()
         board_items = list()
-        board_link_items = list()
         board_folder_data = dict()
         board_files_data = dict()
 
@@ -1571,12 +1580,6 @@ class BoardMixin(BoardTextEditItemMixin):
             board_items.append(new_item_base)
             self.board_object_attributes_to_serial(item, new_item_base)
 
-        # сохранение линков доски
-        for item in board._crossboard_data.link_items_list:
-            link_item_base = list()
-            board_link_items.append(link_item_base)
-            self.board_object_attributes_to_serial(item, link_item_base)
-
         # сохранение юзер-поинтов отдельно,
         # т.к. QPointF не сериализуется самостоятельно в tuple
         user_points_serialized = []
@@ -1591,7 +1594,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         board_base.update({
             'board_items': board_items,
-            'board_link_items': board_link_items,
             'board_attributes': board_attributes,
             'board_folder_data': board_folder_data,
             'board_files_data': board_files_data,
@@ -1656,6 +1658,14 @@ class BoardMixin(BoardTextEditItemMixin):
             out[id(fd)] = self.board_serialize_board_data(fd)
         return out
 
+    def serialize_links(self, links):
+        link_items = []
+        for item in links:
+            link_item_base = list()
+            link_items.append(link_item_base)
+            self.board_object_attributes_to_serial(item, link_item_base)
+        return link_items
+
     def board_saveBoardDefault(self):
         cufod = self.LibraryData().current_folder()
 
@@ -1669,6 +1679,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         data_base = dict()
         data_base['crossboard_data'] = main_fod.board._crossboard_data.store()
+        data_base['crossboard_links'] = self.serialize_links(main_fod.board._crossboard_data.link_items_list)
         data_base['children_boards'] = self.board_gather_children_boards(main_fod)
         data_base['main_board'] = self.board_serialize_board_data(main_fod)
 
@@ -3620,22 +3631,21 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cf)
         # self.board_select_items([bi])
 
-    def board_add_link_to_slot(self, folder_data, li):
+    def board_add_link_to_slot(self, li):
         indexes = (li.from_item.cross_board_index, li.to_item.cross_board_index)
         ordered_indexes_key = (min(indexes), max(indexes))
-        link_slot = folder_data.board._crossboard_data._link_slots_list[ordered_indexes_key]
+        link_slot = self.CrossboardData.get()._link_slots_list[ordered_indexes_key]
         link_slot.append(li)
         li._slot = link_slot
 
     def board_create_link_item(self, from_item, to_item):
-        cf = self.LibraryData().current_folder()
         # creating link
         li = BoardItem(BoardItem.types.ITEM_LINK)
         li.from_item = from_item
         li.to_item = to_item
-        cf.board._crossboard_data.link_items_list.append(li)
+        self.CrossboardData.get().link_items_list.append(li)
         # add to slot
-        self.board_add_link_to_slot(cf, li)
+        self.board_add_link_to_slot(li)
         self.update()
 
     def board_change_node_radius(self, event, scroll_value):
@@ -6422,6 +6432,12 @@ class BoardMixin(BoardTextEditItemMixin):
         CROSSBOARD.crossboard_mode = False
         CROSSBOARD.all_fods = []
 
+    def board_get_all_crossboard_fods(self):
+        cufod = self.LibraryData().current_folder()
+        main_board_fod = self.board_get_main_board_folder(cufod)
+        children_fods = cufod.board._crossboard_data.children_boards_folder_data
+        return (main_board_fod, *children_fods)
+
     def board_enter_crossboard(self):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
             msg = _("You cannot dive inside crossboard when board operation is not finished!")
@@ -6430,9 +6446,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementDeactivateEditMode()
 
         cufod = self.LibraryData().current_folder()
-        main_board_fod = self.board_get_main_board_folder(cufod)
-        children_fods = cufod.board._crossboard_data.children_boards_folder_data
-        self.CROSSBOARD.all_fods = [main_board_fod, *children_fods]
+        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods() 
 
         self.LibraryData().setBoardItemsTracking(False)
 
