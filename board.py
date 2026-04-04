@@ -6461,17 +6461,18 @@ class BoardMixin(BoardTextEditItemMixin):
         # restore
         self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = before_viewport_data
 
-    def board_change_frame_item_label(self, frame_item, *args):
-        dialog = QInputDialog(self)
-        dialog.setInputMode(QInputDialog.TextInput)
-        dialog.setTextValue(frame_item.label)
-        dialog.setWindowTitle(_('Change frame item label'))
-        dialog.setLabelText(_("Label Text:"))
-        dialog.resize(500,100)
-        ok = dialog.exec_()
-        if ok:
-            frame_item.label = dialog.textValue()
-        self.update()
+    # TODO: (4 апр 26) более не используется, но может пригодится, оставлю пока
+    # def board_change_frame_item_label(self, frame_item, *args):
+    #     dialog = QInputDialog(self)
+    #     dialog.setInputMode(QInputDialog.TextInput)
+    #     dialog.setTextValue(frame_item.label)
+    #     dialog.setWindowTitle(_('Change frame item label'))
+    #     dialog.setLabelText(_("Label Text:"))
+    #     dialog.resize(500,100)
+    #     ok = dialog.exec_()
+    #     if ok:
+    #         frame_item.label = dialog.textValue()
+    #     self.update()
 
     def board_do_change_frame_label(self, board_item):
         board_item.label = self.modal_input_field_text()
