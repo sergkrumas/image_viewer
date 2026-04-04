@@ -682,7 +682,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_SetCallbacks()
 
         self.show_longtime_process_ongoing = show_longtime_process_ongoing
-        self.board_frame_items_text_rects = []
+        self.board_frame_items_ui_rects = []
 
         self.board_PTWS_init()
 
@@ -852,6 +852,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_mouseDoubleClickEventDefault(self, event):
         if event.button() == Qt.LeftButton:
             if self.board_AD_toolbox_doubleClickEvent(event):
+                return
+            elif self.board_frame_items_doubleClickEvent(event):
                 return
             else:
                 cf = self.LibraryData().current_folder()
@@ -1066,25 +1068,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         contextMenu.addSeparator()
 
-    def board_menuActivatedOverFrameItem(self):
-        point = self.context_menu_exec_point
-        for board_item, label_rect, bounding_rect in self.board_frame_items_text_rects:
-            if label_rect.contains(point) or bounding_rect.contains(point):
-                return board_item
-        return None
-
-    def board_change_frame_item_label(self, frame_item, *args):
-        dialog = QInputDialog(self)
-        dialog.setInputMode(QInputDialog.TextInput)
-        dialog.setTextValue(frame_item.label)
-        dialog.setWindowTitle(_('Change frame item label'))
-        dialog.setLabelText(_("Label Text:"))
-        dialog.resize(500,100)
-        ok = dialog.exec_()
-        if ok:
-            frame_item.label = dialog.textValue()
-        self.update()
-
     def board_contextMenuDefault(self, event, contextMenu, checkboxes, plugin_implant=None):
         def addItem(*args):
             return self.addItemToMenu(contextMenu, *args)
@@ -1174,10 +1157,6 @@ class BoardMixin(BoardTextEditItemMixin):
         addItem(_("Force highres loading of all items right now (may take some time)"), self.board_load_highres)
 
         addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
-
-        frame_item = self.board_menuActivatedOverFrameItem()
-        if frame_item:
-            addItem(_('Change frame title \'{0}\'').format(frame_item.label), partial(self.board_change_frame_item_label, frame_item))
 
         if bool(self.is_context_menu_executed_over_group_item()):
             addItem(_('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
@@ -2113,7 +2092,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_content(self, painter, folder_data, snapshot=False):
         if not snapshot:
             self.board_TextElementResetColorsButtons()
-            self.board_frame_items_text_rects = []
+            self.board_frame_items_ui_rects = []
 
         painter.setPen(QPen(Qt.white, 1))
         font = painter.font()
@@ -2346,7 +2325,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if show_text:
                 board_item._label_ui_rect = rect
                 painter.drawText(rect, alignment, text)
-                self.board_frame_items_text_rects.append((board_item, rect, area.boundingRect()))
+                self.board_frame_items_ui_rects.append((board_item, rect, area.boundingRect()))
 
             painter.setFont(before_font)
 
@@ -6452,11 +6431,39 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.end()
 
         # snapshot = self.grab() if False else snapshot_pixmap
-
         fod.board.root_item._snapshot = snapshot_pixmap
 
         # restore
         self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = before_viewport_data
+
+    def board_change_frame_item_label(self, frame_item, *args):
+        dialog = QInputDialog(self)
+        dialog.setInputMode(QInputDialog.TextInput)
+        dialog.setTextValue(frame_item.label)
+        dialog.setWindowTitle(_('Change frame item label'))
+        dialog.setLabelText(_("Label Text:"))
+        dialog.resize(500,100)
+        ok = dialog.exec_()
+        if ok:
+            frame_item.label = dialog.textValue()
+        self.update()
+
+    def board_do_change_frame_label(self, board_item):
+        board_item.label = self.modal_input_field_text()
+
+    def board_change_frame_label(self, board_item):
+        self.modal_input_field_show(
+            partial(self.board_do_change_frame_label, board_item),
+            board_item.label,
+        )
+
+    def board_frame_items_doubleClickEvent(self, event):
+        for board_item, label_rect, bounding_rect in self.board_frame_items_ui_rects:
+            if label_rect.contains(event.pos()):
+                self.board_change_frame_label(board_item)
+                return True
+        else:
+            return False
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
