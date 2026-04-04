@@ -1639,7 +1639,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_getBoardFilepath(self):
         return self.getBoardFilepathBoardCallback()
 
-    def board_get_crossboard_root_folder(self, fod):
+    def board_get_main_board_folder(self, fod):
         while fod.board.root_folder is not None:
             fod = fod.board.root_folder
         return fod
@@ -1651,11 +1651,11 @@ class BoardMixin(BoardTextEditItemMixin):
         return out
 
     def board_saveBoardDefault(self):
-        cf = self.LibraryData().current_folder()
+        cufod = self.LibraryData().current_folder()
 
         # если находимся в зависимой доске,
         # то сохраняем корневую доску, а зависимая запишется вместе с ней
-        fod = self.board_get_crossboard_root_folder(cf)
+        fod = self.board_get_main_board_folder(cufod)
         board_filepath = self.board_getBoardFilepath()
 
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
@@ -6389,10 +6389,26 @@ class BoardMixin(BoardTextEditItemMixin):
         CROSSBOARD.crossboard_mode = False
 
     def board_enter_crossboard(self):
-        pass
+        if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
+            msg = _("You cannot dive inside crossboard when board operation is not finished!")
+            self.show_center_label(msg, error=True)
+            return
+        self.board_TextElementDeactivateEditMode()
+
+        cufod = self.LibraryData().current_folder()
+        main_board_fod = self.board_get_main_board_folder()
+
+        cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+        self.build_board_bounding_rect(cross_fod)
+        cross_fod.previews_done = True
+        cross_fod.board.ready = True
+
+        self.board_make_board_current(cross_fod)
+        self.LibraryData().current_folder().board.referer_board_folder = cufod
+        self.prepare_selection_box_widget(cross_fod)
 
     def board_leave_crossboard(self):
-        pass
+        self.board_dive_inside_board_item(back_to_referer=True)
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
