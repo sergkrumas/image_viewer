@@ -260,6 +260,8 @@ class BoardItem():
 
         self.countdown_red_frame = 0
 
+        self.frame_color = QColor(Qt.white)
+
     def set_alert(self):
         self.countdown_red_frame = 10
 
@@ -2319,7 +2321,7 @@ class BoardMixin(BoardTextEditItemMixin):
             FRAME_PADDING = BoardItem.FRAME_PADDING
 
             area = board_item.get_selection_area(canvas=self)
-            pen = QPen(Qt.white, 2, Qt.DashLine)
+            pen = QPen(board_item.frame_color, 2, Qt.DashLine)
             pen.setCosmetic(True) # не скейлить пен
             painter.setPen(pen)
             painter.setBrush(Qt.NoBrush)
@@ -6425,6 +6427,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
 
+        gray_color = QColor(100, 100, 100, 100)
         cb_offset = QPointF(0, 0)
         for fod in self.CROSSBOARD.all_fods:
             self.build_board_bounding_rect(fod)
@@ -6440,7 +6443,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             bbr_ = QRectF(bbr)
             bbr_.moveTopLeft(cb_offset)
-            self.board_do_add_item_frame(cross_fod, bbr_).label = f'«{fod.folder_label}»'
+            fi = self.board_do_add_item_frame(cross_fod, bbr_)
+            fi.label = f'«{fod.folder_label}»'
+            fi.frame_color = gray_color
 
             cb_offset += QPointF(bbr.width() + 2.0*BoardItem.FRAME_PADDING, 0)
 
@@ -6487,24 +6492,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_content_init()
         painter.end()
 
-        # snapshot = self.grab() if False else snapshot_pixmap
         fod.board.root_item._snapshot = snapshot_pixmap
 
         # restore
         self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = before_viewport_data
-
-    # TODO: (4 апр 26) более не используется, но может пригодится, оставлю пока
-    # def board_change_frame_item_label(self, frame_item, *args):
-    #     dialog = QInputDialog(self)
-    #     dialog.setInputMode(QInputDialog.TextInput)
-    #     dialog.setTextValue(frame_item.label)
-    #     dialog.setWindowTitle(_('Change frame item label'))
-    #     dialog.setLabelText(_("Label Text:"))
-    #     dialog.resize(500,100)
-    #     ok = dialog.exec_()
-    #     if ok:
-    #         frame_item.label = dialog.textValue()
-    #     self.update()
 
     def board_do_change_frame_label(self, board_item):
         board_item.label = self.modal_input_field_text()
