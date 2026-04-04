@@ -5158,13 +5158,13 @@ class BoardMixin(BoardTextEditItemMixin):
                     elif path.lower().endswith(svg_exts):
                         pixmap = load_svg(path, scale_factor=20)
                 if pixmap is not None:
-                    self.board_create_new_board_item_image(path, cf)
+                    self.board_create_new_image_item(path, cf)
 
         elif mdata and mdata.hasImage():
             pixmap = QPixmap().fromImage(mdata.FileData())
             path = os.path.join(cf.folder_path, f'{time.time()}.jpg')
             pixmap.save(path)
-            self.board_create_new_board_item_image(path, cf)
+            self.board_create_new_image_item(path, cf)
 
     def board_long_loading_begin(self, text):
         text = text.strip()
@@ -5207,9 +5207,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 ext = f'.{ext}'
             filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
             urllib.request.urlretrieve(url, filepath)
-            self.board_create_new_board_item_image(filepath, cf, source_url=url)
+            self.board_create_new_image_item(filepath, cf, source_url=url)
 
-    def board_create_new_board_item_image(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
+    def board_create_new_image_item(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
         file_data = self.LibraryData().create_file_data(filepath, current_folder)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
         board_item.file_data = file_data
