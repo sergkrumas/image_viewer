@@ -3519,22 +3519,26 @@ class BoardMixin(BoardTextEditItemMixin):
         if update_selection:
             self.board_select_items([group_item])
 
+    def board_do_add_item_frame(self, fod, content_bounding_rect):
+        bi = BoardItem(BoardItem.types.ITEM_FRAME)
+        self.board_set_item_data(bi, fod)
+        fod.board.items_list.append(bi)
+        bi.position = content_bounding_rect.center()
+        bi.width = content_bounding_rect.width()
+        bi.height = content_bounding_rect.height()
+        bi.width += BoardItem.FRAME_PADDING
+        bi.height += BoardItem.FRAME_PADDING
+        bi.label = _("FRAME ITEM")
+        return bi
+
     def board_add_item_frame(self):
         if self.selection_box is None:
             self.show_center_label(_("No items selected!"), error=True)
         else:
-            folder_data = self.LibraryData().current_folder()
-            bi = BoardItem(BoardItem.types.ITEM_FRAME)
-            self.board_set_item_data(bi, folder_data)
-            folder_data.board.items_list.append(bi)
-
-            selection_bounding_rect = self.selection_box.boundingRect()
-            bi.position = self.board_MapToBoard(selection_bounding_rect.center())
-            bi.width = selection_bounding_rect.width() / self.canvas_scale_x
-            bi.height = selection_bounding_rect.height() / self.canvas_scale_y
-            bi.width += BoardItem.FRAME_PADDING
-            bi.height += BoardItem.FRAME_PADDING
-            bi.label = _("FRAME ITEM")
+            bi = self.board_do_add_item_frame(
+                self.LibraryData().current_folder(),
+                self.board_MapRectToBoard(self.selection_box.boundingRect()),
+            )
             self.board_select_items([bi])
 
         self.update()
