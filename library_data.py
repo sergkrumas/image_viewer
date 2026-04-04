@@ -1256,6 +1256,8 @@ class CrossboardData():
         self.current_item_index = 0
         self.current_board_index = 0
         self.children_boards_folder_data = []
+        self.link_items_list = []
+        self._link_slots_list = defaultdict(list)
 
     def get_crossboard_board_index(self):
         self.current_board_index += 1
@@ -1308,8 +1310,7 @@ class BoardData():
 
         self.user_points = []
         self.items_list = []
-        self.link_items_list = []
-        self._link_slots_list = defaultdict(list)
+
         self.force_vertical_layout = False
 
         self.plugin_filename = None
