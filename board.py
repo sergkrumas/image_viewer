@@ -5118,46 +5118,53 @@ class BoardMixin(BoardTextEditItemMixin):
         mdata = cb.mimeData()
         cf = self.LibraryData().current_folder()
 
-        pixmap = None
+        qt_supported_exts = (
+            ".jpg", ".jpeg", ".jfif",
+            ".bmp",
+            ".gif",
+            ".png",
+            ".tif", ".tiff",
+            ".webp",
+        )
+        svg_exts = (
+            ".svg",
+            ".svgz"
+        )
+        PREFIX = "file:///"
+
         if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
             self.board_paste_selected_items()
 
         elif mdata and mdata.hasText():
-            path = mdata.text()
-            qt_supported_exts = (
-                ".jpg", ".jpeg", ".jfif",
-                ".bmp",
-                ".gif",
-                ".png",
-                ".tif", ".tiff",
-                ".webp",
-            )
-            svg_exts = (
-                ".svg",
-                ".svgz"
-            )
-            PREFIX = "file:///"
-            if path.startswith(PREFIX):
-                filepath = path[len(PREFIX):]
-                _gif_file = self.LibraryData().is_gif_file(filepath)
-                _webp_animated_file = self.LibraryData().is_webp_file(filepath) and self.LibraryData().is_webp_file_animated(filepath)
-                if _gif_file or _webp_animated_file:
-                    return filepath
-                # supported exts
-                elif path.lower().endswith(qt_supported_exts):
-                    pixmap = QPixmap(filepath)
-                # svg-files
-                elif path.lower().endswith(svg_exts):
-                    pixmap = load_svg(filepath, scale_factor=20)
+            for url in mdata.urls():
+                pixmap = None
+                if not url.isLocalFile():
+                    continue
+                path = url.path()
+                if path.startswith(PREFIX):
+                    path = path[len(PREFIX):]
+                if path.startswith("/"):
+                    path = path[1:]
+                print('..', path, os.path.exists(path))
+                if os.path.exists(path):
+                    _gif_file = self.LibraryData().is_gif_file(path)
+                    _webp_animated_file = self.LibraryData().is_webp_file(path) and self.LibraryData().is_webp_file_animated(path)
+                    if _gif_file or _webp_animated_file:
+                        return path
+                    # supported exts
+                    elif path.lower().endswith(qt_supported_exts):
+                        pixmap = QPixmap(path)
+                    # svg-files
+                    elif path.lower().endswith(svg_exts):
+                        pixmap = load_svg(path, scale_factor=20)
+                if pixmap is not None:
+                    self.board_create_new_board_item_image(path, cf)
 
         elif mdata and mdata.hasImage():
             pixmap = QPixmap().fromImage(mdata.FileData())
-            filepath = os.path.join(cf.folder_path, f'{time.time()}.jpg')
-
-            pixmap.save(filepath)
-
-        if pixmap is not None:
-            self.board_create_new_board_item_image(filepath, cf)
+            path = os.path.join(cf.folder_path, f'{time.time()}.jpg')
+            pixmap.save(path)
+            self.board_create_new_board_item_image(path, cf)
 
     def board_long_loading_begin(self, text):
         text = text.strip()
