@@ -2105,9 +2105,15 @@ class BoardMixin(BoardTextEditItemMixin):
                         duration=0.3,
                     )
 
-    def board_draw_content(self, painter, folder_data):
-        self.board_TextElementResetColorsButtons()
-        self.board_frame_items_text_rects = []
+
+    def board_draw_content_init(self):
+        self.images_drawn = 0
+        self.board_item_under_mouse = None
+
+    def board_draw_content(self, painter, folder_data, snapshot=False):
+        if not snapshot:
+            self.board_TextElementResetColorsButtons()
+            self.board_frame_items_text_rects = []
 
         painter.setPen(QPen(Qt.white, 1))
         font = painter.font()
@@ -2117,16 +2123,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_content_links(painter, folder_data, True, False)
 
-        self.images_drawn = 0
-        self.board_item_under_mouse = None
+        self.board_draw_content_init()
         for board_item in folder_data.board.items_list:
             if board_item.visible:
                 self.board_draw_item(painter, board_item)
-        self.draw_selection(painter, folder_data)
+
+        if not snapshot:
+            self.draw_selection(painter, folder_data)
 
         self.board_draw_content_links(painter, folder_data, False, True)
 
-        painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
+        if not snapshot:
+            painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
 
     def board_util_path_to_polygone(self, path):
         def float_range(start, stop, step):
@@ -6427,7 +6435,28 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_leave_crossboard()
 
     def board_take_snapshot(self, fod):
-        fod.board.root_item._snapshot = self.grab()
+        self.LibraryData().save_board_data()
+
+        before_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
+        bo = fod.board
+        self.canvas_scale_x = bo.scale_x
+        self.canvas_scale_y = bo.scale_y
+        self.canvas_origin = bo.origin
+
+        snapshot_pixmap = QPixmap(self.rect().size())
+        snapshot_pixmap.fill(Qt.black)
+        painter = QPainter()
+        painter.begin(snapshot_pixmap)
+        self.board_draw_content(painter, fod, snapshot=True)
+        self.board_draw_content_init()
+        painter.end()
+
+        # snapshot = self.grab() if False else snapshot_pixmap
+
+        fod.board.root_item._snapshot = snapshot_pixmap
+
+        # restore
+        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = before_viewport_data
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
