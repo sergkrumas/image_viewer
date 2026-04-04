@@ -211,6 +211,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             return self._current_folder
 
+    def remove_cross_fod(self, cross_fod):
+        self.folders.remove(cross_fod)
+        self._index = self.folders.index(self._current_folder)
+
     def before_current_image_changed(self):
         im = LibraryData().current_folder().current_image()
         im.store_ui_data()

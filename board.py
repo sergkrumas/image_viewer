@@ -6411,6 +6411,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_leave_crossboard(self):
         cross_fod = self.LibraryData().current_folder()
         self.board_dive_inside_board_item(back_to_referer=True, do_snapshot=False)
+        self.LibraryData().remove_cross_fod(cross_fod)
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
