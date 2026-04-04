@@ -6416,8 +6416,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cufod = self.LibraryData().current_folder()
         main_board_fod = self.board_get_main_board_folder(cufod)
         children_fods = cufod.board._crossboard_data.children_boards_folder_data
-        all_fods = [main_board_fod]
-        all_fods.extend(children_fods)
+        all_fods = [main_board_fod, *children_fods]
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
         self.build_board_bounding_rect(cross_fod)
