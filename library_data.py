@@ -1327,6 +1327,13 @@ class BoardData():
 
         self.generation_time = time.time()
 
+    def retrieve_group_index(self):
+        self.current_item_group_index += 1
+        return self.current_item_group_index
+
+    def retrieve_item_index(self):
+        self.current_item_index += 1
+        return self.current_item_index
 
 class FolderData():
 

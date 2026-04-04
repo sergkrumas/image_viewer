@@ -1885,17 +1885,15 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.restore()
 
     def board_set_item_data(self, item, folder_data):
-        cf = self.LibraryData().current_folder()
-        cf.board.current_item_index += 1
-        item.board_index = cf.board.current_item_index
-        cd = folder_data.board._crossboard_data
-        item.cross_board_index = cd.get_crossboard_item_index()
-        item._board = folder_data.board
+        board = folder_data.board
 
-    def retrieve_new_board_item_group_index(self):
-        cf = self.LibraryData().current_folder()
-        cf.board.current_item_group_index += 1
-        return cf.board.current_item_group_index
+        item.board_index = board.retrieve_item_index()
+        item.cross_board_index = board._crossboard_data.get_crossboard_item_index()
+
+        item._board = board
+
+        if item.type == BoardItem.types.ITEM_GROUP:
+            gi.board_group_index = self.LibraryData().current_folder().board.retrieve_group_index()
 
     def board_get_selected_or_visible_items(self, visible=False):
         cf = self.LibraryData().current_folder()
@@ -3416,7 +3414,7 @@ class BoardMixin(BoardTextEditItemMixin):
         gi = BoardItem(BoardItem.types.ITEM_GROUP)
         gi.item_folder_data = item_folder_data
         self.board_set_item_data(gi, current_folder_data)
-        gi.board_group_index = self.retrieve_new_board_item_group_index()
+
         current_folder_data.board.items_list.append(gi)
         item_folder_data.previews_done = True
         item_folder_data.board.ready = True
