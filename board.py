@@ -6395,8 +6395,9 @@ class BoardMixin(BoardTextEditItemMixin):
         pass
 
     def board_toggle_crossboard(self):
-        self.CB_DATA.crossboard_mode = not self.CB_DATA.crossboard_mode
-        if self.CB_DATA.crossboard_mode:
+        CB_DATA = self.CB_DATA
+        CB_DATA.crossboard_mode = not CB_DATA.crossboard_mode
+        if CB_DATA.crossboard_mode:
             self.board_enter_crossboard()
         else:
             self.board_leave_crossboard()
