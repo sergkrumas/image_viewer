@@ -1887,13 +1887,20 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_set_tracking_data(self, item, folder_data):
         board = folder_data.board
 
-        item.board_index = board.retrieve_item_index()
-        item.cross_board_index = board._crossboard_data.get_crossboard_item_index()
+        if self.LibraryData().boardItemsTracking:
+            item.board_index = board.retrieve_item_index()
+            item.cross_board_index = board._crossboard_data.get_crossboard_item_index()
+        else:
+            item.board_index = None
+            item.cross_board_index = None
 
         item._board = board
 
         if item.type == BoardItem.types.ITEM_GROUP:
-            item.board_group_index = board.retrieve_group_index()
+            if self.LibraryData().boardItemsTracking:
+                item.board_group_index = board.retrieve_group_index()
+            else:
+                item.board_group_index = None
 
     def board_get_selected_or_visible_items(self, visible=False):
         cf = self.LibraryData().current_folder()
@@ -6423,6 +6430,8 @@ class BoardMixin(BoardTextEditItemMixin):
         children_fods = cufod.board._crossboard_data.children_boards_folder_data
         self.CROSSBOARD.all_fods = [main_board_fod, *children_fods]
 
+        self.LibraryData().setBoardItemsTracking(False)
+
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
 
         gray_color = QColor(100, 100, 100, 100)
@@ -6464,6 +6473,7 @@ class BoardMixin(BoardTextEditItemMixin):
             for item in fod.board.items_list:
                 item.retrieve_transformation()
         self.CROSSBOARD.all_fods.clear()
+        self.LibraryData().setBoardItemsTracking(True)
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD

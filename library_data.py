@@ -90,6 +90,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.fav_folder = ...
             i.comments_folder = ...
             i.total_TIME = 0
+            i.boardItemsTracking = True
             i.ThumbnailsPreviewsThread = ThumbnailsPreviewsThread
 
             if not i.globals.lite_mode:
@@ -100,6 +101,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             i.load_boards()
             i.load_paths_for_forced_board_vertical_layout()
         return cls.instance
+
+    def setBoardItemsTracking(self, value):
+        # линков это не касается, только нод и прочих айтемов
+        self.boardItemsTracking = value
 
     @classmethod
     def find_lost_files(cls):
@@ -1292,10 +1297,14 @@ class BoardData():
 
     def __init__(self):
 
+
+        ld = LibraryData()
+
+
         self.origin = None
         self.scale_x = None
         self.scale_y = None
-        self.ready = False or LibraryData().globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
+        self.ready = False or ld.globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
         self.user_points = []
         self.items_list = []
@@ -1314,7 +1323,11 @@ class BoardData():
 
         cd = CrossboardData.get()
         self._crossboard_data = cd
-        self.crossboard_board_index = cd.get_crossboard_board_index()
+
+        if ld.boardItemsTracking:
+            self.crossboard_board_index = cd.get_crossboard_board_index()
+        else:
+            self.crossboard_board_index = None
 
         self._item_ctrl_z_data = defaultdict(list)
 
