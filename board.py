@@ -1705,14 +1705,14 @@ class BoardMixin(BoardTextEditItemMixin):
             return
         self.board_TextElementDeactivateEditMode()
         cf = self.LibraryData().current_folder()
-        BOARD_FOLDER_DATA = None
+        FOD = None
         if back_to_referer:
             board = cf.board
             referer = board.referer_board_folder
             if referer is not None:
                 if do_snapshot:
                     self.board_take_snapshot(cf)
-                BOARD_FOLDER_DATA = referer
+                FOD = referer
         else:
             item = None
             for bi in cf.board.items_list:
@@ -1735,10 +1735,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
             item_folder_data = getattr(item, 'item_folder_data', None)
             if item_folder_data:
-                BOARD_FOLDER_DATA = item.item_folder_data
+                FOD = item.item_folder_data
+                # TODO: задание атрибутов ниже по сути костыль,
+                # ведь у меня не восстанавливаются эти атрибуты при загрузке из файла 
+                FOD.board.root_folder = cf
+                FOD.board.root_item = item
 
             elif case2:
-                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                FOD = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
                 self.build_board_bounding_rect(fd)
                 fd.previews_done = True
@@ -1748,7 +1752,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board._crossboard_data.add_board_folder_data(fd)
 
             elif case3:
-                BOARD_FOLDER_DATA = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                FOD = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
                 item.item_folder_data = fd
 
                 movie = item.movie
@@ -1782,11 +1786,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
 
-        if BOARD_FOLDER_DATA is not None:
-            self.board_make_board_current(BOARD_FOLDER_DATA)
+        if FOD is not None:
+            self.board_make_board_current(FOD)
             if not back_to_referer:
                 self.LibraryData().current_folder().board.referer_board_folder = cf
-            self.prepare_selection_box_widget(BOARD_FOLDER_DATA)
+            self.prepare_selection_box_widget(FOD)
         else:
             self.show_center_label(_("No place to return"), error=True)
         self.update()
