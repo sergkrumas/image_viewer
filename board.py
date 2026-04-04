@@ -2291,7 +2291,10 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.save()
             painter.setPen(QPen(Qt.red, board_item.countdown_red_frame))
             painter.setBrush(Qt.NoBrush)
-            painter.drawRect(br)
+            if board_item.type == BoardItem.types.ITEM_NODE:
+                painter.drawEllipse(br)
+            else:
+                painter.drawRect(br)
             painter.restore()
             board_item.countdown_red_frame -= 1
 
