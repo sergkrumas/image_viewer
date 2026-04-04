@@ -1659,16 +1659,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # если находимся в зависимой доске,
         # то сохраняем корневую доску, а зависимая запишется вместе с ней
-        fod = self.board_get_main_board_folder(cufod)
+        main_fod = self.board_get_main_board_folder(cufod)
         board_filepath = self.board_getBoardFilepath()
 
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
         self.LibraryData().save_board_data()
 
         data_base = dict()
-        data_base['crossboard_data'] = fod.board._crossboard_data.store()
-        data_base['children_boards'] = self.board_gather_children_boards(fod)
-        data_base['main_board'] = self.board_serialize_board_data(fod)
+        data_base['crossboard_data'] = main_fod.board._crossboard_data.store()
+        data_base['children_boards'] = self.board_gather_children_boards(main_fod)
+        data_base['main_board'] = self.board_serialize_board_data(main_fod)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG.use_cbor2_instead_of_json:
