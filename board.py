@@ -6409,6 +6409,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_crossboard_init(self):
         self.CROSSBOARD = CROSSBOARD = type('CBData', (), {})()
         CROSSBOARD.crossboard_mode = False
+        CROSSBOARD.all_fods = []
 
     def board_enter_crossboard(self):
         if self.translation_ongoing or self.rotation_ongoing or self.scaling_ongoing:
@@ -6420,12 +6421,12 @@ class BoardMixin(BoardTextEditItemMixin):
         cufod = self.LibraryData().current_folder()
         main_board_fod = self.board_get_main_board_folder(cufod)
         children_fods = cufod.board._crossboard_data.children_boards_folder_data
-        all_fods = [main_board_fod, *children_fods]
+        self.CROSSBOARD.all_fods = [main_board_fod, *children_fods]
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
 
         cb_offset = QPointF(0, 0)
-        for fod in all_fods:
+        for fod in self.CROSSBOARD.all_fods:
             self.build_board_bounding_rect(fod)
             for item in fod.board.items_list:
                 item.stash_transformation()
@@ -6456,6 +6457,10 @@ class BoardMixin(BoardTextEditItemMixin):
         cross_fod = self.LibraryData().current_folder()
         self.board_dive_inside_board_item(back_to_referer=True, do_snapshot=False)
         self.LibraryData().remove_cross_fod(cross_fod)
+        for fod in self.CROSSBOARD.all_fods:
+            for item in fod.board.items_list:
+                item.retrieve_transformation()
+        self.CROSSBOARD.all_fods.clear()
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
