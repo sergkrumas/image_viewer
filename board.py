@@ -6537,10 +6537,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementDeactivateEditMode()
 
         cufod = self.LibraryData().current_folder()
-        viewport_center_pos = self.board_MapToBoard(self.rect().center())
-        ppp = self.board_MapToViewport(self.board_bounding_rect.topLeft()) - self.canvas_origin
-        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
+        self.build_board_bounding_rect(cufod)
+        tl = self.board_MapToViewport(self.board_bounding_rect.topLeft())
 
+        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
         self.CROSSBOARD.intro_fod = cufod
 
         self.LibraryData().setBoardItemsTracking(False)
@@ -6573,7 +6573,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             cb_offset += QPointF(bbr.width() + 2.0*BoardItem.FRAME_PADDING, 0)
 
-
         self.build_board_bounding_rect_to_board_data(cross_fod)
         cross_fod.previews_done = True
         cross_fod.board.ready = True
@@ -6585,19 +6584,10 @@ class BoardMixin(BoardTextEditItemMixin):
         b = cufod.board
         self.canvas_scale_x = b.scale_x
         self.canvas_scale_y = b.scale_y
-        # self.canvas_scale_x = 1.0
-        # self.canvas_scale_y = 1.0
-        # board_dist = viewport_center_pos - view_offset
-
         new_origin = view_offset
         new_origin.setX(new_origin.x()*self.canvas_scale_x)
         new_origin.setY(new_origin.y()*self.canvas_scale_y)
-
-        self.canvas_origin = -new_origin
-        # TODO: на данном этапе текущая доска упирается левым верхним углом bounding-box-а
-        # в вернхий левый угол экрана, но смещения правильного ещё нет
-        # ориджин доски не всегда может быть опорным элементом,
-        # вместо ориджина надо брать координату topLeft от bounding_box доски
+        self.canvas_origin = -new_origin + tl
 
     def board_leave_crossboard(self):
         cross_fod = self.LibraryData().current_folder()
