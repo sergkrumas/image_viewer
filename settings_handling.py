@@ -783,6 +783,8 @@ class Settings(SettingsWindow):
         cls = self.__class__
         for setting_id, (current_value, *_params) in cls.matrix.items():
             new_value = ...
+            if setting_id == DEBUG_PAGE_SETTING_ID and not self.globals.DEBUG:
+                continue
             if setting_id in [UI_LANG_SETTING_ID, INFRAMED_FOLDERPATH_SETTING_ID]:
                 pass
             elif isinstance(current_value, bool):
