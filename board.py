@@ -4842,8 +4842,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_clear_links_selection(self):
         cf = self.LibraryData().current_folder()
-        for link in self.board_get_visible_links():
+        for link in self.CrossboardData.link_items_list:
             link._selected = False
+
+    def board_clear_all_selections(self):
+        self.board_clear_selection()
+        self.board_clear_links_selection()
 
     def right_click_selection_init(self):
         self.RCS = RCS = type('RightClickSelectionData', (), {})()
