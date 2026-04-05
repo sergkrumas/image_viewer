@@ -1174,7 +1174,7 @@ class BoardMixin(BoardTextEditItemMixin):
         sel_count = self.board_selected_items_count()
         if sel_count > 0:
             text = _("{0} (add selected items to it: {1})").format(text, sel_count)
-        addItem(text, self.board_add_item_group_noargs)
+        addItem(text, self.board_add_item_group)
 
         addItem(_("Frame"), self.board_add_item_frame)
 
@@ -3420,12 +3420,6 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.show_center_label(_("Group-item not found"), error=True)
         self.update()
-
-    def board_add_item_group_noargs(self):
-        # !!! если засунуть board_add_item_group в connect,
-        # то значение move_selection_to_group будет равно позиционному аргументу, который будет передан при вызове,
-        # и важно этого избежать, поэтому действуем через прокладку board_add_item_group_noargs
-        self.board_add_item_group()
 
     def board_add_item_group(self, move_selection_to_group=True, virtual_allowed=False, item_position=None):
         current_folder_data = self.LibraryData().current_folder()

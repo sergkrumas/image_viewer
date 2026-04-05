@@ -605,7 +605,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 ControlPanelButton("mb", _("Create multifolder board"), callback=MW.board_prepare_multifolder_board),
 
                 ControlPanelButton("folder", _("Add folder item"), callback=partial(MW.board_add_item_folder)),
-                ControlPanelButton("group", _("Add group item"), callback=MW.board_add_item_group_noargs),
+                ControlPanelButton("group", _("Add group item"), callback=MW.board_add_item_group),
                 ControlPanelButton("frame", _("Add frame item"), callback=MW.board_add_item_frame),
                 ControlPanelButton("note", _("Add note item"), callback=partial(MW.board_add_item_note)),
 
