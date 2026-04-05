@@ -3372,13 +3372,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
 
-        for li in self.CrossboardData().link_items_list[:]:
+        for li in self.board_get_visible_links():
             if li._selected:
                 self.board_delete_link_item(li)
 
         self.prepare_selection_box_widget(cf)
 
         self.update()
+
+    def board_get_visible_links(self):
+        if self.CROSSBOARD.activated:
+            return self.CrossboardData().link_items_list[:]
+        else:
+            links = []
+            cubo = self.LibraryData().current_folder().board
+            for link in self.CrossboardData().link_items_list:
+                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
+                    links.append(link)
+            return links
 
     def get_removed_items_group(self, folder_data):
         for bi in folder_data.board.items_list:
@@ -3586,7 +3597,7 @@ class BoardMixin(BoardTextEditItemMixin):
         li.to_item = None
 
     def board_delete_attached_links(self, item):
-        links = self.CrossboardData().link_items_list
+        links = self.CrossboardData().link_items_listё
         for link in links[:]:
             if (link.from_item is item) or (link.to_item is item):
                 self.board_delete_link_item(link)
@@ -3607,13 +3618,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_toggle_directional_notd_for_links(self):
         fd = self.LibraryData().current_folder()
-        for bli in self.CrossboardData().link_items_list:
+        for bli in self.board_get_visible_links():
             if bli._selected:
                 bli.is_directional = not bli.is_directional
 
     def board_toggle_links_direction(self):
         fd = self.LibraryData().current_folder()
-        for bli in self.CrossboardData().link_items_list:
+        for bli in self.board_get_visible_links():
             if bli._selected:
                 bli.to_item, bli.from_item = bli.from_item, bli.to_item
 
@@ -3676,7 +3687,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_change_link_width(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
-        for li in self.CrossboardData().link_items_list:
+        for li in self.board_get_visible_links():
             if li.is_near_link(self, cursor_pos) and li._selected:
                 break
         else:
@@ -4824,7 +4835,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_clear_links_selection(self):
         cf = self.LibraryData().current_folder()
-        for link in self.CrossboardData().link_items_list:
+        for link in self.board_get_visible_links():
             link._selected = False
 
     def right_click_selection_init(self):
@@ -4860,7 +4871,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     # выходит и из внешнего цикла тоже
                     return
 
-        for li in self.CrossboardData().link_items_list:
+        for li in self.board_get_visible_links():
             check_near_link(li)
 
     def right_click_selection_pressEvent(self, event, shift_pressed):
