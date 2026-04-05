@@ -3382,8 +3382,8 @@ class BoardMixin(BoardTextEditItemMixin):
             for slot in self.CrossboardData()._link_slots_list.values():
                 if not slot:
                     continue
-                link = slot[0]
-                soft_check, strict_check = link.check_link_boards(board)
+                li = slot[0]
+                soft_check, strict_check = li.check_link_boards(board)
                 if strict_check:
                     slots.append(slot)
         return slots
@@ -3400,9 +3400,10 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             links = []
             cubo = self.LibraryData().current_folder().board
-            for link in self.CrossboardData().link_items_list:
-                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
-                    links.append(link)
+            for li in self.CrossboardData().link_items_list:
+                soft_check, strict_check = li.check_link_boards(cubo)
+                if strict_check:
+                    links.append(li)
             return links
 
     def get_removed_items_group(self, folder_data):
