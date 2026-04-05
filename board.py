@@ -4837,7 +4837,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.prevent_item_deselection = False
 
-    def board_clear_selection(self):
+    def board_clear_items_selection(self):
         self.board_unselect_all_items()
 
     def board_clear_links_selection(self):
@@ -4846,7 +4846,7 @@ class BoardMixin(BoardTextEditItemMixin):
             link._selected = False
 
     def board_clear_all_selections(self):
-        self.board_clear_selection()
+        self.board_clear_items_selection()
         self.board_clear_links_selection()
 
     def right_click_selection_init(self):
@@ -4890,7 +4890,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.ongoing = True
         RCS.selection_points.clear()
         # сбрасывает выделение для контекстного меню
-        # self.board_clear_selection()
+        # self.board_clear_items_selection()
         RCS.selection_points.append(event.pos())
         RCS.clear_selection = not shift_pressed
 
