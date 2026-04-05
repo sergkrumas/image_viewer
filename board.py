@@ -6533,7 +6533,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_TextElementDeactivateEditMode()
 
         cufod = self.LibraryData().current_folder()
-        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods() 
+        viewport_center_pos = self.board_MapToBoard(self.rect().center())
+        ppp = self.board_MapToViewport(self.board_bounding_rect.topLeft()) - self.canvas_origin
+        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
 
         self.LibraryData().setBoardItemsTracking(False)
 
@@ -6541,6 +6543,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         gray_color = QColor(100, 100, 100, 100)
         cb_offset = QPointF(0, 0)
+        view_offset = None
         for fod in self.CROSSBOARD.all_fods:
             self.build_board_bounding_rect(fod)
             for item in fod.board.items_list:
@@ -6559,6 +6562,9 @@ class BoardMixin(BoardTextEditItemMixin):
             fi.label = f'«{fod.folder_label}»'
             fi.frame_color = gray_color
 
+            if fod is cufod:
+                view_offset = QPointF(cb_offset)
+
             cb_offset += QPointF(bbr.width() + 2.0*BoardItem.FRAME_PADDING, 0)
 
 
@@ -6569,6 +6575,23 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_make_board_current(cross_fod)
         cross_fod.board.referer_board_folder = cufod
         self.prepare_selection_box_widget(cross_fod)
+
+        b = cufod.board
+        self.canvas_scale_x = b.scale_x
+        self.canvas_scale_y = b.scale_y
+        # self.canvas_scale_x = 1.0
+        # self.canvas_scale_y = 1.0
+        # board_dist = viewport_center_pos - view_offset
+
+        new_origin = view_offset
+        new_origin.setX(new_origin.x()*self.canvas_scale_x)
+        new_origin.setY(new_origin.y()*self.canvas_scale_y)
+
+        self.canvas_origin = -new_origin
+        # TODO: на данном этапе текущая доска упирается левым верхним углом bounding-box-а
+        # в вернхий левый угол экрана, но смещения правильного ещё нет
+        # ориджин доски не всегда может быть опорным элементом,
+        # вместо ориджина надо брать координату topLeft от bounding_box доски
 
     def board_leave_crossboard(self):
         cross_fod = self.LibraryData().current_folder()
