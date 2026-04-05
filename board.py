@@ -1286,6 +1286,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_serial_to_object_attributes(li, link_item_attributes, promises)
             self.board_add_link_to_database(li)
 
+        # подключаем к группам и нодам их внутренние доски
         for id_key, obj, attr_name in promises:
             if attr_name == 'item_folder_data':
                 ch_bo_fod = children_boards_folders[id_key]
