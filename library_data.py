@@ -1321,12 +1321,8 @@ class BoardData():
 
         self.current_item_index = 0
         self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
-
-        cd = CrossboardData()
-        self._crossboard_data = cd
-
         if ld.boardItemsTracking and LibraryData.NONE_FOLDER_NAME != folder_data.folder_label:
-            self.crossboard_board_index = cd.get_crossboard_board_index()
+            self.crossboard_board_index = CrossboardData().get_crossboard_board_index()
         else:
             self.crossboard_board_index = None
 
