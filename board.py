@@ -1278,8 +1278,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for link_item_attributes in crossboard_links:
             li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
             self.board_serial_to_object_attributes(li, link_item_attributes, promises)
-            cd.link_items_list.append(li)
-            self.board_add_link_to_slot(li)
+            self.board_add_link_to_database(li)
 
         for id_key, obj, attr_name in promises:
             # (3 апр 26) TODO:
@@ -3625,10 +3624,12 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cf)
         # self.board_select_items([bi])
 
-    def board_add_link_to_slot(self, li):
+    def board_add_link_to_database(self, li):
         indexes = (li.from_item.cross_board_index, li.to_item.cross_board_index)
         ordered_indexes_key = (min(indexes), max(indexes))
-        link_slot = self.CrossboardData()._link_slots_list[ordered_indexes_key]
+        cd = self.CrossboardData()
+        cd.link_items_list.append(li)
+        link_slot = cd._link_slots_list[ordered_indexes_key]
         link_slot.append(li)
         li._slot = link_slot
 
@@ -3637,9 +3638,8 @@ class BoardMixin(BoardTextEditItemMixin):
         li = BoardItem(BoardItem.types.ITEM_LINK)
         li.from_item = from_item
         li.to_item = to_item
-        self.CrossboardData().link_items_list.append(li)
-        # add to slot
-        self.board_add_link_to_slot(li)
+        # add to database
+        self.board_add_link_to_database(li)
         self.update()
 
     def board_change_node_radius(self, event, scroll_value):
