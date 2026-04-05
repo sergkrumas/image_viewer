@@ -2185,20 +2185,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
-
-        slots = []
-        if self.CROSSBOARD.activated:
-            slots = self.CrossboardData()._link_slots_list.values()
-        else:
-            for slot in self.CrossboardData()._link_slots_list.values():
-                if not slot:
-                    continue
-                link = slot[0]
-                cubo = folder_data.board
-                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
-                    slots.append(slot)
-
-        for slot in slots:
+        for slot in self.board_get_visible_link_slots(folder_data):
             if not slot:
                 continue
 
@@ -3380,7 +3367,27 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
+    def board_get_visible_link_slots(self, cufod):
+        slots = []
+        if self.CROSSBOARD.activated:
+            slots = self.CrossboardData()._link_slots_list.values()
+        else:
+            for slot in self.CrossboardData()._link_slots_list.values():
+                if not slot:
+                    continue
+                link = slot[0]
+                cubo = cufod.board
+                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
+                    slots.append(slot)
+        return slots
+
     def board_get_visible_links(self):
+        # TODO: по идее для каждой доски надо делать подсписок, который
+        # должен обновляться
+        #   - при переходе из доски в доску
+        #   - при создании линков
+        #   - при удалении линков
+        #   - при перемещении айтемов с доски на доску
         if self.CROSSBOARD.activated:
             return self.CrossboardData().link_items_list[:]
         else:
