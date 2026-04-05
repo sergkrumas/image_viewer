@@ -6490,7 +6490,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for fod in self.CROSSBOARD.all_fods:
             for item in fod.board.items_list:
                 item.retrieve_transformation()
-        self.CROSSBOARD.all_fods.clear()
+        self.CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
 
     def board_toggle_crossboard(self):
