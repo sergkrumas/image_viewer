@@ -1301,9 +1301,7 @@ class BoardData():
 
     def __init__(self, folder_data):
 
-
         ld = LibraryData()
-
 
         self.origin = None
         self.scale_x = None
@@ -1320,6 +1318,8 @@ class BoardData():
         self.bounding_rect = None
 
         self.referer_board_folder = None
+
+        self._folder = folder_data
 
         self.current_item_index = 0
         self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы

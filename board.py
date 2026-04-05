@@ -1270,15 +1270,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         promises = []
 
-        children_boards = dict()
+        children_boards_folders = dict()
         for fd_key, folder_data in children_boards_dict.items():
-            children_boards[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, main_board=False)
+            children_boards_folders[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, main_board=False)
 
         main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
 
         # обязательно делаем это до линков,
         # иначе линки в дочерних досках крашнут загрузку вместе с приложением
-        cd.load(crossboard_data, list(children_boards.values()))
+        cd.load(crossboard_data, list(children_boards_folders.values()))
 
         # линки всех досок
         for link_item_attributes in crossboard_links:
@@ -1287,15 +1287,18 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_add_link_to_database(li)
 
         for id_key, obj, attr_name in promises:
-            # (3 апр 26) TODO:
-            # а ведь здесь когда-нибудь может попасться ссылка на main_board,
-            # но её id у меня нигде не сохранён ещё! И если такое случится, то здесь прога крашнет
-            cfod = children_boards[id_key]
-            setattr(obj, attr_name, cfod)
-            cfod.board.root_folder = cfod
-            cfod.board.root_item = obj
-            self.LibraryData().make_thumbnails_and_previews(cfod, None)
-            cfod.board.ready = True
+            if attr_name == 'item_folder_data':
+                ch_bo_fod = children_boards_folders[id_key]
+                item = obj
+                setattr(item, attr_name, ch_bo_fod)
+                # заодно восстанавливаем root_folder и root_item
+                ch_bo_fod.board.root_folder = item._board._folder
+                ch_bo_fod.board.root_item = item
+                # и подготавливаем доску
+                self.LibraryData().make_thumbnails_and_previews(ch_bo_fod, None)
+                ch_bo_fod.board.ready = True
+
+                # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
 
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
@@ -1755,10 +1758,6 @@ class BoardMixin(BoardTextEditItemMixin):
             item_folder_data = getattr(item, 'item_folder_data', None)
             if item_folder_data:
                 FOD = item.item_folder_data
-                # TODO: задание атрибутов ниже по сути костыль,
-                # ведь у меня не восстанавливаются эти атрибуты при загрузке из файла 
-                FOD.board.root_folder = cf
-                FOD.board.root_item = item
 
             elif case2:
                 FOD = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
