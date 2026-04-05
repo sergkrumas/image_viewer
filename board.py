@@ -4842,10 +4842,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_clear_links_selection(self):
         cf = self.LibraryData().current_folder()
-        for link in self.CrossboardData.link_items_list:
+        for link in self.CrossboardData().link_items_list:
             link._selected = False
 
     def board_clear_all_selections(self):
+        self.item_magazin.clear()
         self.board_clear_items_selection()
         self.board_clear_links_selection()
 

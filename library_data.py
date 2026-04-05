@@ -248,6 +248,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         mw = self.globals.main_window
         if mw and mw.viewer_modal:
             mw.leave_modal_viewer()
+        if mw.is_board_page_active():
+            mw.board_clear_all_selections()
 
     def go_to_folder_of_current_image(self):
         im = LibraryData().current_folder().current_image()
