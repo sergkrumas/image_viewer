@@ -2185,7 +2185,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
-        for slot in self.CrossboardData()._link_slots_list.values():
+
+        slots = []
+        if self.CROSSBOARD.activated:
+            slots = self.CrossboardData()._link_slots_list.values()
+        else:
+            for slot in self.CrossboardData()._link_slots_list.values():
+                if not slot:
+                    continue
+                link = slot[0]
+                cubo = folder_data.board
+                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
+                    slots.append(slot)
+
+        for slot in slots:
             if not slot:
                 continue
 
@@ -6423,7 +6436,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_crossboard_init(self):
         self.CROSSBOARD = CROSSBOARD = type('CBData', (), {})()
-        CROSSBOARD.crossboard_mode = False
+        CROSSBOARD.activated = False
         CROSSBOARD.all_fods = []
 
     def board_get_all_crossboard_fods(self):
@@ -6489,8 +6502,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
-        CROSSBOARD.crossboard_mode = not CROSSBOARD.crossboard_mode
-        if CROSSBOARD.crossboard_mode:
+        CROSSBOARD.activated = not CROSSBOARD.activated
+        if CROSSBOARD.activated:
             self.board_enter_crossboard()
         else:
             self.board_leave_crossboard()
