@@ -1723,6 +1723,9 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         FOD = None
         if back_to_referer:
+            if self.CROSSBOARD.activated:
+                self.board_toggle_crossboard()
+                return
             board = cf.board
             referer = board.referer_board_folder
             if referer is not None:
