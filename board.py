@@ -563,6 +563,12 @@ class BoardItem():
             attr_type = type(attr_value)
             setattr(self, dest_name, attr_type(attr_value))
 
+    def check_link_boards(self, fodbo):
+        check_1 = self.to_item._board is fodbo
+        check_2 = self.from_item._board is fodbo
+        soft = check_1 or check_2
+        strict = check_1 and check_2
+        return soft, strict
 
 BoardCallbacksNames = [
     'mousePressEvent',
@@ -3367,17 +3373,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_get_visible_link_slots(self, cufod):
+    def board_get_visible_link_slots(self, fod):
         slots = []
         if self.CROSSBOARD.activated:
             slots = self.CrossboardData()._link_slots_list.values()
         else:
+            board = fod.board
             for slot in self.CrossboardData()._link_slots_list.values():
                 if not slot:
                     continue
                 link = slot[0]
-                cubo = cufod.board
-                if (link.to_item._board is cubo) or (link.from_item._board is cubo):
+                soft_check, strict_check = link.check_link_boards(board)
+                if strict_check:
                     slots.append(slot)
         return slots
 
