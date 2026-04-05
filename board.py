@@ -2185,7 +2185,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
-        for slot_id, slot in self.CrossboardData()._link_slots_list.items():
+        for slot in self.CrossboardData()._link_slots_list.values():
             if not slot:
                 continue
 
