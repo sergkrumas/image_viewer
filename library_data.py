@@ -75,6 +75,9 @@ class ThumbnailsPreviewsThread(QThread):
 
 
 class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibraryDataMixin):
+
+    NONE_FOLDER_NAME = "NONE FOLDER"
+
     def __new__(cls, _globals=None):
         if not hasattr(cls, 'instance'):
             cls.instance = super(LibraryData, cls).__new__(cls)
@@ -206,7 +209,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         # sometimes self._current_folder returns None and it becomes the cause of applicaton crash at startup
         cl = self.__class__
         if not hasattr(cl, 'none_folder'):
-            cl.none_folder = FolderData("NONE FOLDER", "", [], virtual=True)
+            cl.none_folder = FolderData(self.NONE_FOLDER_NAME, "", [], virtual=True)
         return cl.none_folder
 
     def current_folder(self):
@@ -1294,7 +1297,7 @@ class BoardNonAutoSerializedData():
 
 class BoardData():
 
-    def __init__(self):
+    def __init__(self, folder_data):
 
 
         ld = LibraryData()
@@ -1322,7 +1325,7 @@ class BoardData():
         cd = CrossboardData()
         self._crossboard_data = cd
 
-        if ld.boardItemsTracking:
+        if ld.boardItemsTracking and LibraryData.NONE_FOLDER_NAME != folder_data.folder_label:
             self.crossboard_board_index = cd.get_crossboard_board_index()
         else:
             self.crossboard_board_index = None
@@ -1384,7 +1387,7 @@ class FolderData():
         self.sort_type = "original"
         self.sort_type_reversed = False
 
-        self.board = BoardData()
+        self.board = BoardData(self)
 
         self.preview_error = False
 
