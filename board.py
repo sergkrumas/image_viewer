@@ -3353,7 +3353,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         )
                         items_list.remove(bi)
                 if bi.type == BoardItem.types.ITEM_NODE:
-                    self.board_delete_nonlink_item_info(bi, cf=cf)
+                    self.board_delete_attached_links(bi)
                     items_list.remove(bi)
 
             self.move_items_to_group(item_group=gi, items=self.selected_items)
@@ -3362,7 +3362,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for li in self.CrossboardData().link_items_list[:]:
             if li._selected:
-                self.board_delete_link_item(li, cf=cf)
+                self.board_delete_link_item(li)
 
         self.prepare_selection_box_widget(cf)
 
@@ -3569,15 +3569,17 @@ class BoardMixin(BoardTextEditItemMixin):
         self.modal_input_field_show(self.board_create_node_item, _('Node label'))
         self.board_invoke_pos = viewport_pos
 
-    def board_delete_link_item(self, item, cf=None):
+    def board_delete_link_item(self, li):
         links = self.CrossboardData().link_items_list
-        if item in links:
-            links.remove(item)
-        item._slot.remove(item)
-        item.from_item = None
-        item.to_item = None
+        if li in links:
+            links.remove(li)
+        if li._slot:
+            li._slot.remove(li)
+            li._slot = None
+        li.from_item = None
+        li.to_item = None
 
-    def board_delete_nonlink_item_info(self, item, cf=None):
+    def board_delete_attached_links(self, item):
         links = self.CrossboardData().link_items_list
         for link in links[:]:
             if (link.from_item is item) or (link.to_item is item):
