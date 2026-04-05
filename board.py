@@ -3144,6 +3144,9 @@ class BoardMixin(BoardTextEditItemMixin):
     def build_board_bounding_rect(self, folder_data, apply_global_scale=False):
         self.board_bounding_rect = self._get_board_bounding_rect(folder_data, apply_global_scale=apply_global_scale)
 
+    def build_board_bounding_rect_to_board_data(self, folder_data, apply_global_scale=False):
+        folder_data.board.bounding_rect = self._get_board_bounding_rect(folder_data, apply_global_scale=apply_global_scale)
+
     def get_widget_cursor(self, source_pixmap, angle):
         pixmap = QPixmap(source_pixmap.size())
         pixmap.fill(Qt.transparent)
@@ -6518,6 +6521,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.CROSSBOARD = CROSSBOARD = type('CBData', (), {})()
         CROSSBOARD.activated = False
         CROSSBOARD.all_fods = []
+        CROSSBOARD.intro_fod = None
 
     def board_get_all_crossboard_fods(self):
         cufod = self.LibraryData().current_folder()
@@ -6537,6 +6541,8 @@ class BoardMixin(BoardTextEditItemMixin):
         ppp = self.board_MapToViewport(self.board_bounding_rect.topLeft()) - self.canvas_origin
         self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
 
+        self.CROSSBOARD.intro_fod = cufod
+
         self.LibraryData().setBoardItemsTracking(False)
 
         cross_fod = self.LibraryData().create_folder_data(_("CROSSBOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
@@ -6545,7 +6551,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cb_offset = QPointF(0, 0)
         view_offset = None
         for fod in self.CROSSBOARD.all_fods:
-            self.build_board_bounding_rect(fod)
+            self.build_board_bounding_rect_to_board_data(fod)
             for item in fod.board.items_list:
                 item.stash_transformation()
 
@@ -6568,7 +6574,7 @@ class BoardMixin(BoardTextEditItemMixin):
             cb_offset += QPointF(bbr.width() + 2.0*BoardItem.FRAME_PADDING, 0)
 
 
-        self.build_board_bounding_rect(cross_fod)
+        self.build_board_bounding_rect_to_board_data(cross_fod)
         cross_fod.previews_done = True
         cross_fod.board.ready = True
 
@@ -6595,13 +6601,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_leave_crossboard(self):
         cross_fod = self.LibraryData().current_folder()
-        self.board_dive_inside_board_item(back_to_referer=True, do_snapshot=False)
+        self.board_make_board_current(self.CROSSBOARD.intro_fod)
         self.LibraryData().remove_cross_fod(cross_fod)
         for fod in self.CROSSBOARD.all_fods:
             for item in fod.board.items_list:
                 item.retrieve_transformation()
         self.CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
+        self.CROSSBOARD.intro_fod = None
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
