@@ -1258,7 +1258,7 @@ class BoardMixin(BoardTextEditItemMixin):
         crossboard_data = data['crossboard_data']
         crossboard_links = data['crossboard_links']
 
-        cd = self.CrossboardData.get()
+        cd = self.CrossboardData()
         cd.children_boards_folder_data.clear()
         cd.link_items_list.clear()
 
@@ -1272,7 +1272,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # обязательно делаем это до линков,
         # иначе линки в дочерних досках крашнут загрузку вместе с приложением
-        main_fod.board._crossboard_data.load(crossboard_data, list(children_boards.values()))
+        cd.load(crossboard_data, list(children_boards.values()))
 
         # линки всех досок
         for link_item_attributes in crossboard_links:
@@ -1652,9 +1652,9 @@ class BoardMixin(BoardTextEditItemMixin):
             fod = fod.board.root_folder
         return fod
 
-    def board_gather_children_boards(self, fod):
+    def board_gather_children_boards(self):
         out = dict()
-        for fd in fod.board._crossboard_data.children_boards_folder_data:
+        for fd in self.CrossboardData().children_boards_folder_data:
             out[id(fd)] = self.board_serialize_board_data(fd)
         return out
 
@@ -1678,9 +1678,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.LibraryData().save_board_data()
 
         data_base = dict()
-        data_base['crossboard_data'] = main_fod.board._crossboard_data.store()
-        data_base['crossboard_links'] = self.serialize_links(main_fod.board._crossboard_data.link_items_list)
-        data_base['children_boards'] = self.board_gather_children_boards(main_fod)
+        data_base['crossboard_data'] = self.CrossboardData().store()
+        data_base['crossboard_links'] = self.serialize_links(self.CrossboardData().link_items_list)
+        data_base['children_boards'] = self.board_gather_children_boards()
         data_base['main_board'] = self.board_serialize_board_data(main_fod)
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
@@ -1760,7 +1760,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
-                fd.board._crossboard_data.add_board_folder_data(fd)
+                self.CrossboardData().add_board_folder_data(fd)
 
             elif case3:
                 FOD = fd = self.LibraryData().create_folder_data(_("ANIMATED FILE Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
@@ -1793,7 +1793,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
-                fd.board._crossboard_data.add_board_folder_data(fd)
+                self.CrossboardData().add_board_folder_data(fd)
 
 
 
@@ -1904,7 +1904,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.LibraryData().boardItemsTracking:
             item.board_index = board.retrieve_item_index()
-            item.cross_board_index = board._crossboard_data.get_crossboard_item_index()
+            item.cross_board_index = self.CrossboardData().get_crossboard_item_index()
         else:
             item.board_index = None
             item.cross_board_index = None
@@ -2186,7 +2186,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         pos = self.mapped_cursor_pos()
         # ITEM_LINK
-        for slot_id, slot in folder_data.board._crossboard_data._link_slots_list.items():
+        for slot_id, slot in self.CrossboardData()._link_slots_list.items():
             if not slot:
                 continue
 
@@ -2829,7 +2829,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if lines[-1] != "":
             lines.append('')
 
-        cd = board._crossboard_data
+        cd = self.CrossboardData()
         lines.append(_('Current cross-board item index:: {}').format(cd.current_item_index))
         lines.append(_('Current cross-board board index:: {}').format(cd.current_board_index))
         lines.append(_('Children boards count:: {}').format(len(cd.children_boards_folder_data)))
@@ -3360,7 +3360,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
 
-        for li in fd.board._crossboard_data.link_items_list[:]:
+        for li in self.CrossboardData().link_items_list[:]:
             if li._selected:
                 self.board_delete_link_item(li, cf=cf)
 
@@ -3384,7 +3384,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = folder_data
         item_folder_data.board.root_item = gi
-        item_folder_data.board._crossboard_data.add_board_folder_data(item_folder_data)
+        self.CrossboardData().add_board_folder_data(item_folder_data)
         gi.position = - QPointF(gi.width, gi.height)/2.0
 
         gi.update_corner_info()
@@ -3442,7 +3442,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item_folder_data.board.ready = True
         item_folder_data.board.root_folder = current_folder_data
         item_folder_data.board.root_item = gi
-        item_folder_data.board._crossboard_data.add_board_folder_data(item_folder_data)
+        self.CrossboardData().add_board_folder_data(item_folder_data)
         # располагаем центр в координате вызова контекстеного меню
         if item_position is None:
             gi.position = self.board_MapToBoard(self.rect().center())
@@ -3570,8 +3570,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_invoke_pos = viewport_pos
 
     def board_delete_link_item(self, item, cf=None):
-        cf = cf or self.LibraryData().current_folder()
-        links = cf.board._crossboard_data.link_items_list
+        links = self.CrossboardData().link_items_list
         if item in links:
             links.remove(item)
         item._slot.remove(item)
@@ -3579,8 +3578,7 @@ class BoardMixin(BoardTextEditItemMixin):
         item.to_item = None
 
     def board_delete_nonlink_item_info(self, item, cf=None):
-        cf = cf or self.LibraryData().current_folder()
-        links = cf.board._crossboard_data.link_items_list
+        links = self.CrossboardData().link_items_list
         for link in links[:]:
             if (link.from_item is item) or (link.to_item is item):
                 self.board_delete_link_item(link)
@@ -3601,13 +3599,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_toggle_directional_notd_for_links(self):
         fd = self.LibraryData().current_folder()
-        for bli in fd.board._crossboard_data.link_items_list:
+        for bli in self.CrossboardData().link_items_list:
             if bli._selected:
                 bli.is_directional = not bli.is_directional
 
     def board_toggle_links_direction(self):
         fd = self.LibraryData().current_folder()
-        for bli in fd.board._crossboard_data.link_items_list:
+        for bli in self.CrossboardData().link_items_list:
             if bli._selected:
                 bli.to_item, bli.from_item = bli.from_item, bli.to_item
 
@@ -3634,7 +3632,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_add_link_to_slot(self, li):
         indexes = (li.from_item.cross_board_index, li.to_item.cross_board_index)
         ordered_indexes_key = (min(indexes), max(indexes))
-        link_slot = self.CrossboardData.get()._link_slots_list[ordered_indexes_key]
+        link_slot = self.CrossboardData()._link_slots_list[ordered_indexes_key]
         link_slot.append(li)
         li._slot = link_slot
 
@@ -3643,7 +3641,7 @@ class BoardMixin(BoardTextEditItemMixin):
         li = BoardItem(BoardItem.types.ITEM_LINK)
         li.from_item = from_item
         li.to_item = to_item
-        self.CrossboardData.get().link_items_list.append(li)
+        self.CrossboardData().link_items_list.append(li)
         # add to slot
         self.board_add_link_to_slot(li)
         self.update()
@@ -3669,7 +3667,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_change_link_width(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
-        for li in cf.board._crossboard_data.link_items_list:
+        for li in self.CrossboardData().link_items_list:
             if li.is_near_link(self, cursor_pos) and li._selected:
                 break
         else:
@@ -4817,7 +4815,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_clear_links_selection(self):
         cf = self.LibraryData().current_folder()
-        for link in cf.board._crossboard_data.link_items_list:
+        for link in self.CrossboardData().link_items_list:
             link._selected = False
 
     def right_click_selection_init(self):
@@ -4853,7 +4851,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     # выходит и из внешнего цикла тоже
                     return
 
-        for li in cf.board._crossboard_data.link_items_list:
+        for li in self.CrossboardData().link_items_list:
             check_near_link(li)
 
     def right_click_selection_pressEvent(self, event, shift_pressed):
@@ -6435,7 +6433,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_get_all_crossboard_fods(self):
         cufod = self.LibraryData().current_folder()
         main_board_fod = self.board_get_main_board_folder(cufod)
-        children_fods = cufod.board._crossboard_data.children_boards_folder_data
+        children_fods = self.CrossboardData().children_boards_folder_data
         return (main_board_fod, *children_fods)
 
     def board_enter_crossboard(self):

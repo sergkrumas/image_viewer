@@ -1250,14 +1250,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
 class CrossboardData():
 
-    i = None
-
-    def __init__(self):
-        self.current_item_index = 0
-        self.current_board_index = 0
-        self.children_boards_folder_data = []
-        self.link_items_list = []
-        self._link_slots_list = defaultdict(list)
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(CrossboardData, cls).__new__(cls)
+            i = cls.instance
+            i.current_item_index = 0
+            i.current_board_index = 0
+            i.children_boards_folder_data = []
+            i.link_items_list = []
+            i._link_slots_list = defaultdict(list)
+        return cls.instance
 
     def get_crossboard_board_index(self):
         self.current_board_index += 1
@@ -1272,25 +1274,20 @@ class CrossboardData():
 
     @classmethod
     def load(cls, data, children):
-        i = cls.i
+        i = cls.instance
         i.current_item_index = data['current_item_index']
         i.current_board_index = data['current_board_index']
         i.children_boards_folder_data = children
 
     @classmethod
     def store(cls):
-        i = cls.i
+        i = cls.instance
         data = dict()
         data['current_item_index'] = i.current_item_index
         data['current_board_index'] = i.current_board_index
         # i.children_boards_folder_data сохраняется отдельно
         return data
 
-    @classmethod
-    def get(cls):
-        if cls.i is None:
-            cls.i = cls()
-        return cls.i
 
 class BoardNonAutoSerializedData():
     pass
@@ -1322,7 +1319,7 @@ class BoardData():
         self.current_item_index = 0
         self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
 
-        cd = CrossboardData.get()
+        cd = CrossboardData()
         self._crossboard_data = cd
 
         if ld.boardItemsTracking:
