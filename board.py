@@ -2152,6 +2152,9 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(12)
         painter.setFont(font)
 
+        if not self.CROSSBOARD.activated:
+            self.board_draw_content_external_links(painter, folder_data)
+
         self.board_draw_content_links(painter, folder_data, True, False)
 
         self.board_draw_content_init()
@@ -2175,6 +2178,42 @@ class BoardMixin(BoardTextEditItemMixin):
         points = [path.pointAtPercent(t) for t in float_range(0.0, 1.0, 0.05)]
         points.append(path.pointAtPercent(1.0))
         return QPolygonF(points)
+
+    def board_enlarge_selection_area(self, selection_area, offset):
+        center = selection_area.boundingRect().center()
+        for point in selection_area:
+            vec = QVector2D(center-point)
+            vec_normalized = vec.normalized()
+            new_len = vec.length() + offset
+            point += -point + center + (vec_normalized*new_len).toPointF()
+
+    def board_draw_content_external_links(self, painter, folder_data):
+        external_linked_items = []
+
+        board = folder_data.board
+        for slot in self.CrossboardData()._link_slots_list.values():
+            if not slot:
+                continue
+            li = slot[0]
+            soft_check, strict_check = li.check_link_boards(board)
+            if soft_check and not strict_check:
+                if li.to_item._board is board:
+                    external_linked_items.append(li.to_item)
+                if li.from_item._board is board:
+                    external_linked_items.append(li.from_item)
+
+        painter.save()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(QColor(255, 165, 50, 150)))
+        EXTERNAL_LINK_OFFSET = 10
+        for item in external_linked_items:
+            sa = item.get_selection_area(canvas=self)
+            self.board_enlarge_selection_area(sa, EXTERNAL_LINK_OFFSET)
+            if item.type == BoardItem.types.ITEM_NODE:
+                painter.drawEllipse(sa.boundingRect())
+            else:
+                painter.drawPolygon(sa)
+        painter.restore()
 
     def board_draw_content_links(self, painter, folder_data, pre, post):
         if self.links_draw_before_items and post:
