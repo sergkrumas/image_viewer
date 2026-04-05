@@ -6585,8 +6585,10 @@ class BoardMixin(BoardTextEditItemMixin):
         CROSSBOARD.activated = not CROSSBOARD.activated
         if CROSSBOARD.activated:
             self.board_enter_crossboard()
+            self.show_center_label(_("You've entered crossboard"), duration=1.5)
         else:
             self.board_leave_crossboard()
+            self.show_center_label(_("You've left crossboard"), duration=1.5)
 
     def board_take_snapshot(self, fod):
         self.LibraryData().save_board_data()
