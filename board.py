@@ -1270,11 +1270,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         promises = []
 
+        all_items = dict()
+
         children_boards_folders = dict()
         for fd_key, folder_data in children_boards_dict.items():
-            children_boards_folders[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, main_board=False)
+            children_boards_folders[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, all_items, main_board=False)
 
-        main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, main_board=True, board_load_filepath=board_filepath)
+        main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, all_items, main_board=True, board_load_filepath=board_filepath)
 
         # обязательно делаем это до линков,
         # иначе линки в дочерних досках крашнут загрузку вместе с приложением
@@ -1283,7 +1285,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # линки всех досок
         for link_item_attributes in crossboard_links:
             li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
-            self.board_serial_to_object_attributes(li, link_item_attributes, promises)
+            self.board_serial_to_object_attributes(li, link_item_attributes, promises, all_items=all_items)
             self.board_add_link_to_database(li)
 
         # подключаем к группам и нодам их внутренние доски
@@ -1304,7 +1306,7 @@ class BoardMixin(BoardTextEditItemMixin):
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
 
-    def board_recreate_board_from_serial(self, board_dict, promises, main_board=False, board_load_filepath=None):
+    def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
         board_attributes = board_dict['board_attributes']
         board_folder_data = board_dict['board_folder_data']
@@ -1343,6 +1345,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_serial_to_object_attributes(bi, board_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
             bi._board = fod.board
             fod.board.items_list.append(bi)
+            all_items[bi.cross_board_index] = bi
 
         fod.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
@@ -1358,16 +1361,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         return fod
 
-    def board_find_board_item_with_cross_board_index(self, cross_board_index):
-        # TODO: надо переделать на словарь это всё, иначе не дело
-        for fod in self.board_get_all_crossboard_fods():
-            for bi in fod.board.items_list:
-                if bi.cross_board_index == cross_board_index:
-                    return bi
-        else:
-            return None
-
-    def board_serial_to_object_attributes(self, obj, obj_attrs_list, promises, fd=None, id_to_filedata=None):
+    def board_serial_to_object_attributes(self, obj, obj_attrs_list, promises, fd=None, id_to_filedata=None, all_items=None):
         for attr_name, attr_type, attr_data in obj_attrs_list:
 
             if attr_type in ['QPoint']:
@@ -1437,9 +1431,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 status = f"name: '{attr_name}' type: '{attr_type}' value: '{attr_data}' obj: {obj}"
                 raise Exception(f"Unable to handle attribute, {status}")
 
+            #### INTENTIONAL IF-ELIF-ELSE-BRANCH BREAK
+
             if attr_name in ['from_item', 'to_item']:
                 if attr_value is not None:
-                    attr_value = self.board_find_board_item_with_cross_board_index(attr_value)
+                    attr_value = all_items.get(attr_value, None)
                     # QMessageBox.critical(None, '', f'{attr_name} :: {attr_value} :: {obj.type == BoardItem.types.ITEM_LINK}')
 
             setattr(obj, attr_name, attr_value)
