@@ -2158,7 +2158,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.CROSSBOARD.activated:
             self.board_draw_content_external_links(painter, folder_data)
 
-        if self.STNG.board_draw_bbr:
+        if self.STNG.board_draw_bbr and not snapshot:
             painter.drawRect(self.board_MapRectToViewport(self.board_bounding_rect))
 
         self.board_draw_content_links(painter, folder_data, True, False)
