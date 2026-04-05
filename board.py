@@ -1303,6 +1303,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
 
+        # генерим скриншоты для каждой дсоки
+        for ch_bo_fod in children_boards_folders.values():
+            self.board_take_snapshot(ch_bo_fod)
+
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
 
