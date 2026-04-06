@@ -265,6 +265,8 @@ class BoardItem():
 
         self.frame_color = QColor(Qt.white)
 
+        self._transform_stack = []
+
     def set_alert(self):
         self.countdown_red_frame = 10
 
@@ -548,29 +550,20 @@ class BoardItem():
             self.scale_x, \
             self.scale_y = self._saved_data
 
-    def stash_transformation(self):
-        self.stash_or_restore('_stashed_', save=True)
+    def save_transform(self):
+        self._transform_stack.append((
+                self.scale_x,
+                self.scale_y,
+                QPointF(self.position),
+                self.rotation
+        ))
 
-    def retrieve_transformation(self):
-        self.stash_or_restore('_stashed_', restore=True)
-
-    def stash_or_restore(self, prefix, save=False, restore=False):
-        transformation_attrs = (
-            'scale_x',
-            'scale_y',
-            'position',
-            'rotation',
-        )
-        for attr_name in transformation_attrs:
-            if restore:
-                source_name = f'{prefix}{attr_name}'
-                dest_name = attr_name
-            elif save:
-                source_name = attr_name
-                dest_name = f'{prefix}{attr_name}'
-            attr_value = getattr(self, source_name)
-            attr_type = type(attr_value)
-            setattr(self, dest_name, attr_type(attr_value))
+    def restore_transform(self):
+        self.scale_x, \
+        self.scale_y, \
+        self.position, \
+        self.rotation \
+                = self._transform_stack.pop()
 
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
@@ -6751,7 +6744,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for fod in self.CROSSBOARD.all_fods:
             self.build_board_bounding_rect_to_board_data(fod)
             for item in fod.board.items_list:
-                item.stash_transformation()
+                item.save_transform()
 
             bbr = fod.board.bounding_rect
             bbr_topleft = bbr.topLeft()
@@ -6824,7 +6817,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for fod in CROSSBOARD.all_fods:
             del fod._crossboard_frame_item
             for item in fod.board.items_list:
-                item.retrieve_transformation()
+                item.restore_transform()
         CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
         CROSSBOARD.intro_fod = None
