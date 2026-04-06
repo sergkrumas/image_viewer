@@ -754,6 +754,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_crossboard_init()
 
+        self.board_init_node_poster_scroll_timer()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1410,6 +1412,25 @@ class BoardMixin(BoardTextEditItemMixin):
                 set_first()
         else:
             set_first()
+
+    def board_init_node_poster_scroll_timer(self):
+        self.board_node_poster_timer = QTimer()
+        self.board_node_poster_timer.setInterval(2000)
+        self.board_node_poster_timer.timeout.connect(self.board_node_poster_timer_handler)
+        self.board_node_poster_timer.start()
+
+    def board_node_poster_timer_handler(self):
+        if self.is_board_page_active():
+            if not self.board_is_items_transformation_ongoing():
+                if not self.autoscroll_is_ongoing():
+                    cf = self.LibraryData().current_folder()
+                    cursor_pos = self.mapped_cursor_pos()
+                    items = self.find_all_items_under_this_pos(cf, cursor_pos)
+                    for ni in items:
+                        if ni.type == BoardItem.types.ITEM_NODE:
+                            self.board_scroll_node_poster_change_poster_index(ni, 1)
+                            self.update()
+                            break
 
     def board_validate_node_poster(self, ni):
         self.board_scroll_node_poster_change_poster_index(ni, 1, validate_only=True)
