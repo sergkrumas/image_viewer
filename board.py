@@ -238,6 +238,7 @@ class BoardItem():
         self._is_curved_link = False
         self._snapshot = None
         self.poster_board_index = None
+        self.poster_scale = 1.0
         self._poster_board_data = None
 
         self.image_source_url = None
@@ -1342,11 +1343,69 @@ class BoardMixin(BoardTextEditItemMixin):
                     ni._poster_board_data = None
                     ni.poster_board_index = None
 
-    def board_scroll_node_poster(self, scroll_value):
-        if scroll_value > 0:
-            pass
+    def board_scroll_node_poster(self, event, scroll_value):
+        cf = self.LibraryData().current_folder()
+        cursor_pos = event.pos()
+        items = self.find_all_items_under_this_pos(cf, cursor_pos)
+        for ni in items:
+            if ni.type == BoardItem.types.ITEM_NODE:
+                break
         else:
-            pass
+            return False
+        if event.buttons() == Qt.NoButton:
+            return False
+        if event.buttons() == Qt.LeftButton:
+            # poster scale
+            if scroll_value > 0:
+                step = 0.1
+            else:
+                step = -0.1
+            ni.poster_scale += step
+            ni.poster_scale = min(3.0, max(1.0, ni.poster_scale))
+        if event.buttons() == Qt.RightButton:
+            # scroll poster
+            if scroll_value > 0:
+                step = 1
+            else:
+                step = -1
+            self.board_scroll_node_poster_change_poster_index(ni, step)
+            self.context_menu_allowed = False
+        self.update()
+        return True
+
+    def next_cycled(self, current_value, all_values):
+        cycled = itertools.cycle(all_values)
+        for state in cycled:
+            if current_value == state:
+                break
+        return next(cycled)
+
+    def board_scroll_node_poster_change_poster_index(self, ni, direction):
+        fod = ni.item_folder_data
+        allowed_types = self.board_poster_allowed_item_types()
+        index_item_dict = dict()
+        for bi in fod.board.items_list:
+            if bi.type in allowed_types:
+                index_item_dict[bi.board_index] = bi
+        if not index_item_dict:
+            return
+        def set_first():
+            first_index, first_item = next(iter(index_item_dict.items()))
+            ni._poster_board_data = first_item.file_data.preview
+            ni.poster_board_index = first_index
+        if len(index_item_dict) > 1 and ni.poster_board_index is not None:
+            all_indexes = index_item_dict.keys()
+            if direction < 0:
+                all_indexes = reversed(all_indexes)
+            all_indexes = list(all_indexes)
+            if ni.poster_board_index in all_indexes:
+                next_index = self.next_cycled(ni.poster_board_index, all_indexes)
+                ni._poster_board_data = index_item_dict[next_index].file_data.preview
+                ni.poster_board_index = next_index
+            else:
+                set_first()
+        else:
+            set_first()
 
     def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
@@ -2544,11 +2603,12 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setFont(before_font)
 
             if board_item.poster_board_index is not None:
-                pos = label_rect.topLeft()
                 pbd = board_item._poster_board_data
+                pscale = board_item.poster_scale
+                pbd_rect = QRectF(0, 0, pbd.width()*pscale, pbd.height()*pscale)
+                pbd_rect.moveBottomLeft(label_rect.topLeft())
                 if pbd is not None:
-                    pos -= QPointF(0, pbd.height()+5)
-                    painter.drawPixmap(pos, pbd)
+                    painter.drawPixmap(pbd_rect.toRect(), pbd)
 
         else:
 
@@ -5246,6 +5306,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if control_panel_undermouse:
             return
         elif self.board_camera_translation_ongoing:
+            return
+        elif self.board_scroll_node_poster(event, scroll_value):
             return
         elif self.board_change_node_radius(event, scroll_value):
             return
