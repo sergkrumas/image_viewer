@@ -5064,15 +5064,19 @@ class BoardMixin(BoardTextEditItemMixin):
         items = cf.board.items_list
         im = self.item_magazin
 
-        def check_polygon_point_inside_selection_area(bi):
-            area = bi.get_selection_area(canvas=self).boundingRect()
+        def check_polygon_point_inside_selection_area(item, im_):
+            area = item.get_selection_area(canvas=self).boundingRect()
             for po in RCS.selection_points:
                 if area.contains(po):
-                    im.append(bi)
+                    im_.append(item)
+                    # (6 апр 26) странно, что я забыл тут break, это же очевидная оптимизация,
+                    # да и ещё, если его тут не будет, то при начале выделения изнутри ноды,
+                    # будет создан линк ноды с самой собой 
+                    break
 
         for bi in items:
             if bi not in im:
-                check_polygon_point_inside_selection_area(bi)
+                check_polygon_point_inside_selection_area(bi, im)
 
         def check_near_link(li):
             # TODO: это конечно полный провал,
