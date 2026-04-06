@@ -3854,6 +3854,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             pos = self.board_MapToBoard(self.rect().center())
         bi.position = pos
+        bi.item_folder_data = None
         self.build_board_bounding_rect(cf)
         # self.board_select_items([bi])
 
