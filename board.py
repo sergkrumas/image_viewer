@@ -2299,7 +2299,9 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(12)
         painter.setFont(font)
 
-        if not self.CROSSBOARD.activated:
+        if self.CROSSBOARD.activated:
+            self.board_draw_tech_links(painter)
+        else:
             self.board_draw_content_external_links(painter, folder_data)
 
         if self.STNG.board_draw_bbr and not snapshot:
@@ -2319,6 +2321,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if not snapshot:
             painter.drawText(self.rect().bottomLeft() + QPoint(50, -150), _("perfomance status: {0} images drawn").format(self.images_drawn))
+
+    def board_draw_tech_links(self, painter):
+        gray_color = QColor(255, 100, 100, 255)
+        painter.setPen(QPen(gray_color, 3))
+        for li in self.CROSSBOARD.tech_links:
+            to_pos = li.to_item.calculate_viewport_position(canvas=self)
+            from_pos = li.from_item.calculate_viewport_position(canvas=self)
+            painter.drawLine(to_pos, from_pos)
 
     def board_util_path_to_polygone(self, path):
         def float_range(start, stop, step):
@@ -6687,6 +6697,7 @@ class BoardMixin(BoardTextEditItemMixin):
         CROSSBOARD.activated = False
         CROSSBOARD.all_fods = []
         CROSSBOARD.intro_fod = None
+        CROSSBOARD.tech_links = []
 
     def board_get_all_crossboard_fods(self):
         cufod = self.LibraryData().current_folder()
@@ -6742,6 +6753,22 @@ class BoardMixin(BoardTextEditItemMixin):
         cross_fod.previews_done = True
         cross_fod.board.ready = True
 
+        origin = cross_fod.board.bounding_rect.bottomLeft()
+        tech_nodes = []
+        for i in range(3):
+            bi = BoardItem(BoardItem.types.ITEM_NODE)
+            bi.width = BoardItem.NODE_SIZE
+            bi.height = BoardItem.NODE_SIZE
+            bi.position = origin + QPointF(i*200, 0)
+            cross_fod.board.items_list.append(bi)
+            tech_nodes.append(bi)
+
+        for ni1, ni2 in zip(tech_nodes, tech_nodes[1:]):
+            li = BoardItem(BoardItem.types.ITEM_LINK)
+            li.from_item = ni1
+            li.to_item = ni2
+            self.CROSSBOARD.tech_links.append(li)
+
         self.board_make_board_current(cross_fod)
         cross_fod.board.referer_board_folder = cufod
         self.prepare_selection_box_widget(cross_fod)
@@ -6755,15 +6782,17 @@ class BoardMixin(BoardTextEditItemMixin):
         self.canvas_origin = -new_origin + tl
 
     def board_leave_crossboard(self):
+        CROSSBOARD = self.CROSSBOARD
         cross_fod = self.LibraryData().current_folder()
-        self.board_make_board_current(self.CROSSBOARD.intro_fod)
+        self.board_make_board_current(CROSSBOARD.intro_fod)
         self.LibraryData().remove_cross_fod(cross_fod)
-        for fod in self.CROSSBOARD.all_fods:
+        for fod in CROSSBOARD.all_fods:
             for item in fod.board.items_list:
                 item.retrieve_transformation()
-        self.CROSSBOARD.all_fods = ()
+        CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
-        self.CROSSBOARD.intro_fod = None
+        CROSSBOARD.intro_fod = None
+        CROSSBOARD.tech_links.clear()
 
     def board_toggle_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
