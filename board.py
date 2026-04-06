@@ -2328,10 +2328,23 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_tech_links(self, painter):
         gray_color = QColor(255, 100, 100, 255)
-        painter.setPen(QPen(gray_color, 3))
+
+        def get_link_end_pos(bi):
+            if bi.type == BoardItem.types.ITEM_FRAME:
+                r = bi._label_ui_rect
+                if r:
+                    return r.topLeft()/2.0 + r.bottomLeft()/2.0
+                else:
+                    return bi.get_selection_area(canvas=self).boundingRect().topLeft() 
+            else:
+                return bi.calculate_viewport_position(canvas=self)
+
+        painter.setPen(QPen(gray_color, 3, Qt.DashLine))
         for li in self.CROSSBOARD.tech_links:
-            to_pos = li.to_item.calculate_viewport_position(canvas=self)
-            from_pos = li.from_item.calculate_viewport_position(canvas=self)
+            to = li.to_item
+            fr = li.from_item
+            to_pos = get_link_end_pos(to)
+            from_pos = get_link_end_pos(fr)
             painter.drawLine(to_pos, from_pos)
 
     def board_util_path_to_polygone(self, path):
@@ -6730,6 +6743,7 @@ class BoardMixin(BoardTextEditItemMixin):
         gray_color = QColor(100, 100, 100, 100)
         cb_offset = QPointF(0, 0)
         view_offset = None
+        crossboard_frames_fods = []
         for fod in self.CROSSBOARD.all_fods:
             self.build_board_bounding_rect_to_board_data(fod)
             for item in fod.board.items_list:
@@ -6747,6 +6761,8 @@ class BoardMixin(BoardTextEditItemMixin):
             fi = self.board_do_add_item_frame(cross_fod, bbr_)
             fi.label = f'«{fod.folder_label}»'
             fi.frame_color = gray_color
+            fod._crossboard_frame_item = fi
+            crossboard_frames_fods.append(fod)
 
             if fod is cufod:
                 view_offset = QPointF(cb_offset)
@@ -6757,6 +6773,15 @@ class BoardMixin(BoardTextEditItemMixin):
         cross_fod.previews_done = True
         cross_fod.board.ready = True
 
+        # технические линки между нодой и фреймом, содержащим контент поддоски этой ноды
+        for fod in crossboard_frames_fods[1:]:
+            li = BoardItem(BoardItem.types.ITEM_LINK)
+            if fod.board.root_item is not None:
+                li.from_item = fod._crossboard_frame_item
+                li.to_item = fod.board.root_item
+                self.CROSSBOARD.tech_links.append(li)
+
+        # граф вложенности
         origin = cross_fod.board.bounding_rect.bottomLeft()
         tech_nodes = []
         for i in range(3):
@@ -6791,6 +6816,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_make_board_current(CROSSBOARD.intro_fod)
         self.LibraryData().remove_cross_fod(cross_fod)
         for fod in CROSSBOARD.all_fods:
+            del fod._crossboard_frame_item
             for item in fod.board.items_list:
                 item.retrieve_transformation()
         CROSSBOARD.all_fods = ()
