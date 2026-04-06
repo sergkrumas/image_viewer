@@ -371,21 +371,27 @@ class BoardItem():
         return copied_item
 
     def info_text(self):
+        passport_info = f'\nCB-index: {self.crossboard_index}\nB-index: {self.board_index}'
+        if self.board_group_index is not None:
+            passport_info = f'{passport_info}\nBG-index: {self.board_group_index}'
+
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             file_data = self.file_data
             text = f'{file_data.filename}\n{file_data.source_width} x {file_data.source_height}'
             if self.image_source_url is not None:
                 text = f'{text}\n{self.image_source_url}'
-            return text
+            return text + passport_info
         elif self.type == self.types.ITEM_FOLDER:
             path = self.item_folder_data.folder_path
-            return _('FOLDER {0}').format(path)
+            return _('FOLDER {0}').format(path) + passport_info
         elif self.type == self.types.ITEM_GROUP:
-            return _('GROUP {0} {1}').format(self.board_group_index, self.label)
+            return _('GROUP {0} {1}').format(self.board_group_index, self.label) + passport_info
         elif self.type == self.types.ITEM_FRAME:
-            return _('FRAME')
+            return _('FRAME') + passport_info
         elif self.type == self.types.ITEM_NOTE:
-            return _('TEXT NOTE')
+            return _('TEXT NOTE') + passport_info
+        elif self.type == self.types.ITEM_NODE:
+            return self.label + passport_info
 
     def calculate_viewport_position(self, canvas, pos=None):
         if pos is None:
@@ -1303,7 +1309,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
 
-        # генерим скриншоты для каждой дсоки
+        # генерим скриншоты для каждой доски
         for ch_bo_fod in children_boards_folders.values():
             self.board_take_snapshot(ch_bo_fod)
 
@@ -2625,21 +2631,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 if case4:
                     self.board_item_under_mouse = board_item
 
-                selection_area_rect = selection_area.boundingRect()
-
-                if board_item._show_file_info_overlay:
-                    text = board_item.info_text()
-                    alignment = Qt.AlignCenter
-
-                    painter.save()
-                    text_rect = painter.boundingRect(selection_area_rect, alignment, text)
-                    painter.setBrush(QBrush(Qt.white))
-                    painter.setPen(Qt.NoPen)
-                    painter.drawRect(text_rect)
-                    painter.setPen(QPen(Qt.black, 1))
-                    painter.setBrush(Qt.NoBrush)
-                    painter.drawText(text_rect, alignment, text)
-                    painter.restore()
 
                 if board_item == self.board_item_under_mouse:
                     if board_item.status:
@@ -2658,6 +2649,24 @@ class BoardMixin(BoardTextEditItemMixin):
                             painter.setPen(QPen(Qt.white, 1))
                             painter.drawText(text_rect, alignment, board_item.status)
                             painter.setBrush(Qt.NoBrush)
+
+
+        if board_item._show_file_info_overlay:
+            text = board_item.info_text()
+            alignment = Qt.AlignCenter
+
+            selection_area = board_item.get_selection_area(canvas=self)
+            selection_area_rect = selection_area.boundingRect()
+
+            painter.save()
+            text_rect = painter.boundingRect(selection_area_rect, alignment, text)
+            painter.setBrush(QBrush(Qt.white))
+            painter.setPen(Qt.NoPen)
+            painter.drawRect(text_rect)
+            painter.setPen(QPen(Qt.black, 1))
+            painter.setBrush(Qt.NoBrush)
+            painter.drawText(text_rect, alignment, text)
+            painter.restore()
 
     def trigger_board_item_pixmap_unloading(self, board_item):
         if board_item.pixmap is None:
