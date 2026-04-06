@@ -1262,7 +1262,7 @@ class BoardMixin(BoardTextEditItemMixin):
         main_board_dict = data['main_board']
         children_boards_dict = data['children_boards']
         crossboard_data = data['crossboard_data']
-        crossboard_links = data['crossboard_links']
+        all_links = data['all_links']
 
         cd = self.CrossboardData()
         cd.children_boards_folder_data.clear()
@@ -1283,7 +1283,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cd.load(crossboard_data, list(children_boards_folders.values()))
 
         # линки всех досок
-        for link_item_attributes in crossboard_links:
+        for link_item_attributes in all_links:
             li = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
             self.board_serial_to_object_attributes(li, link_item_attributes, promises, all_items=all_items)
             self.board_add_link_to_database(li)
@@ -1689,7 +1689,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         data_base = dict()
         data_base['crossboard_data'] = self.CrossboardData().store()
-        data_base['crossboard_links'] = self.serialize_links(self.CrossboardData().link_items_list)
+        data_base['all_links'] = self.serialize_links(self.CrossboardData().link_items_list)
         data_base['children_boards'] = self.board_gather_children_boards()
         data_base['main_board'] = self.board_serialize_board_data(main_fod)
 
