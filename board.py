@@ -2339,7 +2339,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if r:
                     return r.topLeft()/2.0 + r.bottomLeft()/2.0
                 else:
-                    return bi.get_selection_area(canvas=self).boundingRect().topLeft() 
+                    return bi.get_selection_area(canvas=self).boundingRect().topLeft()
             else:
                 return bi.calculate_viewport_position(canvas=self)
 
@@ -5112,7 +5112,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     im_.append(item)
                     # (6 апр 26) странно, что я забыл тут break, это же очевидная оптимизация,
                     # да и ещё, если его тут не будет, то при начале выделения изнутри ноды,
-                    # будет создан линк ноды с самой собой 
+                    # будет создан линк ноды с самой собой
                     break
 
         for bi in items:
@@ -6790,9 +6790,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # граф вложенности
         origin = cross_fod.board.bounding_rect.bottomLeft()
-        tech_nodes = []
+
+        main_fod = self.CROSSBOARD.all_fods[0]
+        self.graph_offsets = defaultdict(float)
+        self.cross_fod = cross_fod
+        self.board_build_relationships_graph(origin, main_fod)
 
         # тестовый пример
+        # tech_nodes = []
         # for i in range(3):
         #     bi = BoardItem(BoardItem.types.ITEM_NODE)
         #     bi.width = BoardItem.NODE_SIZE
@@ -6818,6 +6823,37 @@ class BoardMixin(BoardTextEditItemMixin):
         new_origin.setX(new_origin.x()*self.canvas_scale_x)
         new_origin.setY(new_origin.y()*self.canvas_scale_y)
         self.canvas_origin = -new_origin + tl
+
+    def board_build_relationships_node(self):
+        bi = BoardItem(BoardItem.types.ITEM_NODE)
+        bi.width = BoardItem.NODE_SIZE
+        bi.height = BoardItem.NODE_SIZE
+        # bi.position = origin + QPointF(i*200, 0)
+        self.cross_fod.board.items_list.append(bi)
+        return bi
+
+    def board_build_relationships_link(self, ni1, ni2):
+        li = BoardItem(BoardItem.types.ITEM_LINK)
+        li.from_item = ni1
+        li.to_item = ni2
+        self.CROSSBOARD.tech_links.append(li)
+        return li
+
+    def board_build_relationships_graph(self, origin, fod, level=0, parent_node=None):
+        ni = self.board_build_relationships_node()
+        self.graph_offsets[level] += 100
+        ni.position = QPointF(origin) + QPointF(self.graph_offsets[level], level*100)
+        if level == 0:
+            ni.label = 'ROOT'
+        else:
+            ni.label = 'child'
+        if parent_node is not None:
+            self.board_build_relationships_link(parent_node, ni)
+        for item in fod.board.items_list:
+            if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
+                board_fod = getattr(item, 'item_folder_data', None)
+                if board_fod is not None:
+                    self.board_build_relationships_graph(origin, board_fod, level=level+1, parent_node=ni)
 
     def board_cancel_crossboard_transforms(self):
         if self.CROSSBOARD.activated:
