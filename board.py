@@ -508,7 +508,7 @@ class BoardItem():
                 current_frame += 1
             self.status = _('{0}/{1} ANIMATION').format(current_frame, frame_count)
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
-            current_image_num = self.item_folder_data._index
+            current_image_num = self.item_folder_data._image_index
             images_count = len(self.item_folder_data.images_list)
             if images_count > 0:
                 current_image_num += 1
@@ -1380,7 +1380,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 break
         return next(cycled)
 
-    def board_scroll_node_poster_change_poster_index(self, ni, direction):
+    def board_scroll_node_poster_change_poster_index(self, ni, direction, validate_only=False):
         fod = ni.item_folder_data
         allowed_types = self.board_poster_allowed_item_types()
         index_item_dict = dict()
@@ -1388,24 +1388,31 @@ class BoardMixin(BoardTextEditItemMixin):
             if bi.type in allowed_types:
                 index_item_dict[bi.board_index] = bi
         if not index_item_dict:
+            ni.poster_board_index = None
+            ni._poster_board_data = None
             return
         def set_first():
             first_index, first_item = next(iter(index_item_dict.items()))
-            ni._poster_board_data = first_item.file_data.preview
             ni.poster_board_index = first_index
+            ni._poster_board_data = first_item.file_data.preview
         if len(index_item_dict) > 1 and ni.poster_board_index is not None:
             all_indexes = index_item_dict.keys()
             if direction < 0:
                 all_indexes = reversed(all_indexes)
             all_indexes = list(all_indexes)
             if ni.poster_board_index in all_indexes:
+                if validate_only:
+                    return
                 next_index = self.next_cycled(ni.poster_board_index, all_indexes)
-                ni._poster_board_data = index_item_dict[next_index].file_data.preview
                 ni.poster_board_index = next_index
+                ni._poster_board_data = index_item_dict[next_index].file_data.preview
             else:
                 set_first()
         else:
             set_first()
+
+    def board_validate_node_poster(self, ni):
+        self.board_scroll_node_poster_change_poster_index(ni, 1, validate_only=True)
 
     def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
@@ -1912,7 +1919,14 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_("No place to return"), error=True)
         self.update()
 
+    def board_validate_node_poster_on_leave(self):
+        cf = self.LibraryData().current_folder()
+        ri = cf.board.root_item
+        if ri is not None and ri.type == BoardItem.types.ITEM_NODE:
+            self.board_validate_node_poster(ri)
+
     def board_make_board_current(self, folder_data):
+        self.board_validate_node_poster_on_leave()
         self.LibraryData().save_board_data()
         self.LibraryData().make_folder_current(folder_data, write_view_history=False)
         self.LibraryData().load_board_data()
@@ -4925,7 +4939,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 item_rect,
                 len(board_item.item_folder_data.images_list),
             )
-            need = image_index != board_item.item_folder_data._index
+            need = image_index != board_item.item_folder_data._image_index
             if need:
                 board_item.item_folder_data.set_current_index(image_index)
                 # заставляем подгрузится
