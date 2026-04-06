@@ -839,6 +839,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.mouseDoubleClickEventBoardCallback(event)
 
     def board_SetPlugin(self, pi):
+        self.CrossboardData().plugin_activated = True # задаём это здесь, чтобы в preparePluginBoard была возможность отключить
         if pi.preparePluginBoard:
             pi.preparePluginBoard(self, pi)
         cf = self.LibraryData().current_folder()
@@ -1759,27 +1760,35 @@ class BoardMixin(BoardTextEditItemMixin):
         return self.BoardNonAutoSerializedData()
 
     def board_getBoardFilepathDefault(self):
-        cf = self.LibraryData().current_folder()
+        cufod = self.LibraryData().current_folder()
+        force_virtual = self.CrossboardData().plugin_activated
 
-        if cf.virtual:
-            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-            folder_path = self.Settings.get("inframed_folderpath")
-            if not os.path.exists(folder_path):
-                folder_path = self.set_path_for_saved_pictures(folder_path)
-            save_folderpath = folder_path
-        else:
+        def default_handling(fod):
+            fod = fod or self.board_get_main_board_folder(cufod)
             filename = 'board'
-
-            save_folderpath = cf.folder_path
-
+            save_folderpath = fod.folder_path
             if os.path.isfile(save_folderpath):
                 # частенько тут оказывается путь на файл доски,
                 # и тогда надо избавиться от имени файла доски в этом пути
                 save_folderpath = os.path.dirname(save_folderpath)
+            return self.board_BuildBoardFilename(save_folderpath, filename)
 
-        board_filepath = self.board_BuildBoardFilename(save_folderpath, filename)
-        return board_filepath
+        def virtual_folder_case_handling():
+            filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            folder_path = self.Settings.get("inframed_folderpath")
+            if not os.path.exists(folder_path):
+                folder_path = self.set_path_for_saved_pictures(folder_path)
+            save_folderpath = folder_path
+            return self.board_BuildBoardFilename(save_folderpath, filename)
+
+        if not force_virtual:
+            # если плагин не активирован, то ищем папку главной доски и сохраняемся из неё
+            return default_handling(None)
+        else:
+            if cufod.virtual:
+                return virtual_folder_case_handling()
+            else:
+                return default_handling(cufod)
 
     def board_getBoardFilepath(self):
         return self.getBoardFilepathBoardCallback()

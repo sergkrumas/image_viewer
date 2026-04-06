@@ -1264,6 +1264,7 @@ class CrossboardData():
             i.children_boards_folder_data = []
             i.link_items_list = []
             i._link_slots_list = defaultdict(list)
+            i.plugin_activated = False
         return cls.instance
 
     def add_board_folder_data(self, fod):
