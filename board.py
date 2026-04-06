@@ -1912,8 +1912,8 @@ class BoardMixin(BoardTextEditItemMixin):
         board = folder_data.board
 
         if self.LibraryData().boardItemsTracking:
-            item.board_index = board.retrieve_item_index()
-            item.cross_board_index = self.CrossboardData().get_crossboard_item_index()
+            item.board_index = board.acquire_item_index()
+            item.cross_board_index = self.CrossboardData().acquire_crossboard_item_index()
         else:
             item.board_index = None
             item.cross_board_index = None
@@ -1922,7 +1922,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if item.type == BoardItem.types.ITEM_GROUP:
             if self.LibraryData().boardItemsTracking:
-                item.board_group_index = board.retrieve_group_index()
+                item.board_group_index = board.acquire_group_index()
             else:
                 item.board_group_index = None
 
