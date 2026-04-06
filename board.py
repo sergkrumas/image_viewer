@@ -1794,6 +1794,10 @@ class BoardMixin(BoardTextEditItemMixin):
         return self.getBoardFilepathBoardCallback()
 
     def board_get_main_board_folder(self, fod):
+        if self.CROSSBOARD.activated and self.CROSSBOARD.all_fods:
+            # обязательно проверяем self.CROSSBOARD.all_fods,
+            # иначе будет зацикливание
+            fod = self.CROSSBOARD.all_fods[0]
         while fod.board.root_folder is not None:
             fod = fod.board.root_folder
         return fod
