@@ -1478,6 +1478,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_type = 'NoneType'
 
             elif attr_type in ['_tags', '_comments']:
+                # TODO: до сюда исполнение не дойдёт, ибо выше отработает
                 attr_data = []
                 attr_type = 'list'
 
