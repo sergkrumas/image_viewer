@@ -1383,7 +1383,9 @@ class BoardMixin(BoardTextEditItemMixin):
         return next(cycled)
 
     def board_scroll_node_poster_change_poster_index(self, ni, direction, validate_only=False):
-        fod = ni.item_folder_data
+        fod = getattr(ni, 'item_folder_data', None)
+        if fod is None:
+            return
         allowed_types = self.board_poster_allowed_item_types()
         index_item_dict = dict()
         for bi in fod.board.items_list:
