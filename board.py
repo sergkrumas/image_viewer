@@ -558,12 +558,15 @@ class BoardItem():
                 self.rotation
         ))
 
-    def restore_transform(self):
+    def apply_transform_tuple(self, data):
         self.scale_x, \
         self.scale_y, \
         self.position, \
         self.rotation \
-                = self._transform_stack.pop()
+                = data
+
+    def restore_transform(self):
+        self.apply_transform_tuple(self._transform_stack.pop())
 
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
@@ -1821,11 +1824,18 @@ class BoardMixin(BoardTextEditItemMixin):
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
         self.LibraryData().save_board_data()
 
+        # костыль для сохранения из режима кроссдоски
+        self.board_cancel_crossboard_transforms()
+
+        # сохранение основной доски и вложенных досок
         data_base = dict()
         data_base['crossboard_data'] = self.CrossboardData().store()
         data_base['all_links'] = self.serialize_links(self.CrossboardData().link_items_list)
         data_base['children_boards'] = self.board_gather_children_boards()
         data_base['main_board'] = self.board_serialize_board_data(main_fod)
+
+        # костыль для сохранения из режима кроссдоски
+        self.board_apply_crossboard_transforms_again()
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
         if self.STNG.use_cbor2_instead_of_json:
@@ -6808,6 +6818,22 @@ class BoardMixin(BoardTextEditItemMixin):
         new_origin.setX(new_origin.x()*self.canvas_scale_x)
         new_origin.setY(new_origin.y()*self.canvas_scale_y)
         self.canvas_origin = -new_origin + tl
+
+    def board_cancel_crossboard_transforms(self):
+        if self.CROSSBOARD.activated:
+            for fod in self.CROSSBOARD.all_fods:
+                for item in fod.board.items_list:
+                    # сохраняем текущие трансформации айтема на кроссборде
+                    item.save_transform()
+                    # применяем изначальные трансформации, которые были у айтема на его родной доске
+                    item.apply_transform_tuple(item._transform_stack[0])
+
+    def board_apply_crossboard_transforms_again(self):
+        if self.CROSSBOARD.activated:
+            for fod in self.CROSSBOARD.all_fods:
+                for item in fod.board.items_list:
+                    # возвращаем трансформации айтема на кроссборде
+                    item.restore_transform()
 
     def board_leave_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
