@@ -1069,11 +1069,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 if url.isLocalFile():
                     path = url.path()
                     if path:
-                        path = path[1:]
+                        if path.startswith("/\\"):
+                            path = path[1:]
                         if os.path.isdir(path):
                             self.board_add_item_folder(folder_path=path)
                         else:
-                            self.show_center_label(_("No files, only folders supported"))
+                            self.board_add_image_item_from_path(path)
                 else:
                     url = url.url()
                     self.board_download_file(url)
@@ -5450,6 +5451,24 @@ class BoardMixin(BoardTextEditItemMixin):
         mdata = cb.mimeData()
         cf = self.LibraryData().current_folder()
 
+        if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
+            self.board_paste_selected_items()
+
+        elif mdata and mdata.hasText():
+            for url in mdata.urls():
+                if not url.isLocalFile():
+                    continue
+                path = url.path()
+                self.board_add_image_item_from_path(path)
+
+        elif mdata and mdata.hasImage():
+            pixmap = QPixmap().fromImage(mdata.FileData())
+            path = os.path.join(cf.folder_path, f'{time.time()}.jpg')
+            pixmap.save(path)
+            self.board_create_new_image_item(path, cf)
+
+    def board_add_image_item_from_path(self, path):
+        cf = self.LibraryData().current_folder()
         qt_supported_exts = (
             ".jpg", ".jpeg", ".jfif",
             ".bmp",
@@ -5464,38 +5483,23 @@ class BoardMixin(BoardTextEditItemMixin):
         )
         PREFIX = "file:///"
 
-        if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
-            self.board_paste_selected_items()
-
-        elif mdata and mdata.hasText():
-            for url in mdata.urls():
-                pixmap = None
-                if not url.isLocalFile():
-                    continue
-                path = url.path()
-                if path.startswith(PREFIX):
-                    path = path[len(PREFIX):]
-                if path.startswith("/"):
-                    path = path[1:]
-                print('..', path, os.path.exists(path))
-                if os.path.exists(path):
-                    _gif_file = self.LibraryData().is_gif_file(path)
-                    _webp_animated_file = self.LibraryData().is_webp_file(path) and self.LibraryData().is_webp_file_animated(path)
-                    if _gif_file or _webp_animated_file:
-                        return path
-                    # supported exts
-                    elif path.lower().endswith(qt_supported_exts):
-                        pixmap = QPixmap(path)
-                    # svg-files
-                    elif path.lower().endswith(svg_exts):
-                        pixmap = load_svg(path, scale_factor=20)
-                if pixmap is not None:
-                    self.board_create_new_image_item(path, cf)
-
-        elif mdata and mdata.hasImage():
-            pixmap = QPixmap().fromImage(mdata.FileData())
-            path = os.path.join(cf.folder_path, f'{time.time()}.jpg')
-            pixmap.save(path)
+        pixmap = None
+        if path.startswith(PREFIX):
+            path = path[len(PREFIX):]
+        if path.startswith("/"):
+            path = path[1:]
+        if os.path.exists(path):
+            _gif_file = self.LibraryData().is_gif_file(path)
+            _webp_animated_file = self.LibraryData().is_webp_file(path) and self.LibraryData().is_webp_file_animated(path)
+            if _gif_file or _webp_animated_file:
+                return path
+            # supported exts
+            elif path.lower().endswith(qt_supported_exts):
+                pixmap = QPixmap(path)
+            # svg-files
+            elif path.lower().endswith(svg_exts):
+                pixmap = load_svg(path, scale_factor=20)
+        if pixmap is not None:
             self.board_create_new_image_item(path, cf)
 
     def board_long_loading_begin(self, text):
