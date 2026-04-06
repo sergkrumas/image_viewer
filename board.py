@@ -237,6 +237,8 @@ class BoardItem():
         self._node_ui_rect = None
         self._is_curved_link = False
         self._snapshot = None
+        self.poster_board_index = None
+        self._poster_board_data = None
 
         self.image_source_url = None
 
@@ -1307,6 +1309,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.LibraryData().make_thumbnails_and_previews(ch_bo_fod, None)
                 ch_bo_fod.board.ready = True
 
+                self.board_init_node_poster(item, ch_bo_fod)
+
                 # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
 
         # генерим скриншоты для каждой доски
@@ -1315,6 +1319,34 @@ class BoardMixin(BoardTextEditItemMixin):
 
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
+
+    def board_poster_allowed_item_types(self):
+        return (BoardItem.types.ITEM_IMAGE,)
+
+    def board_init_node_poster(self, ni, fod):
+        if ni.type == BoardItem.types.ITEM_NODE:
+            allowed_types = self.board_poster_allowed_item_types()
+            ni._poster_board_data = None
+            if ni.poster_board_index is None:
+                for bi in fod.board.items_list:
+                    if bi.type in allowed_types:
+                        ni._poster_board_data = bi.file_data.preview
+                        ni.poster_board_index = bi.board_index
+                        break
+            else:
+                for bi in fod.board.items_list:
+                    if bi.board_index == ni.poster_board_index:
+                        ni._poster_board_data = bi.file_data.preview
+                        break
+                else:
+                    ni._poster_board_data = None
+                    ni.poster_board_index = None
+
+    def board_scroll_node_poster(self, scroll_value):
+        if scroll_value > 0:
+            pass
+        else:
+            pass
 
     def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
         board_items = board_dict['board_items']
@@ -2510,6 +2542,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawText(sa_br, alignment, label_text)
 
             painter.setFont(before_font)
+
+            if board_item.poster_board_index is not None:
+                pos = label_rect.topLeft()
+                pbd = board_item._poster_board_data
+                if pbd is not None:
+                    pos -= QPointF(0, pbd.height()+5)
+                    painter.drawPixmap(pos, pbd)
 
         else:
 
