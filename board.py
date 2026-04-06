@@ -224,7 +224,7 @@ class BoardItem():
 
         self.board_index = 0
         self.board_group_index = None
-        self.cross_board_index = None
+        self.crossboard_index = None
         self._board = None
 
         self.width = 1000
@@ -1349,7 +1349,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_serial_to_object_attributes(bi, board_item_attributes, promises, fd=fod, id_to_filedata=id_to_filedata)
             bi._board = fod.board
             fod.board.items_list.append(bi)
-            all_items[bi.cross_board_index] = bi
+            all_items[bi.crossboard_index] = bi
 
         fod.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
@@ -1487,7 +1487,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     attr_data = None
                     attr_type = 'NoneType'
                 else:
-                    attr_data = attr_value.cross_board_index
+                    attr_data = attr_value.crossboard_index
                     attr_type = 'int'
 
             elif isinstance(attr_value, self.FileData):
@@ -1913,10 +1913,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.LibraryData().boardItemsTracking:
             item.board_index = board.acquire_item_index()
-            item.cross_board_index = self.CrossboardData().acquire_crossboard_item_index()
+            item.crossboard_index = self.CrossboardData().acquire_crossboard_item_index()
         else:
             item.board_index = None
-            item.cross_board_index = None
+            item.crossboard_index = None
 
         item._board = board
 
@@ -3713,7 +3713,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # self.board_select_items([bi])
 
     def board_add_link_to_database(self, li):
-        indexes = (li.from_item.cross_board_index, li.to_item.cross_board_index)
+        indexes = (li.from_item.crossboard_index, li.to_item.crossboard_index)
         ordered_indexes_key = (min(indexes), max(indexes))
         cd = self.CrossboardData()
         cd.link_items_list.append(li)
@@ -4962,9 +4962,9 @@ class BoardMixin(BoardTextEditItemMixin):
     def filter_magazin(self, magazin):
         # делаем это специально, чтобы исключить фреймы на кроссборде,
         # ведь через них невольно пройдёт выделительный провод правой кнопки мыши:
-        # у фреймов кроссборды cross_board_index выставлен в None;
+        # у фреймов кроссборды crossboard_index выставлен в None;
         # да и вообще любые вспомогательные айтемы на кроссдоске не должны трекаться через индексы
-        return [i for i in magazin if i.cross_board_index is not None]
+        return [i for i in magazin if i.crossboard_index is not None]
 
     def right_click_selection_releaseEvent(self, event):
         RCS = self.RCS
