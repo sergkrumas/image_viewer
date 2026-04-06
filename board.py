@@ -6788,19 +6788,21 @@ class BoardMixin(BoardTextEditItemMixin):
         # граф вложенности
         origin = cross_fod.board.bounding_rect.bottomLeft()
         tech_nodes = []
-        for i in range(3):
-            bi = BoardItem(BoardItem.types.ITEM_NODE)
-            bi.width = BoardItem.NODE_SIZE
-            bi.height = BoardItem.NODE_SIZE
-            bi.position = origin + QPointF(i*200, 0)
-            cross_fod.board.items_list.append(bi)
-            tech_nodes.append(bi)
 
-        for ni1, ni2 in zip(tech_nodes, tech_nodes[1:]):
-            li = BoardItem(BoardItem.types.ITEM_LINK)
-            li.from_item = ni1
-            li.to_item = ni2
-            self.CROSSBOARD.tech_links.append(li)
+        # тестовый пример
+        # for i in range(3):
+        #     bi = BoardItem(BoardItem.types.ITEM_NODE)
+        #     bi.width = BoardItem.NODE_SIZE
+        #     bi.height = BoardItem.NODE_SIZE
+        #     bi.position = origin + QPointF(i*200, 0)
+        #     cross_fod.board.items_list.append(bi)
+        #     tech_nodes.append(bi)
+
+        # for ni1, ni2 in zip(tech_nodes, tech_nodes[1:]):
+        #     li = BoardItem(BoardItem.types.ITEM_LINK)
+        #     li.from_item = ni1
+        #     li.to_item = ni2
+        #     self.CROSSBOARD.tech_links.append(li)
 
         self.board_make_board_current(cross_fod)
         cross_fod.board.referer_board_folder = cufod
