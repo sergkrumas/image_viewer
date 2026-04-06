@@ -347,6 +347,11 @@ class ControlPanelButton(QPushButton):
             self.set_font(painter, special=34)
             r = painter.drawText(self.rect(), Qt.AlignCenter, "BACK")
 
+        elif self.id == "crossboard":
+
+            self.set_font(painter, special=38)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "CROSS\nBOARD")
+
         elif self.id == "align":
 
             self.set_font(painter, special=38)
@@ -594,6 +599,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
                 ControlPanelButton("dive", _("Dive into item board"), callback=MW.board_dive_inside_board_item),
                 ControlPanelButton("back", _("Go back from item board"), callback=partial(MW.board_dive_inside_board_item, back_to_referer=True)),
+                ControlPanelButton("crossboard", _("Toggle crossboard"), callback=MW.board_toggle_crossboard),
 
                 self.space_btn_generator(),
 
