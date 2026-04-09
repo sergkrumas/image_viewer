@@ -300,7 +300,12 @@ class BoardItem():
         if not self.visible_in_viewport(canvas, a, b):
             return False
         if self._is_curved_link and self._path:
-            path_bounding_rect = self._path.boundingRect().adjusted(-10, -10, 10, 10)
+            path_bounding_rect = self._path.boundingRect().adjusted(
+                -self.LINK_ACTIVATION_DIST,
+                -self.LINK_ACTIVATION_DIST,
+                self.LINK_ACTIVATION_DIST,
+                self.LINK_ACTIVATION_DIST
+            )
             if not path_bounding_rect.contains(pos):
                 return False
             poly = canvas.board_util_path_to_polygone(self._path)
