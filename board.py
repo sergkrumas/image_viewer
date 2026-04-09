@@ -2087,7 +2087,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.LibraryData().boardItemsTracking:
             item.board_index = board.acquire_item_index()
-            item.crossboard_index = self.CrossboardData().acquire_crossboard_item_index()
+            item.crossboard_index = self.CrossboardData().acquire_item_index()
         else:
             item.board_index = None
             item.crossboard_index = None

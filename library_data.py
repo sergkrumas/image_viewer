@@ -1290,11 +1290,11 @@ class CrossboardData():
         # i.children_boards_folder_data сохраняется отдельно
         return data
 
-    def acquire_crossboard_board_index(self):
+    def acquire_board_index(self):
         self.current_board_index += 1
         return self.current_board_index
 
-    def acquire_crossboard_item_index(self):
+    def acquire_item_index(self):
         self.current_item_index += 1
         return self.current_item_index
 
@@ -1329,7 +1329,7 @@ class BoardData():
         self.current_item_index = 0
         self.current_item_group_index = 10 # первые 10 индексов начиная с нуля зарезервированы
         if ld.boardItemsTracking and LibraryData.NONE_FOLDER_NAME != folder_data.folder_label:
-            self.crossboard_board_index = CrossboardData().acquire_crossboard_board_index()
+            self.crossboard_board_index = CrossboardData().acquire_board_index()
         else:
             self.crossboard_board_index = None
 
