@@ -185,7 +185,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
 
         if virtual:
-            # вставляем папку сразу виртуальной папкой в списке папок
+            # вставляем виртуальные папки друг за другом, а не вразнобой
             n = 0
             for n, fd in enumerate(self.folders):
                 if fd.virtual:
