@@ -2646,13 +2646,17 @@ class BoardMixin(BoardTextEditItemMixin):
             item_rect = board_item.get_size_rect()
             item_rect.moveCenter(QPointF(0, 0))
             pen = QPen()
-            pen.setStyle(Qt.DashLine)
+            # pen.setStyle(Qt.DashLine)
             if is_cursor_over or board_item._selected:
                 pen.setColor(self.selection_color)
+                pen.setWidth(int(3.0*max(self.canvas_scale_x, self.canvas_scale_y)))
+                fill_color = QColor(self.selection_color)
+                fill_color.setAlpha(255)
             else:
                 pen.setColor(Qt.gray)
+                fill_color = QColor(200, 200, 200)
             painter.setPen(pen)
-            painter.setBrush(QBrush(QColor(50, 50, 50)))
+            painter.setBrush(QBrush(fill_color))
             painter.drawEllipse(item_rect)
 
             painter.resetTransform()
