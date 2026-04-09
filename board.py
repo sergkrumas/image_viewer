@@ -3601,6 +3601,29 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             fd = cf.board.root_folder
 
+        selected_links = []
+
+        for li in self.board_get_visible_links():
+            if li._selected:
+                selected_links.append(li)
+
+
+        if self.selected_items or selected_links:
+            stat = ""
+            if self.selected_items:
+                stat += _("items: {}").format(len(self.selected_items))
+            if selected_links:
+                stat += _("\nlinks: {}").format(len(selected_links))
+            reply = QMessageBox.question(self, _('Items removing confirmation'), 
+                                         _("Are you sure you want to proceed?\n{}".format(stat)),
+                                         QMessageBox.Yes | QMessageBox.No, 
+                                         QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                pass
+            else:
+                return
+
+
         if self.selected_items:
             gi = self.get_removed_items_group(fd)
 
@@ -3625,10 +3648,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.move_items_to_group(item_group=gi, items=self.selected_items)
 
-
-        for li in self.board_get_visible_links():
-            if li._selected:
-                self.board_delete_link_item(li)
+        if selected_links:
+            self.board_delete_link_item(li)
 
         self.prepare_selection_box_widget(cf)
 
