@@ -6898,7 +6898,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_take_snapshot(self, fod):
         self.LibraryData().save_board_data()
 
-        before_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
+        stashed_current_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
         bo = fod.board
         self.canvas_scale_x = bo.scale_x
         self.canvas_scale_y = bo.scale_y
@@ -6915,7 +6915,7 @@ class BoardMixin(BoardTextEditItemMixin):
         fod.board.root_item._snapshot = snapshot_pixmap
 
         # restore
-        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = before_viewport_data
+        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
 
     def board_do_change_frame_label(self, board_item):
         board_item.label = self.modal_input_field_text()
