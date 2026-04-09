@@ -6777,7 +6777,11 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_do_change_item_text(self, board_item):
-        board_item.label = self.modal_input_field_text()
+        user_text = self.modal_input_field_text()
+        board_item.label = user_text
+        ifd = getattr(board_item, 'item_folder_data', None)
+        if ifd is not None:
+            ifd.folder_label = user_text
 
     def board_change_item_text(self, board_item):
         if board_item.type == BoardItem.types.ITEM_NODE:
@@ -6900,7 +6904,6 @@ class BoardMixin(BoardTextEditItemMixin):
         bi = BoardItem(BoardItem.types.ITEM_NODE)
         bi.width = BoardItem.NODE_SIZE
         bi.height = BoardItem.NODE_SIZE
-        # bi.position = origin + QPointF(i*200, 0)
         self.cross_fod.board.items_list.append(bi)
         return bi
 
@@ -6914,7 +6917,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_build_relationships_graph(self, origin, fod, level=0, parent_node=None):
         ni = self.board_build_relationships_node()
         self.graph_offsets[level] += 100
-        ni.position = QPointF(origin) + QPointF(self.graph_offsets[level], level*100)
+        ni.position = QPointF(origin) + QPointF(self.graph_offsets[level], level*100) + QPointF(0, 200)
         if level == 0:
             ni.label = fod.get_label_or_path()
         else:
