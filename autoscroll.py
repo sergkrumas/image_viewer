@@ -55,16 +55,17 @@ class AutoscrollMixin():
     def autoscroll_change_dim(self, index):
         AUTOSCROLL = self.AUTOSCROLL
         AUTOSCROLL.dimensions[index] = not AUTOSCROLL.dimensions[index]
+        need_correction = not any(AUTOSCROLL.dimensions)
+        if need_correction:
+            AUTOSCROLL.dimensions[1-index] = not AUTOSCROLL.dimensions[1-index]
         value = AUTOSCROLL.dimensions[index]
-        if index == 0:
-            axis = 'X'
-        elif index == 1:
-            axis = 'Y'
-        if value:
-            status = _('unblocked')
-        else:
-            status = _('blocked')
+        axis = 'X' if index == 0 else 'Y'
+        status = _('unblocked') if value else _('blocked')
         msg = _("{0} axis {1}").format(axis, status)
+        if need_correction:
+            o_axis = 'X' if index == 1 else 'Y'
+            tag = _('\nand {0} axis unblocked').format(o_axis)
+            msg = f'{msg} {tag}'
         self.show_center_label(msg, duration=2.0)
 
     def autoscroll_set_speed_factor(self, scroll_value):
