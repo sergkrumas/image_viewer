@@ -180,9 +180,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                         # иногда дубликатов получается больше, чем 2, поэтому break отменяется
 
         if make_current:
-            # индекс задаём только после удаления дубликатов
             self.make_folder_current(folder_data, write_view_history=False)
-
 
         if virtual:
             # вставляем виртуальные папки друг за другом, а не вразнобой
