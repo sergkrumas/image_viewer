@@ -1442,18 +1442,19 @@ class BoardMixin(BoardTextEditItemMixin):
         board_files_data = board_dict['board_files_data']
         board_nonAutoSerialized = board_dict.get('board_nonAutoSerialized', {})
 
-        is_virtual = board_folder_data['is_virtual']
-        folder_name = board_folder_data['folder_name']
+        is_virtual = board_folder_data.get('is_virtual', False)
+        folder_name = board_folder_data.get('folder_name', '')
+        folder_label = board_folder_data.get('folder_label', '')
+        folder_path = board_folder_data.get('folder_path', '')
+        deep_scan = board_folder_data.get('deep_scan', False)
 
-        if is_virtual:
-            folder_data_path = folder_name
-        else:
-            folder_data_path = board_load_filepath
+        if board_load_filepath:
+            folder_path = board_load_filepath
 
         # подготовка перед загрузкой данных
-        fod = self.LibraryData().create_folder_data(folder_data_path[:], folder_data_path, [], image_filepath=None, make_current=main_board, virtual=is_virtual)
-        if is_virtual:
-            fod.folder_name = folder_name
+        fod = self.LibraryData().create_folder_data(folder_label[:], folder_path[:], [], image_filepath=None, make_current=main_board, virtual=is_virtual)
+        fod.folder_name = folder_name
+
         id_to_filedata = dict()
         for id_key, bfd in board_files_data.items():
             filepath, source_width, source_height = bfd
@@ -1699,6 +1700,9 @@ class BoardMixin(BoardTextEditItemMixin):
         board_folder_data.update({
             'is_virtual':  fod.virtual,
             'folder_name': fod.folder_name,
+            'folder_label': fod.folder_label,
+            'folder_path': fod.folder_path,
+            'deep_scan': fod.deep_scan
         })
 
         # сохранение инфы о файлах FileData
@@ -1707,7 +1711,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attributes,
-                                    exclude=('items_list', 'user_points'))
+                                                            exclude=('items_list', 'user_points'))
 
         # сохранение айтемов доски
         for item in board.items_list:
