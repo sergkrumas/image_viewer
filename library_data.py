@@ -163,6 +163,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             library_loading=library_loading,
         )
         if make_current:
+            # TODO: какая-то идиотия тут происходит. В список надо вставлять после проверки ниже, а не до; разобраться
             self.folders.append(folder_data)
 
         # виртуальные папки могут носить одинаковые названия, а названия как раз прописаны в folder_path
@@ -181,18 +182,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if make_current:
             # индекс задаём только после удаления дубликатов
             self.make_folder_current(folder_data, write_view_history=False)
-        else:
-            # make_current = False только у папок тегов
-            current_folder = self.current_folder()
-            # вставляем папку тега сразу за последней виртуальной папкой в списке папок
+
+
+        if virtual:
+            # вставляем папку сразу виртуальной папкой в списке папок
             n = 0
             for n, fd in enumerate(self.folders):
                 if fd.virtual:
                     index = n+1
             self.folders.insert(n, folder_data)
-
-            # сохраняем текущую папку текущей
-            self.make_folder_current(current_folder, write_view_history=False)
 
         return folder_data
 

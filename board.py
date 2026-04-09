@@ -3602,6 +3602,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             # здесь решаем что удалить безвозвратно
             for bi in self.selected_items:
+                bi._selected = False
                 if bi.type == BoardItem.types.ITEM_FRAME:
                     items_list.remove(bi)
                 if bi.type == BoardItem.types.ITEM_IMAGE:
@@ -3619,7 +3620,6 @@ class BoardMixin(BoardTextEditItemMixin):
                     items_list.remove(bi)
 
             self.move_items_to_group(item_group=gi, items=self.selected_items)
-
 
 
         for li in self.board_get_visible_links():
