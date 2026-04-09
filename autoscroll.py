@@ -35,7 +35,7 @@ class AutoscrollMixin():
         AUTOSCROLL.timer.timeout.connect(self.autoscroll_timer)
         AUTOSCROLL.inside_activation_zone = False
         AUTOSCROLL.is_moved_while_middle_button_pressed = False
-        AUTOSCROLL.dimenstions = [True, True]
+        AUTOSCROLL.dimensions = [True, True]
 
         AUTOSCROLL.desactivation_pass = False
 
@@ -54,8 +54,8 @@ class AutoscrollMixin():
 
     def autoscroll_change_dim(self, index):
         AUTOSCROLL = self.AUTOSCROLL
-        AUTOSCROLL.dimenstions[index] = not AUTOSCROLL.dimenstions[index]
-        value = AUTOSCROLL.dimenstions[index]
+        AUTOSCROLL.dimensions[index] = not AUTOSCROLL.dimensions[index]
+        value = AUTOSCROLL.dimensions[index]
         if index == 0:
             axis = 'X'
         elif index == 1:
@@ -180,8 +180,8 @@ class AutoscrollMixin():
                     # self.show_center_label(f'{sf}: {v1} {v2} {h1} {h2}')
 
                 else:
-                    velocity_vec.setX(velocity_vec.x()*self.AUTOSCROLL.dimenstions[0])
-                    velocity_vec.setY(velocity_vec.y()*self.AUTOSCROLL.dimenstions[1])
+                    velocity_vec.setX(velocity_vec.x()*self.AUTOSCROLL.dimensions[0])
+                    velocity_vec.setY(velocity_vec.y()*self.AUTOSCROLL.dimensions[1])
 
                 self.canvas_origin -= velocity_vec*speed_factor/25.0
 
