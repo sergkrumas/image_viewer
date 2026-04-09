@@ -3869,7 +3869,7 @@ class BoardMixin(BoardTextEditItemMixin):
         li.to_item = None
 
     def board_delete_attached_links(self, item):
-        links = self.CrossboardData().link_items_listё
+        links = self.CrossboardData().link_items_list
         for link in links[:]:
             if (link.from_item is item) or (link.to_item is item):
                 self.board_delete_link_item(link)
