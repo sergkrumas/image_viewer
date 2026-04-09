@@ -267,6 +267,8 @@ class BoardItem():
 
         self._transform_stack = []
 
+        self._path = None
+
     def set_alert(self):
         self.countdown_red_frame = 10
 
@@ -297,7 +299,10 @@ class BoardItem():
         b = self.to_item.calculate_viewport_position(canvas=canvas)
         if not self.visible_in_viewport(canvas, a, b):
             return False
-        if self._is_curved_link:
+        if self._is_curved_link and self._path:
+            path_bounding_rect = self._path.boundingRect().adjusted(-10, -10, 10, 10)
+            if not path_bounding_rect.contains(pos):
+                return False
             poly = canvas.board_util_path_to_polygone(self._path)
             for a, b in zip(poly, poly[1:]):
                 if self.segment_dist(a, b, pos, self.LINK_ACTIVATION_DIST):
