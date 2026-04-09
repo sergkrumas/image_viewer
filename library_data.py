@@ -1219,15 +1219,23 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if not pre_load:
             MW.handling_input = False
 
-    @staticmethod
-    def write_history_file(path):
+    @classmethod
+    def write_history_file_base(cls, path, filename):
         root = os.path.dirname(__file__)
-        history_file_path = os.path.join(root, "user_data", "history.log")
+        history_file_path = os.path.join(root, "user_data", filename)
         create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))
         date = datetime.datetime.now().strftime("%d %b %Y %X")
         with open(history_file_path, "a+", encoding="utf8") as file:
             record = "%s %s\n" % (date, path)
             file.write(record)
+
+    @classmethod
+    def write_board_history_file(cls, path):
+        cls.write_history_file_base(path, "board_history.log")
+
+    @classmethod
+    def write_history_file(cls, path):
+        cls.write_history_file_base(path, "history.log")
 
     def show_finder_window(self):
         FinderWindow(self.globals.main_window).show()

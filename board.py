@@ -1318,6 +1318,8 @@ class BoardMixin(BoardTextEditItemMixin):
         for ch_bo_fod in children_boards_folders.values():
             self.board_take_snapshot(ch_bo_fod)
 
+        self.LibraryData().write_board_history_file(board_filepath)
+
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
         self.show_center_label(msg)
 
