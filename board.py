@@ -1945,6 +1945,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif case2:
                 FOD = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                fd.folder_label = item.label
                 item.item_folder_data = fd
                 self.build_board_bounding_rect(fd)
                 fd.previews_done = True
@@ -3631,9 +3632,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 stat += _("items: {}").format(len(self.selected_items))
             if selected_links:
                 stat += _("\nlinks: {}").format(len(selected_links))
-            reply = QMessageBox.question(self, _('Items removing confirmation'), 
+            reply = QMessageBox.question(self, _('Items removing confirmation'),
                                          _("Are you sure you want to proceed?\n{}".format(stat)),
-                                         QMessageBox.Yes | QMessageBox.No, 
+                                         QMessageBox.Yes | QMessageBox.No,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
                 pass
@@ -6915,9 +6916,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.graph_offsets[level] += 100
         ni.position = QPointF(origin) + QPointF(self.graph_offsets[level], level*100)
         if level == 0:
-            ni.label = 'ROOT'
+            ni.label = fod.get_label_or_path()
         else:
-            ni.label = 'child'
+            ni.label = fod.get_label_or_path()
         if parent_node is not None:
             self.board_build_relationships_link(parent_node, ni)
         for item in fod.board.items_list:
