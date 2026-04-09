@@ -752,6 +752,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_init_node_poster_scroll_timer()
 
+        self.show_board_info_overlay = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -953,8 +955,11 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, Qt.Key_M):
             self.board_toggle_minimap()
 
-        elif check_scancode_for(event, Qt.Key_I):
+        elif check_scancode_for(event, Qt.Key_I) and (event.modifiers() == Qt.NoModifier):
             self.board_toggle_item_info_overlay()
+
+        elif check_scancode_for(event, Qt.Key_I) and only_shift_mod:
+            self.board_toggle_board_info_overlay()
 
         elif check_scancode_for(event, Qt.Key_A) and ctrl_mod:
             self.board_select_all_items()
@@ -3062,6 +3067,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
     def board_draw_board_info(self, painter, current_folder):
+        if not self.show_board_info_overlay:
+            return
         before_font = painter.font()
         before_pen = painter.pen()
 
@@ -5480,6 +5487,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(f'The files are moved to recycle bin!\n{l} filepaths has been copied to clipboard!')
         else:
             self.show_center_label('Nothing marked!', error=True)
+
+    def board_toggle_board_info_overlay(self):
+        self.show_board_info_overlay = not self.show_board_info_overlay
 
     def board_toggle_item_info_overlay(self):
         cf = self.LibraryData().current_folder()
