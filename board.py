@@ -1579,14 +1579,27 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_object_attributes_to_serial(self, obj, new_obj_base, exclude=None):
         attributes = list(obj.__dict__.items())
 
+
         if isinstance(obj, self.BoardItem):
+
+            # фильтрация
+            # если атрибут имеет дефолтное значение,
+            # то не имеет смысла сохранять его значение в файл
+            for attr_pair in attributes[:]:
+                attr_name, attr_value = attr_pair
+                ref_value = self.referenceItemAttrs.get(attr_name, Ellipsis)
+                if ref_value is Ellipsis:
+                    continue
+                elif ref_value == attr_value:
+                    attributes.remove(attr_pair)
+
+            # переставляем атрибут type в начало,
+            # чтобы при восстановлении объекта он обрабатывался первым;
+            # это важно при восстановлении, так как нужно знать какого типа айтем
+            # при восстановлении некоторых атрибутов айтема
             for attr_pair in attributes[:]:
                 attr_name, attr_value = attr_pair
                 if attr_name == 'type':
-                    # переставляем этот атрибут в начало,
-                    # чтобы при восстановлении он обрабатывался первым
-                    # это важно при восстановлении, так как нужно знать какого типа айтем
-                    # при восстановлении некоторых атрибутов айтема
                     attributes.remove(attr_pair)
                     attributes.insert(0, attr_pair)
                     break
@@ -1827,6 +1840,8 @@ class BoardMixin(BoardTextEditItemMixin):
         main_fod = self.board_get_main_board_folder(cufod)
         board_filepath = self.board_getBoardFilepath()
 
+        self.referenceItemAttrs = BoardItem(BoardItem.types.ITEM_UNDEFINED).__dict__
+
         # сохранение текущих атрибутов доски в переменные, из которых будет вестись запись в файл
         self.LibraryData().save_board_data()
 
@@ -1856,6 +1871,8 @@ class BoardMixin(BoardTextEditItemMixin):
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
         text = _("Project is saved to {0}").format(board_filepath)
         self.show_center_label(text)
+
+        del self.referenceItemAttrs
 
         if self.Globals.DEBUG:
             self.debug_file_io_filepath = board_filepath
