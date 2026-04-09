@@ -1365,8 +1365,6 @@ class FolderData():
 
         self.set_id(self)
 
-        self.virtual = virtual
-        self.tag_data = None
         if folder_path:
             # os.path.normpath makes "" in folder_path to "."
             self.folder_path = os.path.normpath(folder_path)
@@ -1374,12 +1372,15 @@ class FolderData():
             self.folder_path = ""
         self.folder_name = os.path.basename(folder_path)
         self.folder_label = folder_label[:]
+        self.virtual = virtual
+        self.deep_scan = False
+
         self._image_index = -1
         self.before_index = -1
         self.images_list = []
+
         self.modified_order_pivot_index = None
         self.previews_done = False
-        self.deep_scan = False
         self.viewed_list = []
         self._images_list_selected = list()
 
@@ -1389,6 +1390,7 @@ class FolderData():
         self.board = BoardData(self)
 
         self.preview_error = False
+        self.tag_data = None
 
         self.relative_thumbnails_row_offset_x = 0
         self.absolute_board_thumbnails_row_offset_x = 0
