@@ -1438,10 +1438,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_scroll_node_poster_change_poster_index(ni, 1, validate_only=True)
 
     def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
-        board_items = board_dict['board_items']
-        board_attributes = board_dict['board_attributes']
-        board_folder_data = board_dict['board_folder_data']
-        board_files_data = board_dict['board_files_data']
+        board_items = board_dict.get('board_items', [])
+        board_attributes = board_dict.get('board_attributes', [])
+        board_folder_data = board_dict.get('board_folder_data', dict())
+        board_files_data = board_dict.get('board_files_data', dict())
         board_nonAutoSerialized = board_dict.get('board_nonAutoSerialized', {})
 
         is_virtual = board_folder_data.get('is_virtual', False)
