@@ -5871,6 +5871,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     point = board_item.position
                     locations_data_list.append(LocData(point, None, None, board_item))
 
+            if not locations_data_list:
+                return
+
             self.fly_pairs = get_cycled_pairs(locations_data_list)
             pair = [
                 LocData(current_pos, self.canvas_scale_x, self.canvas_scale_y, None),
