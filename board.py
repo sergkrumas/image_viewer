@@ -5561,6 +5561,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif mdata and mdata.hasUrls():
             self.board_prepare_incoming_urls(mdata)
+
         else:
             print('nothing')
 
