@@ -5515,7 +5515,7 @@ class MainWindow(QMainWindow,
 
 
         if key == Qt.Key_Escape:
-            if self.board_interactibve_layout_cancel():
+            if self.board_interactive_layout_cancel():
                 pass
             if self.modal_input_field_try_cancel():
                 pass

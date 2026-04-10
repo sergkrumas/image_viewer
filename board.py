@@ -4923,6 +4923,9 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
+        if self.board_interactive_layout_is_activated():
+            return
+
         if self.AD_TOOLBOX.visible and self.board_AD_toolbox_pressEvent(event):
             return
 
@@ -4978,6 +4981,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         special_update = False
         self.board_scrubbed_item_rect = None
+
+        if self.board_interactive_layout_is_activated():
+            self.update()
+            return
 
         if self.AD_TOOLBOX.visible and self.board_AD_toolbox_moveEvent(event):
             return
@@ -5092,6 +5099,10 @@ class BoardMixin(BoardTextEditItemMixin):
         shift = event.modifiers() & Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
+
+        if self.board_interactive_layout_is_activated():
+            self.board_interactive_layout_apply(event)
+            return
 
         if self.AD_TOOLBOX.visible and self.board_AD_toolbox_releaseEvent(event):
             return
@@ -7038,6 +7049,8 @@ class BoardMixin(BoardTextEditItemMixin):
             angle %= 360
             angle = int(angle)
 
+            INT_LAYOUT.angle = angle
+
             direction = QPointF(200, 0)
             t = QTransform()
             t.rotate(-angle)
@@ -7071,6 +7084,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_interactive_layout_direction_init(self):
         self.INT_LAYOUT = INT_LAYOUT = type('InteractiveLayout', (), {})()
         INT_LAYOUT.activated = False
+        INT_LAYOUT.data = None
+        INT_LAYOUT.angle = 0
 
     def board_interactive_layout_invoke(self, event, data=None):
         INT_LAYOUT = self.INT_LAYOUT
@@ -7079,9 +7094,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_interactive_layout_apply(self, event):
         INT_LAYOUT = self.INT_LAYOUT
-        INT_LAYOUT.activated = False
+        if INT_LAYOUT.activated:
+            INT_LAYOUT.activated = False
+            self.show_center_label(f'applied {INT_LAYOUT.angle}')
 
-    def board_interactibve_layout_cancel(self):
+    def board_interactive_layout_cancel(self):
         INT_LAYOUT = self.INT_LAYOUT
         is_activated = INT_LAYOUT.activated
         if is_activated:
