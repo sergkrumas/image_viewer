@@ -1824,10 +1824,10 @@ class BoardMixin(BoardTextEditItemMixin):
         return self.getBoardFilepathBoardCallback()
 
     def board_get_main_board_folder(self, fod):
-        if self.CROSSBOARD.activated and self.CROSSBOARD.all_fods:
-            # обязательно проверяем self.CROSSBOARD.all_fods,
-            # иначе будет зацикливание
-            fod = self.CROSSBOARD.all_fods[0]
+        CB = self.CROSSBOARD
+        if CB.activated and CB.prepared:
+            # обязательно проверяем prepared, иначе будет зацикливание
+            fod = CB.all_fods[0]
         while fod.board.root_folder is not None:
             fod = fod.board.root_folder
         return fod
@@ -6815,6 +6815,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_crossboard_init(self):
         self.CROSSBOARD = CROSSBOARD = type('CBData', (), {})()
         CROSSBOARD.activated = False
+        CROSSBOARD.prepared = False
         CROSSBOARD.all_fods = []
         CROSSBOARD.intro_fod = None
         CROSSBOARD.tech_links = []
@@ -6836,8 +6837,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cufod)
         tl = self.board_MapToViewport(self.board_bounding_rect.topLeft())
 
-        self.CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
-        self.CROSSBOARD.intro_fod = cufod
+        CROSSBOARD = self.CROSSBOARD
+
+        CROSSBOARD.all_fods = self.board_get_all_crossboard_fods()
+        CROSSBOARD.intro_fod = cufod
 
         self.LibraryData().setBoardItemsTracking(False)
 
@@ -6847,7 +6850,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cb_offset = QPointF(0, 0)
         view_offset = None
         crossboard_frames_fods = []
-        for fod in self.CROSSBOARD.all_fods:
+        for fod in CROSSBOARD.all_fods:
             self.build_board_bounding_rect_to_board_data(fod)
             for item in fod.board.items_list:
                 item.save_transform()
@@ -6882,12 +6885,12 @@ class BoardMixin(BoardTextEditItemMixin):
             if fod.board.root_item is not None:
                 li.from_item = fod._crossboard_frame_item
                 li.to_item = fod.board.root_item
-                self.CROSSBOARD.tech_links.append(li)
+                CROSSBOARD.tech_links.append(li)
 
         # граф вложенности
         origin = cross_fod.board.bounding_rect.bottomLeft()
 
-        main_fod = self.CROSSBOARD.all_fods[0]
+        main_fod = CROSSBOARD.all_fods[0]
         self.graph_offsets = defaultdict(float)
         self.cross_fod = cross_fod
         self.board_build_relationships_graph(origin, main_fod)
@@ -6919,6 +6922,8 @@ class BoardMixin(BoardTextEditItemMixin):
         new_origin.setX(new_origin.x()*self.canvas_scale_x)
         new_origin.setY(new_origin.y()*self.canvas_scale_y)
         self.canvas_origin = -new_origin + tl
+
+        CROSSBOARD.prepared = True
 
     def board_build_relationships_node(self):
         bi = BoardItem(BoardItem.types.ITEM_NODE)
@@ -6968,6 +6973,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_leave_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
+        CROSSBOARD.prepared = False
         cross_fod = self.LibraryData().current_folder()
         self.board_make_board_current(CROSSBOARD.intro_fod)
         self.LibraryData().remove_cross_fod(cross_fod)
