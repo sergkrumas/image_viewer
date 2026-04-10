@@ -5557,7 +5557,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_do_prepare_incoming_urls(mime_data)
         else:
             self.board_interactive_layout_invoke(None,
-                exec_callback=partial(self.board_do_prepare_incoming_urls, self.board_copy_mimedata(mime_data))
+                exec_callback=partial(self.board_do_prepare_incoming_urls, self.board_copy_mimedata(mime_data)),
+                incoming_count=len(mime_data.urls()),
             )
 
     def board_control_v(self):
@@ -7080,14 +7081,19 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.drawLine(end, end+a)
             painter.drawLine(end, end+b)
 
-            text = f'8\nitems'
+            text = _('Possible {} items to paste,\nchoose layout direction for them.\nPress Escape key to cancel').format(INT_LAYOUT.incoming_count)
 
             font = painter.font()
             font.setPixelSize(font.pixelSize()+10)
             painter.setFont(font)
             text_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, text)
             text_pos = end + direction*0.3
-            text_rect.moveCenter(text_pos)
+            if angle == 0:
+                text_rect.moveTopLeft(text_pos-QPointF(0, text_rect.height()/2))
+            elif angle == 180:
+                text_rect.moveTopLeft(text_pos-QPointF(text_rect.width(), text_rect.height()/2))
+            else:
+                text_rect.moveCenter(text_pos)
             painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignHCenter, text)
 
     def board_interactive_layout_direction_init(self):
@@ -7096,11 +7102,13 @@ class BoardMixin(BoardTextEditItemMixin):
         INT_LAYOUT.exec_callback = None
         INT_LAYOUT.input_angle = 0
         INT_LAYOUT.direction = 1
+        INT_LAYOUT.incoming_count = 0
 
-    def board_interactive_layout_invoke(self, event, exec_callback=None):
+    def board_interactive_layout_invoke(self, event, exec_callback=None, incoming_count=0):
         INT_LAYOUT = self.INT_LAYOUT
         INT_LAYOUT.activated = True
         INT_LAYOUT.exec_callback = exec_callback
+        INT_LAYOUT.incoming_count = incoming_count
         mcp = self.board_MapToBoard(self.mapped_cursor_pos())
         INT_LAYOUT.forward_offset = QPointF(mcp)
         INT_LAYOUT.backward_offset = QPointF(mcp)
@@ -7126,7 +7134,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 INT_LAYOUT.hor_or_vert = False
 
             if INT_LAYOUT.exec_callback is not None:
-                self.show_center_label(f'applied {INT_LAYOUT.input_angle}')
                 INT_LAYOUT.exec_callback()
 
             INT_LAYOUT.activated = False
