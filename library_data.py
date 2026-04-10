@@ -1269,6 +1269,7 @@ class CrossboardData():
             i.link_items_list = []
             i._link_slots_list = defaultdict(list)
             i.plugin_activated = False
+            i.incoming_attachments_folderpath = ""
         return cls.instance
 
     def add_board_folder_data(self, fod):
@@ -1277,17 +1278,20 @@ class CrossboardData():
     @classmethod
     def load(cls, data, children):
         i = cls.instance
-        i.current_item_index = data['current_item_index']
-        i.current_board_index = data['current_board_index']
         i.children_boards_folder_data = children
+        i.current_item_index = data.get('current_item_index', 0)
+        i.current_board_index = data.get('current_board_index', 0)
+        i.incoming_attachments_folderpath = data.get('incoming_attachments_folderpath', '')
 
     @classmethod
     def store(cls):
         i = cls.instance
-        data = dict()
-        data['current_item_index'] = i.current_item_index
-        data['current_board_index'] = i.current_board_index
         # i.children_boards_folder_data сохраняется отдельно
+        data = {
+            'current_item_index': i.current_item_index,
+            'current_board_index': i.current_board_index,
+            'incoming_attachments_folderpath': i.incoming_attachments_folderpath,
+        }
         return data
 
     def acquire_board_index(self):
