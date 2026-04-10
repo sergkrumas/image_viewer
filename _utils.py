@@ -893,7 +893,7 @@ class FFMPEG():
 
         p = subprocess.Popen([ ffprobe_path_exe,
             "-loglevel", "quiet", "-print_format", "json", "-show_entries", "format=duration",
-            video_path], 
+            video_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             creationflags=subprocess.CREATE_NO_WINDOW
@@ -936,17 +936,17 @@ class FFMPEG():
     # def get_video_resolution(video_path, ffprobe_path="ffprobe.exe"):
     #     # Command to get width and height in JSON format
     #     command = [
-    #         ffprobe_path, 
-    #         "-v", "error", 
-    #         "-select_streams", "v:0", 
-    #         "-show_entries", "stream=width,height", 
-    #         "-of", "json", 
+    #         ffprobe_path,
+    #         "-v", "error",
+    #         "-select_streams", "v:0",
+    #         "-show_entries", "stream=width,height",
+    #         "-of", "json",
     #         video_path
     #     ]
-        
+
     #     # Run the command and capture output
     #     result = subprocess.run(command, capture_output=True, text=True)
-        
+
     #     if result.returncode == 0:
     #         data = json.loads(result.stdout)
     #         width = data['streams'][0]['width']

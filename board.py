@@ -2457,7 +2457,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_make_board_current(item._board._folder)
         self.LibraryData().current_folder().board.referer_board_folder = fod
         # TODO: надо как-то по другому решить вопрос для айтемов-нод,
-        # ибо масштабировать вьюпорт к ним на деле как-то не ок 
+        # ибо масштабировать вьюпорт к ним на деле как-то не ок
         self.board_fit_content_on_screen(None, board_item=item)
 
     def board_draw_content_external_links(self, painter, folder_data):
@@ -5651,7 +5651,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
         cf = self.LibraryData().current_folder()
         pixmap = QPixmap().fromImage(metadata.imageData())
-        path = self.board_generate_filepath(cf, '.png') 
+        path = self.board_generate_filepath(cf, '.png')
         pixmap.save(path)
         self.board_create_new_image_item(path, cf)
 
@@ -7130,7 +7130,7 @@ class BoardMixin(BoardTextEditItemMixin):
             neg = -QVector2D(direction).normalized().toPointF()*30.0
             perp1 = QVector2D(-direction.y(), direction.x()).normalized().toPointF()*30.0
             perp2 = QVector2D(direction.y(), -direction.x()).normalized().toPointF()*30.0
-            a = neg+perp1 
+            a = neg+perp1
             b = neg+perp2
             painter.drawLine(end, end+a)
             painter.drawLine(end, end+b)
