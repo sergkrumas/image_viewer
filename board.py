@@ -1795,7 +1795,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def default_handling(fod):
             fod = fod or self.board_get_main_board_folder(cufod)
-            filename = 'board'
+            filename = '!board'
             save_folderpath = fod.folder_path
             if os.path.isfile(save_folderpath):
                 # частенько тут оказывается путь на файл доски,
