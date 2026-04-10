@@ -764,6 +764,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.show_board_info_overlay = False
 
+        self.board_interactive_layout_direction_init()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1051,6 +1053,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif key == Qt.Key_F6:
             self.board_toggle_crossboard()
+
+        elif key == Qt.Key_F5:
+            self.board_interactive_layout_invoke(None)
 
         self.lineEditSkip = False
 
@@ -3056,6 +3061,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
 
+        self.board_draw_interactive_layout_direction_menu(painter)
+
     def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
         if self.Globals.DEBUG:
             o, i = self.autoscroll_activation_zones_for_board_item_transform()
@@ -4498,8 +4505,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._rotation_init = bi.rotation
             bi._position_init = QPointF(bi.position)
 
-    def step_rotation(self, rotation_value):
-        interval = 45.0
+    def step_rotation(self, rotation_value, interval=45.0):
         # формулу подбирал в графическом калькуляторе desmos.com/calculator
         # value = math.floor((rotation_value-interval/2.0)/interval)*interval+interval
         # ниже упрощённый вариант
@@ -7020,6 +7026,72 @@ class BoardMixin(BoardTextEditItemMixin):
                 return True
         else:
             return False
+
+    def board_draw_interactive_layout_direction_menu(self, painter):
+        INT_LAYOUT = self.INT_LAYOUT
+        if INT_LAYOUT.activated:
+            center = self.rect().center()
+            curpos = self.mapped_cursor_pos()
+            curdir = curpos - center
+            angle = math.degrees(math.atan2(curdir.y(), -curdir.x()))
+            angle = self.step_rotation(angle, interval=90.0) + 180
+            angle %= 360
+            angle = int(angle)
+
+            direction = QPointF(200, 0)
+            t = QTransform()
+            t.rotate(-angle)
+            direction = t.map(direction)
+            end = center+direction
+
+            pen = QPen(Qt.white, 10)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            # line
+            painter.drawLine(center, end)
+            # arrow
+            neg = -QVector2D(direction).normalized().toPointF()*30.0
+            perp1 = QVector2D(-direction.y(), direction.x()).normalized().toPointF()*30.0
+            perp2 = QVector2D(direction.y(), -direction.x()).normalized().toPointF()*30.0
+            a = neg+perp1 
+            b = neg+perp2
+            painter.drawLine(end, end+a)
+            painter.drawLine(end, end+b)
+
+            text = f'8\nitems'
+
+            font = painter.font()
+            font.setPixelSize(font.pixelSize()+10)
+            painter.setFont(font)
+            text_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, text)
+            text_pos = end + direction*0.3
+            text_rect.moveCenter(text_pos)
+            painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignHCenter, text)
+
+    def board_interactive_layout_direction_init(self):
+        self.INT_LAYOUT = INT_LAYOUT = type('InteractiveLayout', (), {})()
+        INT_LAYOUT.activated = False
+
+    def board_interactive_layout_invoke(self, event, data=None):
+        INT_LAYOUT = self.INT_LAYOUT
+        INT_LAYOUT.activated = True
+        INT_LAYOUT.data = data
+
+    def board_interactive_layout_apply(self, event):
+        INT_LAYOUT = self.INT_LAYOUT
+        INT_LAYOUT.activated = False
+
+    def board_interactibve_layout_cancel(self):
+        INT_LAYOUT = self.INT_LAYOUT
+        is_activated = INT_LAYOUT.activated
+        if is_activated:
+            INT_LAYOUT.activated = False
+            INT_LAYOUT.data = None
+        return is_activated
+
+    def board_interactive_layout_is_activated(self):
+        INT_LAYOUT = self.INT_LAYOUT
+        return INT_LAYOUT.activated
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
