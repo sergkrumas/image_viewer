@@ -1069,14 +1069,14 @@ class BoardMixin(BoardTextEditItemMixin):
             event.ignore()
 
     def board_dropEventDefault(self, event):
-        mime_data = event.mimeData()
-        if mime_data.hasImage():
-            self.board_save_pasted_image_bytes_from_metadata(mime_data)
+        mdata = event.mimeData()
+        if mdata.hasImage():
+            self.board_save_pasted_image_bytes_from_metadata(mdata)
             self.update()
-        elif mime_data.hasUrls():
+        elif mdata.hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
-            for url in mime_data.urls():
+            for url in mdata.urls():
                 if url.isLocalFile():
                     path = url.path()
                     if path:
