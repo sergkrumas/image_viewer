@@ -5524,15 +5524,20 @@ class BoardMixin(BoardTextEditItemMixin):
         if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
             self.board_paste_selected_items()
 
-        elif mdata and mdata.hasText():
+        elif mdata and mdata.hasUrls():
             for url in mdata.urls():
-                if not url.isLocalFile():
-                    continue
-                path = url.path()
-                self.board_add_image_item_from_path(path)
+                if url.isLocalFile():
+                    path = url.path()
+                    self.board_add_image_item_from_path(path)
+                else:
+                    url = url.url()
+                    self.board_download_file(url)
 
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
+
+        else:
+            print('nothing')
 
     def board_generate_filepath(self, cf, dot_ext):
         cb_fp = self.CrossboardData().incoming_attachments_folderpath
