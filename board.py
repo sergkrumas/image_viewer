@@ -1071,12 +1071,12 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_dropEventDefault(self, event):
         mime_data = event.mimeData()
         if mime_data.hasImage():
-            image = QImage(event.mimeData().FileData())
-            image.save("data.png")
-        elif event.mimeData().hasUrls():
+            self.board_save_pasted_image_bytes_from_metadata(mime_data)
+            self.update()
+        elif mime_data.hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
-            for url in event.mimeData().urls():
+            for url in mime_data.urls():
                 if url.isLocalFile():
                     path = url.path()
                     if path:
@@ -5521,7 +5521,6 @@ class BoardMixin(BoardTextEditItemMixin):
         cb = app.clipboard()
         text = cb.text()
         mdata = cb.mimeData()
-        cf = self.LibraryData().current_folder()
 
         if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
             self.board_paste_selected_items()
@@ -5534,10 +5533,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_add_image_item_from_path(path)
 
         elif mdata and mdata.hasImage():
-            pixmap = QPixmap().fromImage(mdata.FileData())
-            path = os.path.join(cf.folder_path, f'{time.time()}.jpg')
-            pixmap.save(path)
-            self.board_create_new_image_item(path, cf)
+            self.board_save_pasted_image_bytes_from_metadata(mdata)
+
+    def board_save_pasted_image_bytes_from_metadata(self, metadata):
+        cf = self.LibraryData().current_folder()
+        pixmap = QPixmap().fromImage(metadata.imageData())
+        path = os.path.join(cf.folder_path, f'{time.time()}.png')
+        pixmap.save(path)
+        self.board_create_new_image_item(path, cf)
 
     def board_add_image_item_from_path(self, path):
         cf = self.LibraryData().current_folder()
@@ -5595,8 +5598,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 try:
                     url = url.replace(" ", "%20")
                     response = urllib.request.urlopen(url)
-                except http.client.InvalidURL:
-                    self.show_center_label(f'http.client.InvalidURL: {url}', error=True)
+                except Exception as e:
+                    self.show_center_label(f'{e}', error=True)
                     return
 
             filename = os.path.basename(response.url)
