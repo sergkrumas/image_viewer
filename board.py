@@ -6897,22 +6897,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.cross_fod = cross_fod
         self.board_build_relationships_graph(origin, main_fod)
 
-        # тестовый пример
-        # tech_nodes = []
-        # for i in range(3):
-        #     bi = BoardItem(BoardItem.types.ITEM_NODE)
-        #     bi.width = BoardItem.NODE_SIZE
-        #     bi.height = BoardItem.NODE_SIZE
-        #     bi.position = origin + QPointF(i*200, 0)
-        #     cross_fod.board.items_list.append(bi)
-        #     tech_nodes.append(bi)
-
-        # for ni1, ni2 in zip(tech_nodes, tech_nodes[1:]):
-        #     li = BoardItem(BoardItem.types.ITEM_LINK)
-        #     li.from_item = ni1
-        #     li.to_item = ni2
-        #     self.CROSSBOARD.tech_links.append(li)
-
         self.board_make_board_current(cross_fod)
         cross_fod.board.referer_board_folder = cufod
         self.prepare_selection_box_widget(cross_fod)
