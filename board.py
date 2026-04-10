@@ -5658,7 +5658,7 @@ class BoardMixin(BoardTextEditItemMixin):
             urllib.request.urlretrieve(url, filepath)
             self.board_create_new_image_item(filepath, cf, source_url=url)
 
-    def board_create_new_image_item(self, filepath, fod, source_url=None, make_previews=True, place_at_cursor=True):
+    def board_create_new_image_item(self, filepath, fod, source_url=None):
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
         fod.images_list.append(file_data)
