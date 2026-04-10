@@ -1082,18 +1082,8 @@ class BoardMixin(BoardTextEditItemMixin):
             event.setDropAction(Qt.CopyAction)
             event.accept()
             for url in mdata.urls():
-                if url.isLocalFile():
-                    path = url.path()
-                    if path:
-                        path = path.strip("/\\") #в начале пути могут быть слэши, что совсем не нужно на Windows
-                        if os.path.isdir(path):
-                            self.board_add_item_folder(folder_path=path)
-                        else:
-                            self.board_add_image_item_from_path(path)
-                else:
-                    url = url.url()
-                    self.board_download_file(url)
-                    print(url)
+                self.board_handle_incoming_url(url)
+
             self.update()
         else:
             event.ignore()
@@ -5538,6 +5528,19 @@ class BoardMixin(BoardTextEditItemMixin):
         cb.clear(mode=cb.Clipboard)
         cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
 
+    def board_handle_incoming_url(self, url):
+        if url.isLocalFile():
+            path = url.path()
+            if path:
+                path = path.strip("/\\") #в начале пути могут быть слэши, что совсем не нужно на Windows
+                if os.path.isdir(path):
+                    self.board_add_item_folder(folder_path=path)
+                else:
+                    self.board_add_image_item_from_path(path)
+        else:
+            url = url.url()
+            self.board_download_file(url)
+
     def board_control_v(self):
         app = QApplication.instance()
         cb = app.clipboard()
@@ -5549,12 +5552,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif mdata and mdata.hasUrls():
             for url in mdata.urls():
-                if url.isLocalFile():
-                    path = url.path()
-                    self.board_add_image_item_from_path(path)
-                else:
-                    url = url.url()
-                    self.board_download_file(url)
+                self.board_handle_incoming_url(url)
 
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
