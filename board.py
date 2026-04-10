@@ -1077,16 +1077,15 @@ class BoardMixin(BoardTextEditItemMixin):
         mdata = event.mimeData()
         if mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
-            self.update()
         elif mdata.hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
             for url in mdata.urls():
                 self.board_handle_incoming_url(url)
-
-            self.update()
         else:
             event.ignore()
+
+        self.update()
 
     def board_PluginsMenu(self, menu, loading_result=False):
         pis = []
@@ -5560,6 +5559,8 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             print('nothing')
 
+        self.update()
+
     def board_generate_filepath(self, cf, dot_ext):
         cb_fp = self.CrossboardData().incoming_attachments_folderpath
         dest_folderpath = None
@@ -5658,7 +5659,7 @@ class BoardMixin(BoardTextEditItemMixin):
             urllib.request.urlretrieve(url, filepath)
             self.board_create_new_image_item(filepath, cf).image_source_url = source_url
 
-    def board_create_new_image_item(self, filepath, fod, source_url=None):
+    def board_create_new_image_item(self, filepath, fod):
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
         fod.images_list.append(file_data)
@@ -7092,8 +7093,9 @@ class BoardMixin(BoardTextEditItemMixin):
         INT_LAYOUT = self.INT_LAYOUT
         INT_LAYOUT.activated = True
         INT_LAYOUT.data = data
-        INT_LAYOUT.forward_offset = QPointF()
-        INT_LAYOUT.backward_offset = QPointF()
+        mcp = self.board_MapToBoard(self.mapped_cursor_pos())
+        INT_LAYOUT.forward_offset = QPointF(mcp)
+        INT_LAYOUT.backward_offset = QPointF(mcp)
 
     def board_interactive_layout_apply(self, event):
         INT_LAYOUT = self.INT_LAYOUT
