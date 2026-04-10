@@ -1080,8 +1080,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if url.isLocalFile():
                     path = url.path()
                     if path:
-                        if path.startswith("/\\"):
-                            path = path[1:]
+                        path = path.strip("/\\") #в начале пути могут быть слэши, что совсем не нужно на Windows
                         if os.path.isdir(path):
                             self.board_add_item_folder(folder_path=path)
                         else:
@@ -5535,10 +5534,13 @@ class BoardMixin(BoardTextEditItemMixin):
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
 
+    def board_generate_filepath(self, cf, dot_ext):
+        return os.path.join(cf.folder_path, f'{time.time()}{dot_ext}')
+
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
         cf = self.LibraryData().current_folder()
         pixmap = QPixmap().fromImage(metadata.imageData())
-        path = os.path.join(cf.folder_path, f'{time.time()}.png')
+        path = self.board_generate_filepath(cf, '.png') 
         pixmap.save(path)
         self.board_create_new_image_item(path, cf)
 
@@ -5561,8 +5563,7 @@ class BoardMixin(BoardTextEditItemMixin):
         pixmap = None
         if path.startswith(PREFIX):
             path = path[len(PREFIX):]
-        if path.startswith("/"):
-            path = path[1:]
+        path = path.strip("/\\") #в начале пути могут быть слэши, что совсем не нужно на Windows
         if os.path.exists(path):
             _gif_file = self.LibraryData().is_gif_file(path)
             _webp_animated_file = self.LibraryData().is_webp_file(path) and self.LibraryData().is_webp_file_animated(path)
@@ -5616,7 +5617,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     ext = mime_type.split("/")[1]
             if not ext.startswith("."):
                 ext = f'.{ext}'
-            filepath = os.path.join(cf.folder_path, f'{time.time()}{ext}')
+            filepath = self.board_generate_filepath(cf, ext)
             urllib.request.urlretrieve(url, filepath)
             self.board_create_new_image_item(filepath, cf, source_url=url)
 
