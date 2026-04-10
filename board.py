@@ -1075,13 +1075,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_dropEventDefault(self, event):
         mdata = event.mimeData()
+
         if mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
+
         elif mdata.hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
             for url in mdata.urls():
                 self.board_handle_incoming_url(url)
+
         else:
             event.ignore()
 
@@ -5549,13 +5552,12 @@ class BoardMixin(BoardTextEditItemMixin):
         if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
             self.board_paste_selected_items()
 
-        elif mdata and mdata.hasUrls():
-            for url in mdata.urls():
-                self.board_handle_incoming_url(url)
-
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
 
+        elif mdata and mdata.hasUrls():
+            for url in mdata.urls():
+                self.board_handle_incoming_url(url)
         else:
             print('nothing')
 
