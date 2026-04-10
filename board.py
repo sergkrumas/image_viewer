@@ -1478,7 +1478,6 @@ class BoardMixin(BoardTextEditItemMixin):
             fid = self.LibraryData().create_file_data(filepath, fod)
             fid.source_width = source_width
             fid.source_height = source_height
-            fod.images_list.append(fid)
             id_to_filedata[int(id_key)] = fid
 
         # ЗАГРУЗКА ДАННЫХ
