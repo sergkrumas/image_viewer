@@ -5541,9 +5541,17 @@ class BoardMixin(BoardTextEditItemMixin):
             url = url.url()
             self.board_download_file(url)
 
-    def board_prepare_incoming_urls(self, mime_data):
+    def board_do_prepare_incoming_urls(self, mime_data):
         for url in mime_data.urls():
             self.board_handle_incoming_url(url)
+
+    def board_prepare_incoming_urls(self, mime_data):
+        if False:
+            self.board_do_prepare_incoming_urls(mime_data)
+        else:
+            self.board_interactive_layout_invoke(None,
+                exec_callback=partial(self.board_do_prepare_incoming_urls, mime_data)
+            )
 
     def board_control_v(self):
         app = QApplication.instance()
@@ -5577,23 +5585,6 @@ class BoardMixin(BoardTextEditItemMixin):
         if dest_folderpath is None:
             raise Exception('no path')
         return os.path.join(dest_folderpath, f'{time.time()}{dot_ext}')
-
-    def board_create_new_image_item(self, filepath, fod):
-        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
-        file_data = self.LibraryData().create_file_data(filepath, fod)
-        self.LibraryData().make_thumbnails_and_previews(fod, None)
-
-        if False:
-            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-            self.board_set_tracking_data(board_item, fod)
-            board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
-            board_item.file_data = file_data
-            file_data.board_items.append(board_item)
-            fod.board.items_list.append(board_item)
-        else:
-            pass
-
-        return board_item
 
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
         cf = self.LibraryData().current_folder()
@@ -7095,14 +7086,14 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_interactive_layout_direction_init(self):
         self.INT_LAYOUT = INT_LAYOUT = type('InteractiveLayout', (), {})()
         INT_LAYOUT.activated = False
-        INT_LAYOUT.data = None
+        INT_LAYOUT.exec_callback = None
         INT_LAYOUT.input_angle = 0
         INT_LAYOUT.direction = 1
 
-    def board_interactive_layout_invoke(self, event, data=None):
+    def board_interactive_layout_invoke(self, event, exec_callback=None):
         INT_LAYOUT = self.INT_LAYOUT
         INT_LAYOUT.activated = True
-        INT_LAYOUT.data = data
+        INT_LAYOUT.exec_callback = exec_callback
         mcp = self.board_MapToBoard(self.mapped_cursor_pos())
         INT_LAYOUT.forward_offset = QPointF(mcp)
         INT_LAYOUT.backward_offset = QPointF(mcp)
@@ -7110,32 +7101,55 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_interactive_layout_apply(self, event):
         INT_LAYOUT = self.INT_LAYOUT
         if INT_LAYOUT.activated:
+
+            if INT_LAYOUT.input_angle == 0:
+                INT_LAYOUT.direction = 1
+                INT_LAYOUT.hor_or_vert = True
+
+            elif INT_LAYOUT.input_angle == 90:
+                INT_LAYOUT.direction = -1
+                INT_LAYOUT.hor_or_vert = False
+
+            elif INT_LAYOUT.input_angle == 180:
+                INT_LAYOUT.direction = -1
+                INT_LAYOUT.hor_or_vert = True
+
+            elif INT_LAYOUT.input_angle == 270:
+                INT_LAYOUT.direction = 1
+                INT_LAYOUT.hor_or_vert = False
+
+            if INT_LAYOUT.exec_callback is not None:
+                self.show_center_label(f'applied {INT_LAYOUT.input_angle}')
+                INT_LAYOUT.exec_callback()
+
             INT_LAYOUT.activated = False
-            self.show_center_label(f'applied {INT_LAYOUT.input_angle}')
 
-            if INT_LAYOUT.angle == 0:
-                INT_LAYOUT.direction = 1
-                INT_LAYOUT.hor_or_vert = True
-            elif INT_LAYOUT.angle == 90:
-                INT_LAYOUT.direction = -1
-                INT_LAYOUT.hor_or_vert = False
-            elif INT_LAYOUT.angle == 180:
-                INT_LAYOUT.direction = -1
-                INT_LAYOUT.hor_or_vert = True
-            elif INT_LAYOUT.angle == 270:
-                INT_LAYOUT.direction = 1
-                INT_LAYOUT.hor_or_vert = False
+    def board_create_new_image_item(self, filepath, fod):
+        INT_LAYOUT = self.INT_LAYOUT
 
-            cf = self.LibraryData().current_folder
-            board = cf.board
-            for path in INT_LAYOUT.data:
-                # file_data = 
-                bi = self.board_prepare_board_item(board, file_data,
-                    INT_LAYOUT.forward_offset if INT_LAYOUT.direction == 1 else INT_LAYOUT.backward_offset,
-                    INT_LAYOUT.direction,
-                    False,
-                    hor_or_vert=INT_LAYOUT.hor_or_vert
-                )
+        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
+        file_data = self.LibraryData().create_file_data(filepath, fod)
+        self.LibraryData().make_thumbnails_and_previews(fod, None)
+
+        if INT_LAYOUT.activated:
+
+            board_item = self.board_prepare_board_item(fod.board, file_data,
+                INT_LAYOUT.forward_offset if INT_LAYOUT.direction == 1 else INT_LAYOUT.backward_offset,
+                INT_LAYOUT.direction,
+                False,
+                hor_or_vert=INT_LAYOUT.hor_or_vert
+            )
+
+        else:
+
+            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+            self.board_set_tracking_data(board_item, fod)
+            board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
+            board_item.file_data = file_data
+            file_data.board_items.append(board_item)
+            fod.board.items_list.append(board_item)
+
+        return board_item
 
     def board_interactive_layout_cancel(self):
         INT_LAYOUT = self.INT_LAYOUT
