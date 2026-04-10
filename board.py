@@ -5675,9 +5675,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 ext = f'.{ext}'
             filepath = self.board_generate_filepath(cf, ext)
             urllib.request.urlretrieve(url, filepath)
-            bi = self.board_validate_image_for_board_item(filepath)
-            if bi:
-                bi.image_source_url = source_url
+            self.board_create_new_image_item(filepath, cf).image_source_url = source_url
 
     def board_thumbnails_click_handler(self, file_data):
         self.board_fit_content_on_screen(file_data)
