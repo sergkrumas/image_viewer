@@ -5545,12 +5545,19 @@ class BoardMixin(BoardTextEditItemMixin):
         for url in mime_data.urls():
             self.board_handle_incoming_url(url)
 
+    def board_copy_mimedata(self, original):
+        copy = QMimeData()
+        formats = original.formats()
+        for formt in formats:
+            copy.setData(formt, original.data(formt))
+        return copy
+
     def board_prepare_incoming_urls(self, mime_data):
         if False:
             self.board_do_prepare_incoming_urls(mime_data)
         else:
             self.board_interactive_layout_invoke(None,
-                exec_callback=partial(self.board_do_prepare_incoming_urls, mime_data)
+                exec_callback=partial(self.board_do_prepare_incoming_urls, self.board_copy_mimedata(mime_data))
             )
 
     def board_control_v(self):
