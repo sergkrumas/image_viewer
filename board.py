@@ -5581,13 +5581,18 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_create_new_image_item(self, filepath, fod):
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
-        board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-        self.board_set_tracking_data(board_item, fod)
-        board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
-        board_item.file_data = file_data
-        file_data.board_items.append(board_item)
-        fod.board.items_list.append(board_item)
         self.LibraryData().make_thumbnails_and_previews(fod, None)
+
+        if False:
+            board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+            self.board_set_tracking_data(board_item, fod)
+            board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
+            board_item.file_data = file_data
+            file_data.board_items.append(board_item)
+            fod.board.items_list.append(board_item)
+        else:
+            pass
+
         return board_item
 
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
