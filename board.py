@@ -5535,7 +5535,17 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_save_pasted_image_bytes_from_metadata(mdata)
 
     def board_generate_filepath(self, cf, dot_ext):
-        return os.path.join(cf.folder_path, f'{time.time()}{dot_ext}')
+        cb_fp = self.CrossboardData().incoming_attachments_folderpath
+        dest_folderpath = None
+        if cb_fp:
+            dest_folderpath = cb_fp
+        elif cf.folder_path:
+            dest_folderpath = cf.folder_path
+        else:
+            dest_folderpath = self.Settings.get_path_for_saved_pictures()
+        if dest_folderpath is None:
+            raise Exception('no path')
+        return os.path.join(dest_folderpath, f'{time.time()}{dot_ext}')
 
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
         cf = self.LibraryData().current_folder()
