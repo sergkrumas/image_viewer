@@ -5656,23 +5656,19 @@ class BoardMixin(BoardTextEditItemMixin):
                 ext = f'.{ext}'
             filepath = self.board_generate_filepath(cf, ext)
             urllib.request.urlretrieve(url, filepath)
-            self.board_create_new_image_item(filepath, cf, source_url=url)
+            self.board_create_new_image_item(filepath, cf).image_source_url = source_url
 
     def board_create_new_image_item(self, filepath, fod, source_url=None):
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
         fod.images_list.append(file_data)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-        if source_url:
-            board_item.image_source_url = source_url
         self.board_set_tracking_data(board_item, fod)
-        if place_at_cursor:
-            board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
+        board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
         board_item.file_data = file_data
         file_data.board_items.append(board_item)
         fod.board.items_list.append(board_item)
-        if make_previews: # делаем превьюшку и миинатюрку для этой картинки
-            self.LibraryData().make_thumbnails_and_previews(fod, None)
+        self.LibraryData().make_thumbnails_and_previews(fod, None)
         return board_item
 
     def board_thumbnails_click_handler(self, file_data):
