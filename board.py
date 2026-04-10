@@ -5583,6 +5583,7 @@ class BoardMixin(BoardTextEditItemMixin):
             _gif_file = self.LibraryData().is_gif_file(path)
             _webp_animated_file = self.LibraryData().is_webp_file(path) and self.LibraryData().is_webp_file_animated(path)
             if _gif_file or _webp_animated_file:
+                # TODO: (10 апр 26) оппачки! а чего тут ничего не прописано?!
                 return path
             # supported exts
             elif path.lower().endswith(qt_supported_exts):
