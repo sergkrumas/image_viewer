@@ -1627,7 +1627,11 @@ class BoardMixin(BoardTextEditItemMixin):
             attr_type = type(attr_value).__name__
 
             if attr_name.startswith("_"):
-                continue
+                if attr_name in ['_tags', '_comments']:
+                    attr_data = []
+                    attr_type = 'list'
+                else:
+                    continue
 
             elif exclude is not None and attr_name in exclude:
                 continue
@@ -1635,11 +1639,6 @@ class BoardMixin(BoardTextEditItemMixin):
             elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized', 'progressive_board_preparation']:
                 attr_data = None
                 attr_type = 'NoneType'
-
-            elif attr_type in ['_tags', '_comments']:
-                # TODO: до сюда исполнение не дойдёт, ибо выше отработает
-                attr_data = []
-                attr_type = 'list'
 
             elif attr_name in ['from_item', 'to_item']:
                 if attr_value is None:
@@ -1670,9 +1669,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif isinstance(attr_value, QPointF):
                 attr_data = (attr_value.x(), attr_value.y())
-
-            elif attr_name == '_saved_data' and isinstance(attr_value, tuple):
-                continue
 
             elif isinstance(attr_value, (bool, int, float, str, tuple, list, dict)):
                 attr_data = attr_value
