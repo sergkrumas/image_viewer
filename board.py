@@ -5638,16 +5638,18 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_create_new_image_item(filepath, cf, source_url=url)
 
     def board_create_new_image_item(self, filepath, current_folder, source_url=None, make_previews=True, place_at_cursor=True):
+        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, current_folder)
+        current_folder.images_list.append(file_data)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-        board_item.file_data = file_data
-        board_item.image_source_url = source_url
-        file_data.board_items.append(board_item)
-        current_folder.board.items_list.append(board_item)
+        if source_url:
+            board_item.image_source_url = source_url
         self.board_set_tracking_data(board_item, current_folder)
         if place_at_cursor:
             board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
-        current_folder.images_list.append(file_data)
+        board_item.file_data = file_data
+        file_data.board_items.append(board_item)
+        current_folder.board.items_list.append(board_item)
         if make_previews: # делаем превьюшку и миинатюрку для этой картинки
             self.LibraryData().make_thumbnails_and_previews(current_folder, None)
         return board_item
