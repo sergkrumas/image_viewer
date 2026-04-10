@@ -885,11 +885,36 @@ class FFMPEG():
 
     @classmethod
     def load_one_of_the_first_frames_from_video(cls, ffmpeg_path_exe, video_path, ffmpeg_not_found_pixmap):
+
+        # TODO: очень плохой код, переписать позже
+        # не проверяются ошибки
+        # не проверяется путь ffprobe_path_exe на существование
+        ffprobe_path_exe = os.path.join(os.path.dirname(ffmpeg_path_exe), 'ffprobe.exe')
+
+        p = subprocess.Popen([ ffprobe_path_exe,
+            "-loglevel", "quiet", "-print_format", "json", "-show_entries", "format=duration",
+            video_path], 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW
+        )
+
+        try:
+            python_data = json.loads(p.stdout.read().decode("utf-8"))
+            duration = float(python_data['format']['duration'])
+        except:
+            duration = 0.0
+
+        if duration < 3.0:
+            duration_param = "0"
+        else:
+            duration_param = "2"
+
         ffmpeg_ok = cls.is_valid_exe(ffmpeg_path_exe)
         if ffmpeg_ok:
             proc = subprocess.Popen([
                     ffmpeg_path_exe,
-                    "-ss", "2",
+                    "-ss", duration_param,
                     "-i", video_path,
                     "-vframes", "1",
                     "-f", "image2pipe",
@@ -907,17 +932,31 @@ class FFMPEG():
             pixmap = ffmpeg_not_found_pixmap
         return pixmap
 
-    # TODO:
-    # import ffmpeg
-    # def get_video_resolution(filename):
-    #     probe = ffmpeg.probe(filename)
-    #     video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
-        
-    #     if video_stream:
-    #         width = int(video_stream['width'])
-    #         height = int(video_stream['height'])
-    #         return width, height
-    #     return None
 
-    # res = get_video_resolution('input.mp4')
-    # print(f"Resolution: {res[0]}x{res[1]}") # e.g., 1920x1080
+    # def get_video_resolution(video_path, ffprobe_path="ffprobe.exe"):
+    #     # Command to get width and height in JSON format
+    #     command = [
+    #         ffprobe_path, 
+    #         "-v", "error", 
+    #         "-select_streams", "v:0", 
+    #         "-show_entries", "stream=width,height", 
+    #         "-of", "json", 
+    #         video_path
+    #     ]
+        
+    #     # Run the command and capture output
+    #     result = subprocess.run(command, capture_output=True, text=True)
+        
+    #     if result.returncode == 0:
+    #         data = json.loads(result.stdout)
+    #         width = data['streams'][0]['width']
+    #         height = data['streams'][0]['height']
+    #         return width, height
+    #     else:
+    #         print(f"Error: {result.stderr}")
+    #         return None
+
+    # # Usage
+    # res = get_video_resolution("input.mp4")
+    # if res:
+    #     print(f"Resolution: {res[0]}x{res[1]}")

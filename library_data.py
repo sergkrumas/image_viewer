@@ -910,27 +910,37 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @staticmethod
     def make_thumbnail(Globals, file_data, source_pixmap):
+        if file_data.is_video_filetype:
+            source_pixmap = file_data.full_quality_video_frame
         THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
         thumbnail = source_pixmap.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         file_data.set_thumbnail(thumbnail)
 
     @staticmethod
-    def make_preview(Globals, file_data, source_pixmap, original_pixmap_size, set_source_size=True):
+    def make_preview(Globals, file_data, source_pixmap, original_pixmap_size):
+
+        if file_data.is_video_filetype:
+            source_pixmap = file_data.full_quality_video_frame = FFMPEG.load_one_of_the_first_frames_from_video(
+                Globals.main_window.STNG.ffmpeg_exe_filepath,
+                file_data.filepath,
+                Globals.FFMPEG_NOT_FOUND
+            )
+            original_pixmap_size = source_pixmap.size()
+
         ow = original_pixmap_size.width()
         oh = original_pixmap_size.height()
-        if set_source_size:
-            file_data.source_width = ow
-            file_data.source_height = oh
-        if file_data.is_video_filetype:
-            file_data.source_width = 1000
-            file_data.source_height = 1000
-        elif file_data.is_audio_video_filetype:
+
+        file_data.source_width = ow
+        file_data.source_height = oh
+
+        if file_data.is_audio_video_filetype and not file_data.is_video_filetype:
             file_data.source_width = 500
             file_data.source_height = 500
 
         if LibraryData().is_svg_file(file_data.filepath):
             file_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
             file_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
+
         preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
         file_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
         if ow != 0:

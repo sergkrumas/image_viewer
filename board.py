@@ -2990,12 +2990,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def __load_audio_video(filepath):
             if board_item.video:
-                board_item.pixmap = FFMPEG.load_one_of_the_first_frames_from_video(self.STNG.ffmpeg_exe_filepath, filepath, self.Globals.FFMPEG_NOT_FOUND)
-                # TODO: вообще тут превьюшки делать не надо, но не хочется тормозить начальную загрузку этим
-                file_data = board_item.file_data
-                pixmap = board_item.pixmap
-                self.LibraryData().make_preview(self.Globals, file_data, pixmap, pixmap.size(), set_source_size=False)
-                self.LibraryData().make_thumbnail(self.Globals, file_data, file_data.preview)
+                board_item.pixmap = getattr(board_item.file_data, 'full_quality_video_frame', None)
+
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
             show_msg(filepath)
