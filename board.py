@@ -1548,7 +1548,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_value = None
 
             elif attr_type == 'FileData':
-                attr_value = id_to_filedata[attr_data]
+                attr_value = file_data = id_to_filedata[attr_data]
+                # восстановление списка
+                if isinstance(obj, self.BoardItem):
+                    board_item = obj
+                    file_data.board_items.append(board_item)
 
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
