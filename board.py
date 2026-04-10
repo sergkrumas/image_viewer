@@ -2237,7 +2237,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.is_board_page_active() and self.Globals.DEBUG:
             self.show_center_label(str(file_data.filepath))
 
-    def board_prepare_board_item(self, board, file_data, offset, direction, force_vertical_layout):
+    def board_prepare_board_item(self, board, file_data, offset, direction, force_vertical_layout, hor_or_vert=None):
 
         def _set_position(bi, imd, offset):
             bi.position = offset + QPointF(imd.source_width, imd.source_height)/2
@@ -2245,9 +2245,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def _offset_anchor(imd):
             nonlocal offset
-            if force_vertical_layout or self.STNG.board_vertical_items_layout:
-                offset += QPointF(0, direction*imd.source_height)
+            if hor_or_vert is None:
+                vertical = force_vertical_layout or self.STNG.board_vertical_items_layout
+                horizontal = not vertical
             else:
+                vertical = not hor_or_vert
+                horizontal = not vertical
+            if vertical:
+                offset += QPointF(0, direction*imd.source_height)
+            if horizontal:
                 offset += QPointF(direction*imd.source_width, 0)
 
         if file_data.preview_error:
@@ -7049,7 +7055,7 @@ class BoardMixin(BoardTextEditItemMixin):
             angle %= 360
             angle = int(angle)
 
-            INT_LAYOUT.angle = angle
+            INT_LAYOUT.input_angle = angle
 
             direction = QPointF(200, 0)
             t = QTransform()
@@ -7085,18 +7091,45 @@ class BoardMixin(BoardTextEditItemMixin):
         self.INT_LAYOUT = INT_LAYOUT = type('InteractiveLayout', (), {})()
         INT_LAYOUT.activated = False
         INT_LAYOUT.data = None
-        INT_LAYOUT.angle = 0
+        INT_LAYOUT.input_angle = 0
+        INT_LAYOUT.direction = 1
 
     def board_interactive_layout_invoke(self, event, data=None):
         INT_LAYOUT = self.INT_LAYOUT
         INT_LAYOUT.activated = True
         INT_LAYOUT.data = data
+        INT_LAYOUT.forward_offset = QPointF()
+        INT_LAYOUT.backward_offset = QPointF()
 
     def board_interactive_layout_apply(self, event):
         INT_LAYOUT = self.INT_LAYOUT
         if INT_LAYOUT.activated:
             INT_LAYOUT.activated = False
-            self.show_center_label(f'applied {INT_LAYOUT.angle}')
+            self.show_center_label(f'applied {INT_LAYOUT.input_angle}')
+
+            if INT_LAYOUT.angle == 0:
+                INT_LAYOUT.direction = 1
+                INT_LAYOUT.hor_or_vert = True
+            elif INT_LAYOUT.angle == 90:
+                INT_LAYOUT.direction = -1
+                INT_LAYOUT.hor_or_vert = False
+            elif INT_LAYOUT.angle == 180:
+                INT_LAYOUT.direction = -1
+                INT_LAYOUT.hor_or_vert = True
+            elif INT_LAYOUT.angle == 270:
+                INT_LAYOUT.direction = 1
+                INT_LAYOUT.hor_or_vert = False
+
+            cf = self.LibraryData().current_folder
+            board = cf.board
+            for path in INT_LAYOUT.data:
+                # file_data = 
+                bi = self.board_prepare_board_item(board, file_data,
+                    INT_LAYOUT.forward_offset if INT_LAYOUT.direction == 1 else INT_LAYOUT.backward_offset,
+                    INT_LAYOUT.direction,
+                    False,
+                    hor_or_vert=INT_LAYOUT.hor_or_vert
+                )
 
     def board_interactive_layout_cancel(self):
         INT_LAYOUT = self.INT_LAYOUT
