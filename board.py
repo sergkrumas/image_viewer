@@ -5628,8 +5628,10 @@ class BoardMixin(BoardTextEditItemMixin):
             # svg-files
             elif path.lower().endswith(svg_exts):
                 pixmap = load_svg(path, scale_factor=20)
-        if pixmap is not None:
-            self.board_create_new_image_item(path, cf)
+        if pixmap is None:
+            return None
+        else:
+            return self.board_create_new_image_item(path, cf)
 
     def board_long_loading_begin(self, text):
         text = text.strip()
@@ -5672,7 +5674,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 ext = f'.{ext}'
             filepath = self.board_generate_filepath(cf, ext)
             urllib.request.urlretrieve(url, filepath)
-            self.board_create_new_image_item(filepath, cf).image_source_url = source_url
+            bi = self.board_validate_image_for_board_item(filepath)
+            if bi:
+                bi.image_source_url = source_url
 
     def board_thumbnails_click_handler(self, file_data):
         self.board_fit_content_on_screen(file_data)
