@@ -2416,10 +2416,39 @@ class BoardMixin(BoardTextEditItemMixin):
             cond1 = en_sa.containsPoint(pos, Qt.WindingFill)
             cond2 = sa.containsPoint(pos, Qt.WindingFill)
             if cond1 and not cond2:
-                self.show_center_label(f'ok')
+                self.board_show_external_link_menu(item)
                 return True
         else:
             return False
+
+    def board_show_external_link_menu(self, item):
+        board = self.LibraryData().current_folder().board
+        menu_items_data = []
+        for slot in self.CrossboardData()._link_slots_list.values():
+            if not slot:
+                continue
+            li = slot[0]
+            soft_check, strict_check = li.check_link_boards(board)
+            if soft_check and not strict_check:
+                if li.to_item._board is board:
+                    menu_items_data.append(li.from_item)
+                if li.from_item._board is board:
+                    menu_items_data.append(li.to_item)
+
+        items = {}
+        subMenu = RoundedQMenu()
+        subMenu.setStyleSheet(self.context_menu_stylesheet)
+        for n, item in enumerate(menu_items_data):
+            item_label = f'{item.type} from {item._board._folder.get_label_or_path()}'
+            action = subMenu.addAction(item_label)
+            items[action] = (n, item)
+
+        action = subMenu.exec_(QCursor().pos())
+        if action is None:
+            pass
+        else:
+            n, item = items.get(action, None)
+            self.show_center_label(f'{item}')
 
     def board_draw_content_external_links(self, painter, folder_data):
         board = folder_data.board
