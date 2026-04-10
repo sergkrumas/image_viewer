@@ -1077,13 +1077,13 @@ class BoardMixin(BoardTextEditItemMixin):
         mdata = event.mimeData()
 
         if mdata.hasImage():
+            event.accept()
             self.board_save_pasted_image_bytes_from_metadata(mdata)
 
         elif mdata.hasUrls():
             event.setDropAction(Qt.CopyAction)
             event.accept()
-            for url in mdata.urls():
-                self.board_handle_incoming_url(url)
+            self.board_prepare_incoming_urls(mdata)
 
         else:
             event.ignore()
@@ -5543,6 +5543,10 @@ class BoardMixin(BoardTextEditItemMixin):
             url = url.url()
             self.board_download_file(url)
 
+    def board_prepare_incoming_urls(self, mime_data):
+        for url in mime_data.urls():
+            self.board_handle_incoming_url(url)
+
     def board_control_v(self):
         app = QApplication.instance()
         cb = app.clipboard()
@@ -5556,8 +5560,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_save_pasted_image_bytes_from_metadata(mdata)
 
         elif mdata and mdata.hasUrls():
-            for url in mdata.urls():
-                self.board_handle_incoming_url(url)
+            self.board_prepare_incoming_urls(mdata)
         else:
             print('nothing')
 
