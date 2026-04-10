@@ -1956,16 +1956,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 movie = item.movie
                 offset = QPointF(0, 0)
-                create_file_data = self.LibraryData().create_file_data
                 for i in range(movie.frameCount()):
                     movie.jumpToFrame(i)
                     pixmap = item.movie.currentPixmap()
                     fd_bi = BoardItem(BoardItem.types.ITEM_IMAGE)
                     fd_bi.pixmap = pixmap
 
-                    fd_bi.file_data = create_file_data("", fd_bi)
+                    fd_bi.file_data = self.LibraryData().create_file_data("", fd_bi)
                     fd_bi.file_data.board_items.append(fd_bi)
-                    fd.images_list.append(fd_bi.file_data)
 
                     fd.board.items_list.append(fd_bi)
                     fd_bi.board_index = i
@@ -5583,7 +5581,6 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_create_new_image_item(self, filepath, fod):
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
-        fod.images_list.append(file_data)
         board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
         self.board_set_tracking_data(board_item, fod)
         board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())

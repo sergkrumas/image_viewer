@@ -132,8 +132,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 content_path = None
         return content_path
 
-    def create_file_data(self, *args):
-        return FileData(*args)
+    def create_file_data(self, filepath, fod):
+        fda = FileData(filepath, fod)
+        fod.images_list.append(fda)
+        return fda
 
     def update_progressbar(self):
         app = QApplication.instance()
