@@ -766,6 +766,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_interactive_layout_direction_init()
 
+        self.external_linked_items = []
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -2334,6 +2336,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_content_init(self):
         self.images_drawn = 0
         self.board_item_under_mouse = None
+        self.external_linked_items = []
 
     def board_draw_content(self, painter, folder_data, snapshot=False):
         if not snapshot:
@@ -2346,6 +2349,7 @@ class BoardMixin(BoardTextEditItemMixin):
         font.setPixelSize(12)
         painter.setFont(font)
 
+        self.board_draw_content_init()
         if self.CROSSBOARD.activated:
             self.board_draw_tech_links(painter)
         else:
@@ -2356,7 +2360,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_content_links(painter, folder_data, True, False)
 
-        self.board_draw_content_init()
         for board_item in folder_data.board.items_list:
             if board_item.visible:
                 self.board_draw_item(painter, board_item)
@@ -2407,10 +2410,20 @@ class BoardMixin(BoardTextEditItemMixin):
             new_len = vec.length() + offset
             point += -point + center + (vec_normalized*new_len).toPointF()
 
-    def board_draw_content_external_links(self, painter, folder_data):
-        external_linked_items = []
+    def board_check_external_links(self, pos):
+        for en_sa, item in self.external_linked_items:
+            sa = item.get_selection_area(canvas=self)
+            cond1 = en_sa.containsPoint(pos, Qt.WindingFill)
+            cond2 = sa.containsPoint(pos, Qt.WindingFill)
+            if cond1 and not cond2:
+                self.show_center_label(f'ok')
+                return True
+        else:
+            return False
 
+    def board_draw_content_external_links(self, painter, folder_data):
         board = folder_data.board
+        external_linked_items = []
         for slot in self.CrossboardData()._link_slots_list.values():
             if not slot:
                 continue
@@ -2425,7 +2438,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.save()
         painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(QColor(255, 165, 50, 150)))
-        EXTERNAL_LINK_OFFSET = 10
+        EXTERNAL_LINK_OFFSET = 20
         for item in external_linked_items:
             sa = item.get_selection_area(canvas=self)
             self.board_enlarge_selection_area(sa, EXTERNAL_LINK_OFFSET)
@@ -2433,6 +2446,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawEllipse(sa.boundingRect())
             else:
                 painter.drawPolygon(sa)
+            self.external_linked_items.append((sa, item))
+            del sa
+
         painter.restore()
 
     def board_draw_content_links(self, painter, folder_data, pre, post):
@@ -5098,6 +5114,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if self.board_interactive_layout_is_activated():
             self.board_interactive_layout_apply(event)
+            return
+
+        if self.board_check_external_links(event.pos()):
             return
 
         if self.AD_TOOLBOX.visible and self.board_AD_toolbox_releaseEvent(event):
