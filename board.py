@@ -513,12 +513,14 @@ class BoardItem():
         return transform
 
     def update_corner_info(self):
-        if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
+        if self.type == BoardItem.types.ITEM_IMAGE:
             current_frame = self.movie.currentFrameNumber()
             frame_count = self.movie.frameCount()
             if frame_count > 0:
                 current_frame += 1
             self.status = _('{0}/{1} ANIMATION').format(current_frame, frame_count)
+        elif self.type == BoardItem.types.ITEM_AV:
+            self.status = self.file_data.filename
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             current_image_num = self.item_folder_data._image_index
             images_count = len(self.item_folder_data.images_list)
@@ -2847,20 +2849,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 else:
                     image_to_draw = file_data.preview
 
-                before_item_rect = None
-                if board_item.type == BoardItem.types.ITEM_AV:
-                    before_item_rect = item_rect
-                    item_rect = fit_rect_into_rect(QRectF(0, 0, image_to_draw.width(), image_to_draw.height()), item_rect, float_mode=True)
-                    item_rect.moveCenter(QPointF(0, 0))
-
 
                 if board_item._marked_item:
                     pass
 
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
-                    if board_item.type == BoardItem.types.ITEM_AV and full_quality and before_item_rect:
-                        painter.drawText(before_item_rect, Qt.AlignLeft | Qt.TextWordWrap, board_item.file_data.filename)
 
                 painter.setOpacity(1.0)
                 case1 = board_item.type == BoardItem.types.ITEM_IMAGE
@@ -2994,6 +2988,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
+            board_item.update_corner_info()
             show_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
