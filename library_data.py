@@ -1569,9 +1569,6 @@ class FolderData():
                     if os.path.basename(file_data.filepath) == filename:
                         file_data.image_rotation = value
         LibraryData().remove_progressbar()
-        for file_data in self.images_list:
-            file_data.is_supported_filetype = LibraryData.is_interest_file(file_data.filepath)
-            file_data.is_audio_video_filetype, file_data.is_video_filetype = LibraryData.is_audio_video_file(file_data.filepath)
 
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
@@ -1938,6 +1935,9 @@ class FileData():
         self.source_height = 0
 
         self.preview_ui_rect = QRect()
+
+        self.is_supported_filetype = LibraryData.is_interest_file(self.filepath)
+        self.is_audio_video_filetype, self.is_video_filetype = LibraryData.is_audio_video_file(self.filepath)
 
         self._preview = None
         if self.filepath and not LibraryData().globals.lite_mode:
