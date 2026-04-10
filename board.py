@@ -2611,21 +2611,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawPolygon(board_item.get_selection_area(canvas=self))
         painter.restore()
 
-    # TODO: (10 фев 26) удалить перед релизом
-    # def rectrect_intersect_asim_check_pass(self, r1, r2):
-    #     return any(r1.contains(p) for p in [
-    #         r2.topLeft(),
-    #         r2.topRight(),
-    #         r2.bottomRight(),
-    #         r2.bottomLeft(),
-    #         r2.center(),
-    #     ])
-    # def is_rect_insersects_rect(self, r1, r2):
-    #     return any((
-    #         self.rectrect_intersect_asim_check_pass(r1, r2),
-    #         self.rectrect_intersect_asim_check_pass(r2, r1),
-    #     ))
-
     def board_toggle_full_forcing(self, reset=False):
         cf = self.LibraryData().current_folder()
         toggle = not reset
