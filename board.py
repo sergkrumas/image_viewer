@@ -5538,7 +5538,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if os.path.isdir(path):
                     self.board_add_item_folder(folder_path=path)
                 else:
-                    self.board_add_image_item_from_path(path)
+                    self.board_validate_image_for_board_item(path)
         else:
             url = url.url()
             self.board_download_file(url)
@@ -5576,6 +5576,19 @@ class BoardMixin(BoardTextEditItemMixin):
             raise Exception('no path')
         return os.path.join(dest_folderpath, f'{time.time()}{dot_ext}')
 
+    def board_create_new_image_item(self, filepath, fod):
+        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
+        file_data = self.LibraryData().create_file_data(filepath, fod)
+        fod.images_list.append(file_data)
+        board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
+        self.board_set_tracking_data(board_item, fod)
+        board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
+        board_item.file_data = file_data
+        file_data.board_items.append(board_item)
+        fod.board.items_list.append(board_item)
+        self.LibraryData().make_thumbnails_and_previews(fod, None)
+        return board_item
+
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
         cf = self.LibraryData().current_folder()
         pixmap = QPixmap().fromImage(metadata.imageData())
@@ -5583,7 +5596,7 @@ class BoardMixin(BoardTextEditItemMixin):
         pixmap.save(path)
         self.board_create_new_image_item(path, cf)
 
-    def board_add_image_item_from_path(self, path):
+    def board_validate_image_for_board_item(self, path):
         cf = self.LibraryData().current_folder()
         qt_supported_exts = (
             ".jpg", ".jpeg", ".jfif",
@@ -5660,19 +5673,6 @@ class BoardMixin(BoardTextEditItemMixin):
             filepath = self.board_generate_filepath(cf, ext)
             urllib.request.urlretrieve(url, filepath)
             self.board_create_new_image_item(filepath, cf).image_source_url = source_url
-
-    def board_create_new_image_item(self, filepath, fod):
-        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
-        file_data = self.LibraryData().create_file_data(filepath, fod)
-        fod.images_list.append(file_data)
-        board_item = BoardItem(BoardItem.types.ITEM_IMAGE)
-        self.board_set_tracking_data(board_item, fod)
-        board_item.position = self.board_MapToBoard(self.mapped_cursor_pos())
-        board_item.file_data = file_data
-        file_data.board_items.append(board_item)
-        fod.board.items_list.append(board_item)
-        self.LibraryData().make_thumbnails_and_previews(fod, None)
-        return board_item
 
     def board_thumbnails_click_handler(self, file_data):
         self.board_fit_content_on_screen(file_data)
