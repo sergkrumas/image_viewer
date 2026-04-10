@@ -2438,17 +2438,27 @@ class BoardMixin(BoardTextEditItemMixin):
         items = {}
         subMenu = RoundedQMenu()
         subMenu.setStyleSheet(self.context_menu_stylesheet)
-        for n, item in enumerate(menu_items_data):
+        for item in menu_items_data:
+            # TODO: (10 апр 26) сделать юзабельные леблы
             item_label = f'{item.type} from {item._board._folder.get_label_or_path()}'
             action = subMenu.addAction(item_label)
-            items[action] = (n, item)
+            items[action] = item
 
         action = subMenu.exec_(QCursor().pos())
         if action is None:
             pass
         else:
-            n, item = items.get(action, None)
-            self.show_center_label(f'{item}')
+            item = items.get(action, None)
+            if item is not None:
+                self.board_go_to_item_in_other_board(item)
+
+    def board_go_to_item_in_other_board(self, item):
+        fod = self.LibraryData().current_folder()
+        self.board_make_board_current(item._board._folder)
+        self.LibraryData().current_folder().board.referer_board_folder = fod
+        # TODO: надо как-то по другому решить вопрос для айтемов-нод,
+        # ибо масштабировать вьюпорт к ним на деле как-то не ок 
+        self.board_fit_content_on_screen(None, board_item=item)
 
     def board_draw_content_external_links(self, painter, folder_data):
         board = folder_data.board
