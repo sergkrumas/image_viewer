@@ -2874,11 +2874,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif image_to_draw:
                     painter.drawPixmap(item_rect, image_to_draw, QRectF(QPointF(0, 0), QSizeF(image_to_draw.size())))
 
-                painter.setOpacity(1.0)
-                case1 = board_item.type == BoardItem.types.ITEM_IMAGE
-                case2 = not self.Globals.lite_mode
-                case3 = selection_area_rect.intersected(QRectF(self.rect()))
-                show_tag_data = all((case1, case2, case3))
+                if if_0 and board_item in self.selected_items:
+                    painter.setOpacity(1.0)
+
+                show_tag_data = (not self.Globals.lite_mode) and (board_item.type == BoardItem.types.ITEM_IMAGE) and (selection_area_rect.intersected(QRectF(self.rect())))
                 if show_tag_data:
                     ir = board_item.get_size_rect(scaled=True)
                     ir.moveCenter(QPointF(0, 0))
@@ -2886,6 +2885,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     if status:
                         cp = inverted_transform.map(QPointF(self.mapped_cursor_pos()))
                         self.draw_board_item_comments(painter, ir, board_item._comments, cp)
+
                 painter.resetTransform()
 
                 if all((any((
