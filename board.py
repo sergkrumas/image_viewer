@@ -2493,8 +2493,6 @@ class BoardMixin(BoardTextEditItemMixin):
         fod = self.LibraryData().current_folder()
         self.board_make_board_current(item._board._folder)
         self.LibraryData().current_folder().board.referer_board_folder = fod
-        # TODO: надо как-то по другому решить вопрос для айтемов-нод,
-        # ибо масштабировать вьюпорт к ним на деле как-то не ок
         self.board_fit_content_on_screen(None, board_item=item)
 
     def board_draw_content_external_links(self, painter, folder_data):
