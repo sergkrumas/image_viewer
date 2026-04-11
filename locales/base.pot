@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-04-11 15:38+0300\n"
+"POT-Creation-Date: 2026-04-11 15:39+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -840,6 +840,12 @@ msgstr ""
 
 #: board.py:3703
 msgid "Items removing confirmation"
+msgstr ""
+
+#: board.py:3704
+msgid ""
+"Are you sure you want to proceed?\n"
+"{}"
 msgstr ""
 
 #: board.py:3782 board.py:3835

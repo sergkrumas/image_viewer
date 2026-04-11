@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-04-11 15:38+0300\n"
-"PO-Revision-Date: 2026-04-11 15:38+0300\n"
+"POT-Creation-Date: 2026-04-11 15:39+0300\n"
+"PO-Revision-Date: 2026-04-11 15:40+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1916,3 +1916,11 @@ msgstr ""
 #: board.py:2479
 msgid "from board"
 msgstr "из доски"
+
+#: board.py:3704
+msgid ""
+"Are you sure you want to proceed?\n"
+"{}"
+msgstr ""
+"Подтверждаете?\n"
+"{}"

@@ -3701,7 +3701,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if selected_links:
                 stat += _("\nlinks: {}").format(len(selected_links))
             reply = QMessageBox.question(self, _('Items removing confirmation'),
-                                         _("Are you sure you want to proceed?\n{}".format(stat)),
+                                         _("Are you sure you want to proceed?\n{}").format(stat),
                                          QMessageBox.Yes | QMessageBox.No,
                                          QMessageBox.No)
             if reply == QMessageBox.Yes:
