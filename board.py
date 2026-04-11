@@ -373,7 +373,7 @@ class BoardItem():
             file_data = self.label
         return file_data
 
-    def make_copy(self, board, folder_data):
+    def make_copy(self, main_window, folder_data):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
@@ -381,7 +381,7 @@ class BoardItem():
             if type_obj is QPointF:
                 attr_value = type_obj(attr_value)
             setattr(copied_item, attr_name, attr_value)
-        board.board_set_tracking_data(copied_item, folder_data)
+        main_window.board_set_tracking_data(copied_item, folder_data)
         folder_data.board.items_list.append(copied_item)
         return copied_item
 
