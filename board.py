@@ -5646,6 +5646,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_validate_image_for_board_item(self, path):
         cf = self.LibraryData().current_folder()
+        # TODO: эти расширения прописаны в LibraryData, может использовать код оттуда?
         qt_supported_exts = (
             ".jpg", ".jpeg", ".jfif",
             ".bmp",
