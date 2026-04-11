@@ -141,7 +141,7 @@ def contextMenu(self, event, contextMenu, checkboxes):
 
 
 def register(board_obj, plugin_info):
-    plugin_info.name = 'BOOKMARKS'
+    plugin_info.name = 'BOOKMARKS (deprecated)'
     plugin_info.preparePluginBoard = preparePluginBoard
 
     plugin_info.paintEvent = paintEvent
