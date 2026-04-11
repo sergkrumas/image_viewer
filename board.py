@@ -369,6 +369,7 @@ class BoardItem():
             file_data = self.file_data
         elif self.type in [BoardItem.types.ITEM_FOLDER, BoardItem.types.ITEM_GROUP]:
             file_data = self.item_folder_data.current_image()
+        # TODO:
         elif self.type == BoardItem.types.ITEM_NODE:
             file_data = self.label
         return file_data
@@ -3574,6 +3575,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             for board_item in cf.board.items_list:
 
+                # TODO:
                 # крашится на item_frame-ах, потому что у них изображений нет
                 # file_data = board_item.retrieve_file_data()
 
