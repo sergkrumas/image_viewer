@@ -953,8 +953,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False,
                                                         do_progressive_grid_layout=False, do_progressive_board_layout=False):
 
-        current_image = folder_data.current_image()
         if thread_instance is not None and thread_instance.current_index_centered_order:
+            current_image = folder_data.current_image()
             folder_data.modified_order_pivot_index = folder_data.current_image()
             images_list = list(get_index_centered_list(folder_data.images_list, folder_data.current_image()))
         else:

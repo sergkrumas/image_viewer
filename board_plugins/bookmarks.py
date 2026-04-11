@@ -25,7 +25,7 @@ def paintEvent(self, painter, event):
     cf = self.LibraryData().current_folder()
     board = cf.board
     for bi in board.items_list:
-        if bi.type in [self.BoardItem.types.ITEM_GROUP]:
+        if bi.type == self.BoardItem.types.ITEM_GROUP:
             area = bi.get_selection_area(canvas=self)
             area_rect = area.boundingRect()
             area_rect.moveLeft(area_rect.left()+25)
@@ -61,6 +61,9 @@ def objectReceived(self, path):
         'filename': filename,
         'pagenumber': pagenumber,
     }
+    # (11 апр 26) TODO: а где self.LibraryData().make_thumbnails_and_previews(gi.item_folder_data, None) ??
+    # где добавление айтемов в группу ??
+    # почему в публичной версии всё такое убогое осталось ???
 
 def dragEnterEvent(self, event):
     self.board_dragEnterEventDefault(event)
