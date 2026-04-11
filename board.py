@@ -7171,12 +7171,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
             INT_LAYOUT.activated = False
 
-    def board_create_new_image_item(self, filepath, fod):
+    def board_create_new_image_item(self, filepath, fod, make_previews=True):
         INT_LAYOUT = self.INT_LAYOUT
 
         # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
         file_data = self.LibraryData().create_file_data(filepath, fod)
-        self.LibraryData().make_thumbnails_and_previews(fod, None)
+        if make_previews:
+            self.LibraryData().make_thumbnails_and_previews(fod, None)
 
         if INT_LAYOUT.activated:
 

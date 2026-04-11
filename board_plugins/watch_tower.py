@@ -25,7 +25,7 @@ def get_watch_tower_data_filepath(self):
 
 def append_note_item(self, cf, text, warning=False):
     ni = self.BoardItem(self.BoardItem.types.ITEM_NOTE)
-    ni.board_index = self.retrieve_new_board_item_index()
+    ni.board_index = cf.board.acquire_item_index()
     cf.board.items_list.append(ni)
     self.board_TextElementSetDefaults(ni, plain_text=text)
     ni.calc_local_data()
@@ -78,7 +78,7 @@ def preparePluginBoard(self, plugin_info):
                         filepath = os.path.join(folderpath, filename)
                         is_library_file = self.LibraryData.is_interest_file(filepath)
                         if os.path.isfile(filepath) and is_library_file:
-                            bi = self.board_create_new_image_item(filepath, cf, place_at_cursor=False, make_previews=False)
+                            bi = self.board_create_new_image_item(filepath, cf, make_previews=False)
                             imd = bi.file_data
                             if imd.creation_date == 0:
                                 imd.creation_date = imd.get_creation_date()
