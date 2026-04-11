@@ -5781,10 +5781,16 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 content_rect = board_item.get_selection_area(canvas=self, place_center_at_origin=False).boundingRect().toRect()
             fitted_rect = fit_rect_into_rect(content_rect, self.rect())
+            if board_item is not None and board_item.type == BoardItem.types.ITEM_NODE:
+                factor_x = 1.0
+                factor_y = 1.0
+            else:
+                factor_x = fitted_rect.width()/content_rect.width()
+                factor_y = fitted_rect.height()/content_rect.height()
             self.do_scale_board(0, False, False, False,
                 pivot=viewport_center_pos,
-                factor_x=fitted_rect.width()/content_rect.width(),
-                factor_y=fitted_rect.height()/content_rect.height(),
+                factor_x=factor_x,
+                factor_y=factor_y,
             )
 
         self.update()
