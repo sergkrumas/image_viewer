@@ -395,16 +395,26 @@ class BoardItem():
             text = f'{file_data.filename}\n{file_data.source_width} x {file_data.source_height}'
             if self.image_source_url is not None:
                 text = f'{text}\n{self.image_source_url}'
+            fp = os.path.normpath(self.file_data.folder_data.folder_path)
+            # TODO: (11 апр 26) folder_path может быть на самом деле указывать не на папку, а на board-файл
+            fd_fp = os.path.normpath(os.path.dirname(self.file_data.filepath)) 
+            if fp != fd_fp:
+                text = f'{text}\n{fd_fp}'
             return text + passport_info
+
         elif self.type == self.types.ITEM_FOLDER:
             path = self.item_folder_data.folder_path
             return _('FOLDER {0}').format(path) + passport_info
+
         elif self.type == self.types.ITEM_GROUP:
             return _('GROUP {0} {1}').format(self.board_group_index, self.label) + passport_info
+
         elif self.type == self.types.ITEM_FRAME:
             return _('FRAME') + passport_info
+
         elif self.type == self.types.ITEM_NOTE:
             return _('TEXT NOTE') + passport_info
+
         elif self.type == self.types.ITEM_NODE:
             return self.label + passport_info
 
