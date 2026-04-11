@@ -418,6 +418,29 @@ class BoardItem():
         elif self.type == self.types.ITEM_NODE:
             return self.label + passport_info
 
+    def type_to_string(self):   
+        types = self.types
+        if self.type == types.ITEM_UNDEFINED:
+            return _("UNDEFINED ITEM")
+        elif self.type == types.ITEM_IMAGE:
+            return _("IMAGE-ITEM")
+        elif self.type == types.ITEM_AV:
+            return _("AV-ITEM")
+        elif self.type == types.ITEM_FOLDER:
+            return _("FOLDER-ITEM")
+        elif self.type == types.ITEM_GROUP:
+            return _("GROUP-ITEM")
+        elif self.type == types.ITEM_NODE:
+            return _("NODE-ITEM")
+        elif self.type == types.ITEM_LINK:
+            return _("LINK-ITEM")
+        elif self.type == types.ITEM_FRAME:
+            return _("FRAME-ITEM")
+        elif self.type == types.ITEM_NOTE:
+            return _("NOTE-ITEM")
+        elif self.type == types.ITEM_EDITING_TABLE:
+            return _("EDITING TABLE")
+
     def calculate_viewport_position(self, canvas, pos=None):
         if pos is None:
             pos = self.position
@@ -2450,8 +2473,10 @@ class BoardMixin(BoardTextEditItemMixin):
         subMenu = RoundedQMenu()
         subMenu.setStyleSheet(self.context_menu_stylesheet)
         for item in menu_items_data:
-            # TODO: (10 апр 26) сделать юзабельные леблы
-            item_label = f'{item.type} from {item._board._folder.get_label_or_path()}'
+            item_label = item.type_to_string()
+            if item.label:
+                item_label = f'{item_label} "{item.label}"'
+            item_label = f'{item_label} from board "{item._board._folder.get_label_or_path()}"'
             action = subMenu.addAction(item_label)
             items[action] = item
 
