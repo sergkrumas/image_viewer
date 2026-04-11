@@ -2476,7 +2476,8 @@ class BoardMixin(BoardTextEditItemMixin):
             item_label = item.type_to_string()
             if item.label:
                 item_label = f'{item_label} "{item.label}"'
-            item_label = f'{item_label} from board "{item._board._folder.get_label_or_path()}"'
+            from_board_text = _("from board")
+            item_label = f'{item_label} {from_board_text} "{item._board._folder.get_label_or_path()}"'
             action = subMenu.addAction(item_label)
             items[action] = item
 

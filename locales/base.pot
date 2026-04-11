@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-04-11 15:29+0300\n"
+"POT-Creation-Date: 2026-04-11 15:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,7 +221,7 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:4827 board.py:3141
+#: _viewer.pyw:4827 board.py:3142
 msgid "Please wait"
 msgstr ""
 
@@ -736,225 +736,229 @@ msgstr ""
 msgid "perfomance status: {0} images drawn"
 msgstr ""
 
-#: board.py:3156
+#: board.py:2479
+msgid "from board"
+msgstr ""
+
+#: board.py:3157
 msgid "Virtual folder board: {}"
 msgstr ""
 
-#: board.py:3158
+#: board.py:3159
 msgid "Board folder: {}"
 msgstr ""
 
-#: board.py:3159
+#: board.py:3160
 msgid "Generation time: {}"
 msgstr ""
 
-#: board.py:3161
+#: board.py:3162
 msgid "File-plugin name: {}"
 msgstr ""
 
-#: board.py:3163
+#: board.py:3164
 msgid "This board has no plugin attached"
 msgstr ""
 
-#: board.py:3164
+#: board.py:3165
 msgid "Current item index: {}"
 msgstr ""
 
-#: board.py:3165
+#: board.py:3166
 msgid "Current item-group index: {}"
 msgstr ""
 
-#: board.py:3166
+#: board.py:3167
 msgid "Board bounding rect: {}"
 msgstr ""
 
-#: board.py:3171
+#: board.py:3172
 msgid "You've entered this board from the board of folder '{}'"
 msgstr ""
 
-#: board.py:3173
+#: board.py:3174
 msgid "Parent folder of this board '{}'"
 msgstr ""
 
-#: board.py:3175
+#: board.py:3176
 msgid "This board parent item title '{}'"
 msgstr ""
 
-#: board.py:3181
+#: board.py:3182
 msgid "Current cross-board item index:: {}"
 msgstr ""
 
-#: board.py:3182
+#: board.py:3183
 msgid "Current cross-board board index:: {}"
 msgstr ""
 
-#: board.py:3183
+#: board.py:3184
 msgid "Children boards count:: {}"
 msgstr ""
 
-#: board.py:3208
+#: board.py:3209
 msgid "Pressing Backspace key returns to board of the folder {0}"
 msgstr ""
 
-#: board.py:3230
+#: board.py:3231
 msgid "Add to the group ({})"
 msgstr ""
 
-#: board.py:3419
+#: board.py:3420
 msgid "AXES"
 msgstr ""
 
-#: board.py:3424
+#: board.py:3425
 msgid "ORIGIN"
 msgstr ""
 
-#: board.py:3541
+#: board.py:3542
 msgid "The camera has been moved"
 msgstr ""
 
-#: board.py:3543
+#: board.py:3544
 msgid "Out of the map frame!"
 msgstr ""
 
-#: board.py:3670
+#: board.py:3671
 msgid "Loading hires images"
 msgstr ""
 
-#: board.py:3681
+#: board.py:3682
 msgid "You cannot delete items from animated file board"
 msgstr ""
 
-#: board.py:3699
+#: board.py:3700
 msgid "items: {}"
 msgstr ""
 
-#: board.py:3701
+#: board.py:3702
 msgid ""
 "\n"
 "links: {}"
 msgstr ""
 
-#: board.py:3702
+#: board.py:3703
 msgid "Items removing confirmation"
 msgstr ""
 
-#: board.py:3781 board.py:3834
+#: board.py:3782 board.py:3835
 msgid "GROUP Virtual Folder"
 msgstr ""
 
-#: board.py:3804
+#: board.py:3805
 msgid "Nothing to delete, the group is empty"
 msgstr ""
 
-#: board.py:3826
+#: board.py:3827
 msgid "Group-item not found"
 msgstr ""
 
-#: board.py:3832
+#: board.py:3833
 msgid "You cannot create group-item inside virtual folder board"
 msgstr ""
 
-#: board.py:3860
+#: board.py:3861
 msgid "You cannot create note-item inside virtual folder board"
 msgstr ""
 
-#: board.py:3872
+#: board.py:3873
 msgid "Choose folder with images in it"
 msgstr ""
 
-#: board.py:3874
+#: board.py:3875
 msgid "Loading folder to the board"
 msgstr ""
 
-#: board.py:3952
+#: board.py:3953
 msgid "FRAME ITEM"
 msgstr ""
 
-#: board.py:3957 board.py:5764
+#: board.py:3958 board.py:5765
 msgid "No items selected!"
 msgstr ""
 
-#: board.py:3968
+#: board.py:3969
 msgid "Node label"
 msgstr ""
 
-#: board.py:3993
+#: board.py:3994
 msgid "This item was removed to stack"
 msgstr ""
 
-#: board.py:3996
+#: board.py:3997
 msgid "This item was added to stack"
 msgstr ""
 
-#: board.py:5722
+#: board.py:5723
 msgid "Loading image to the board"
 msgstr ""
 
-#: board.py:5758
+#: board.py:5759
 msgid "This element is not presented on the board"
 msgstr ""
 
-#: board.py:5838
+#: board.py:5839
 msgid "Horizontally"
 msgstr ""
 
-#: board.py:5839
+#: board.py:5840
 msgid "Vertically"
 msgstr ""
 
-#: board.py:5854
+#: board.py:5855
 msgid "No items on the board! Abort!"
 msgstr ""
 
-#: board.py:6385
+#: board.py:6386
 msgid "Choose Directories"
 msgstr ""
 
-#: board.py:6416
+#: board.py:6417
 msgid "No folders selected!"
 msgstr ""
 
-#: board.py:6441
+#: board.py:6442
 msgid "No images found in selected folders!"
 msgstr ""
 
-#: board.py:6452
+#: board.py:6453
 msgid "Loading images to the board"
 msgstr ""
 
-#: board.py:6503 board_align_distribution_ui.py:79
+#: board.py:6504 board_align_distribution_ui.py:79
 msgid "Whole board"
 msgstr ""
 
-#: board.py:6632
+#: board.py:6633
 msgid "Nothing selected!"
 msgstr ""
 
-#: board.py:6636
+#: board.py:6637
 msgid "Select at least 3 items!"
 msgstr ""
 
-#: board.py:6916
+#: board.py:6917
 msgid "This item not supported!"
 msgstr ""
 
-#: board.py:6934
+#: board.py:6935
 msgid "You cannot dive inside crossboard when board operation is not finished!"
 msgstr ""
 
-#: board.py:6950
+#: board.py:6951
 msgid "CROSSBOARD Virtual Folder"
 msgstr ""
 
-#: board.py:7081
+#: board.py:7082
 msgid "You've entered crossboard"
 msgstr ""
 
-#: board.py:7084
+#: board.py:7085
 msgid "You've left crossboard"
 msgstr ""
 
-#: board.py:7158
+#: board.py:7159
 msgid ""
 "Possible {} items to paste,\n"
 "choose layout direction for them.\n"
