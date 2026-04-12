@@ -1,0 +1,4 @@
+#: board.py:6066
+msgid "Over user points"
+msgstr "По заданным местам"
+

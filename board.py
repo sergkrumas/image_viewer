@@ -6063,7 +6063,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if use_user_places:
                 menu = RoundedQMenu()
-                action_up = menu.addAction(_("Over user points"))
+                action_up = menu.addAction(_("Over user-defined places"))
                 action_items = menu.addAction(_("Over items"))
                 menu.setStyleSheet(self.context_menu_stylesheet)
                 a = menu.exec_(QCursor().pos())

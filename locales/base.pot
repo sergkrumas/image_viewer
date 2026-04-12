@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-04-12 16:01+0300\n"
+"POT-Creation-Date: 2026-04-12 16:03+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -921,7 +921,7 @@ msgid "No items on the board! Abort!"
 msgstr ""
 
 #: board.py:6066
-msgid "Over user points"
+msgid "Over user-defined places"
 msgstr ""
 
 #: board.py:6067
