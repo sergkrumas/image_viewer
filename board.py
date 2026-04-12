@@ -1605,9 +1605,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 user_points = []
                 for user_point in attr_data:
                     point_tuple = user_point[0]
-                    scale_x = user_point[1]
-                    scale_y = user_point[2]
-                    user_points.append((QPointF(*point_tuple), scale_x, scale_y))
+                    region_width = user_point[1]
+                    region_height = user_point[2]
+                    user_points.append((QPointF(*point_tuple), region_width, region_height))
                 obj.user_points = user_points
                 continue
 
@@ -1785,11 +1785,8 @@ class BoardMixin(BoardTextEditItemMixin):
         # сохранение юзер-поинтов отдельно,
         # т.к. QPointF не сериализуется самостоятельно в tuple
         user_points_serialized = []
-        for user_point in board.user_points:
-            pos = user_point[0]
-            scale_x = user_point[1]
-            scale_y = user_point[2]
-            user_points_serialized.append(((pos.x(), pos.y()), scale_x, scale_y))
+        for pos, region_width, region_height in board.user_points:
+            user_points_serialized.append(((pos.x(), pos.y()), region_width, region_height))
         board_attributes.append(('user_points', 'BoardUserPointsList', user_points_serialized))
 
         board_nonAutoSerialized = self.board_dumpNonAutoSerialized(board.nonAutoSerialized)
@@ -3068,8 +3065,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_draw_user_points(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
-        for point, canvas_scale_x, canvas_scale_y in cf.board.user_points:
+        for point, w, h in cf.board.user_points:
             painter.drawPoint(self.board_MapToViewport(point))
+        painter.setBrush(Qt.NoBrush)
+        for point, w, h in cf.board.user_points:
+            r = QRectF(0, 0, w, h)
+            r.moveCenter(point)
+            r = self.board_MapRectToViewport(r)
+            painter.drawRect(r)
 
     def draw_grid_wrapper(self, painter):
         if self.Globals.DEBUG or self.STNG.board_draw_grid:
@@ -5208,8 +5211,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif ctrl and not shift:
                 cf = self.LibraryData().current_folder()
-                canvas_pos = self.board_MapToBoard(event.pos())
-                cf.board.user_points.append([canvas_pos, self.canvas_scale_x, self.canvas_scale_y])
+                pos = self.rect().center() if True else event.pos()
+                board_mapped_pos = self.board_MapToBoard(pos)
+                board_mapped_vr = self.board_MapRectToBoard(self.rect())
+                cf.board.user_points.append([board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
@@ -6044,15 +6049,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         current_pos = self.board_MapToBoard(self.get_center_position())
 
-        LocData = namedtuple("LocationData", "pos scale_x scale_y board_item")
+        LocData = namedtuple("LocationData", "pos region_width region_height board_item")
 
 
         if not self.fly_pairs:
             locations_data_list = []
 
             if cf.board.user_points:
-                for point, bx, by in cf.board.user_points:
-                    locations_data_list.append(LocData(point, bx, by, None))
+                for point, region_width, region_height in cf.board.user_points:
+                    locations_data_list.append(LocData(point, region_width, region_height, None))
             else:
                 nearest_item = self.board_get_nearest_item(cf)
                 items_list = self.get_original_items_order(cf.board.items_list)
@@ -6068,8 +6073,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
             self.fly_pairs = get_cycled_pairs(locations_data_list)
+            region = self.board_MapRectToBoard(self.rect())
             pair = [
-                LocData(current_pos, self.canvas_scale_x, self.canvas_scale_y, None),
+                LocData(current_pos, region.width(), region.height(), None),
                 locations_data_list[0]
             ]
 
@@ -6081,12 +6087,14 @@ class BoardMixin(BoardTextEditItemMixin):
         def get_bx_by(loc_data):
             if loc_data.board_item:
                 item_rect = loc_data.board_item.get_selection_area(canvas=self, place_center_at_origin=False, apply_global_scale=False).boundingRect().toRect()
-                fitted_rect = fit_rect_into_rect(item_rect, self.rect())
+                fitted_rect = fit_rect_into_rect(item_rect, self.rect(), float_mode=True)
                 bx = fitted_rect.width()/item_rect.width()
                 by = fitted_rect.height()/item_rect.height()
             else:
-                bx = loc_data.scale_x
-                by = loc_data.scale_y
+                region_rect = QRectF(0, 0, loc_data.region_width, loc_data.region_height)
+                fitted_region_rect = fit_rect_into_rect(region_rect, self.rect(), float_mode=True)
+                bx = fitted_region_rect.width()/region_rect.width()
+                by = fitted_region_rect.height()/region_rect.height()
             return (bx, by)
 
         def animate_scale_or_not_animate_that_is_the_question():
@@ -6173,8 +6181,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # подменяем первую позицию на текущие данные, чтобы избежать перескоков и прочего неприятного,
         # мало ли, нет блокировки, и из-за этого позиция или масштаб были изменены пользователем
+        region = self.board_MapRectToBoard(self.rect())
         pair = [
-            LocData(current_pos_, self.canvas_scale_x, self.canvas_scale_y, None),
+            LocData(current_pos_, region.width(), region.height(), None),
             pair[1],
         ]
 
