@@ -7329,6 +7329,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 piece_pixmap.fill(Qt.black)
                 painter = QPainter()
                 painter.begin(piece_pixmap)
+                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+                painter.setRenderHint(QPainter.TextAntialiasing, True)
+                painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
                 self.board_draw_content(painter, fod, snapshot=True)
                 self.board_draw_content_init()
                 painter.end()
@@ -7380,6 +7384,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # restore
         self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
+
+        self.update()
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
