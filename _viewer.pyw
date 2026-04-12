@@ -6175,16 +6175,20 @@ class MainWindow(QMainWindow,
         self.update()
 
     def modal_input_field_show(self, callback, text):
-        lineEdit = self.lineEdit
-        self.lineEditCallback = callback
-        lineEdit.setGeometry(self.rect().adjusted(200, 200, -200, -200))
-        lineEdit.setParent(self)
-        lineEdit.show()
-        lineEdit.setText(text)
-        lineEdit.selectAll()
-        lineEdit.setFocus()
-        # lineEdit.grabKeyboard()
-        # lineEdit.grabMouse()
+        textEdit = self.textEdit
+        self.textEditCallback = callback
+        textEdit.setGeometry(self.rect().adjusted(200, 500, -200, -500))
+        textEdit.setParent(self)
+        textEdit.show()
+        if isinstance(textEdit, QTextEdit):
+            textEdit.setPlainText(text)
+        elif isinstance(textEdit, QLineEdit):
+            textEdit.setText(text)
+        textEdit.selectAll()
+        textEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        textEdit.setFocus()
+        # textEdit.grabKeyboard()
+        # textEdit.grabMouse()
 
     def modal_input_field_init(self):
         # MW = self
@@ -6195,43 +6199,72 @@ class MainWindow(QMainWindow,
         #             MW.modal_input_field_handler()
         #             return True
         #         else:
-        #             return QLineEdit.event(lineEdit, event)
-        lineEdit = self.lineEdit = QLineEdit()
-        lineEdit.setText('')
-        lineEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        lineEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        lineEdit.setStyleSheet('color: white; font: 20pt; background: rgba(50, 50, 50, 100); border-radius: 30px; border: 1px solid gray;')
-        lineEdit.returnPressed.connect(self.modal_input_field_handler)
-        lineEdit.textChanged.connect(lambda: self.modal_input_field_handler(close=False))
+        #             return QLineEdit.event(textEdit, event)
+
+        modal_input_field_handler = self.modal_input_field_handler
+
+        class FixedQTextEdit(QTextEdit):
+
+            def __init__(self,):
+                super().__init__()
+                self.enter_key_counter = 0
+
+            def keyReleaseEvent(self, event):
+                if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                    self.enter_key_counter += 1
+                    if self.enter_key_counter >= 2:
+                        modal_input_field_handler()
+                        event.ignore()
+                else:
+                    self.enter_key_counter = 0
+                super().keyPressEvent(event)
+
+        MultiLineEdit = FixedQTextEdit
+        SingleLineEdit = QLineEdit
+        textEdit = self.textEdit = MultiLineEdit()
+        if isinstance(textEdit, QTextEdit):
+            textEdit.setPlainText('')
+        elif isinstance(textEdit, QLineEdit):
+            textEdit.setText('')
+            textEdit.returnPressed.connect(self.modal_input_field_handler)
+        textEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        # textEdit.setAlignment(Qt.AlignCenter)
+        textEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        textEdit.setStyleSheet('color: white; font: 20pt; background: rgba(50, 50, 50, 100); border-radius: 30px; border: 1px solid gray;')
+        textEdit.textChanged.connect(lambda: self.modal_input_field_handler(close=False))
         self.lineEditSkip = False
 
     def modal_input_field_hide(self):
-        lineEdit = self.lineEdit
-        lineEdit.setParent(None)
-        # lineEdit.releaseKeyboard()
-        # lineEdit.releaseMouse()
+        textEdit = self.textEdit
+        textEdit.setParent(None)
+        # textEdit.releaseKeyboard()
+        # textEdit.releaseMouse()
         self.lineEditSkip = True
 
     def modal_input_field_handler(self, close=True):
-        self.setWindowTitle(self.lineEdit.text())
+        # self.setWindowTitle(self.textEdit.text())
         if close:
-            if self.lineEditCallback:
-                self.lineEditCallback()
-                self.lineEditCallback = None
+            if self.textEditCallback:
+                self.textEditCallback()
+                self.textEditCallback = None
             self.modal_input_field_hide()
             self.update()
         return True
 
     def modal_input_field_text(self):
-        return self.lineEdit.text()
+        textEdit = self.textEdit
+        if isinstance(textEdit, QTextEdit):
+            return textEdit.toPlainText().strip('\n')
+        elif isinstance(textEdit, QLineEdit):
+            return textEdit.text()
 
     def modal_input_field_try_cancel(self):
-        lineEdit = self.lineEdit
-        is_activated = bool(lineEdit.parent())
+        textEdit = self.textEdit
+        is_activated = bool(textEdit.parent())
         if is_activated:
             self.modal_input_field_hide()
-            self.lineEditSkip = False
-            self.lineEditCallback = None
+            self.textEditSkip = False
+            self.textEditCallback = None
         return is_activated
 
 def main():

@@ -1329,7 +1329,7 @@ class BoardData():
         self.scale_y = None
         self.ready = False or ld.globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT
 
-        self.user_points = []
+        self.user_places = []
         self.items_list = []
 
         self.force_vertical_layout = False

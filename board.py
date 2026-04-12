@@ -981,7 +981,7 @@ class BoardMixin(BoardTextEditItemMixin):
         only_shift_mod = bool(event.modifiers() == Qt.ShiftModifier)
         only_ctrl_mode = bool(event.modifiers() == Qt.ControlModifier)
 
-        if self.lineEdit.parent():
+        if self.textEdit.parent():
             event.setAccepted(True)
             return
 
@@ -1043,7 +1043,7 @@ class BoardMixin(BoardTextEditItemMixin):
         shift_only = event.modifiers() == Qt.ShiftModifier
         shift = event.modifiers() & Qt.ShiftModifier
 
-        if self.lineEdit.parent():
+        if self.textEdit.parent():
             event.setAccepted(True)
             return
 
