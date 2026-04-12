@@ -1220,6 +1220,13 @@ class MainWindow(QMainWindow,
         }
         QMenu::item:disabled {
             color: rgb(100, 100, 100);
+
+            /*
+            color: rgb(20, 20, 20);
+            background: rgb(100, 100, 100);
+            padding-right: 15px;
+            border-radius: 5px;
+            */
         }
         QMenu::separator {
             height: 1px;

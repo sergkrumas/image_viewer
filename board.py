@@ -2467,23 +2467,27 @@ class BoardMixin(BoardTextEditItemMixin):
                 if li.from_item._board is board:
                     menu_items_data.append(li.to_item)
 
-        items = {}
-        subMenu = RoundedQMenu()
-        subMenu.setStyleSheet(self.context_menu_stylesheet)
-        for item in menu_items_data:
-            item_label = item.type_to_string()
-            if item.label:
-                item_label = f'{item_label} "{item.label}"'
-            from_board_text = _("from board")
-            item_label = f'{item_label} {from_board_text} "{item._board._folder.get_label_or_path()}"'
-            action = subMenu.addAction(item_label)
-            items[action] = item
+        board_items = {}
+        menu = RoundedQMenu()
 
-        action = subMenu.exec_(QCursor().pos())
+        menu_title_action = menu.addAction(_('Links to items in other boards:'))
+        menu_title_action.setEnabled(False)
+
+        menu.setStyleSheet(self.context_menu_stylesheet)
+        for bi in menu_items_data:
+            bi_label = bi.type_to_string()
+            if bi.label:
+                bi_label = f'{bi_label} "{bi.label}"'
+            from_board_text = _("from board")
+            bi_label = f'{bi_label} {from_board_text} "{bi._board._folder.get_label_or_path()}"'
+            action = menu.addAction(bi_label)
+            board_items[action] = bi
+
+        action = menu.exec_(QCursor().pos())
         if action is None:
             pass
         else:
-            item = items.get(action, None)
+            item = board_items.get(action, None)
             if item is not None:
                 self.board_go_to_item_in_other_board(item)
 
