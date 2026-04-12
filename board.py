@@ -1252,6 +1252,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if bool(self.is_context_menu_executed_over_group_item()):
             addItem(_('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
 
+        addItem(_("Whole board screenshot"), self.board_save_whole_board_screenshot)
+
     def board_CreatePluginVirtualFolder(self, plugin_name):
         fd = self.LibraryData().create_folder_data(
             _("{0} Virtual Folder").format(plugin_name), "",
@@ -7112,28 +7114,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_leave_crossboard()
             self.show_center_label(_("You've left crossboard"), duration=1.5)
 
-    def board_take_snapshot(self, fod):
-        self.LibraryData().save_board_data()
-
-        stashed_current_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
-        bo = fod.board
-        self.canvas_scale_x = bo.scale_x
-        self.canvas_scale_y = bo.scale_y
-        self.canvas_origin = bo.origin
-
-        snapshot_pixmap = QPixmap(self.rect().size())
-        snapshot_pixmap.fill(Qt.black)
-        painter = QPainter()
-        painter.begin(snapshot_pixmap)
-        self.board_draw_content(painter, fod, snapshot=True)
-        self.board_draw_content_init()
-        painter.end()
-
-        fod.board.root_item._snapshot = snapshot_pixmap
-
-        # restore
-        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
-
     def board_do_change_frame_label(self, board_item):
         board_item.label = self.modal_input_field_text()
 
@@ -7280,6 +7260,126 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_interactive_layout_is_activated(self):
         INT_LAYOUT = self.INT_LAYOUT
         return INT_LAYOUT.activated
+
+    def board_take_snapshot(self, fod):
+        self.LibraryData().save_board_data()
+
+        stashed_current_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
+        bo = fod.board
+        self.canvas_scale_x = bo.scale_x
+        self.canvas_scale_y = bo.scale_y
+        self.canvas_origin = bo.origin
+
+        snapshot_pixmap = QPixmap(self.rect().size())
+        snapshot_pixmap.fill(Qt.black)
+        painter = QPainter()
+        painter.begin(snapshot_pixmap)
+        self.board_draw_content(painter, fod, snapshot=True)
+        self.board_draw_content_init()
+        painter.end()
+
+        fod.board.root_item._snapshot = snapshot_pixmap
+
+        # restore
+        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
+
+    def board_save_whole_board_screenshot(self):
+        cf = self.LibraryData().current_folder()
+        self.board_whole_board_screenshot(cf)
+
+    def board_whole_board_screenshot(self, fod):
+        self.LibraryData().save_board_data()
+
+        stashed_current_viewport_data = (QPointF(self.canvas_origin), self.canvas_scale_x, self.canvas_scale_y)
+
+        self.canvas_scale_x = 1.0
+        self.canvas_scale_y = 1.0
+
+        PIECE_SIZE = 1000
+        size = QSize(PIECE_SIZE, PIECE_SIZE)
+
+        self.build_board_bounding_rect_to_board_data(fod)
+
+        containter_folder_name = f'{time.time()}'
+        path = os.path.join(self.Settings.get_path_for_saved_pictures(), containter_folder_name)
+        os.makedirs(path)
+
+        X_count = math.ceil(fod.board.bounding_rect.width()/PIECE_SIZE)
+        Y_count = math.ceil(fod.board.bounding_rect.height()/PIECE_SIZE)
+
+        # generation
+        html_table = ""
+        html_table += '<table>'
+
+        # text_data = ""
+
+        counter = 0
+
+        for y in range(Y_count):
+
+            html_table += '<tr>'
+
+            for x in range(X_count):
+
+                counter += 1
+
+                self.canvas_origin = -fod.board.bounding_rect.topLeft() - QPointF(x*PIECE_SIZE, y*PIECE_SIZE)
+                # text_data += f'{self.canvas_origin}<br>'
+                piece_pixmap = QPixmap(size)
+                piece_pixmap.fill(Qt.black)
+                painter = QPainter()
+                painter.begin(piece_pixmap)
+                self.board_draw_content(painter, fod, snapshot=True)
+                self.board_draw_content_init()
+                painter.end()
+
+                piece_filename = f'{counter:03}_X{x}_Y{y}.png'
+                piece_pixmap.save(os.path.join(path, piece_filename))
+
+                html_table += f'<td><img src="{piece_filename}"></td>'
+
+            html_table += '</tr>'
+
+        html_table += '</table>'
+
+        html = "" \
+        "<!DOCTYPE html>" \
+        "<html>" \
+        "<head>" \
+        "<style>" \
+        "  body{" \
+        "    padding: 0px;" \
+        "   margin: 0px;" \
+        "    background: black;" \
+        "  }" \
+        "  table {" \
+        "   border-collapse: collapse;" \
+        "   border-spacing: 0;" \
+        " }" \
+        " td {" \
+        "   padding: 0;" \
+        " }" \
+        " img {" \
+        "   display: block;" \
+        " }" \
+        "</style>" \
+        "</head>" \
+        "<body>"
+        html += html_table + \
+        "</body>" \
+        "</html>"
+
+        # html += text_data
+
+        html_path = os.path.join(path, 'compiled_screenshot.html')
+
+        with open(html_path, 'w+', encoding='utf8') as file:
+            file.write(html)
+
+        webbrowser.open(html_path)
+
+        # restore
+        self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
