@@ -1601,14 +1601,14 @@ class BoardMixin(BoardTextEditItemMixin):
                         promises.append((id_key, obj, 'item_folder_data'))
                 continue
 
-            elif attr_type == 'BoardUserPlacesList':
-                user_places = []
+            elif attr_type == 'BoardUserDefinedPlacesList':
+                user_defined_places = []
                 for user_point in attr_data:
                     point_tuple = user_point[0]
                     region_width = user_point[1]
                     region_height = user_point[2]
-                    user_places.append((QPointF(*point_tuple), region_width, region_height))
-                obj.user_places = user_places
+                    user_defined_places.append((QPointF(*point_tuple), region_width, region_height))
+                obj.user_defined_places = user_defined_places
                 continue
 
             else:
@@ -1774,7 +1774,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attributes,
-                                                            exclude=('items_list', 'user_places'))
+                                                            exclude=('items_list', 'user_defined_places'))
 
         # сохранение айтемов доски
         for item in board.items_list:
@@ -1784,10 +1784,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # сохранение юзер-поинтов отдельно,
         # т.к. QPointF не сериализуется самостоятельно в tuple
-        user_places_serialized = []
-        for pos, region_width, region_height in board.user_places:
-            user_places_serialized.append(((pos.x(), pos.y()), region_width, region_height))
-        board_attributes.append(('user_places', 'BoardUserPlacesList', user_places_serialized))
+        user_defined_places_serialized = []
+        for pos, region_width, region_height in board.user_defined_places:
+            user_defined_places_serialized.append(((pos.x(), pos.y()), region_width, region_height))
+        board_attributes.append(('user_defined_places', 'BoardUserDefinedPlacesList', user_defined_places_serialized))
 
         board_nonAutoSerialized = self.board_dumpNonAutoSerialized(board.nonAutoSerialized)
 
@@ -3067,12 +3067,12 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.drawLine(offset+QPointF(r.left(), i), offset+QPointF(r.right(), i))
             i += LINES_INTERVAL_Y
 
-    def board_draw_user_places(self, painter, cf):
+    def board_draw_user_defined_places(self, painter, cf):
         painter.setPen(QPen(Qt.red, 5))
-        for point, w, h in cf.board.user_places:
+        for point, w, h in cf.board.user_defined_places:
             painter.drawPoint(self.board_MapToViewport(point))
         painter.setBrush(Qt.NoBrush)
-        for point, w, h in cf.board.user_places:
+        for point, w, h in cf.board.user_defined_places:
             r = QRectF(0, 0, w, h)
             r.moveCenter(point)
             r = self.board_MapRectToViewport(r)
@@ -3101,7 +3101,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.Globals.DEBUG or self.STNG.board_draw_canvas_origin:
             self.board_draw_canvas_origin(painter)
 
-        self.board_draw_user_places(painter, cf)
+        self.board_draw_user_defined_places(painter, cf)
 
         self.board_draw_selection_mouse_rect(painter)
         self.board_draw_selection_transform_box(painter)
@@ -5218,7 +5218,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 pos = self.rect().center() if True else event.pos()
                 board_mapped_pos = self.board_MapToBoard(pos)
                 board_mapped_vr = self.board_MapRectToBoard(self.rect())
-                cf.board.user_places.append([board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()])
+                cf.board.user_defined_places.append([board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()])
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
@@ -6059,9 +6059,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.fly_pairs:
             locations_data_list = []
 
-            use_user_places = bool(cf.board.user_places)
+            use_user_defined_places = bool(cf.board.user_defined_places)
 
-            if use_user_places:
+            if use_user_defined_places:
                 menu = RoundedQMenu()
                 action_up = menu.addAction(_("Over user-defined places"))
                 action_items = menu.addAction(_("Over items"))
@@ -6072,10 +6072,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif a is action_up:
                     pass
                 elif a is action_items:
-                    use_user_places = False
+                    use_user_defined_places = False
 
-            if use_user_places:
-                for point, region_width, region_height in cf.board.user_places:
+            if use_user_defined_places:
+                for point, region_width, region_height in cf.board.user_defined_places:
                     locations_data_list.append(LocData(point, region_width, region_height, None))
             else:
                 nearest_item = self.board_get_nearest_item(cf)
