@@ -6055,7 +6055,22 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.fly_pairs:
             locations_data_list = []
 
-            if cf.board.user_points:
+            use_user_points = bool(cf.board.user_points)
+
+            if use_user_points:
+                menu = RoundedQMenu()
+                action_up = menu.addAction(_("Over user points"))
+                action_items = menu.addAction(_("Over items"))
+                menu.setStyleSheet(self.context_menu_stylesheet)
+                a = menu.exec_(QCursor().pos())
+                if a is None:
+                    return
+                elif a is action_up:
+                    pass
+                elif a is action_items:
+                    use_user_points = False
+
+            if use_user_points:
                 for point, region_width, region_height in cf.board.user_points:
                     locations_data_list.append(LocData(point, region_width, region_height, None))
             else:
