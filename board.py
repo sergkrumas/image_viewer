@@ -804,6 +804,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.external_linked_items = []
 
+        self.show_user_defined_places = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1193,6 +1195,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 _('Show point snapping targets'),
                 self.SNAPPING.show_point_targets,
                 partial(self.toggle_boolean_var_generic, self.SNAPPING, 'show_point_targets')
+            ),
+            (
+                _('Show user-defined places'),
+                self.show_user_defined_places,
+                partial(self.toggle_boolean_var_generic, self, 'show_user_defined_places')
             ),
         ))
         sep = contextMenu.addSeparator
@@ -3095,6 +3102,8 @@ class BoardMixin(BoardTextEditItemMixin):
             i += LINES_INTERVAL_Y
 
     def board_draw_user_defined_places(self, painter, cf):
+        if not self.show_user_defined_places:
+            return
         painter.setPen(QPen(Qt.red, 5))
         for point, w, h in cf.board.user_defined_places:
             painter.drawPoint(self.board_MapToViewport(point))
