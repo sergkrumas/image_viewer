@@ -1221,6 +1221,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_open_recently_opened_board_item(self, path):
         if os.path.exists(path):
             self.board_loadBoard(path=path)
+        # TODO: не прописано удаление несуществующего пути
 
     def board_form_recently_opened_boards_menu(self):
         menu = RoundedQMenu()
