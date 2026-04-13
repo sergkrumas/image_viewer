@@ -7369,7 +7369,7 @@ class BoardMixin(BoardTextEditItemMixin):
         "</style>" \
         "</head>" \
         "<body>" \
-        + html_table + \
+        f"{html_table}" \
         "</body>" \
         "</html>"
 
