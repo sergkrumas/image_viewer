@@ -7295,7 +7295,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.canvas_scale_x = 1.0
         self.canvas_scale_y = 1.0
 
-        PIECE_SIZE = 1000
+        PIECE_SIZE = 1500
         size = QSize(PIECE_SIZE, PIECE_SIZE)
 
         self.build_board_bounding_rect_to_board_data(fod)
