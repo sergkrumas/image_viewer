@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-04-12 16:03+0300\n"
-"PO-Revision-Date: 2026-04-12 16:23+0300\n"
+"POT-Creation-Date: 2026-04-13 16:07+0300\n"
+"PO-Revision-Date: 2026-04-13 16:08+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -138,7 +138,7 @@ msgstr ""
 "и рискует зависнуть при подходе значения потребляемой памяти к 1.5GB.\n"
 "Для увеличения доступной памяти надо запуститься из 64bit-го интерпретатора."
 
-#: _viewer.pyw:4834 board.py:3148
+#: _viewer.pyw:4834 board.py:3170
 msgid "Please wait"
 msgstr "Подождите"
 
@@ -242,7 +242,7 @@ msgstr "Скопировать метаданные в буфер обмена"
 msgid "Find on disk"
 msgstr "Найти на диске"
 
-#: _viewer.pyw:6080 board.py:1215
+#: _viewer.pyw:6080 board.py:1217
 msgid "Open in Google Chrome"
 msgstr "Открыть в Google Chrome"
 
@@ -388,59 +388,59 @@ msgstr "Доски-плагины"
 msgid "Show debug graphics for transformation widget"
 msgstr "Отображать отладочную графику для виджета трансформации"
 
-#: board.py:1211
+#: board.py:1213
 msgid "Go to the link in the note (Explorer or Browser)"
 msgstr "Пройти по ссылке в заметке (Проводник или веб-браузер)"
 
-#: board.py:1235
+#: board.py:1255
 msgid "Folder..."
 msgstr "Папка..."
 
-#: board.py:1237
+#: board.py:1257
 msgid "Group"
 msgstr "Группа"
 
-#: board.py:1240
+#: board.py:1260
 msgid "{0} (add selected items to it: {1})"
 msgstr "{0} (добавить в группу выделенные элементы: {1})"
 
-#: board.py:1243
+#: board.py:1263
 msgid "Frame"
 msgstr "Фрейм"
 
-#: board.py:1245 board_note_item.py:404
+#: board.py:1265 board_note_item.py:404
 msgid "Note"
 msgstr "Заметка"
 
-#: board.py:1248
+#: board.py:1268
 msgid "Force highres loading of all items right now (may take some time)"
 msgstr "Загрузить хайрезные версии всем айтемам (может занять время)"
 
-#: board.py:1253
+#: board.py:1273
 msgid "Take current image from group and place nearby"
 msgstr "Вынуть текущую картинку из группы"
 
-#: board.py:1213
+#: board.py:1215
 msgid "Open in viewer in separated app copy running in lite mode"
 msgstr "Открыть на странице вьювера в копии приложения в упрощённом режиме"
 
-#: board.py:1257
+#: board.py:1279
 msgid "{0} Virtual Folder"
 msgstr "{0} Виртуальная Папка"
 
-#: board.py:1263
+#: board.py:1285
 msgid "Board loading"
 msgstr "Загрузка доски"
 
-#: board.py:1267
+#: board.py:1289
 msgid "Board saving"
 msgstr "Сохранение доски"
 
-#: board.py:1274
+#: board.py:1296
 msgid "Board File (*.board)"
 msgstr "Файл доски (*.board)"
 
-#: board.py:1296
+#: board.py:1318
 msgid ""
 "Error: either the file does not exist or the extension is wrong.\n"
 "Abort!\n"
@@ -450,31 +450,31 @@ msgstr ""
 "Отмена!\n"
 "{0}"
 
-#: board.py:1317
+#: board.py:1339
 msgid "Reading error: neither cbor2 nor json could be read. Abort!"
 msgstr "Ошибка чтения: ни cbor2, ни json не читается. Отмена!"
 
-#: board.py:1372
+#: board.py:1394
 msgid "Board has been loaded from file {0} of format {1}"
 msgstr "Доска загружена из файла {0} формата {1}"
 
-#: board.py:1917
+#: board.py:1939
 msgid "Project is saved to {0}"
 msgstr "Проект сохранён сюда {0}"
 
-#: board.py:1936
+#: board.py:1958
 msgid "You cannot dive inside item when board operation is not finished!"
 msgstr "Нельзя погружаться если операция с доской не завершена!"
 
-#: board.py:1988
+#: board.py:2010
 msgid "ANIMATED FILE Virtual Folder"
 msgstr "Анимированного файла Виртуальная Папка"
 
-#: board.py:2026
+#: board.py:2048
 msgid "No place to return"
 msgstr "Некуда возвращаться"
 
-#: board.py:2082
+#: board.py:2104
 msgid ""
 "WELCOME TO\n"
 "BOARDS"
@@ -482,123 +482,123 @@ msgstr ""
 "ДОБРО ПОЖАЛОВАТЬ\n"
 "НА СТРАНИЦУ ДОСОК"
 
-#: board.py:2094
+#: board.py:2116
 msgid "WAITING"
 msgstr "ПОДОЖДИ"
 
-#: board.py:2095
+#: board.py:2117
 msgid "creating previews"
 msgstr "создаются превьюшки"
 
-#: board.py:2405
+#: board.py:2427
 msgid "perfomance status: {0} images drawn"
 msgstr "изображений отображается {0}"
 
-#: board.py:3163
+#: board.py:3185
 msgid "Virtual folder board: {}"
 msgstr "Доска виртуальной папки: {}"
 
-#: board.py:3165
+#: board.py:3187
 msgid "Board folder: {}"
 msgstr "Папка этой доски: {}"
 
-#: board.py:3168
+#: board.py:3190
 msgid "File-plugin name: {}"
 msgstr "Имя файла-плагина: {}"
 
-#: board.py:3170
+#: board.py:3192
 msgid "This board has no plugin attached"
 msgstr "У этой доски нет прикреплённого плагина"
 
-#: board.py:3171
+#: board.py:3193
 msgid "Current item index: {}"
 msgstr "Индекс текущего айтема: {}"
 
-#: board.py:3172
+#: board.py:3194
 msgid "Current item-group index: {}"
 msgstr "Индекс текущего айтема-группы: {}"
 
-#: board.py:3173
+#: board.py:3195
 msgid "Board bounding rect: {}"
 msgstr "Габаритный прямоугольник всех айтемов доски: {}"
 
-#: board.py:3215
+#: board.py:3237
 msgid "Pressing Backspace key returns to board of the folder {0}"
 msgstr "Клавиша Антипробел (другие названия: забой/бэкспейс) вернёт на доску папки {0}"
 
-#: board.py:3237
+#: board.py:3259
 msgid "Add to the group ({})"
 msgstr "Добавить в группу ({})"
 
-#: board.py:3426
+#: board.py:3448
 msgid "AXES"
 msgstr "НАЧАЛО"
 
-#: board.py:3431
+#: board.py:3453
 msgid "ORIGIN"
 msgstr "КООРДИНАТ"
 
-#: board.py:3548
+#: board.py:3570
 msgid "The camera has been moved"
 msgstr "Камера перемещена на указанную позицию"
 
-#: board.py:3550
+#: board.py:3572
 msgid "Out of the map frame!"
 msgstr "Клик вне карты!"
 
-#: board.py:3678
+#: board.py:3700
 msgid "Loading hires images"
 msgstr "Загрузка изображений в высоком качестве"
 
-#: board.py:3689
+#: board.py:3711
 msgid "You cannot delete items from animated file board"
 msgstr "Нельзя удалять айтемы из доски анимированного файла"
 
-#: board.py:3789 board.py:3842
+#: board.py:3811 board.py:3864
 msgid "GROUP Virtual Folder"
 msgstr "Группы Виртуальная Папка"
 
-#: board.py:3812
+#: board.py:3834
 msgid "Nothing to delete, the group is empty"
 msgstr "Нечего удалять, группа пуста"
 
-#: board.py:3834
+#: board.py:3856
 msgid "Group-item not found"
 msgstr "Айтем-группа не найдена"
 
-#: board.py:3840
+#: board.py:3862
 msgid "You cannot create group-item inside virtual folder board"
 msgstr "Нельзя создавать айтемы-группы внутри доски виртуальной папки"
 
-#: board.py:3868
+#: board.py:3890
 msgid "You cannot create note-item inside virtual folder board"
 msgstr "Нельзя создавать айтемы-заметки внутри доски виртуальной папки"
 
-#: board.py:3880
+#: board.py:3902
 msgid "Choose folder with images in it"
 msgstr "Выбери папку с пикчами в ней"
 
-#: board.py:3882
+#: board.py:3904
 msgid "Loading folder to the board"
 msgstr "Загрузка папки на доску"
 
-#: board.py:3965 board.py:5774
+#: board.py:3987 board.py:5796
 msgid "No items selected!"
 msgstr "Не выделеного ни одного айтема!"
 
-#: board.py:3960
+#: board.py:3982
 msgid "FRAME ITEM"
 msgstr "АЙТЕМ-ФРЕЙМ"
 
-#: board.py:5732
+#: board.py:5754
 msgid "Loading image to the board"
 msgstr "Загрузка изображения на доску"
 
-#: board.py:5768
+#: board.py:5790
 msgid "This element is not presented on the board"
 msgstr "Этот элемент не представлен на доске"
 
-#: board.py:5864
+#: board.py:5886
 msgid "No items on the board! Abort!"
 msgstr "На доске нет айтемов! Отмена!"
 
@@ -642,7 +642,7 @@ msgstr "Редактирование комента"
 msgid "Save"
 msgstr "Сохранить"
 
-#: commenting.py:507 help_text.py:213 library_data.py:2242
+#: commenting.py:507 help_text.py:213 library_data.py:2263
 #: settings_handling.py:665
 msgid "Close"
 msgstr "Закрыть"
@@ -864,11 +864,11 @@ msgstr ""
 "Нет изображений для показа в папке \n"
 "{0}"
 
-#: library_data.py:1470
+#: library_data.py:1491
 msgid "Thumbnails order saved to disk"
 msgstr "Порядок изображений сохранён на диск"
 
-#: library_data.py:1998
+#: library_data.py:2019
 msgid ""
 "No images\n"
 "in group"
@@ -876,35 +876,35 @@ msgstr ""
 "В группе\n"
 "нет изображений"
 
-#: library_data.py:2162
+#: library_data.py:2183
 msgid "Find outdated records in database"
 msgstr "Поиск файлов в неактуальных записях"
 
-#: library_data.py:2234
+#: library_data.py:2255
 msgid "Define outdate database records"
 msgstr "Определить неактуальные записи"
 
-#: library_data.py:2238
+#: library_data.py:2259
 msgid "Try to fix outdated records"
 msgstr "Попытаться актуализировать записи"
 
-#: library_data.py:2286
+#: library_data.py:2307
 msgid "No outdated records detected!"
 msgstr "Не найдено неактуальных записей!"
 
-#: library_data.py:2367
+#: library_data.py:2388
 msgid "Comments database updated!"
 msgstr "База данных коментов обновлена!"
 
-#: library_data.py:2372
+#: library_data.py:2393
 msgid "Favorites database updated!"
 msgstr "База данных избранного обновлена!"
 
-#: library_data.py:2375
+#: library_data.py:2396
 msgid "Tags database updated!"
 msgstr "База данных тегов обновлена!"
 
-#: library_data.py:2377
+#: library_data.py:2398
 msgid ""
 "\n"
 "Scanning is finished."
@@ -912,15 +912,15 @@ msgstr ""
 "\n"
 "Сканирование завершено."
 
-#: library_data.py:2382
+#: library_data.py:2403
 msgid "Outdated records in comments database ({0}):"
 msgstr "Файлы из неактуальных записей коментов ({0}):"
 
-#: library_data.py:2390
+#: library_data.py:2411
 msgid "Outdated records in favorites database ({0}):"
 msgstr "Файлы из неактуальных записей избранного ({0}):"
 
-#: library_data.py:2398
+#: library_data.py:2419
 msgid "Outdated records in tags database ({0}):"
 msgstr "Файлы из неактуальных записей тегов ({0}):"
 
@@ -1196,19 +1196,19 @@ msgstr "Левый и правый стики поменялись ролями"
 msgid "The left and right sticks exchange back"
 msgstr "Левый и правый стики поменялись ролями обратно"
 
-#: board.py:1232
+#: board.py:1252
 msgid "Multifolder board..."
 msgstr "Собрать доску из содержимого нескольких папок..."
 
-#: board.py:6414
+#: board.py:6436
 msgid "Choose Directories"
 msgstr "Выбор папок"
 
-#: board.py:6445
+#: board.py:6467
 msgid "No folders selected!"
 msgstr "Папки не выбраны!"
 
-#: board.py:6481
+#: board.py:6503
 msgid "Loading images to the board"
 msgstr "Загрузка изображений на доску"
 
@@ -1276,11 +1276,11 @@ msgstr "Загрузить board-плагины..."
 msgid "Cursor scrubbing optimizer"
 msgstr "Оптимизация отрисовки для прокрутки с помощью курсора"
 
-#: board.py:1250
+#: board.py:1270
 msgid "Reset item(s) to layout position, scale, rotation"
 msgstr "Выставить начальные позицию, масштаб и ориентацию для айтема"
 
-#: board.py:6470
+#: board.py:6492
 msgid "No images found in selected folders!"
 msgstr "Поддерживаемых изображений не найдено в выбранных папках!"
 
@@ -1587,19 +1587,19 @@ msgstr "Скорость автопрокрутки"
 msgid "autoscroll speed {0}"
 msgstr "скорость автопрокрутки {0}"
 
-#: board.py:2217
+#: board.py:2239
 msgid "The board is prepared"
 msgstr "Доска подготовлена"
 
-#: board.py:1228 control_panel.py:607
+#: board.py:1248 control_panel.py:607
 msgid "Place items in column/row"
 msgstr "Разместить айтемы вертикально/горизонтально"
 
-#: board.py:5848
+#: board.py:5870
 msgid "Horizontally"
 msgstr "Горизонтально"
 
-#: board.py:5849
+#: board.py:5871
 msgid "Vertically"
 msgstr "Вертикально"
 
@@ -1607,11 +1607,11 @@ msgstr "Вертикально"
 msgid "Page to open on Drag&Drop"
 msgstr "Какую страницу открывать при сбрасывании папки или файла"
 
-#: board.py:1230
+#: board.py:1250
 msgid "Align && Distribute..."
 msgstr "Выровнять && расположить..."
 
-#: board.py:6661
+#: board.py:6683
 msgid "Nothing selected!"
 msgstr "Ничего не выделено"
 
@@ -1623,7 +1623,7 @@ msgstr "выделенных айтемов"
 msgid "Viewport"
 msgstr "вьюпорта"
 
-#: board.py:6532 board_align_distribution_ui.py:79
+#: board.py:6554 board_align_distribution_ui.py:79
 msgid "Whole board"
 msgstr "доски"
 
@@ -1643,11 +1643,11 @@ msgstr "Промежутки:"
 msgid "Relative To:"
 msgstr "Относительно:"
 
-#: board.py:6665
+#: board.py:6687
 msgid "Select at least 3 items!"
 msgstr "Надо выделить хотя бы 3 айтема!"
 
-#: board.py:3166
+#: board.py:3188
 msgid "Generation time: {}"
 msgstr "Сгенерировано: {}"
 
@@ -1701,35 +1701,35 @@ msgstr "Прищёлкивание (примагничивание)"
 msgid "Show point snapping targets"
 msgstr "Показывать цели для прищёлкивания"
 
-#: board.py:1206
+#: board.py:1208
 msgid "Actions"
 msgstr "Действия"
 
-#: board.py:1961
+#: board.py:1983
 msgid "Place mouse cursor on item!"
 msgstr "Под курсором нет ни одного айтема!"
 
-#: board.py:1968
+#: board.py:1990
 msgid "You can dive inside groups, folders, nodes and animated items only!"
 msgstr "Нырять можно только в группы, папки, ноды и анимированные картинки!"
 
-#: board.py:1977
+#: board.py:1999
 msgid "NODE BOARD Virtual Folder"
 msgstr "Нодовой доски Виртуальная Папка"
 
-#: board.py:3976
+#: board.py:3998
 msgid "Node label"
 msgstr "Надпись ноды"
 
-#: board.py:4001
+#: board.py:4023
 msgid "This item was removed to stack"
 msgstr "Айтем удалён из стэка"
 
-#: board.py:4004
+#: board.py:4026
 msgid "This item was added to stack"
 msgstr "Айтем добавлен в стэк"
 
-#: board.py:6945
+#: board.py:6967
 msgid "This item not supported!"
 msgstr "Айтем не поддерживается!"
 
@@ -1793,43 +1793,43 @@ msgstr ""
 "\n"
 "а {0}-компонента больше не фиксируется"
 
-#: board.py:3178
+#: board.py:3200
 msgid "You've entered this board from the board of folder '{}'"
 msgstr "В эту доску вошли из доски папки '{}'"
 
-#: board.py:3180
+#: board.py:3202
 msgid "Parent folder of this board '{}'"
 msgstr "Родительская папка этой доски '{}'"
 
-#: board.py:3182
+#: board.py:3204
 msgid "This board parent item title '{}'"
 msgstr "Название родительского айтема для этой доски '{}'"
 
-#: board.py:3188
+#: board.py:3210
 msgid "Current cross-board item index:: {}"
 msgstr "Текущий кросс-индекс айтема:: {}"
 
-#: board.py:3189
+#: board.py:3211
 msgid "Current cross-board board index:: {}"
 msgstr "Текущий кросс-индекс доски:: {}"
 
-#: board.py:3190
+#: board.py:3212
 msgid "Children boards count:: {}"
 msgstr "Число вложенных досок:: {}"
 
-#: board.py:6963
+#: board.py:6985
 msgid "You cannot dive inside crossboard when board operation is not finished!"
 msgstr "Нельзя ползать по кроссдоске, пока трансформируешь айтемы!"
 
-#: board.py:6979
+#: board.py:7001
 msgid "CROSSBOARD Virtual Folder"
 msgstr "КРОССДОСКИ Виртуальная Папка"
 
-#: board.py:7110
+#: board.py:7132
 msgid "You've entered crossboard"
 msgstr "Ты зашёл в кроссдоску"
 
-#: board.py:7113
+#: board.py:7135
 msgid "You've left crossboard"
 msgstr "Ты вышел из кроссдоски"
 
@@ -1885,11 +1885,11 @@ msgstr "заметка-айтем"
 msgid "EDITING TABLE"
 msgstr "монтажный стол"
 
-#: board.py:3707
+#: board.py:3729
 msgid "items: {}"
 msgstr "айтемы: {}"
 
-#: board.py:3709
+#: board.py:3731
 msgid ""
 "\n"
 "links: {}"
@@ -1897,7 +1897,7 @@ msgstr ""
 "\n"
 "линки: {}"
 
-#: board.py:3710
+#: board.py:3732
 msgid "Items removing confirmation"
 msgstr "Подтверждение удаления"
 
@@ -1913,11 +1913,11 @@ msgstr ""
 "в завершении кликнув левой кнопкой мыши.\n"
 "Клавиша Esc - отмена вставки"
 
-#: board.py:2481
+#: board.py:2503
 msgid "from board"
 msgstr "из доски"
 
-#: board.py:3711
+#: board.py:3733
 msgid ""
 "Are you sure you want to proceed?\n"
 "{}"
@@ -1925,14 +1925,22 @@ msgstr ""
 "Подтверждаете?\n"
 "{}"
 
-#: board.py:2473
+#: board.py:2495
 msgid "Links to items in other boards:"
 msgstr "Есть линки с айтемами из других досок:"
 
-#: board.py:6067
+#: board.py:6089
 msgid "Over items"
 msgstr "По айтемам"
 
-#: board.py:6066
+#: board.py:6088
 msgid "Over user-defined places"
 msgstr "По заданным местам"
+
+#: board.py:1206
+msgid "Recently opened boards..."
+msgstr "Недавно открытые файлы..."
+
+#: board.py:1275
+msgid "Whole board screenshot"
+msgstr "Сделать скриншот всей доски (сборка на HTML-странице)"
