@@ -6191,9 +6191,10 @@ class MainWindow(QMainWindow,
             textEdit.setPlainText(text)
         elif isinstance(textEdit, QLineEdit):
             textEdit.setText(text)
-        textEdit.selectAll()
+        # textEdit.selectAll()
         textEdit.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         textEdit.setFocus()
+        textEdit.moveCursor(QTextCursor.End, QTextCursor.MoveAnchor)
         # textEdit.grabKeyboard()
         # textEdit.grabMouse()
 
@@ -6212,19 +6213,12 @@ class MainWindow(QMainWindow,
 
         class FixedQTextEdit(QTextEdit):
 
-            def __init__(self,):
-                super().__init__()
-                self.enter_key_counter = 0
-
             def keyReleaseEvent(self, event):
-                if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-                    self.enter_key_counter += 1
-                    if self.enter_key_counter >= 2:
-                        modal_input_field_handler()
-                        event.ignore()
+                if event.key() in (Qt.Key_Return, Qt.Key_Enter) and event.modifiers() == Qt.ControlModifier:
+                    modal_input_field_handler()
+                    event.ignore()
                 else:
-                    self.enter_key_counter = 0
-                super().keyPressEvent(event)
+                    super().keyPressEvent(event)
 
         MultiLineEdit = FixedQTextEdit
         SingleLineEdit = QLineEdit
