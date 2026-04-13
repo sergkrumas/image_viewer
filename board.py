@@ -1218,10 +1218,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
         sep()
 
-    def board_open_recently_opened_board_item(self, path):
+    def board_open_recently_opened_board_item(self, path_item):
+        path = path_item[1]
+        path_date = path_item[0]
         if os.path.exists(path):
             self.board_loadBoard(path=path)
-        # TODO: не прописано удаление несуществующего пути
+        else:
+            self.LibraryData().read_board_history_file(path_to_remove=path_date)
+            self.show_center_label(_("The file not found, the path has been removed from the list"), error=True)
 
     def board_form_recently_opened_boards_menu(self):
         menu = RoundedQMenu()
@@ -1231,8 +1235,9 @@ class BoardMixin(BoardTextEditItemMixin):
         def addItem(*args):
             return self.addItemToMenu(menu, *args)
 
-        for path in self.LibraryData().read_board_history_file():
-            addItem(path, partial(self.board_open_recently_opened_board_item, path))
+        for path_item in self.LibraryData().read_board_history_file().items():
+            path = path_item[1]
+            addItem(path, partial(self.board_open_recently_opened_board_item, path_item))
 
         action = menu.exec_(self.mapped_cursor_pos())
 

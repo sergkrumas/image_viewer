@@ -1237,8 +1237,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         history_file_path = cls.get_history_file_path(filename)
         create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))
         date = datetime.datetime.now().strftime("%d %b %Y %X")
+        record = "%s %s\n" % (date, path)
         with open(history_file_path, "a+", encoding="utf8") as file:
-            record = "%s %s\n" % (date, path)
             file.write(record)
 
     @classmethod
@@ -1246,21 +1246,31 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         cls.write_history_file_base(path, "board_history.log")
 
     @classmethod
-    def read_board_history_file(cls):
+    def read_board_history_file(cls, path_to_remove=None):
         filepath = cls.get_history_file_path("board_history.log")
-        paths = []
+        paths = dict()
         with open(filepath, "r", encoding="utf-8") as file:
             for line in file.readlines():
                 line = line.strip()
                 if line:
                     # в начале строки идёт дата, в которой всегда
                     # фиксированное количество пробелов - их-то мы здесь и пропускаем,
-                    # подбираясь к индексу, с которого начинается путь к файлу 
+                    # подбираясь к индексу, с которого начинается путь к файлу
+                    # print(line, '>')
                     i = line.index(" ", 12)
-                    path = line[i+1:]
-                    if path not in paths:
-                        paths.append(path)
-        return paths
+                    date = line[:i]
+                    path = line[i:]
+                    path = path.strip()
+                    if path not in paths.values():
+                        paths[date] = path
+        if path_to_remove is None:
+            return paths
+        else:
+            if path_to_remove in paths.keys():
+                paths.pop(path_to_remove)
+            data = "".join(("%s %s\n" % (date, path) for date, path in paths.items()))
+            with open(filepath, "w+", encoding="utf-8") as file:
+                file.write(data)
 
     @classmethod
     def write_history_file(cls, path):
