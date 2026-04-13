@@ -7359,7 +7359,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.setRenderHint(QPainter.TextAntialiasing, True)
                 painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
                 self.board_draw_content(painter, fod, snapshot=True)
-                self.board_draw_content_init()
+                self.board_draw_content_init() # для сброса, поэтому здесь вызывается апосля, а не до
                 painter.end()
 
                 piece_filename = f'{counter:03}_X{x}_Y{y}.png'
