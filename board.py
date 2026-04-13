@@ -1203,6 +1203,8 @@ class BoardMixin(BoardTextEditItemMixin):
         if plugin_implant is not None:
             plugin_implant(self, contextMenu)
 
+        addItem(_('Recently opened boards...'), self.board_form_recently_opened_boards_menu)
+
         submenu = contextMenu.addMenu(_('Actions'))
         self.board_contextSubMenu(submenu)
 
@@ -1215,6 +1217,23 @@ class BoardMixin(BoardTextEditItemMixin):
         addItem(_("Open in Google Chrome"), self.board_open_in_google_chrome)
 
         sep()
+
+    def board_open_recently_opened_board_item(self, path):
+        if os.path.exists(path):
+            self.board_loadBoard(path=path)
+
+    def board_form_recently_opened_boards_menu(self):
+        menu = RoundedQMenu()
+        sep = menu.addSeparator
+        menu.setStyleSheet(self.context_menu_stylesheet)
+        menu.setAttribute(Qt.WA_TranslucentBackground, True)
+        def addItem(*args):
+            return self.addItemToMenu(menu, *args)
+
+        for path in self.LibraryData().read_board_history_file():
+            addItem(path, partial(self.board_open_recently_opened_board_item, path))
+
+        action = menu.exec_(self.mapped_cursor_pos())
 
     def board_contextSubMenu(self, menu):
 

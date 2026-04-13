@@ -1228,9 +1228,13 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             MW.handling_input = False
 
     @classmethod
-    def write_history_file_base(cls, path, filename):
+    def get_history_file_path(cls, filename):
         root = os.path.dirname(__file__)
-        history_file_path = os.path.join(root, "user_data", filename)
+        return os.path.join(root, "user_data", filename)
+
+    @classmethod
+    def write_history_file_base(cls, path, filename):
+        history_file_path = cls.get_history_file_path(filename)
         create_pathsubfolders_if_not_exist(os.path.dirname(history_file_path))
         date = datetime.datetime.now().strftime("%d %b %Y %X")
         with open(history_file_path, "a+", encoding="utf8") as file:
@@ -1240,6 +1244,23 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     @classmethod
     def write_board_history_file(cls, path):
         cls.write_history_file_base(path, "board_history.log")
+
+    @classmethod
+    def read_board_history_file(cls):
+        filepath = cls.get_history_file_path("board_history.log")
+        paths = []
+        with open(filepath, "r", encoding="utf-8") as file:
+            for line in file.readlines():
+                line = line.strip()
+                if line:
+                    # в начале строки идёт дата, в которой всегда
+                    # фиксированное количество пробелов - их-то мы здесь и пропускаем,
+                    # подбираясь к индексу, с которого начинается путь к файлу 
+                    i = line.index(" ", 12)
+                    path = line[i+1:]
+                    if path not in paths:
+                        paths.append(path)
+        return paths
 
     @classmethod
     def write_history_file(cls, path):
