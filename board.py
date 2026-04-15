@@ -2030,7 +2030,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     fd_bi = BoardItem(BoardItem.types.ITEM_IMAGE)
                     fd_bi.pixmap = pixmap
 
-                    fd_bi.file_data = self.LibraryData().create_file_data("", fd_bi)
+                    fd_bi.file_data = self.LibraryData().create_file_data("", fd)
                     fd_bi.file_data.board_items.append(fd_bi)
 
                     fd.board.items_list.append(fd_bi)
