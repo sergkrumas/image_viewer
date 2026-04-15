@@ -947,7 +947,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             preview = source_pixmap.scaled(Globals.PREVIEW_WIDTH, preview_height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             file_data.preview = preview
         else:
-            file_data.preview = ERROR_PREVIEW_PIXMAP
+            file_data.preview = Globals.ERROR_PREVIEW_PIXMAP
 
     @staticmethod
     def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False,
