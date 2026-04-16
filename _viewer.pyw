@@ -4642,7 +4642,7 @@ class MainWindow(QMainWindow,
 
             text_rect = QRect(left, int(scroll_offset + 24+n*H), LEFT_COL_WIDTH-left, 200)
             images_list_len = len(folder_data.images_list)
-            folder_label = folder_data.folder_path or folder_data.folder_label
+            folder_label = folder_data.get_label_or_path() 
             text = f"{images_list_len} {folder_label}"
             painter.drawText(text_rect, Qt.AlignLeft, text)
 

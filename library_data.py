@@ -1462,7 +1462,7 @@ class FolderData():
         self.PreviewsGrid.set_empty_grids(self)
 
     def get_label_or_path(self):
-        return self.folder_path or self.folder_label
+        return self.folder_label or self.folder_path 
 
     def check_insert_position(self, index):
         cf = self
