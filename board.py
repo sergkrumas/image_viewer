@@ -1571,7 +1571,9 @@ class BoardMixin(BoardTextEditItemMixin):
         deep_scan = board_folder_data.get('deep_scan', False)
 
         if board_load_filepath:
-            folder_path = board_load_filepath
+            folder_path = os.path.dirname(board_load_filepath)
+            folder_name = os.path.basename(board_load_filepath)
+            folder_label = board_load_filepath
 
         # подготовка перед загрузкой данных
         fod = self.LibraryData().create_folder_data(folder_label[:], folder_path[:], [], image_filepath=None, make_current=main_board, virtual=is_virtual)
