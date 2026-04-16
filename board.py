@@ -1331,25 +1331,62 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(msg, error=True)
             return
 
-        project_format = ''
-        try:
-            # пытаемся читать как cbor2
-            read_data = ""
-            with open(board_filepath, "rb") as file:
-                read_data = file.read()
-            data = cbor2.loads(read_data)
-            project_format = 'cbor2'
-        except:
+        is_json = False
+        is_cbor2 = False
+        data_format_str = ''
+        data_chunk = b""
+
+        with open(board_filepath, "rb") as file:
+            data = file.read()
+            chunks = data.split(b":", maxsplit=3)
+            error = False
+            if len(chunks) == 4:
+                h_check1 = chunks[0] == b'KRUMASSAN_BOARDS_FILE'
+                h_check2 = chunks[1] == b'VERSION-1.0'
+                error = not (h_check1 and h_check2)
+            else:
+                error = True
+
+            if error:
+                self.show_center_label(_("Invalid header data"), error=True)
+                return
+
+            data_version_chunk = chunks[1]
+            data_format_chunk = chunks[2]
+            data_chunk = chunks[3]
+
+            if data_format_chunk == b'JSON':
+                is_json = True
+            elif data_format_chunk == b'CBOR2':
+                is_cbor2 = True
+
+
+        if is_cbor2:
+            data_format_str = 'cbor2'
+
+            try:
+                # пытаемся читать как cbor2
+                data = cbor2.loads(data_chunk)
+
+            except:
+                self.show_center_label(_("Reading error! CBOR2 data corrupted!"), error=True)
+                return
+
+        elif is_json:
+            data_format_str = 'json'
+
             try:
                 # пытаемся читать как json
-                read_data = ""
-                with open(board_filepath, "r", encoding="utf8") as file:
-                    read_data = file.read()
-                data = json.loads(read_data)
-                project_format = 'json'
+                decoded_data_chunk = data_chunk.decode('utf8')
+                data = json.loads(decoded_data_chunk)
+
             except:
-                self.show_center_label(_("Reading error: neither cbor2 nor json could be read. Abort!"), error=True)
+                self.show_center_label(_("Reading error! JSON data corrupted!"), error=True)
                 return
+
+        else:
+            self.show_center_label(_("Unsupported type of shit"), error=True)
+
 
         main_board_dict = data['main_board']
         children_boards_dict = data['children_boards']
@@ -1403,7 +1440,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.LibraryData().write_board_history_file(board_filepath)
 
-        msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, project_format)
+        msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, data_format_str)
         self.show_center_label(msg)
 
     def board_poster_allowed_item_types(self):
@@ -1938,13 +1975,25 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_apply_crossboard_transforms_again()
 
         # ЗАПИСЬ В ФАЙЛ НА ДИСКЕ
+        # формирование хэдера
+        VERSION_DATA = "VERSION-1.0"
+        if self.STNG.use_cbor2_instead_of_json:
+            FORMAT_DATA = "CBOR2"
+        else:
+            FORMAT_DATA = "JSON"
+        HEADER_DATA = ":".join(("KRUMASSAN_BOARDS_FILE", VERSION_DATA, FORMAT_DATA))
+        # запись данных
         if self.STNG.use_cbor2_instead_of_json:
             data_to_write = cbor2.dumps(data_base)
             with open(board_filepath, "wb") as file:
+                file.write(HEADER_DATA.encode('utf8'))
+                file.write(":".encode('utf8'))
                 file.write(data_to_write)
         else:
             data_to_write = json.dumps(data_base, indent=True)
             with open(board_filepath, "w+", encoding="utf8") as file:
+                file.write(HEADER_DATA)
+                file.write(":")
                 file.write(data_to_write)
 
         # ВЫВОД СООБЩЕНИЯ О ЗАВЕРШЕНИИ
