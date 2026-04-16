@@ -806,6 +806,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.show_user_defined_places = False
 
+        self.boards_proportional_item_scaling_as_default = True
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1190,6 +1192,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 _('Items snapping'),
                 self.STNG.board_items_snapping,
                 partial(self.toggle_boolean_var_generic, self.STNG, 'board_items_snapping')
+            ),
+            (
+                _('Force proportional item scaling'),
+                self.boards_proportional_item_scaling_as_default,
+                partial(self.toggle_boolean_var_generic, self, 'boards_proportional_item_scaling_as_default')
             ),
             (
                 _('Show point snapping targets'),
@@ -4872,7 +4879,11 @@ class BoardMixin(BoardTextEditItemMixin):
         alt_mod = QApplication.queryKeyboardModifiers() & Qt.AltModifier
         shift_mod = QApplication.queryKeyboardModifiers() & Qt.ShiftModifier
         center_is_pivot = alt_mod
-        proportional_scaling = multi_item_mode or shift_mod
+
+        if self.boards_proportional_item_scaling_as_default:
+            shift_mod = not shift_mod
+
+        proportional_scaling = multi_item_mode or shift_mod 
 
         if self.PTWS:
             proportional_scaling = True
