@@ -398,7 +398,7 @@ class BoardItem():
                 text = f'{text}\n{self.image_source_url}'
             fp = os.path.normpath(self.file_data.folder_data.folder_path)
             # TODO: (11 апр 26) folder_path может быть на самом деле указывать не на папку, а на board-файл
-            fd_fp = os.path.normpath(os.path.dirname(self.file_data.filepath)) 
+            fd_fp = os.path.normpath(os.path.dirname(self.file_data.filepath))
             if fp != fd_fp:
                 text = f'{text}\n{fd_fp}'
             return text + passport_info
@@ -419,7 +419,7 @@ class BoardItem():
         elif self.type == self.types.ITEM_NODE:
             return self.label + passport_info
 
-    def type_to_string(self):   
+    def type_to_string(self):
         types = self.types
         if self.type == types.ITEM_UNDEFINED:
             return _("UNDEFINED ITEM")
@@ -4883,7 +4883,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if self.boards_proportional_item_scaling_as_default:
             shift_mod = not shift_mod
 
-        proportional_scaling = multi_item_mode or shift_mod 
+        proportional_scaling = multi_item_mode or shift_mod
 
         if self.PTWS:
             proportional_scaling = True
