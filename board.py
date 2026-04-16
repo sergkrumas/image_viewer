@@ -1400,6 +1400,7 @@ class BoardMixin(BoardTextEditItemMixin):
         promises = []
 
         all_items = dict()
+        self.load_root_folderpath = os.path.dirname(board_filepath)
 
         children_boards_folders = dict()
         for fd_key, folder_data in children_boards_dict.items():
@@ -1582,6 +1583,8 @@ class BoardMixin(BoardTextEditItemMixin):
         id_to_filedata = dict()
         for id_key, bfd in board_files_data.items():
             filepath, source_width, source_height = bfd
+            if not os.path.isabs(filepath):
+                filepath = os.path.join(self.load_root_folderpath, filepath)
             fid = self.LibraryData().create_file_data(filepath, fod)
             fid.source_width = source_width
             fid.source_height = source_height
@@ -1822,6 +1825,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
+    def board_prepare_filepath_to_relative(self, path):
+        if self.save_root_folderpath is None:
+            return path
+        try:
+            commonpath = os.path.commonpath((self.save_root_folderpath, path))
+            return os.path.relpath(path, start=commonpath)
+        except ValueError:
+            return path
+
     def board_serialize_board_data(self, fod):
         board = fod.board
 
@@ -1843,7 +1855,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # сохранение инфы о файлах FileData
         for fid in fod.images_list:
-            board_files_data[id(fid)] = (fid.filepath, fid.source_width, fid.source_height)
+            fid_filepath = self.board_prepare_filepath_to_relative(fid.filepath)
+            board_files_data[id(fid)] = (fid_filepath, fid.source_width, fid.source_height)
 
         # сохранение атрибутов доски
         self.board_object_attributes_to_serial(board, board_attributes,
@@ -1965,6 +1978,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # костыль для сохранения из режима кроссдоски
         self.board_cancel_crossboard_transforms()
+
+        if main_fod.virtual:
+            self.save_root_folderpath = None
+        else:
+            self.save_root_folderpath = main_fod.folder_path
 
         # сохранение основной доски и вложенных досок
         data_base = dict()
