@@ -1448,6 +1448,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.LibraryData().write_board_history_file(board_filepath)
 
+        self.board_set_window_title(board_filepath)
+
         msg = _("Board has been loaded from file {0} of format {1}").format(board_filepath, data_format_str)
         self.show_center_label(msg)
 
@@ -2319,8 +2321,12 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_progressive_layout_start(self, folder_data):
         self.board_set_window_title(folder_data)
 
-    def board_set_window_title(self, folder_data):
-        self.set_window_title(folder_data.folder_path)
+    def board_set_window_title(self, arg):
+        if isinstance(arg, self.FolderData):
+            text = arg.folder_path
+        else:
+            text = arg
+        self.set_window_title(text)
 
     def board_progressive_layout_finish(self, folder_data):
         if self.is_board_page_active():
