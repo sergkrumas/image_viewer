@@ -7126,12 +7126,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 item.save_transform()
 
             bbr = fod.board.bounding_rect
-            bbr_topleft = bbr.topLeft()
-            for item in fod.board.items_list:
-                relative_offset = item.position - bbr_topleft
-                item.position = cb_offset + relative_offset
-                cross_fod.board.items_list.append(item)
-
             bbr_ = QRectF(bbr)
             bbr_.moveTopLeft(cb_offset)
             fi = self.board_do_add_item_frame(cross_fod, bbr_)
@@ -7139,6 +7133,12 @@ class BoardMixin(BoardTextEditItemMixin):
             fi.frame_color = gray_color
             fod._crossboard_frame_item = fi
             crossboard_frames_fods.append(fod)
+
+            bbr_topleft = bbr.topLeft()
+            for item in fod.board.items_list:
+                relative_offset = item.position - bbr_topleft
+                item.position = cb_offset + relative_offset
+                cross_fod.board.items_list.append(item)
 
             if fod is cufod:
                 view_offset = QPointF(cb_offset)
