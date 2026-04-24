@@ -1112,6 +1112,7 @@ class Settings(SettingsWindow):
             'board_autoscroll_speed': (1.0, (0.5, 3.0), _('Board Page autoscroll speed')),
             'board_items_snapping': (False, _('Items snapping')),
             'board_draw_bbr': (False, _('Draw board bounding rect')),
+            'board_always_hide_control_panel_if_not_hovered': (True, _("Always hide control panel if it is not hovered")),
 
             '---pagestransparent': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),

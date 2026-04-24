@@ -789,8 +789,15 @@ class ControlPanel(QWidget, UtilsMixin):
         if MW.is_board_page_active():
             if MW.autoscroll_is_ongoing():
                 self.forced_touched_value = -1
-            if MW.board_is_items_transformation_ongoing():
+            elif MW.board_is_items_transformation_ongoing():
                 self.forced_touched_value = -1
+            elif MW.STNG.board_always_hide_control_panel_if_not_hovered:
+                if self.underMouse():
+                    self.window_opacity = 1.0
+                else:
+                    self.window_opacity = 0.0
+                setOpacity(self.window_opacity)
+                return
 
         if not MW.isActiveWindow():
             self.window_opacity = 0.0
