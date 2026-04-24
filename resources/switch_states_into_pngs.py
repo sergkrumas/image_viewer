@@ -10,6 +10,7 @@ def gen_pixmap(name):
 
     if name.startswith('switch_on'):
         color = Qt.green
+        color = QColor(252, 181, 49)
         thumb_offset = QPoint(10, 0)
     elif name.startswith('switch_off'):
         color = Qt.gray

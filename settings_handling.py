@@ -384,7 +384,7 @@ class SettingsWindow(QWidget):
         }
         QCheckBox:checked {
             /* background-color: rgba(150, 150, 150, 50);*/
-            color: rgb(100, 255, 100);
+            color: rgb(252, 181, 49);
         }
         QCheckBox:unchecked {
             color: white;
@@ -476,7 +476,7 @@ class SettingsWindow(QWidget):
         def add_line_widget(layout):
             widget = QWidget()
             widget.setObjectName('line')
-            widget.setStyleSheet("QWidget#line{background: transparent; padding: 0; margin: 0;} QWidget#line:hover{background-color: rgba(0, 255, 0, .1)}")
+            widget.setStyleSheet("QWidget#line{background: transparent; padding: 0; margin: 0;} QWidget#line:hover{background-color: rgba(252, 181, 49, .1)}")
             widget.setLayout(layout)
             layout.setContentsMargins(0, 5, 0, 5)
             return widget
