@@ -450,6 +450,8 @@ class SettingsWindow(QWidget):
         self.setWindowModality(Qt.WindowModal)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
 
+        self.window_opacity = 0.9
+
         self.resize(1500, 700)
         # show at center
         SettingsWindow.pos_at_center(self)
@@ -641,6 +643,9 @@ class SettingsWindow(QWidget):
                 elif id == 'gamepad_dead_zone_radius':
                     sb.value_changed.connect(lambda x=sb: self.on_gamepad_dead_zone_radius_change(x))
 
+                elif id == 'settings_window_opacity':
+                    sb.value_changed.connect(lambda x=sb: self.on_window_opacity_change(x))
+
 
 
 
@@ -697,6 +702,10 @@ class SettingsWindow(QWidget):
         if MW.is_viewer_page_active():
             MW.restore_image_transformations()
 
+    def on_window_opacity_change(self, sb):
+        self.window_opacity = sb.get_value()
+        self.update()
+
     def on_gamepad_dead_zone_radius_change(self, sb):
         MW = type(self).globals.main_window
         if MW.gamepad_thread_instance is not None:
@@ -737,7 +746,7 @@ class SettingsWindow(QWidget):
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
-        painter.setOpacity(0.9)
+        painter.setOpacity(self.window_opacity)
         painter.setBrush(QBrush(Qt.black))
         painter.setRenderHint(QPainter.Antialiasing, True)
         path = QPainterPath()
@@ -1075,6 +1084,7 @@ class Settings(SettingsWindow):
             'start_with_gamepad_enabled': (False, _('Start with gamepad enabled')),
             'gamepad_input_requires_focus': (False, _('Gamepad Input Requires Focus')),
             'gamepad_dead_zone_radius': (0.1, (0.0, 0.9), _('Gamepad dead zone radius')),
+            'settings_window_opacity': (0.5, (0.1, 1.0), _('Settings window opacity')),
             'show_gamepad_monitor': (False, _('Show gamepad monitor (for setting dead zone radius)')),
             'gamepad_move_stick_ease_in_expo_param': (2.0, (1.0, 4.0), _('Gamepad move stick easeInExpro parameter')),
             'gamepad_move_stick_speed': (20.0, (1.0, 50.0), _('Gamepad move stick speed')),
