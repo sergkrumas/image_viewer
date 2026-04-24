@@ -1208,6 +1208,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_user_defined_places,
                 partial(self.toggle_boolean_var_generic, self, 'show_user_defined_places')
             ),
+            (
+                _('No control panel'),
+                self.STNG.board_no_control_panel,
+                partial(self.toggle_boolean_var_generic, self.STNG, 'board_no_control_panel')
+            ),
+
         ))
         sep = contextMenu.addSeparator
         sep()

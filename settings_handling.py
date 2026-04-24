@@ -278,6 +278,7 @@ UI_LANG_SETTING_ID = 'ui_lang'
 INFRAMED_FOLDERPATH_SETTING_ID = 'inframed_folderpath'
 FFMPEG_EXE_FILEPATH_SETTING_ID = 'ffmpeg_exe_filepath'
 DEBUG_PAGE_SETTING_ID = 'debug_page'
+BOARD_NO_CONTROL_PANEL_SETTING_ID = 'board_no_control_panel'
 
 class SettingsWindow(QWidget):
 
@@ -605,6 +606,9 @@ class SettingsWindow(QWidget):
                 if id == 'show_gamepad_monitor':
                     chb.stateChanged.connect(lambda state, x=chb: self.handle_show_gamepad_monitor_chbox(state, x))
 
+                elif id == BOARD_NO_CONTROL_PANEL_SETTING_ID:
+                    chb.stateChanged.connect(lambda state, x=chb: self.handle_board_no_control_panel(state, x))
+
                 # if id == 'open_app_on_waterfall_page':
                 #     chb.stateChanged.connect(lambda state, x=chb: self.handle_child_checkboxes(state, x))
 
@@ -702,6 +706,15 @@ class SettingsWindow(QWidget):
         MW = type(self).globals.main_window
         if MW.gamepad_thread_instance is not None:
             MW.gamepad_thread_instance.pass_deadzone_values = chb.isChecked()
+
+    def handle_board_no_control_panel(self, state, chb):
+        MW = type(self).globals.main_window
+        if MW.is_board_page_active():
+            # if MW.STNG.board_no_control_panel:
+            if chb.isChecked():
+                MW.do_hide_control_panel()
+            else:
+                MW.do_show_control_panel(MW.pages.BOARD_PAGE)
 
     def handle_child_checkboxes(self, state, chb):
         MW = type(self).globals.main_window
@@ -1113,6 +1126,7 @@ class Settings(SettingsWindow):
             'board_items_snapping': (False, _('Items snapping')),
             'board_draw_bbr': (False, _('Draw board bounding rect')),
             'board_always_hide_control_panel_if_not_hovered': (True, _("Always hide control panel if it is not hovered")),
+            BOARD_NO_CONTROL_PANEL_SETTING_ID: (False, _("No control panel")),
 
             '---pagestransparent': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),

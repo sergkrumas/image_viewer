@@ -416,7 +416,8 @@ class AutoscrollMixin():
 
     def autoscroll_activation_zones_for_board_item_transform(self):
         outer_rect = self.rect()
-        outer_rect.setBottom(self.globals.control_panel.frameGeometry().top())
+        if self.globals.control_panel is not None:
+            outer_rect.setBottom(self.globals.control_panel.frameGeometry().top())
         OFFSET = self.AUTOSCROLL.INNER_OUTER_OFFSET
         inner_rect = outer_rect.adjusted(OFFSET, OFFSET, -OFFSET, -OFFSET)
         return outer_rect, inner_rect

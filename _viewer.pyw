@@ -1691,7 +1691,14 @@ class MainWindow(QMainWindow,
         # поздей будет рефакторинг по этому поводу
         self.current_page = page_type
         self.update_other_pages_list()
-        self.recreate_control_panel(requested_page=page_type)
+
+        create_control_panel = True
+        if page_type == self.pages.BOARD_PAGE: 
+            if self.STNG.board_no_control_panel:
+                create_control_panel = False
+
+        if create_control_panel:
+            self.recreate_control_panel(requested_page=page_type)
 
         self.set_page_transparency_and_draw_callback(page_type)
 
@@ -1770,7 +1777,8 @@ class MainWindow(QMainWindow,
             self.transformations_allowed = False
 
         elif requested_page == self.pages.BOARD_PAGE:
-            self.do_show_control_panel(self.pages.BOARD_PAGE)
+            if not self.STNG.board_no_control_panel:
+                self.do_show_control_panel(self.pages.BOARD_PAGE)
             self.transformations_allowed = True
             LibraryData().load_board_data()
 
@@ -2566,7 +2574,7 @@ class MainWindow(QMainWindow,
             self.setCursor(Qt.PointingHandCursor)
             return True
 
-        elif CP.underMouse():
+        elif CP and CP.underMouse():
             self.setCursor(Qt.ArrowCursor)
             return True
 
