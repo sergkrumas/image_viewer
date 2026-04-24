@@ -1740,8 +1740,7 @@ class MainWindow(QMainWindow,
         if requested_page == self.pages.LIBRARY_PAGE:
             LibraryData().update_current_folder_previews_grids()
             self.library_page_scroll_autoset_or_reset()
-            if Globals.control_panel is not None:
-                Globals.control_panel.setVisible(False)
+            self.do_hide_control_panel()
             self.library_previews_list_active_item = None
             for folder_data in LibraryData().folders:
                 images_data = folder_data.images_list
@@ -1750,17 +1749,15 @@ class MainWindow(QMainWindow,
 
         elif requested_page == self.pages.WATERFALL_PAGE:
             LibraryData().update_current_folder_previews_grids()
-            if Globals.control_panel is not None:
-                Globals.control_panel.setVisible(False)
+            self.do_hide_control_panel()
             self.waterfall_previews_list_active_item = None
             if self.viewer_modal:
                 self.transformations_allowed = True
             else:
                 self.transformations_allowed = False
 
-
         elif requested_page == self.pages.VIEWER_PAGE:
-            self.recreate_control_panel(requested_page=self.pages.VIEWER_PAGE)
+            self.do_show_control_panel(self.pages.VIEWER_PAGE)
             self.viewer_reset() # для показа сообщения о загрузке
             LibraryData().after_current_image_changed()
             LibraryData().add_current_image_to_view_history()
@@ -1769,12 +1766,11 @@ class MainWindow(QMainWindow,
             self.transformations_allowed = True
 
         elif requested_page == self.pages.START_PAGE:
-            if Globals.control_panel is not None:
-                Globals.control_panel.setVisible(False)
+            self.do_hide_control_panel()
             self.transformations_allowed = False
 
         elif requested_page == self.pages.BOARD_PAGE:
-            self.recreate_control_panel(requested_page=self.pages.BOARD_PAGE)
+            self.do_show_control_panel(self.pages.BOARD_PAGE)
             self.transformations_allowed = True
             LibraryData().load_board_data()
 
@@ -1794,6 +1790,13 @@ class MainWindow(QMainWindow,
         pages = self.pages.all()
         pages.remove(self.current_page)
         self.other_pages_list = pages
+
+    def do_show_control_panel(self, page_id):
+        self.recreate_control_panel(requested_page=page_id)
+
+    def do_hide_control_panel(self):
+        if Globals.control_panel is not None:
+            Globals.control_panel.setVisible(False)
 
     def interpolate_values(self, start_value, end_value, factor):
         if isinstance(start_value, (float, int)):
