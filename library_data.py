@@ -1588,9 +1588,9 @@ class FolderData():
 
         return True
 
-    def find_in_prev(self, filepath, prev):
+    def find_in_prev(self, filepath, old_files_data):
         filepath = os.path.normpath(filepath)
-        for file_data in prev:
+        for file_data in old_files_data:
             if filepath == file_data.filepath:
                 return file_data
         return None
@@ -1600,8 +1600,8 @@ class FolderData():
             processAppEvents(update_only=False)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
                 im_data = None
-                if prev:
-                    im_data = self.find_in_prev(filepath, prev)
+                if old_files_data:
+                    im_data = self.find_in_prev(filepath, old_files_data)
                 if im_data is None:
                     im_data = FileData(filepath, self)
                 self.images_list.append(im_data)
