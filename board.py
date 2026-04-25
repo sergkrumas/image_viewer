@@ -1679,6 +1679,10 @@ class BoardMixin(BoardTextEditItemMixin):
                     board_item = obj
                     file_data.board_items.append(board_item)
 
+            elif attr_name == 'progressive_board_preparation':
+                obj2 = type('PBPClass', (), {})()
+                attr_value = self.board_serial_to_object_attributes(obj2, attr_data, ())
+
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
                     if obj.type == self.BoardItem.types.ITEM_FOLDER:
@@ -1761,7 +1765,10 @@ class BoardMixin(BoardTextEditItemMixin):
             elif exclude is not None and attr_name in exclude:
                 continue
 
-            elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized', 'progressive_board_preparation']:
+            elif attr_name == 'progressive_board_preparation':
+                attr_data = self.board_object_attributes_to_serial(attr_value, [])
+
+            elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized']:
                 attr_data = None
                 attr_type = 'NoneType'
 
@@ -1793,6 +1800,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     attr_type = 'NoneType'
 
             elif isinstance(attr_value, QPointF):
+                attr_data = (attr_value.x(), attr_value.y())
+
+            elif isinstance(attr_value, QPoint):
                 attr_data = (attr_value.x(), attr_value.y())
 
             elif isinstance(attr_value, (bool, int, float, str, tuple, list, dict)):
