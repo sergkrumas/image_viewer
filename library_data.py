@@ -575,7 +575,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if MW.is_viewer_page_active():
 
-            current_filepath = os.path.normpath(cf.current_image().filepath)
+            current_filepath = cf.current_image().filepath
             old_files_data = cf.images_list[:]
             cf.images_list.clear()
 
