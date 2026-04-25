@@ -1587,8 +1587,9 @@ class FolderData():
         return True
 
     def find_in_prev(self, filepath, prev):
+        filepath = os.path.normpath(filepath)
         for file_data in prev:
-            if os.path.normpath(filepath) == os.path.normpath(file_data.filepath):
+            if filepath == file_data.filepath:
                 return file_data
         return None
 
@@ -1970,7 +1971,7 @@ class FileData():
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
         self.filename = os.path.basename(filepath)
-        self.filepath = filepath
+        self.filepath = os.path.normpath(filepath)
         self.preview_size = QSize(0, 0)
         self.anim_paused = False
         self.svg_scale_factor = 2
