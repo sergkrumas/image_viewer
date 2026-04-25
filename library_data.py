@@ -1599,12 +1599,12 @@ class FolderData():
         for filepath in files:
             processAppEvents(update_only=False)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
-                im_data = None
+                fid = None
                 if old_files_data:
-                    im_data = self.find_in_prev(filepath, old_files_data)
-                if im_data is None:
-                    im_data = FileData(filepath, self)
-                self.images_list.append(im_data)
+                    fid = self.find_in_prev(filepath, old_files_data)
+                if fid is None:
+                    fid = FileData(filepath, self)
+                self.images_list.append(fid)
                 LibraryData().update_progressbar()
 
         self.original_list = self.images_list[:]
