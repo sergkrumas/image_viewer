@@ -518,8 +518,6 @@ class ControlPanel(QWidget, UtilsMixin):
             MW.show_center_label(_("Virtual folders are not allowed to be updated!"), error=True)
             return
         self.LibraryData().update_current_folder()
-        # TODO: это, пожалуй, надо будет выполнять при смене страницы тоже, и вдобавок проверять активна ли страница вьювера
-        MW.update_thumbnails_row_relative_offset(cf, only_set=True)
         MW.show_center_label(_("Updated"))
         self.update()
 
