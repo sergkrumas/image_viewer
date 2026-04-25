@@ -1617,7 +1617,7 @@ class FolderData():
             items = LibraryData.read_user_rotations_for_folder(self)
             for file_data in self.images_list:
                 for filename, value in items:
-                    if os.path.basename(file_data.filepath) == filename:
+                    if file_data.filename == filename:
                         file_data.image_rotation = value
 
     def init_images_order_data(self):
