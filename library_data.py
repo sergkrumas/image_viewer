@@ -1614,6 +1614,9 @@ class FolderData():
                         file_data.image_rotation = value
         LibraryData().remove_progressbar()
 
+        self.init_images_order_data()
+
+    def init_images_order_data(self):
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
             hashes = []
