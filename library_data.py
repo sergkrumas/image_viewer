@@ -589,6 +589,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             else:
                 cf._image_index = 0
             cf.previews_done = False
+
+            if MW.is_board_page_active():
+                vertical = cf.board.force_vertical_layout or MW.STNG.board_vertical_items_layout
+                PBP = cf.board.progressive_board_preparation
+                MW.build_board_bounding_rect_to_board_data(cf)
+                if vertical:
+                    p = cf.board.bounding_rect.topRight()
+                else:
+                    p = cf.board.bounding_rect.bottomLeft()
+                PBP.forward_offset = QPointF(p)
+                PBP.backward_offset = QPointF(p)
+
             ThumbnailsPreviewsThread(cf, self.globals).start()
         else:
             cf._image_index = 0
@@ -597,11 +609,6 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             # TODO: это, пожалуй, надо будет вызывать это при смене страницы тоже
             MW.update_thumbnails_row_relative_offset(cf, only_set=True)
-
-
-        elif MW.is_board_page_active():
-
-            pass
 
         MW.show_center_label(_("Updated"))
         MW.update()
