@@ -2349,36 +2349,36 @@ class BoardMixin(BoardTextEditItemMixin):
         board = folder_data.board
         if not hasattr(board, "progressive_board_preparation"):
             board.items_list = []
-            pbp = board.progressive_board_preparation = type('PBPClass', (), {})()
-            pbp.forward_offset = QPointF()
-            pbp.backward_offset = QPointF()
-            pbp.pivot_index = None
+            PBP = board.progressive_board_preparation = type('PBPClass', (), {})()
+            PBP.forward_offset = QPointF()
+            PBP.backward_offset = QPointF()
+            PBP.pivot_index = None
         else:
-            pbp = board.progressive_board_preparation
+            PBP = board.progressive_board_preparation
 
-        pbp.direction = 1
-        if pbp.pivot_index is not None:
-            if folder_data.images_list.index(file_data) < pbp.pivot_index:
-                pbp.direction = -1
+        PBP.direction = 1
+        if PBP.pivot_index is not None:
+            if folder_data.images_list.index(file_data) < PBP.pivot_index:
+                PBP.direction = -1
             else:
-                pbp.direction = 1
+                PBP.direction = 1
 
         bi = self.board_prepare_board_item(board, file_data,
-            pbp.forward_offset if pbp.direction == 1 else pbp.backward_offset,
-            pbp.direction,
+            PBP.forward_offset if PBP.direction == 1 else PBP.backward_offset,
+            PBP.direction,
             folder_data.board.force_vertical_layout
         )
         if bi is not None:
-            if pbp.pivot_index is None:
+            if PBP.pivot_index is None:
                 self.progressive_layout_ongoing = True
-                # пивот-индекс задаём именно тут, а не выше, где происходит инициализация pbp,
+                # пивот-индекс задаём именно тут, а не выше, где происходит инициализация PBP,
                 # ибо board_prepare_board_item создаёт айтем не для каждого file_data
-                pbp.pivot_index = folder_data.images_list.index(file_data)
+                PBP.pivot_index = folder_data.images_list.index(file_data)
                 self.board_fit_content_on_screen(file_data)
                 self.DEFAULT_CANVAS_ORIGIN = QPointF(self.canvas_origin)
                 self.DEFAULT_CANVAS_SCALE = self.canvas_scale_x, self.canvas_scale_y
             self.build_board_bounding_rect(folder_data)
-            bi.sort_index = folder_data.images_list.index(file_data) - pbp.pivot_index
+            bi.sort_index = folder_data.images_list.index(file_data) - PBP.pivot_index
 
         if self.is_board_page_active() and self.Globals.DEBUG:
             self.show_center_label(str(file_data.filepath))
