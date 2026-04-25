@@ -1602,8 +1602,8 @@ class FolderData():
                 if old_files_data:
                     fid = self.find_in_prev(filepath, old_files_data)
                 if fid is None:
-                    new_files_data.append(fid)
                     fid = FileData(filepath, self)
+                    new_files_data.append(fid)
                 else:
                     self.images_list.append(fid)
                     LibraryData().update_progressbar()
