@@ -1600,24 +1600,29 @@ class FolderData():
                 im_data = None
                 if prev:
                     im_data = self.find_in_prev(filepath, prev)
-                if not im_data:
+                if im_data is None:
                     im_data = FileData(filepath, self)
-                LibraryData().update_progressbar()
                 self.images_list.append(im_data)
+                LibraryData().update_progressbar()
+
         self.original_list = self.images_list[:]
-        self.sort_type = "original"
-        self.sort_type_reversed = False
+        
+        self.init_images_rotation_data()
+        self.init_images_order_data()
+
+        LibraryData().remove_progressbar()
+
+    def init_images_rotation_data(self):
         if not self.virtual:
             items = LibraryData.read_user_rotations_for_folder(self)
             for file_data in self.images_list:
                 for filename, value in items:
                     if os.path.basename(file_data.filepath) == filename:
                         file_data.image_rotation = value
-        LibraryData().remove_progressbar()
-
-        self.init_images_order_data()
 
     def init_images_order_data(self):
+        self.sort_type = "original"
+        self.sort_type_reversed = False
         images_order_filepath = self.get_images_order_filepath()
         if os.path.exists(images_order_filepath):
             hashes = []
