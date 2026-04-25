@@ -376,7 +376,7 @@ class ControlPanelButton(QPushButton):
             r = painter.drawText(self.rect(), Qt.AlignCenter, "GRP")
 
         elif self.id == "frame":
-            
+
             self.set_font(painter, special=32)
             r = painter.drawText(self.rect(), Qt.AlignCenter, "FRM")
 

@@ -1693,7 +1693,7 @@ class MainWindow(QMainWindow,
         self.update_other_pages_list()
 
         create_control_panel = True
-        if page_type == self.pages.BOARD_PAGE: 
+        if page_type == self.pages.BOARD_PAGE:
             if self.STNG.board_no_control_panel:
                 create_control_panel = False
 
@@ -4653,7 +4653,7 @@ class MainWindow(QMainWindow,
 
             text_rect = QRect(left, int(scroll_offset + 24+n*H), LEFT_COL_WIDTH-left, 200)
             images_list_len = len(folder_data.images_list)
-            folder_label = folder_data.get_label_or_path() 
+            folder_label = folder_data.get_label_or_path()
             text = f"{images_list_len} {folder_label}"
             painter.drawText(text_rect, Qt.AlignLeft, text)
 

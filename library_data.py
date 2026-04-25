@@ -1482,7 +1482,7 @@ class FolderData():
         self.PreviewsGrid.set_empty_grids(self)
 
     def get_label_or_path(self):
-        return self.folder_label or self.folder_path 
+        return self.folder_label or self.folder_path
 
     def check_insert_position(self, index):
         cf = self
@@ -1619,7 +1619,7 @@ class FolderData():
         self.images_list.extend(new_files_data)
 
         self.original_list = self.images_list[:]
-        
+
         self.init_images_rotation_data()
         self.init_images_order_data()
 
