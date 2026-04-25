@@ -575,7 +575,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if MW.is_viewer_page_active():
 
-            current_filepath = cf.current_image().filepath
+            current_filepath = os.path.normpath(cf.current_image().filepath)
             old_files_data = cf.images_list[:]
             cf.images_list.clear()
 
@@ -586,7 +586,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             cf.init_images(files, old_files_data=old_files_data)
             if cf.images_list:
                 for file_data in cf.images_list:
-                    if os.path.normpath(file_data.filepath) == os.path.normpath(current_filepath):
+                    if file_data.filepath == current_filepath:
                         cf._image_index = cf.images_list.index(file_data)
                         break
                 else:
