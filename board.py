@@ -2380,7 +2380,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.build_board_bounding_rect(folder_data)
             bi.sort_index = folder_data.images_list.index(file_data) - PBP.pivot_index
 
-        if self.is_board_page_active() and self.Globals.DEBUG:
+        if self.Globals.DEBUG and self.is_board_page_active():
             self.show_center_label(str(file_data.filepath))
 
     def board_prepare_board_item(self, board, file_data, offset, direction, force_vertical_layout, hor_or_vert=None):
