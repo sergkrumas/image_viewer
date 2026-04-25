@@ -595,8 +595,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if MW.is_viewer_page_active():
 
-
-            # TODO: это, пожалуй, надо будет вызывать это при смене страницы тоже,
+            # TODO: это, пожалуй, надо будет вызывать это при смене страницы тоже
             MW.update_thumbnails_row_relative_offset(cf, only_set=True)
 
 
@@ -1595,6 +1594,7 @@ class FolderData():
         return None
 
     def init_images(self, files, old_files_data=None, library_loading=False):
+        new_files_data = []
         for filepath in files:
             processAppEvents(update_only=False)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
@@ -1602,9 +1602,14 @@ class FolderData():
                 if old_files_data:
                     fid = self.find_in_prev(filepath, old_files_data)
                 if fid is None:
+                    new_files_data.append(fid)
                     fid = FileData(filepath, self)
-                self.images_list.append(fid)
-                LibraryData().update_progressbar()
+                else:
+                    self.images_list.append(fid)
+                    LibraryData().update_progressbar()
+
+        # добавляем новые файлы в конец списка
+        self.images_list.extend(new_files_data)
 
         self.original_list = self.images_list[:]
         
