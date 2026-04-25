@@ -576,14 +576,14 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         if MW.is_viewer_page_active():
 
             current_filepath = cf.current_image().filepath
-            old_images = cf.images_list[:]
+            old_files_data = cf.images_list[:]
             cf.images_list.clear()
 
             files = LibraryData().list_interest_files(
                 cf.folder_path,
                 deep_scan=cf.deep_scan
             )
-            cf.init_images(files, prev=old_images)
+            cf.init_images(files, old_files_data=old_files_data)
             if cf.images_list:
                 for file_data in cf.images_list:
                     if os.path.normpath(file_data.filepath) == os.path.normpath(current_filepath):
@@ -1593,7 +1593,7 @@ class FolderData():
                 return file_data
         return None
 
-    def init_images(self, files, prev=None, library_loading=False):
+    def init_images(self, files, old_files_data=None, library_loading=False):
         for filepath in files:
             processAppEvents(update_only=False)
             if os.path.exists(filepath): # проверка нужна для папки Избранное
