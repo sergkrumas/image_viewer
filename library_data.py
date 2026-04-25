@@ -571,42 +571,41 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         cf = LibraryData().current_folder()
         if cf.virtual:
             return
-        print("updating current folder...")
+
+        current_filepath = cf.current_image().filepath
+        old_files_data = cf.images_list[:]
+        cf.images_list.clear()
+
+        files = LibraryData().list_interest_files(
+            cf.folder_path,
+            deep_scan=cf.deep_scan
+        )
+        cf.init_images(files, old_files_data=old_files_data)
+        if cf.images_list:
+            for file_data in cf.images_list:
+                if file_data.filepath == current_filepath:
+                    cf._image_index = cf.images_list.index(file_data)
+                    break
+            else:
+                cf._image_index = 0
+            cf.previews_done = False
+            ThumbnailsPreviewsThread(cf, self.globals).start()
+        else:
+            cf._image_index = 0
 
         if MW.is_viewer_page_active():
 
-            current_filepath = cf.current_image().filepath
-            old_files_data = cf.images_list[:]
-            cf.images_list.clear()
 
-            files = LibraryData().list_interest_files(
-                cf.folder_path,
-                deep_scan=cf.deep_scan
-            )
-            cf.init_images(files, old_files_data=old_files_data)
-            if cf.images_list:
-                for file_data in cf.images_list:
-                    if file_data.filepath == current_filepath:
-                        cf._image_index = cf.images_list.index(file_data)
-                        break
-                else:
-                    cf._image_index = 0
-                cf.previews_done = False
-                ThumbnailsPreviewsThread(cf, self.globals).start()
-            else:
-                cf._image_index = 0
-
-            # TODO: это, пожалуй, надо будет выполнять при смене страницы тоже,
-            # и вдобавок проверять активна ли страница вьювера
+            # TODO: это, пожалуй, надо будет вызывать это при смене страницы тоже,
             MW.update_thumbnails_row_relative_offset(cf, only_set=True)
 
-            MW.update()
 
         elif MW.is_board_page_active():
 
             pass
 
         MW.show_center_label(_("Updated"))
+        MW.update()
 
     @staticmethod
     def get_session_filepath():
