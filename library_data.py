@@ -1606,7 +1606,7 @@ class FolderData():
                     new_files_data.append(fid)
                 else:
                     self.images_list.append(fid)
-                    LibraryData().update_progressbar()
+                LibraryData().update_progressbar()
 
         # добавляем новые файлы в конец списка
         self.images_list.extend(new_files_data)
