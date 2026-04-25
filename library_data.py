@@ -595,12 +595,15 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 ThumbnailsPreviewsThread(cf, self.globals).start()
             else:
                 cf._image_index = 0
-            MW.update()
 
-            # TODO: это, пожалуй, надо будет выполнять при смене страницы тоже, и вдобавок проверять активна ли страница вьювера
+            # TODO: это, пожалуй, надо будет выполнять при смене страницы тоже,
+            # и вдобавок проверять активна ли страница вьювера
             MW.update_thumbnails_row_relative_offset(cf, only_set=True)
 
+            MW.update()
+
         elif MW.is_board_page_active():
+
             pass
 
     @staticmethod
