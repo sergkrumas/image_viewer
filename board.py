@@ -1681,7 +1681,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif attr_name == 'progressive_board_preparation':
                 obj2 = type('PBPClass', (), {})()
-                attr_value = self.board_serial_to_object_attributes(obj2, attr_data, ())
+                self.board_serial_to_object_attributes(obj2, attr_data, ())
+                attr_value = obj2
 
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
@@ -1766,7 +1767,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue
 
             elif attr_name == 'progressive_board_preparation':
-                attr_data = self.board_object_attributes_to_serial(attr_value, [])
+                obj_base2 = []
+                self.board_object_attributes_to_serial(attr_value, obj_base2)
+                attr_data = obj_base2
 
             elif attr_name in ['referer_board_folder', 'root_folder', 'root_item', 'nonAutoSerialized']:
                 attr_data = None
