@@ -518,7 +518,6 @@ class ControlPanel(QWidget, UtilsMixin):
             MW.show_center_label(_("Virtual folders are not allowed to be updated!"), error=True)
             return
         self.LibraryData().update_current_folder()
-        MW.show_center_label(_("Updated"))
         self.update()
 
     def board_set_default_scale(self):

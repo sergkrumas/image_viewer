@@ -606,6 +606,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             pass
 
+        MW.show_center_label(_("Updated"))
+
     @staticmethod
     def get_session_filepath():
         filepath = os.path.join(os.path.dirname(__file__), "user_data", LibraryData().globals.SESSION_FILENAME)
