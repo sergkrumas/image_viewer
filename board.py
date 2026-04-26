@@ -5373,7 +5373,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 pos = self.rect().center()
                 board_mapped_pos = self.board_MapToBoard(pos)
                 board_mapped_vr = self.board_MapRectToBoard(self.rect())
-                cf.board.user_defined_places.append([board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()])
+                place = [board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()]
+                cf.board.user_defined_places.append(place)
 
         elif event.button() == Qt.MiddleButton:
             if no_mod:
