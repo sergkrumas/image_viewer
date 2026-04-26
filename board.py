@@ -7624,7 +7624,8 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         elif bis_count == 1:
-            # item cropping
+            # single item cropping
+
             bi = bis[0]
             bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bm_input_rect = self.board_MapRectToBoard(CC.rect)
@@ -7650,15 +7651,17 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_draw_item(painter, bi)
                 painter.end()
                 bi.position += draw_offset
-            bi.add_crop_data_to_stack(crop_rect)
 
-            # updating
+            # updating pixmaps and previews
             bi.pixmap = cropped_pixmap
             bi.overrided_source_width = cropped_pixmap.width()
             bi.overrided_source_height = cropped_pixmap.height()
             self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
-            # reset
+            # saving to history
+            bi.add_crop_data_to_stack(crop_rect)
+
+            # resetting
             bi.scale_x = 1.0
             bi.scale_y = 1.0
             bi.rotation = 0.0
