@@ -272,6 +272,7 @@ class BoardItem():
         self.overrided_source_width = None
         self.overrided_source_height = None
         self._overrided_preview = None
+        self._crop_data_stack = []
 
     def set_alert(self):
         self.countdown_red_frame = 10
@@ -623,6 +624,15 @@ class BoardItem():
 
     def restore_transform(self):
         self.apply_transform_tuple(self._transform_stack.pop())
+
+    def add_crop_data_to_stack(self, crop_rect):
+        self._crop_data_stack.append((
+            self.scale_x,
+            self.scale_y,
+            QPointF(self.position),
+            self.rotation,
+            QRectF(crop_rect),
+        ))
 
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
@@ -7619,41 +7629,42 @@ class BoardMixin(BoardTextEditItemMixin):
             bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             bm_input_rect = self.board_MapRectToBoard(CC.rect)
 
-            result_rect = bm_input_rect.intersected(bi_area_rect)
-            valid = result_rect.width() > 50 and result_rect.height() > 50
+            crop_rect = bm_input_rect.intersected(bi_area_rect)
+            valid = crop_rect.width() > 50 and crop_rect.height() > 50
             if not valid:
                 self.show_center_label(_("Too small, aborted!"), error=True)
                 return
 
-            result_pixmap = QPixmap(result_rect.size().toSize())
-            result_pixmap.fill(Qt.transparent)
+            # cropping
+            cropped_pixmap = QPixmap(crop_rect.size().toSize())
+            cropped_pixmap.fill(Qt.transparent)
             painter = QPainter()
             painter.setRenderHint(QPainter.Antialiasing, True)
             painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
             painter.setRenderHint(QPainter.TextAntialiasing, True)
             painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-
             with canvas_prepare(self):
                 draw_offset = bi_area_rect.topLeft()
-                o = result_rect.topLeft() - bi_area_rect.topLeft()
+                o = crop_rect.topLeft() - bi_area_rect.topLeft()
                 draw_offset += o
                 bi.position -= draw_offset
-                painter.begin(result_pixmap)
+                painter.begin(cropped_pixmap)
                 self.board_draw_item(painter, bi)
                 painter.end()
                 bi.position += draw_offset
+            bi.add_crop_data_to_stack(crop_rect)
 
-            bi.pixmap = result_pixmap
-
-            bi.overrided_source_width = result_pixmap.width()
-            bi.overrided_source_height = result_pixmap.height()
-
+            # updating
+            bi.pixmap = cropped_pixmap
+            bi.overrided_source_width = cropped_pixmap.width()
+            bi.overrided_source_height = cropped_pixmap.height()
             self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
+            # reset
             bi.scale_x = 1.0
             bi.scale_y = 1.0
             bi.rotation = 0.0
-            bi.position = result_rect.center()
+            bi.position = crop_rect.center()
 
         elif bis_count > 1:
             # items combining by input rect
