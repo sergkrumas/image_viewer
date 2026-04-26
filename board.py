@@ -7628,7 +7628,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             bi = bis[0]
             bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
-            bm_input_rect = self.board_MapRectToBoard(CC.rect)
 
             crop_rect = bm_input_rect.intersected(bi_area_rect)
             valid = crop_rect.width() > 50 and crop_rect.height() > 50
