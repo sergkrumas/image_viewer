@@ -5361,10 +5361,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.selection_rect = None
                 self.selection_ongoing = False
 
-            if alt or self.board_region_zoom_in_input_started:
+            if self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseReleaseEvent(event)
 
-            elif ctrl and not shift:
+            elif ctrl and not shift and not alt:
                 cf = self.LibraryData().current_folder()
                 pos = self.rect().center() if True else event.pos()
                 board_mapped_pos = self.board_MapToBoard(pos)
