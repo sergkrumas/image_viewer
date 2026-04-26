@@ -7632,6 +7632,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_scale_y = 1.0
             self.canvas_origin = QPointF(0, 0)
             draw_offset = bi_area_rect.topLeft()
+            o = result_rect.topLeft() - bi_area_rect.topLeft()
+            draw_offset += o
             bi.position -= draw_offset
             painter.begin(result_pixmap)
             self.board_draw_item(painter, bi)
@@ -7649,7 +7651,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.scale_x = 1.0
             bi.scale_y = 1.0
             bi.rotation = 0.0
-            bi.position = bm_input_rect.center()
+            bi.position = result_rect.center()
 
         elif bis_count > 1:
             # items combining by input rect
