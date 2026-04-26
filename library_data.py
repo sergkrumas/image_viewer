@@ -928,16 +928,16 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                         break
         return filepaths
 
-    @staticmethod
-    def make_thumbnail(Globals, file_data, source_pixmap):
+    @classmethod
+    def make_thumbnail(cls, Globals, file_data, source_pixmap):
         if file_data.is_video_filetype:
             source_pixmap = file_data.full_quality_video_frame
         THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
         thumbnail = source_pixmap.scaled(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         file_data.set_thumbnail(thumbnail)
 
-    @staticmethod
-    def make_preview(Globals, file_data, source_pixmap, original_pixmap_size):
+    @classmethod
+    def make_preview(cls, Globals, file_data, source_pixmap, original_pixmap_size):
 
         if file_data.is_video_filetype:
             source_pixmap = file_data.full_quality_video_frame = FFMPEG.load_one_of_the_first_frames_from_video(
@@ -969,8 +969,22 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         else:
             file_data.preview = Globals.ERROR_PREVIEW_PIXMAP
 
-    @staticmethod
-    def make_thumbnails_and_previews(folder_data, thread_instance, from_board_items=False,
+    @classmethod
+    def make_thumbnail_preview_kernel(cls, Globals, file_data, source):
+        if False:
+            # thumbnail
+            cls.make_thumbnail(Globals, file_data, source)
+            # preview
+            cls.make_preview(Globals, file_data, source, source.size())
+
+        else:
+            # preview
+            cls.make_preview(Globals, file_data, source, source.size())
+            # thumbnail
+            cls.make_thumbnail(Globals, file_data, file_data.preview)
+
+    @classmethod
+    def make_thumbnails_and_previews(cls, folder_data, thread_instance, from_board_items=False,
                                                         do_progressive_grid_layout=False, do_progressive_board_layout=False):
 
         if thread_instance is not None and thread_instance.current_index_centered_order:
@@ -982,7 +996,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             images_list = folder_data.images_list
         folder_data.previews_done = False
         image_count = len(images_list)
-        Globals = LibraryData().globals
+        Globals = cls.globals
         MW = Globals.main_window
 
         if thread_instance is not None:
@@ -1036,21 +1050,10 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 source = Globals.ERROR_PREVIEW_PIXMAP
                 file_data.preview_error = True
 
-            if False:
-                # thumbnail
-                LibraryData().make_thumbnail(Globals, file_data, source)
-                # preview
-                LibraryData().make_preview(Globals, file_data, source, source.size())
-
-            else:
-                # preview
-                LibraryData().make_preview(Globals, file_data, source, source.size())
-                # thumbnail
-                LibraryData().make_thumbnail(Globals, file_data, file_data.preview)
+            cls.make_thumbnail_preview_kernel(Globals, file_data, source)
 
             pass_time = time.time() - start_time
             LibraryData().total_TIME += pass_time
-
 
             if thread_instance is not None:
                 thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -1069,7 +1072,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 if do_progressive_grid_layout:
                     FolderData.PreviewsGrid.step(folder_data, file_data)
                 if do_progressive_board_layout:
-                    LibraryData().globals.main_window.board_progressive_fill_layout(folder_data, file_data)
+                    Globals.main_window.board_progressive_fill_layout(folder_data, file_data)
 
         if thread_instance is not None:
             thread_instance.update_signal.emit(ThreadRuntimeData(
@@ -1091,7 +1094,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
             if do_progressive_grid_layout:
                 FolderData.PreviewsGrid.finish_grids(folder_data)
             elif MW:
-                LibraryData().update_previews_grid(folder_data)
+                cls.update_previews_grid(folder_data)
             if do_progressive_board_layout:
                 MW.board_progressive_layout_finish(folder_data)
 
