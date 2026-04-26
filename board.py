@@ -5370,7 +5370,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif ctrl_only:
                 cf = self.LibraryData().current_folder()
-                pos = self.rect().center() if True else event.pos()
+                pos = self.rect().center()
                 board_mapped_pos = self.board_MapToBoard(pos)
                 board_mapped_vr = self.board_MapRectToBoard(self.rect())
                 cf.board.user_defined_places.append([board_mapped_pos, board_mapped_vr.width(), board_mapped_vr.height()])
