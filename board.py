@@ -7575,9 +7575,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_crop_n_combine_mouseReleaseEvent(self, event):
         CC = self.CROP_N_COMBINE
+        self.board_crop_n_combine_do_finish(event)
         CC.input_started = False
         CC.rect = None
         CC.start_point = None
+
+    def board_crop_n_combine_do_finish(self, event):
+        pass
 
     def board_crop_n_combine_draw(self, painter):
         CC = self.CROP_N_COMBINE
