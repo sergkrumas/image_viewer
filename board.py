@@ -7651,13 +7651,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
             # cropping
-            cropped_pixmap = self.board_crop_n_combine_do_cropping(bi, crop_rect)
-
-            # updating pixmaps and previews
-            bi.pixmap = cropped_pixmap
-            bi.overrided_source_width = cropped_pixmap.width()
-            bi.overrided_source_height = cropped_pixmap.height()
-            self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
+            self.board_crop_n_combine_do_cropping(bi, crop_rect)
 
             # saving to history
             bi.add_crop_data_to_stack(crop_rect)
@@ -7674,7 +7668,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_update_selection_box_widget()
 
-    def board_crop_n_combine_do_cropping(self, bi, crop_rect):
+    def board_crop_n_combine_do_cropping(self, bi, crop_rect, update_overrided=True):
         cropped_pixmap = QPixmap(crop_rect.size().toSize())
         cropped_pixmap.fill(Qt.transparent)
         painter = QPainter()
@@ -7689,7 +7683,13 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_draw_item(painter, bi)
             painter.end()
             bi.position += draw_offset
-        return cropped_pixmap
+
+        # updating pixmaps and previews
+        bi.pixmap = cropped_pixmap
+        if update_overrided:
+            bi.overrided_source_width = cropped_pixmap.width()
+            bi.overrided_source_height = cropped_pixmap.height()
+            self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
     def board_touch_crop_stack(self, purge_all):
         if self.selected_items and len(self.selected_items) == 1:
@@ -7708,6 +7708,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.trigger_board_item_pixmap_loading(bi)
             bi.overrided_source_width = None
             bi.overrided_source_height = None
+        else:
+            pass
 
         self.board_update_selection_box_widget()
 
