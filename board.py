@@ -7667,7 +7667,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if CC.input_started and CC.rect:
             painter.save()
             painter.setBrush(Qt.NoBrush)
-            painter.setPen(QPen(Qt.red))
+            painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
             painter.drawRect(CC.rect)
             painter.restore()
 
