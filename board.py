@@ -7644,9 +7644,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setRenderHint(QPainter.TextAntialiasing, True)
             painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
             with canvas_prepare(self):
-                draw_offset = bi_area_rect.topLeft()
-                o = crop_rect.topLeft() - bi_area_rect.topLeft()
-                draw_offset += o
+                draw_offset = crop_rect.topLeft()
                 bi.position -= draw_offset
                 painter.begin(cropped_pixmap)
                 self.board_draw_item(painter, bi)
