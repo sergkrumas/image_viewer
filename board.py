@@ -808,6 +808,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.boards_proportional_item_scaling_as_default = True
 
+        self.board_crop_n_combine_init()
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -5143,6 +5145,7 @@ class BoardMixin(BoardTextEditItemMixin):
         alt = event.modifiers() & Qt.AltModifier
         alt_only = event.modifiers() == Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
+        alt_and_shift_only = event.modifiers() == (Qt.AltModifier | Qt.ShiftModifier)
 
         if self.board_interactive_layout_is_activated():
             return
@@ -5157,7 +5160,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if event.buttons() == Qt.LeftButton:
 
-            if not alt:
+            if alt_and_shift_only:
+
+                self.board_crop_n_combine_mousePressEvent(event)
+
+            elif not alt:
 
                 if self.is_over_scaling_activation_area(event.pos()):
                     self.board_START_selected_items_SCALING(event)
@@ -5175,6 +5182,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.selection_ongoing = True
 
             elif alt_only:
+
                 self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
@@ -5236,6 +5244,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseMoveEvent(event)
+
+            elif self.CROP_N_COMBINE.input_started:
+                self.board_crop_n_combine_mouseMoveEvent(event)
 
             elif self.selection_ongoing is not None:
                 self.selection_end_point = QPointF(event.pos())
@@ -5364,6 +5375,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseReleaseEvent(event)
+
+            elif self.CROP_N_COMBINE.input_started:
+                self.board_crop_n_combine_mouseReleaseEvent(event)
 
             elif ctrl_only:
                 cf = self.LibraryData().current_folder()
@@ -7537,6 +7551,19 @@ class BoardMixin(BoardTextEditItemMixin):
         self.canvas_origin, self.canvas_scale_x, self.canvas_scale_y = stashed_current_viewport_data
 
         self.update()
+
+    def board_crop_n_combine_init(self):
+        self.CROP_N_COMBINE = type('CropNCombineClass', (), {})()
+        self.CROP_N_COMBINE.input_started = False
+
+    def board_crop_n_combine_mousePressEvent(self, event):
+        self.CROP_N_COMBINE.input_started = True
+
+    def board_crop_n_combine_mouseMoveEvent(self, event):
+        self.show_center_label('aga')
+
+    def board_crop_n_combine_mouseReleaseEvent(self, event):
+        self.CROP_N_COMBINE.input_started = False
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
