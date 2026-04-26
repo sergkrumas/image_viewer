@@ -937,7 +937,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         file_data.set_thumbnail(thumbnail)
 
     @classmethod
-    def make_preview(cls, Globals, file_data, source_pixmap, original_pixmap_size):
+    def make_preview(cls, Globals, file_data, source_pixmap, original_pixmap_size, to_overrided_preview):
 
         if file_data.is_video_filetype:
             source_pixmap = file_data.full_quality_video_frame = FFMPEG.load_one_of_the_first_frames_from_video(
@@ -950,36 +950,41 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         ow = original_pixmap_size.width()
         oh = original_pixmap_size.height()
 
-        file_data.source_width = ow
-        file_data.source_height = oh
+        if to_overrided_preview is None:
+            file_data.source_width = ow
+            file_data.source_height = oh
 
-        if file_data.is_audio_video_filetype and not file_data.is_video_filetype:
-            file_data.source_width = 500
-            file_data.source_height = 500
+            if file_data.is_audio_video_filetype and not file_data.is_video_filetype:
+                file_data.source_width = 500
+                file_data.source_height = 500
 
-        if LibraryData().is_svg_file(file_data.filepath):
-            file_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
-            file_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
+            if LibraryData().is_svg_file(file_data.filepath):
+                file_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
+                file_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
 
         preview_height = int(oh*Globals.PREVIEW_WIDTH/ow) if ow > 0 else 0
-        file_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
+        if to_overrided_preview is None:
+            file_data.preview_size = QSize(Globals.PREVIEW_WIDTH, preview_height)
         if ow != 0:
             preview = source_pixmap.scaled(Globals.PREVIEW_WIDTH, preview_height, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
-            file_data.preview = preview
+            if to_overrided_preview is None:
+                file_data.preview = preview
+            else:
+                to_overrided_preview._overrided_preview = preview
         else:
             file_data.preview = Globals.ERROR_PREVIEW_PIXMAP
 
     @classmethod
-    def make_thumbnail_preview_kernel(cls, Globals, file_data, source):
+    def make_thumbnail_preview_kernel(cls, Globals, file_data, source, to_overrided_preview):
         if False:
             # thumbnail
             cls.make_thumbnail(Globals, file_data, source)
             # preview
-            cls.make_preview(Globals, file_data, source, source.size())
+            cls.make_preview(Globals, file_data, source, source.size(), to_overrided_preview)
 
         else:
             # preview
-            cls.make_preview(Globals, file_data, source, source.size())
+            cls.make_preview(Globals, file_data, source, source.size(), to_overrided_preview)
             # thumbnail
             cls.make_thumbnail(Globals, file_data, file_data.preview)
 
@@ -1050,7 +1055,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 source = Globals.ERROR_PREVIEW_PIXMAP
                 file_data.preview_error = True
 
-            cls.make_thumbnail_preview_kernel(Globals, file_data, source)
+            cls.make_thumbnail_preview_kernel(Globals, file_data, source, None)
 
             pass_time = time.time() - start_time
             LibraryData().total_TIME += pass_time

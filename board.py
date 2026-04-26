@@ -271,6 +271,7 @@ class BoardItem():
 
         self.overrided_source_width = None
         self.overrided_source_height = None
+        self._overrided_preview = None
 
     def set_alert(self):
         self.countdown_red_frame = 10
@@ -3012,6 +3013,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 if full_quality:
                     self.trigger_board_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
+                elif board_item._overrided_preview:
+                    image_to_draw = board_item._overrided_preview
                 else:
                     image_to_draw = file_data.preview
 
@@ -7647,6 +7650,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             bi.overrided_source_width = result_pixmap.width()
             bi.overrided_source_height = result_pixmap.height()
+
+            self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
             bi.scale_x = 1.0
             bi.scale_y = 1.0
