@@ -634,6 +634,17 @@ class BoardItem():
             QRectF(crop_rect),
         ))
 
+    def crop_data_purge_all(self):
+        p = QPointF(self.position)
+        self.scale_x, \
+        self.scale_y, \
+        self.position, \
+        self.rotation, \
+        _cro_rect \
+                = self._crop_data_stack[0]
+        self._crop_data_stack.clear()
+        self.position = p
+
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
         check_2 = self.from_item._board is fodbo
@@ -1068,6 +1079,7 @@ class BoardMixin(BoardTextEditItemMixin):
         key = event.key()
         shift_only = event.modifiers() == Qt.ShiftModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        ctrl_only = event.modifiers() == Qt.ControlModifier
 
         if self.textEdit.parent():
             event.setAccepted(True)
@@ -1120,6 +1132,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif key == Qt.Key_F5:
             self.board_interactive_layout_invoke(None)
+
+        elif key == Qt.Key_BracketLeft:
+            self.board_touch_crop_stack(ctrl_only)
 
         self.lineEditSkip = False
 
@@ -7636,20 +7651,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
             # cropping
-            cropped_pixmap = QPixmap(crop_rect.size().toSize())
-            cropped_pixmap.fill(Qt.transparent)
-            painter = QPainter()
-            painter.setRenderHint(QPainter.Antialiasing, True)
-            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
-            painter.setRenderHint(QPainter.TextAntialiasing, True)
-            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
-            with canvas_prepare(self):
-                draw_offset = crop_rect.topLeft()
-                bi.position -= draw_offset
-                painter.begin(cropped_pixmap)
-                self.board_draw_item(painter, bi)
-                painter.end()
-                bi.position += draw_offset
+            cropped_pixmap = self.board_crop_n_combine_do_cropping(bi, crop_rect)
 
             # updating pixmaps and previews
             bi.pixmap = cropped_pixmap
@@ -7669,6 +7671,43 @@ class BoardMixin(BoardTextEditItemMixin):
         elif bis_count > 1:
             # items combining by input rect
             pass
+
+        self.board_update_selection_box_widget()
+
+    def board_crop_n_combine_do_cropping(self, bi, crop_rect):
+        cropped_pixmap = QPixmap(crop_rect.size().toSize())
+        cropped_pixmap.fill(Qt.transparent)
+        painter = QPainter()
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        painter.setRenderHint(QPainter.TextAntialiasing, True)
+        painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
+        with canvas_prepare(self):
+            draw_offset = crop_rect.topLeft()
+            bi.position -= draw_offset
+            painter.begin(cropped_pixmap)
+            self.board_draw_item(painter, bi)
+            painter.end()
+            bi.position += draw_offset
+        return cropped_pixmap
+
+    def board_touch_crop_stack(self, purge_all):
+        if self.selected_items and len(self.selected_items) == 1:
+            pass
+        else:
+            return
+
+        selected_item = self.selected_items[0]
+        if not selected_item._crop_data_stack:
+            self.show_center_label(_('Nothing to cancel'), error=True)
+            return
+
+        bi = selected_item
+        if purge_all:
+            bi.crop_data_purge_all()
+            self.trigger_board_item_pixmap_loading(bi)
+            bi.overrided_source_width = None
+            bi.overrided_source_height = None
 
         self.board_update_selection_box_widget()
 
