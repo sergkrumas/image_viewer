@@ -634,14 +634,13 @@ class BoardItem():
             QRectF(crop_rect),
         ))
 
+    def apply_crop_transform_to_item(self, crop_data):
+        *transform_data, crop_rect = crop_data
+        self.apply_transform_tuple(transform_data)
+
     def crop_data_purge_all(self):
         p = QPointF(self.position)
-        self.scale_x, \
-        self.scale_y, \
-        self.position, \
-        self.rotation, \
-        _cro_rect \
-                = self._crop_data_stack[0]
+        self.apply_crop_transform_to_item(self._crop_data_stack[0])
         self._crop_data_stack.clear()
         self.position = p
 
@@ -7650,23 +7649,24 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label(_("Too small, aborted!"), error=True)
                 return
 
+            # saving data to history
+            bi.add_crop_data_to_stack(crop_rect)
             # cropping
             self.board_crop_n_combine_do_cropping(bi, crop_rect)
-
-            # saving to history
-            bi.add_crop_data_to_stack(crop_rect)
-
-            # resetting
-            bi.scale_x = 1.0
-            bi.scale_y = 1.0
-            bi.rotation = 0.0
-            bi.position = crop_rect.center()
+            # resetting transform
+            self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
         elif bis_count > 1:
             # items combining by input rect
             pass
 
         self.board_update_selection_box_widget()
+
+    def board_crop_n_combine_do_resetting(self, bi, crop_rect):
+        bi.scale_x = 1.0
+        bi.scale_y = 1.0
+        bi.rotation = 0.0
+        bi.position = crop_rect.center()
 
     def board_crop_n_combine_do_cropping(self, bi, crop_rect, update_overrided=True):
         cropped_pixmap = QPixmap(crop_rect.size().toSize())
@@ -7697,19 +7697,31 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             return
 
-        selected_item = self.selected_items[0]
-        if not selected_item._crop_data_stack:
+        bi = self.selected_items[0]
+        if not bi._crop_data_stack:
             self.show_center_label(_('Nothing to cancel'), error=True)
             return
 
-        bi = selected_item
+        if len(bi._crop_data_stack) == 1:
+            purge_all = True
+
         if purge_all:
             bi.crop_data_purge_all()
+            bi.pixmap = None
             self.trigger_board_item_pixmap_loading(bi)
             bi.overrided_source_width = None
             bi.overrided_source_height = None
         else:
-            pass
+            bi._crop_data_stack.pop()
+            bi.pixmap = None
+            self.trigger_board_item_pixmap_loading(bi)
+            last_cdi = bi._crop_data_stack[-1]
+            for cdi in bi._crop_data_stack:
+                bi.apply_crop_transform_to_item(cdi)
+                crop_rect = cdi[-1]
+                is_last = cdi is last_cdi
+                self.board_crop_n_combine_do_cropping(bi, crop_rect, update_overrided=True)
+                self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
         self.board_update_selection_box_widget()
 
