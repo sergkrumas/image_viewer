@@ -7581,7 +7581,35 @@ class BoardMixin(BoardTextEditItemMixin):
         CC.start_point = None
 
     def board_crop_n_combine_do_finish(self, event):
-        pass
+        CC = self.CROP_N_COMBINE
+        bm_input_rect = self.board_MapRectToBoard(CC.rect)
+        cf = self.LibraryData().current_folder()
+
+        bis = []
+        allowed_types = (BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV)
+        for bi in cf.board.items_list:
+            if bi.type not in allowed_types:
+                continue
+            bi_area = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
+            if bi_area.intersects(bm_input_rect):
+                self.trigger_board_item_pixmap_loading(bi)
+                if bi.pixmap is not None and not bi.pixmap.isNull():
+                    bis.append(bi)
+
+        bis_count = len(bis)
+        if bis_count == 0:
+            # nothing to do
+            return
+
+        elif bis_count == 1:
+            # item cropping
+            pass
+
+        elif bis_count > 1:
+            # items combining by input rect
+            pass
+
+        self.show_center_label(f'{len(bis)}')
 
     def board_crop_n_combine_draw(self, painter):
         CC = self.CROP_N_COMBINE
