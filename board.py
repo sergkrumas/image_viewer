@@ -269,6 +269,9 @@ class BoardItem():
 
         self._path = None
 
+        self.overrided_source_width = None
+        self.overrided_source_height = None
+
     def set_alert(self):
         self.countdown_red_frame = 10
 
@@ -475,7 +478,13 @@ class BoardItem():
             scale_x = 1.0
             scale_y = 1.0
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
-            return QRectF(0, 0, self.file_data.source_width*scale_x, self.file_data.source_height*scale_y)
+            if self.overrided_source_width is None and self.overrided_source_height is None:
+                w = self.file_data.source_width
+                h = self.file_data.source_height
+            else:
+                w = self.overrided_source_width
+                h = self.overrided_source_height
+            return QRectF(0, 0, w*scale_x, h*scale_y)
         elif self.type in [self.types.ITEM_FOLDER, self.types.ITEM_GROUP, self.types.ITEM_FRAME, self.types.ITEM_NOTE, self.types.ITEM_NODE]:
             return QRectF(0, 0, self.width*scale_x, self.height*scale_y)
 
@@ -7613,7 +7622,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label(_("Too small, aborted!"), error=True)
                 return
 
-            result_pixmap = QPixmap(result_rect.toSize())
+            result_pixmap = QPixmap(result_rect.size().toSize())
             result_pixmap.fill(Qt.transparent)
             painter = QPainter()
             csx = self.canvas_scale_x
@@ -7622,16 +7631,20 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
             self.canvas_origin = QPointF(0, 0)
-            bi.position -= bi_area_rect.topLeft()
+            draw_offset = bi_area_rect.topLeft()
+            bi.position -= draw_offset
             painter.begin(result_pixmap)
             self.board_draw_item(painter, bi)
             painter.end()
-            bi.position += bi_area_rect.topLeft()
+            bi.position += draw_offset
             self.canvas_scale_x = csx
             self.canvas_scale_y = csy
             self.canvas_origin = before_origin
 
             bi.pixmap = result_pixmap
+
+            bi.overrided_source_width = result_pixmap.width()
+            bi.overrided_source_height = result_pixmap.height()
 
             bi.scale_x = 1.0
             bi.scale_y = 1.0
