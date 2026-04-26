@@ -7711,17 +7711,21 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.overrided_source_height = None
             self.trigger_board_item_pixmap_loading(bi)
 
+        keep_pos = False
         if purge_all:
             bi.crop_data_purge_all()
             default_handling()
         else:
             bi._crop_data_stack.pop()
+            pos = QPointF(bi.position)
             default_handling()
             for cdi in bi._crop_data_stack:
                 bi.apply_crop_transform_to_item(cdi)
                 crop_rect = cdi[-1]
                 self.board_crop_n_combine_do_cropping(bi, crop_rect)
                 self.board_crop_n_combine_do_resetting(bi, crop_rect)
+            if keep_pos:
+                bi.position = pos
 
         self.board_update_selection_box_widget()
 
