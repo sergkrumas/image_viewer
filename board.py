@@ -5164,7 +5164,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif self.is_over_rotation_activation_area(event.pos()):
                     self.board_START_selected_items_ROTATION(event.pos())
 
-                elif self.any_item_area_under_mouse(event.modifiers() & Qt.ShiftModifier):
+                elif self.any_item_area_under_mouse(shift):
                     self.board_START_selected_items_TRANSLATION(event.pos())
                     self.board_update_selection_box_widget()
 
@@ -5196,6 +5196,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_mouseMoveEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        shift_only = event.modifiers() == Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
@@ -5242,7 +5243,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.selection_end_point = QPointF(event.pos())
                 if self.selection_start_point:
                     self.selection_rect = build_valid_rectF(self.selection_start_point, self.selection_end_point)
-                    self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+                    self.board_selection_callback(shift_only)
 
         elif event.buttons() == Qt.MiddleButton:
             self.autoscroll_middleMouseMoveEvent()
@@ -5317,6 +5318,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_mouseReleaseEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
+        shift_only = event.modifiers() == Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
 
@@ -5341,7 +5343,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.start_translation_pos = None
 
             if not alt and not self.translation_ongoing and not self.rotation_ongoing and not self.scaling_ongoing:
-                self.board_selection_callback(event.modifiers() == Qt.ShiftModifier)
+                self.board_selection_callback(shift_only)
                 # if self.selection_rect is not None:
                 self.selection_start_point = None
                 self.selection_end_point = None
