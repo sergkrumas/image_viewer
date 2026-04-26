@@ -1132,7 +1132,7 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key == Qt.Key_F5:
             self.board_interactive_layout_invoke(None)
 
-        elif key == Qt.Key_BracketLeft:
+        elif check_scancode_for(event, Qt.Key_BracketLeft):
             self.board_touch_crop_stack(ctrl_only)
 
         self.lineEditSkip = False
