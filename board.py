@@ -155,7 +155,7 @@ def show_longtime_process_ongoing(board_window, text):
     try:
         yield
     finally:
-        # insdie __exit__
+        # inside __exit__
         # print("Exit")
         board_window.board_long_loading_end()
 
@@ -7628,23 +7628,16 @@ class BoardMixin(BoardTextEditItemMixin):
             result_pixmap = QPixmap(result_rect.size().toSize())
             result_pixmap.fill(Qt.transparent)
             painter = QPainter()
-            csx = self.canvas_scale_x
-            csy = self.canvas_scale_y
-            before_origin = QPointF(self.canvas_origin)
-            self.canvas_scale_x = 1.0
-            self.canvas_scale_y = 1.0
-            self.canvas_origin = QPointF(0, 0)
-            draw_offset = bi_area_rect.topLeft()
-            o = result_rect.topLeft() - bi_area_rect.topLeft()
-            draw_offset += o
-            bi.position -= draw_offset
-            painter.begin(result_pixmap)
-            self.board_draw_item(painter, bi)
-            painter.end()
-            bi.position += draw_offset
-            self.canvas_scale_x = csx
-            self.canvas_scale_y = csy
-            self.canvas_origin = before_origin
+
+            with canvas_prepare(self):
+                draw_offset = bi_area_rect.topLeft()
+                o = result_rect.topLeft() - bi_area_rect.topLeft()
+                draw_offset += o
+                bi.position -= draw_offset
+                painter.begin(result_pixmap)
+                self.board_draw_item(painter, bi)
+                painter.end()
+                bi.position += draw_offset
 
             bi.pixmap = result_pixmap
 
@@ -7670,6 +7663,29 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
             painter.drawRect(CC.rect)
             painter.restore()
+
+@contextmanager
+def canvas_prepare(canvas):
+    # inside __enter__
+    # print("Enter")
+    self = canvas
+    csx = self.canvas_scale_x
+    csy = self.canvas_scale_y
+    before_origin = QPointF(self.canvas_origin)
+    self.canvas_scale_x = 1.0
+    self.canvas_scale_y = 1.0
+    self.canvas_origin = QPointF(0, 0)
+
+    try:
+        yield
+    finally:
+        # inside __exit__
+        # print("Exit")
+        self.canvas_scale_x = csx
+        self.canvas_scale_y = csy
+        self.canvas_origin = before_origin
+
+
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
