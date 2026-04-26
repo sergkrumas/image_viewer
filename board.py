@@ -7628,6 +7628,10 @@ class BoardMixin(BoardTextEditItemMixin):
             result_pixmap = QPixmap(result_rect.size().toSize())
             result_pixmap.fill(Qt.transparent)
             painter = QPainter()
+            painter.setRenderHint(QPainter.Antialiasing, True)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            painter.setRenderHint(QPainter.TextAntialiasing, True)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
 
             with canvas_prepare(self):
                 draw_offset = bi_area_rect.topLeft()
