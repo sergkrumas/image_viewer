@@ -7650,7 +7650,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 return
 
             # saving data to history
-            bi.add_crop_data_to_stack(crop_rect)
+            bi.add_crop_data_to_stack(QRectF(crop_rect))
             # cropping
             self.board_crop_n_combine_do_cropping(bi, crop_rect)
             # resetting transform
@@ -7705,22 +7705,22 @@ class BoardMixin(BoardTextEditItemMixin):
         if len(bi._crop_data_stack) == 1:
             purge_all = True
 
-        if purge_all:
-            bi.crop_data_purge_all()
+        def default_handling():
             bi.pixmap = None
-            self.trigger_board_item_pixmap_loading(bi)
             bi.overrided_source_width = None
             bi.overrided_source_height = None
+            self.trigger_board_item_pixmap_loading(bi)
+
+        if purge_all:
+            bi.crop_data_purge_all()
+            default_handling()
         else:
             bi._crop_data_stack.pop()
-            bi.pixmap = None
-            self.trigger_board_item_pixmap_loading(bi)
-            last_cdi = bi._crop_data_stack[-1]
+            default_handling()
             for cdi in bi._crop_data_stack:
                 bi.apply_crop_transform_to_item(cdi)
                 crop_rect = cdi[-1]
-                is_last = cdi is last_cdi
-                self.board_crop_n_combine_do_cropping(bi, crop_rect, update_overrided=True)
+                self.board_crop_n_combine_do_cropping(bi, crop_rect)
                 self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
         self.board_update_selection_box_widget()
