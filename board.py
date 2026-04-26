@@ -3264,6 +3264,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_snapping_targets(painter)
 
+        self.board_crop_n_combine_draw(painter)
+
         self.board_draw_AD_toolbox(painter)
 
         self.board_draw_debug_item_transform_autoscroll_activation_zones(painter)
@@ -7556,6 +7558,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.CROP_N_COMBINE = type('CropNCombineClass', (), {})()
         CC = self.CROP_N_COMBINE
         CC.input_started = False
+        CC.rect = None
+        CC.start_point = None
 
     def board_crop_n_combine_mousePressEvent(self, event):
         CC = self.CROP_N_COMBINE
@@ -7572,6 +7576,17 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_crop_n_combine_mouseReleaseEvent(self, event):
         CC = self.CROP_N_COMBINE
         CC.input_started = False
+        CC.rect = None
+        CC.start_point = None
+
+    def board_crop_n_combine_draw(self, painter):
+        CC = self.CROP_N_COMBINE
+        if CC.input_started and CC.rect:
+            painter.save()
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(Qt.red))
+            painter.drawRect(CC.rect)
+            painter.restore()
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
