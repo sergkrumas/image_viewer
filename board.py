@@ -7670,6 +7670,8 @@ class BoardMixin(BoardTextEditItemMixin):
             # items combining by input rect
             pass
 
+        self.board_update_selection_box_widget()
+
     def board_crop_n_combine_draw(self, painter):
         CC = self.CROP_N_COMBINE
         if CC.input_started and CC.rect:
