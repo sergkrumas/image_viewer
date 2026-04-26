@@ -7554,16 +7554,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_crop_n_combine_init(self):
         self.CROP_N_COMBINE = type('CropNCombineClass', (), {})()
-        self.CROP_N_COMBINE.input_started = False
+        CC = self.CROP_N_COMBINE
+        CC.input_started = False
 
     def board_crop_n_combine_mousePressEvent(self, event):
-        self.CROP_N_COMBINE.input_started = True
+        CC = self.CROP_N_COMBINE
+        CC.input_started = True
+        CC.start_point = QPointF(event.pos())
+        CC.rect = None
 
     def board_crop_n_combine_mouseMoveEvent(self, event):
-        self.show_center_label('aga')
+        CC = self.CROP_N_COMBINE
+        CC.end_point = QPointF(event.pos())
+        if CC.start_point:
+            CC.rect = build_valid_rectF(CC.start_point, CC.end_point)
 
     def board_crop_n_combine_mouseReleaseEvent(self, event):
-        self.CROP_N_COMBINE.input_started = False
+        CC = self.CROP_N_COMBINE
+        CC.input_started = False
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
