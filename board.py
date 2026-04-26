@@ -5141,6 +5141,7 @@ class BoardMixin(BoardTextEditItemMixin):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         alt = event.modifiers() & Qt.AltModifier
+        alt_only = event.modifiers() == Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
 
         if self.board_interactive_layout_is_activated():
@@ -5173,7 +5174,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.selection_rect = None
                     self.selection_ongoing = True
 
-            elif alt:
+            elif alt_only:
                 self.board_region_zoom_in_mousePressEvent(event)
 
         elif event.buttons() == Qt.MiddleButton:
@@ -5317,6 +5318,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_mouseReleaseEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
+        ctrl_only = event.modifiers() == Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
         shift_only = event.modifiers() == Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
@@ -5366,7 +5368,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if self.board_region_zoom_in_input_started:
                 self.board_region_zoom_in_mouseReleaseEvent(event)
 
-            elif ctrl and not shift and not alt:
+            elif ctrl_only:
                 cf = self.LibraryData().current_folder()
                 pos = self.rect().center() if True else event.pos()
                 board_mapped_pos = self.board_MapToBoard(pos)
