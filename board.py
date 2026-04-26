@@ -5191,9 +5191,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def update(self, *args):
-        super().update(*args)
-
     def board_mouseMoveEventDefault(self, event):
         ctrl = event.modifiers() & Qt.ControlModifier
         shift = event.modifiers() & Qt.ShiftModifier
