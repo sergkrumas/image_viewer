@@ -7590,8 +7590,8 @@ class BoardMixin(BoardTextEditItemMixin):
         for bi in cf.board.items_list:
             if bi.type not in allowed_types:
                 continue
-            bi_area = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
-            if bi_area.intersects(bm_input_rect):
+            bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
+            if bi_area_rect.intersects(bm_input_rect):
                 self.trigger_board_item_pixmap_loading(bi)
                 if bi.pixmap is not None and not bi.pixmap.isNull():
                     bis.append(bi)
@@ -7603,13 +7603,44 @@ class BoardMixin(BoardTextEditItemMixin):
 
         elif bis_count == 1:
             # item cropping
-            pass
+            bi = bis[0]
+            bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
+            bm_input_rect = self.board_MapRectToBoard(CC.rect)
+
+            result_rect = bm_input_rect.intersected(bi_area_rect)
+            valid = result_rect.width() > 50 and result_rect.height() > 50
+            if not valid:
+                self.show_center_label(_("Too small, aborted!"), error=True)
+                return
+
+            result_pixmap = QPixmap(result_rect.toSize())
+            result_pixmap.fill(Qt.transparent)
+            painter = QPainter()
+            csx = self.canvas_scale_x
+            csy = self.canvas_scale_y
+            before_origin = QPointF(self.canvas_origin)
+            self.canvas_scale_x = 1.0
+            self.canvas_scale_y = 1.0
+            self.canvas_origin = QPointF(0, 0)
+            bi.position -= bi_area_rect.topLeft()
+            painter.begin(result_pixmap)
+            self.board_draw_item(painter, bi)
+            painter.end()
+            bi.position += bi_area_rect.topLeft()
+            self.canvas_scale_x = csx
+            self.canvas_scale_y = csy
+            self.canvas_origin = before_origin
+
+            bi.pixmap = result_pixmap
+
+            bi.scale_x = 1.0
+            bi.scale_y = 1.0
+            bi.rotation = 0.0
+            bi.position = bm_input_rect.center()
 
         elif bis_count > 1:
             # items combining by input rect
             pass
-
-        self.show_center_label(f'{len(bis)}')
 
     def board_crop_n_combine_draw(self, painter):
         CC = self.CROP_N_COMBINE
