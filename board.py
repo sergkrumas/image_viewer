@@ -7870,11 +7870,12 @@ class BoardMixin(BoardTextEditItemMixin):
         pass
 
     def board_place_combine_result_mode_mouseMoveEvent(self, event):
-        self.board_do_place_combine_result(event)
+        self.board_do_place_combine_result(event.pos())
+        self.autoscroll_activate_board_item_transform_autoscroll()
         self.update()
 
     def board_place_combine_result_mode_mouseReleaseEvent(self, event):
-        self.board_do_place_combine_result(event, done=True)
+        self.board_do_place_combine_result(event.pos(), done=True)
         self.update()
 
     def board_is_combine_result_placing_mode(self):
@@ -7882,16 +7883,17 @@ class BoardMixin(BoardTextEditItemMixin):
         return CC.placing_result_mode
 
     def board_do_place_combine_result_exit(self):
-        self.board_do_place_combine_result(None, cancel=True, done=True)
+        self.board_do_place_combine_result(None, set_default=True, done=True)
 
-    def board_do_place_combine_result(self, event, cancel=False, done=False):
+    def board_do_place_combine_result(self, event_pos, set_default=False, done=False):
         CC = self.CROP_N_COMBINE
-        if cancel:
+        if set_default:
             CC.placing_board_item.position = CC.placing_default_pos
         else:
-            CC.placing_board_item.position = self.board_MapToBoard(event.pos())
+            CC.placing_board_item.position = self.board_MapToBoard(event_pos)
         if done:
             self.board_place_combine_result_done()
+            self.autoscroll_desactivate_board_item_transform_autoscroll()
 
     def board_place_combine_result_done(self):
         CC = self.CROP_N_COMBINE

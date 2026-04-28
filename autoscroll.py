@@ -193,6 +193,8 @@ class AutoscrollMixin():
                         self.board_DO_selected_items_ROTATION(cursor_pos)
                     if self.scaling_ongoing:
                         self.board_DO_selected_items_SCALING(cursor_pos)
+                    if self.board_is_combine_result_placing_mode():
+                        self.board_do_place_combine_result(cursor_pos)
                 else:
                     self.board_update_selection_box_widget()
 
