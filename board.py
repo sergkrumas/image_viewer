@@ -5960,11 +5960,14 @@ class BoardMixin(BoardTextEditItemMixin):
         return os.path.join(dest_folderpath, f'{time.time()}{dot_ext}')
 
     def board_save_pasted_image_bytes_from_metadata(self, metadata):
-        cf = self.LibraryData().current_folder()
         pixmap = QPixmap().fromImage(metadata.imageData())
+        self.board_create_static_image_board_item_from_qpixmap(pixmap)
+
+    def board_create_static_image_board_item_from_qpixmap(self, pixmap):
+        cf = self.LibraryData().current_folder()
         path = self.board_generate_filepath(cf, '.png')
         pixmap.save(path)
-        self.board_create_new_image_item(path, cf)
+        return self.board_create_new_image_item(path, cf)
 
     def board_validate_image_for_board_item(self, path):
         cf = self.LibraryData().current_folder()
@@ -7738,7 +7741,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # saving data to history
             bis[0].add_crop_data_to_stack(crop_rect)
             # cropping
-            self.board_crop_n_combine_do_cropping(bis, crop_rect)
+            self.board_crop_n_combine_do_operation(bis, crop_rect)
             # resetting transform
             self.board_crop_n_combine_do_resetting(bis[0], crop_rect)
 
@@ -7747,9 +7750,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
             combine_rect = crop_rect # OMG, PLOT TWIST
 
-            captured_pixmap = self.board_crop_n_combine_do_cropping(bis, combine_rect, update_overrided_data=False)
+            captured_pixmap = self.board_crop_n_combine_do_operation(bis, combine_rect, update_overrided_data=False)
 
-            pass
+            result_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
+            result_bi.position = combine_rect.center()
 
         self.board_update_selection_box_widget()
 
@@ -7759,7 +7763,7 @@ class BoardMixin(BoardTextEditItemMixin):
         bi.rotation = 0.0
         bi.position = crop_rect.center()
 
-    def board_crop_n_combine_do_cropping(self, bis, capture_rect, update_overrided_data=True):
+    def board_crop_n_combine_do_operation(self, bis, capture_rect, update_overrided_data=True):
         captured_pixmap = QPixmap(capture_rect.size().toSize())
         captured_pixmap.fill(Qt.transparent)
         painter = QPainter()
@@ -7801,7 +7805,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for *transform, crop_rect in bi._crop_data_stack:
             bi.apply_transform_tuple(transform)
-            self.board_crop_n_combine_do_cropping([bi], crop_rect)
+            self.board_crop_n_combine_do_operation([bi], crop_rect)
             self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
         # restoring transform
