@@ -159,6 +159,27 @@ def show_longtime_process_ongoing(board_window, text):
         # print("Exit")
         board_window.board_long_loading_end()
 
+@contextmanager
+def canvas_prepare(canvas):
+    # inside __enter__
+    # print("Enter")
+    self = canvas
+    csx = self.canvas_scale_x
+    csy = self.canvas_scale_y
+    before_origin = QPointF(self.canvas_origin)
+    self.canvas_scale_x = 1.0
+    self.canvas_scale_y = 1.0
+    self.canvas_origin = QPointF(0, 0)
+
+    try:
+        yield
+    finally:
+        # inside __exit__
+        # print("Exit")
+        self.canvas_scale_x = csx
+        self.canvas_scale_y = csy
+        self.canvas_origin = before_origin
+
 class BoardLibraryDataMixin():
 
     def get_boards_data_root(self):
@@ -7737,29 +7758,6 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
             painter.drawRect(CC.rect)
             painter.restore()
-
-@contextmanager
-def canvas_prepare(canvas):
-    # inside __enter__
-    # print("Enter")
-    self = canvas
-    csx = self.canvas_scale_x
-    csy = self.canvas_scale_y
-    before_origin = QPointF(self.canvas_origin)
-    self.canvas_scale_x = 1.0
-    self.canvas_scale_y = 1.0
-    self.canvas_origin = QPointF(0, 0)
-
-    try:
-        yield
-    finally:
-        # inside __exit__
-        # print("Exit")
-        self.canvas_scale_x = csx
-        self.canvas_scale_y = csy
-        self.canvas_origin = before_origin
-
-
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
