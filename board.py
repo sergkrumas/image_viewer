@@ -232,6 +232,15 @@ class CropDataHelper():
 
         return stack_obj
 
+    @classmethod
+    def copy(stack_obj):
+        copied = []
+        for item in stack_obj:
+            copied_item = []
+            for el in item:
+                copied_item.append(type(el)(el))
+            copied.append(copied_item)
+        return copied
 
 class BoardItem():
 
