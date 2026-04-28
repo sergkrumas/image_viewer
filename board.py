@@ -7737,7 +7737,7 @@ class BoardMixin(BoardTextEditItemMixin):
         items = self.find_all_items_under_this_pos(cf, CC.start_point)
         if items and items[0] in bis:
             force_cropping_mode = True
-            bis = items[0]
+            bis = [items[0]]
 
         bis_count = len(bis)
         points = []
