@@ -221,7 +221,6 @@ class CropDataHelper():
 
     @classmethod
     def unserialize(serialized_stack):
-
         stack_obj = []
 
         for scale_x, scale_y, pos_x, pos_y, rot, cr_tl_x, cr_tl_y, cr_br_x, cr_br_y in serialized_stack:
@@ -235,11 +234,13 @@ class CropDataHelper():
     @classmethod
     def copy(stack_obj):
         copied = []
+
         for item in stack_obj:
             copied_item = []
             for el in item:
                 copied_item.append(type(el)(el))
-            copied.append(copied_item)
+            copied.append(tuple(copied_item))
+
         return copied
 
 class BoardItem():
