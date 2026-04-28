@@ -7715,6 +7715,19 @@ class BoardMixin(BoardTextEditItemMixin):
                     bis.append(bi)
 
         bis_count = len(bis)
+        points = []
+        for bi in bis:
+            bi_area_br = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
+            points.append(bi_area_br.topLeft())
+            points.append(bi_area_br.bottomRight())
+        items_area_bounding_rect = QRectF(*get_bounding_points(points))
+
+        crop_rect = bm_input_rect.intersected(items_area_bounding_rect)
+        valid = crop_rect.width() > 50 and crop_rect.height() > 50
+        if not valid:
+            self.show_center_label(_("Too small, aborted!"), error=True)
+            return
+
         if bis_count == 0:
             # nothing to do
             return
@@ -7722,24 +7735,20 @@ class BoardMixin(BoardTextEditItemMixin):
         elif bis_count == 1:
             # single item cropping
 
-            bi = bis[0]
-            bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
-
-            crop_rect = bm_input_rect.intersected(bi_area_rect)
-            valid = crop_rect.width() > 50 and crop_rect.height() > 50
-            if not valid:
-                self.show_center_label(_("Too small, aborted!"), error=True)
-                return
-
             # saving data to history
-            bi.add_crop_data_to_stack(QRectF(crop_rect))
+            bis[0].add_crop_data_to_stack(crop_rect)
             # cropping
-            self.board_crop_n_combine_do_cropping(bi, crop_rect)
+            self.board_crop_n_combine_do_cropping(bis, crop_rect)
             # resetting transform
-            self.board_crop_n_combine_do_resetting(bi, crop_rect)
+            self.board_crop_n_combine_do_resetting(bis[0], crop_rect)
 
         elif bis_count > 1:
             # items combining by input rect
+
+            combine_rect = crop_rect # OMG, PLOT TWIST
+
+            captured_pixmap = self.board_crop_n_combine_do_cropping(bis, combine_rect, update_overrided_data=False)
+
             pass
 
         self.board_update_selection_box_widget()
@@ -7750,28 +7759,32 @@ class BoardMixin(BoardTextEditItemMixin):
         bi.rotation = 0.0
         bi.position = crop_rect.center()
 
-    def board_crop_n_combine_do_cropping(self, bi, crop_rect, update_overrided=True):
-        cropped_pixmap = QPixmap(crop_rect.size().toSize())
-        cropped_pixmap.fill(Qt.transparent)
+    def board_crop_n_combine_do_cropping(self, bis, capture_rect, update_overrided_data=True):
+        captured_pixmap = QPixmap(capture_rect.size().toSize())
+        captured_pixmap.fill(Qt.transparent)
         painter = QPainter()
         painter.setRenderHint(QPainter.Antialiasing, True)
         painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
         painter.setRenderHint(QPainter.TextAntialiasing, True)
         painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         with canvas_prepare(self):
-            draw_offset = crop_rect.topLeft()
-            bi.position -= draw_offset
-            painter.begin(cropped_pixmap)
-            self.board_draw_item(painter, bi)
+            draw_offset = capture_rect.topLeft()
+            painter.begin(captured_pixmap)
+            for bi in bis:
+                bi.position -= draw_offset
+                self.board_draw_item(painter, bi)
+                bi.position += draw_offset
             painter.end()
-            bi.position += draw_offset
 
-        # updating pixmaps and previews
-        bi.pixmap = cropped_pixmap
-        if update_overrided:
-            bi.overrided_source_width = cropped_pixmap.width()
-            bi.overrided_source_height = cropped_pixmap.height()
+        # updating
+        if update_overrided_data:
+            bi = bis[0]
+            bi.pixmap = captured_pixmap
+            bi.overrided_source_width = captured_pixmap.width()
+            bi.overrided_source_height = captured_pixmap.height()
             self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
+
+        return captured_pixmap
 
     def board_preinit_cropping_data(self, bi):
         bi.pixmap = None
@@ -7788,7 +7801,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for *transform, crop_rect in bi._crop_data_stack:
             bi.apply_transform_tuple(transform)
-            self.board_crop_n_combine_do_cropping(bi, crop_rect)
+            self.board_crop_n_combine_do_cropping([bi], crop_rect)
             self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
         # restoring transform
