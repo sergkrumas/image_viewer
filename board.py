@@ -7732,6 +7732,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 if bi.pixmap is not None and not bi.pixmap.isNull():
                     bis.append(bi)
 
+        # if started from allowed item area, then we're forcing cropping mode
+        force_cropping_mode = False
+        items = self.find_all_items_under_this_pos(cf, CC.start_point)
+        if items and items[0] in bis:
+            force_cropping_mode = True
+            bis = items[0]
+
         bis_count = len(bis)
         points = []
         for bi in bis:
@@ -7750,7 +7757,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # nothing to do
             return
 
-        elif bis_count == 1:
+        elif bis_count == 1 or force_cropping_mode:
             # single item cropping
 
             # saving data to history
