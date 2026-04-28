@@ -444,15 +444,17 @@ class BoardItem():
             file_data = self.label
         return file_data
 
-    def make_copy(self, main_window, folder_data):
+    def make_copy(self, bw, folder_data):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
-            type_obj = type(attr_value)
-            if type_obj is QPointF:
-                attr_value = type_obj(attr_value)
+            at = type(attr_value)
+            if attr_name == '_crop_data_stack':
+                attr_value = CropDataHelper.copy(attr_value)
+            elif at in [QPointF, QRectF]:
+                attr_value = at(attr_value)
             setattr(copied_item, attr_name, attr_value)
-        main_window.board_set_tracking_data(copied_item, folder_data)
+        bw.board_set_tracking_data(copied_item, folder_data)
         folder_data.board.items_list.append(copied_item)
         return copied_item
 
