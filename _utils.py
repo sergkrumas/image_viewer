@@ -784,12 +784,12 @@ class APNGMovie():
     def jumpToFrame(self, n):
         self._currentFrameNumber = min(n, self._frameCount-1)
 
-    def frameRect(self):
-        return self.data[self._currentFrameNumber][0].rect()
-
     def jumpToNextFrame(self):
         self._currentFrameNumber += 1
         self._currentFrameNumber %= self._frameCount
+
+    def frameRect(self):
+        return self.data[self._currentFrameNumber][0].rect()
 
     def nextFrameDelay(self):
         return self.data[self._currentFrameNumber][1]/(self._speed/100.0)
