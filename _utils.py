@@ -778,9 +778,16 @@ class MovieContainter():
 
     def __init__(self):
         self.data = []
-        self._frameCount = len(self.data)        
+        self._frameCount = len(self.data)
         self._currentFrameNumber = 0
         self._speed = 100.0
+
+    def addFrameToContainer(self, frame, delay):
+        self.data.append((frame, delay))
+        self._frameCount = len(self.data)
+
+    def frameData(self):
+        return self.data[self._currentFrameNumber]
 
     def jumpToFrame(self, n):
         self._currentFrameNumber = min(n, self._frameCount-1)
