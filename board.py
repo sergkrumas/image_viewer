@@ -5269,6 +5269,10 @@ class BoardMixin(BoardTextEditItemMixin):
         no_mod = event.modifiers() == Qt.NoModifier
         alt_and_shift_only = event.modifiers() == (Qt.AltModifier | Qt.ShiftModifier)
 
+        if self.board_is_combine_result_placing_mode():
+            self.board_place_combine_result_mode_mousePressEvent(event)
+            return
+
         if self.board_interactive_layout_is_activated():
             return
 
@@ -5330,6 +5334,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
         special_update = False
         self.board_scrubbed_item_rect = None
+
+        if self.board_is_combine_result_placing_mode():
+            self.board_place_combine_result_mode_mouseMoveEvent(event)
+            return
 
         if self.board_interactive_layout_is_activated():
             self.update()
@@ -5453,6 +5461,10 @@ class BoardMixin(BoardTextEditItemMixin):
         shift_only = event.modifiers() == Qt.ShiftModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt = event.modifiers() & Qt.AltModifier
+
+        if self.board_is_combine_result_placing_mode():
+            self.board_place_combine_result_mode_mouseReleaseEvent(event)
+            return
 
         if self.board_interactive_layout_is_activated():
             self.board_interactive_layout_apply(event)
@@ -7683,6 +7695,7 @@ class BoardMixin(BoardTextEditItemMixin):
         CC.input_started = False
         CC.rect = None
         CC.start_point = None
+        CC.placing_result_mode = False
 
     def board_crop_n_combine_mousePressEvent(self, event):
         CC = self.CROP_N_COMBINE
@@ -7756,6 +7769,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             result_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
             result_bi.position = combine_rect.center()
+
+            self.board_place_combine_result_invoke(result_bi)
 
         self.board_update_selection_box_widget()
 
@@ -7844,6 +7859,42 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.setPen(QPen(Qt.red, 1, Qt.DashLine))
             painter.drawRect(CC.rect)
             painter.restore()
+
+    def board_place_combine_result_invoke(self, bi):
+        CC = self.CROP_N_COMBINE
+        CC.placing_result_mode = True
+        CC.placing_default_pos = QPointF(bi.position)
+        CC.placing_board_item = bi
+
+    def board_place_combine_result_mode_mousePressEvent(self, event):
+        pass
+
+    def board_place_combine_result_mode_mouseMoveEvent(self, event):
+        self.board_do_place_combine_result(event)
+        self.update()
+
+    def board_place_combine_result_mode_mouseReleaseEvent(self, event):
+        self.board_do_place_combine_result(event, done=True)
+        self.update()
+
+    def board_is_combine_result_placing_mode(self):
+        CC = self.CROP_N_COMBINE
+        return CC.placing_result_mode
+
+    def board_do_place_combine_result(self, event, cancel=False, done=False):
+        CC = self.CROP_N_COMBINE
+        if cancel:
+            CC.placing_board_item.position = placing_default_pos
+        else:
+            CC.placing_board_item.position = self.board_MapToBoard(event.pos())
+        if done:
+            self.board_place_combine_result_done()
+
+    def board_place_combine_result_done(self):
+        CC = self.CROP_N_COMBINE
+        CC.placing_result_mode = False
+        CC.placing_default_pos = None
+        CC.placing_board_item = None
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':
