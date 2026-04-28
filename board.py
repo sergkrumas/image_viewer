@@ -5268,6 +5268,7 @@ class BoardMixin(BoardTextEditItemMixin):
         alt_only = event.modifiers() == Qt.AltModifier
         no_mod = event.modifiers() == Qt.NoModifier
         alt_and_shift_only = event.modifiers() == (Qt.AltModifier | Qt.ShiftModifier)
+        alt_and_ctrl_only = event.modifiers() == (Qt.AltModifier | Qt.ControlModifier)
 
         if self.board_is_combine_result_placing_mode():
             self.board_place_combine_result_mode_mousePressEvent(event)
@@ -5289,6 +5290,10 @@ class BoardMixin(BoardTextEditItemMixin):
             if alt_and_shift_only:
 
                 self.board_crop_n_combine_mousePressEvent(event)
+
+            if alt_and_ctrl_only:
+
+                self.board_crop_n_combine_mousePressEvent(event, force_combine_mode=True)
 
             elif not alt:
 
@@ -7696,12 +7701,14 @@ class BoardMixin(BoardTextEditItemMixin):
         CC.rect = None
         CC.start_point = None
         CC.placing_result_mode = False
+        CC.force_combine_mode = False
 
-    def board_crop_n_combine_mousePressEvent(self, event):
+    def board_crop_n_combine_mousePressEvent(self, event, force_combine_mode=False):
         CC = self.CROP_N_COMBINE
         CC.input_started = True
         CC.start_point = QPointF(event.pos())
         CC.rect = None
+        CC.force_combine_mode = force_combine_mode
 
     def board_crop_n_combine_mouseMoveEvent(self, event):
         CC = self.CROP_N_COMBINE
@@ -7757,7 +7764,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # nothing to do
             return
 
-        elif bis_count == 1 or force_cropping_mode:
+        elif (bis_count == 1 or force_cropping_mode) and not CC.force_combine_mode:
             # single item cropping
 
             # saving data to history
@@ -7767,7 +7774,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # resetting transform
             self.board_crop_n_combine_do_resetting(bis[0], crop_rect)
 
-        elif bis_count > 1:
+        elif bis_count > 1 or CC.force_combine_mode:
             # items combining by input rect
 
             combine_rect = crop_rect # OMG, PLOT TWIST
