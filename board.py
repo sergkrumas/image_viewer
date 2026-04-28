@@ -7881,10 +7881,13 @@ class BoardMixin(BoardTextEditItemMixin):
         CC = self.CROP_N_COMBINE
         return CC.placing_result_mode
 
+    def board_do_place_combine_result_exit(self):
+        self.board_do_place_combine_result(None, cancel=True, done=True)
+
     def board_do_place_combine_result(self, event, cancel=False, done=False):
         CC = self.CROP_N_COMBINE
         if cancel:
-            CC.placing_board_item.position = placing_default_pos
+            CC.placing_board_item.position = CC.placing_default_pos
         else:
             CC.placing_board_item.position = self.board_MapToBoard(event.pos())
         if done:

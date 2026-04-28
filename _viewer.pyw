@@ -5533,6 +5533,8 @@ class MainWindow(QMainWindow,
 
 
         if key == Qt.Key_Escape:
+            if self.board_is_combine_result_placing_mode():
+                self.board_do_place_combine_result_exit()
             if self.board_interactive_layout_cancel():
                 pass
             if self.modal_input_field_try_cancel():
