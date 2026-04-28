@@ -199,6 +199,40 @@ class BoardLibraryDataMixin():
                 paths = file.read().split("\n")
             self.vertical_layout_paths = tuple(os.path.normpath(p) for p in paths if os.path.exists(p))
 
+
+class CropDataHelper():
+
+    @classmethod
+    def serialize(stack_obj):
+        out_list = []
+
+        for scale_x, scale_y, pos, rot, crop_rect in stack_obj:
+
+            pos_x = pos.x()
+            pos_y = pos.y()
+            cr_tl = crop_rect.topLeft()
+            cr_br = crop_rect.bottomRight()
+
+            out_list.append((
+                scale_x, scale_y, pos_x, pos_y, rot, cr_tl.x(), cr_tl.y(), cr_br.x(), cr_br.y()
+            ))
+
+        return out_list
+
+    @classmethod
+    def unserialize(serialized_stack):
+
+        stack_obj = []
+
+        for scale_x, scale_y, pos_x, pos_y, rot, cr_tl_x, cr_tl_y, cr_br_x, cr_br_y in serialized_stack:
+
+            stack_obj.append((
+                scale_x, scale_y, QPointF(pos_x, pos_y), rot, QRectF(QPointF(cr_tl_x, cr_tl_y), QPointF(cr_br_x, cr_br_y))
+            ))
+
+        return stack_obj
+
+
 class BoardItem():
 
     FRAME_PADDING = 40.0
