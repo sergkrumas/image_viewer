@@ -203,7 +203,7 @@ class BoardLibraryDataMixin():
 class CropDataHelper():
 
     @classmethod
-    def serialize(stack_obj):
+    def serialize(cls, stack_obj):
         out_list = []
 
         for scale_x, scale_y, pos, rot, crop_rect in stack_obj:
@@ -220,7 +220,7 @@ class CropDataHelper():
         return out_list
 
     @classmethod
-    def unserialize(serialized_stack):
+    def unserialize(cls, serialized_stack):
         stack_obj = []
 
         for scale_x, scale_y, pos_x, pos_y, rot, cr_tl_x, cr_tl_y, cr_br_x, cr_br_y in serialized_stack:
@@ -232,7 +232,7 @@ class CropDataHelper():
         return stack_obj
 
     @classmethod
-    def copy(stack_obj):
+    def copy(cls, stack_obj):
         copied = []
 
         for item in stack_obj:
@@ -679,6 +679,14 @@ class BoardItem():
                 QPointF(self.position),
                 self.rotation
         ))
+
+    def get_transform_tuple(self):
+        return (
+            self.scale_x,
+            self.scale_y,
+            QPointF(self.position),
+            self.rotation
+        )
 
     def apply_transform_tuple(self, data):
         self.scale_x, \
@@ -1512,6 +1520,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cd.link_items_list.clear()
 
         promises = []
+        self.cropping_data_promises = []
 
         all_items = dict()
         self.load_root_folderpath = os.path.dirname(board_filepath)
@@ -1548,6 +1557,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_init_node_poster(item, ch_bo_fod)
 
                 # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
+
+        for bi in self.cropping_data_promises:
+            self.board_reapply_cropping_data(bi)
+        self.cropping_data_promises.clear()
 
         # генерим скриншоты для каждой доски
         for ch_bo_fod in children_boards_folders.values():
@@ -1785,6 +1798,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_serial_to_object_attributes(obj2, attr_data, ())
                 attr_value = obj2
 
+            elif attr_type == 'CropDataStack':
+                attr_value = CropDataHelper.unserialize(attr_data)
+                self.cropping_data_promises.append(obj)
+
             elif attr_type == 'FolderData':
                 if isinstance(obj, self.BoardItem):
                     if obj.type == self.BoardItem.types.ITEM_FOLDER:
@@ -1861,6 +1878,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 if attr_name in ['_tags', '_comments']:
                     attr_data = []
                     attr_type = 'list'
+                elif attr_name == '_crop_data_stack':
+                    attr_data = CropDataHelper.serialize(attr_value)
+                    attr_type = 'CropDataStack'
                 else:
                     continue
 
@@ -7756,6 +7776,28 @@ class BoardMixin(BoardTextEditItemMixin):
             bi.overrided_source_height = cropped_pixmap.height()
             self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
+    def board_preinit_cropping_data(self, bi):
+        bi.pixmap = None
+        bi.overrided_source_width = None
+        bi.overrided_source_height = None
+        self.trigger_board_item_pixmap_loading(bi)
+
+    def board_reapply_cropping_data(self, bi):
+
+        # saving transform
+        d = bi.get_transform_tuple()
+
+        self.board_preinit_cropping_data(bi)
+
+        for cdi in bi._crop_data_stack:
+            bi.apply_crop_transform_to_item(cdi)
+            crop_rect = cdi[-1]
+            self.board_crop_n_combine_do_cropping(bi, crop_rect)
+            self.board_crop_n_combine_do_resetting(bi, crop_rect)
+
+        # restoring transform
+        bi.apply_transform_tuple(d)
+
     def board_touch_crop_stack(self, purge_all):
         if self.selected_items and len(self.selected_items) == 1:
             pass
@@ -7770,27 +7812,12 @@ class BoardMixin(BoardTextEditItemMixin):
         if len(bi._crop_data_stack) == 1:
             purge_all = True
 
-        def default_handling():
-            bi.pixmap = None
-            bi.overrided_source_width = None
-            bi.overrided_source_height = None
-            self.trigger_board_item_pixmap_loading(bi)
-
-        keep_pos = False
         if purge_all:
             bi.crop_data_purge_all()
-            default_handling()
+            self.board_preinit_cropping_data(bi)
         else:
             bi._crop_data_stack.pop()
-            pos = QPointF(bi.position)
-            default_handling()
-            for cdi in bi._crop_data_stack:
-                bi.apply_crop_transform_to_item(cdi)
-                crop_rect = cdi[-1]
-                self.board_crop_n_combine_do_cropping(bi, crop_rect)
-                self.board_crop_n_combine_do_resetting(bi, crop_rect)
-            if keep_pos:
-                bi.position = pos
+            self.board_reapply_cropping_data(bi)
 
         self.board_update_selection_box_widget()
 
