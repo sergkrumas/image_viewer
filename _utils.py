@@ -774,10 +774,11 @@ def generate_info_pixmap(title, message, size=1000, no_background=False):
     p.end()
     return pxm
 
-class APNGMovie():
-    def __init__(self, filepath):
-        self.data = read_APNG_to_QPixmapList(filepath)
-        self._frameCount = len(self.data)
+class MovieContainter():
+
+    def __init__(self):
+        self.data = []
+        self._frameCount = len(self.data)        
         self._currentFrameNumber = 0
         self._speed = 100.0
 
@@ -808,6 +809,13 @@ class APNGMovie():
 
     def frameCount(self):
         return self._frameCount
+
+class APNGMovie(MovieContainter):
+
+    def __init__(self, filepath):
+        super().__init__()
+        self.data = read_APNG_to_QPixmapList(filepath)
+        self._frameCount = len(self.data)
 
 def bresenhamsLineAlgorithm(x0, y0, x1, y1):
     pixels_coords = []
