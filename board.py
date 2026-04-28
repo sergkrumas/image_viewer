@@ -707,13 +707,10 @@ class BoardItem():
             QRectF(crop_rect),
         ))
 
-    def apply_crop_transform_to_item(self, crop_data):
-        *transform_data, crop_rect = crop_data
-        self.apply_transform_tuple(transform_data)
-
     def crop_data_purge_all(self):
         p = QPointF(self.position)
-        self.apply_crop_transform_to_item(self._crop_data_stack[0])
+        *transform, crop_data = self._crop_data_stack[0]
+        self.apply_transform_tuple(transform)
         self._crop_data_stack.clear()
         self.position = p
 
@@ -7789,9 +7786,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_preinit_cropping_data(bi)
 
-        for cdi in bi._crop_data_stack:
-            bi.apply_crop_transform_to_item(cdi)
-            crop_rect = cdi[-1]
+        for *transform, crop_rect in bi._crop_data_stack:
+            bi.apply_transform_tuple(transform)
             self.board_crop_n_combine_do_cropping(bi, crop_rect)
             self.board_crop_n_combine_do_resetting(bi, crop_rect)
 
