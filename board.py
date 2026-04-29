@@ -7794,7 +7794,7 @@ class BoardMixin(BoardTextEditItemMixin):
         bi.rotation = 0.0
         bi.position = crop_rect.center()
 
-    def board_crop_n_combine_do_operation(self, bis, capture_rect, update_overrided_data=True):
+    def board_crop_n_combine_kernel(self, bis, capture_rect):
         captured_pixmap = QPixmap(capture_rect.size().toSize())
         captured_pixmap.fill(Qt.transparent)
         painter = QPainter()
@@ -7810,6 +7810,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_draw_item(painter, bi)
                 bi.position += draw_offset
             painter.end()
+        return captured_pixmap
+
+    def board_crop_n_combine_do_operation(self, bis, capture_rect, update_overrided_data=True):
+        captured_pixmap = self.board_crop_n_combine_kernel(bis, capture_rect)
 
         # updating
         if update_overrided_data:
