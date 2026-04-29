@@ -7787,10 +7787,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
             captured_pixmap = self.board_crop_n_combine_do_operation(bis, combine_rect, update_overrided_data=False)
 
-            result_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
-            result_bi.position = combine_rect.center()
+            new_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
+            new_bi.position = combine_rect.center()
 
-            self.board_place_combine_result_invoke(result_bi)
+            self.board_place_combine_result_invoke(new_bi)
 
         self.board_update_selection_box_widget()
 
