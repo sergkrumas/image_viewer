@@ -912,6 +912,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_crop_n_combine_init()
 
+        self.draw_content_only = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -3106,7 +3108,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.setOpacity(0.5)
 
                 painter.setBrush(Qt.NoBrush)
-                painter.drawRect(item_rect)
+                if not self.draw_content_only:
+                    painter.drawRect(item_rect)
 
                 case4 = selection_area.boundingRect().toRect().contains(self.mapped_cursor_pos())
 
@@ -3137,6 +3140,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.setOpacity(1.0)
 
                 show_tag_data = (not self.Globals.lite_mode) and (board_item.type == BoardItem.types.ITEM_IMAGE) and (selection_area_rect.intersected(QRectF(self.rect())))
+                show_tag_data = show_tag_data and not self.draw_content_only
                 if show_tag_data:
                     ir = board_item.get_size_rect(scaled=True)
                     ir.moveCenter(QPointF(0, 0))
@@ -3153,7 +3157,8 @@ class BoardMixin(BoardTextEditItemMixin):
                             BoardItem.types.ITEM_GROUP
                         )),
                         case4,
-                        board_item.scrubbed
+                        board_item.scrubbed,
+                        not self.draw_content_only
                     )):
 
                     inside_rect_x_offset = self.mapped_cursor_pos().x() - selection_area_rect.left()
@@ -3167,17 +3172,17 @@ class BoardMixin(BoardTextEditItemMixin):
                     painter.drawLine(p1, p2)
                     board_item.scrubbed = False
 
-                if show_tag_data and case4:
+                if show_tag_data and case4 and not self.draw_content_only:
                     self.draw_board_item_tags(painter, selection_area_rect, board_item._tags)
 
-                if board_item._marked_item:
+                if board_item._marked_item and not self.draw_content_only:
                     self.draw_rounded_frame_label(painter, selection_area_rect.center().toPoint(), f'MARKED AS BETRUG/TRUFFA/ESTAFA/ESCROQUERIE\n{board_item.info_text()}')
 
                 if case4:
                     self.board_item_under_mouse = board_item
 
 
-                if board_item == self.board_item_under_mouse:
+                if board_item == self.board_item_under_mouse and not self.draw_content_only:
                     if board_item.status:
                         alignment = Qt.AlignCenter | Qt.AlignVCenter
                         text_rect = painter.boundingRect(selection_area_rect, alignment, board_item.status)
@@ -3196,7 +3201,7 @@ class BoardMixin(BoardTextEditItemMixin):
                             painter.setBrush(Qt.NoBrush)
 
 
-        if board_item._show_file_info_overlay:
+        if board_item._show_file_info_overlay and not self.draw_content_only:
             text = board_item.info_text()
             alignment = Qt.AlignCenter
 
@@ -7808,7 +7813,9 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.begin(captured_pixmap)
             for bi in bis:
                 bi.position -= draw_offset
+                self.draw_content_only = True
                 self.board_draw_item(painter, bi)
+                self.draw_content_only = False
                 bi.position += draw_offset
             painter.end()
         return captured_pixmap
