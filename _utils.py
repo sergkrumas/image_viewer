@@ -782,8 +782,8 @@ class MovieContainter():
         self._currentFrameNumber = 0
         self._speed = 100.0
 
-    def addFrameToContainer(self, frame, delay):
-        self.data.append((frame, delay))
+    def addFrameToContainer(self, frame, nextFrameDelay):
+        self.data.append((frame, nextFrameDelay))
         self._frameCount = len(self.data)
 
     def frameData(self):
