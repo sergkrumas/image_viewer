@@ -7813,22 +7813,51 @@ class BoardMixin(BoardTextEditItemMixin):
         return captured_pixmap
 
     def board_crop_n_combine_do_operation(self, bis, capture_rect, update_overrided_data=True):
-        captured_pixmap = self.board_crop_n_combine_kernel(bis, capture_rect)
+
+        static = len(bis) == 1 and not bis[0].animated
+        bi = bis[0]
+        frame_index = -1
+
+        if static:
+            captured_pixmap = self.board_crop_n_combine_kernel(bis, capture_rect)
+        else:
+            frame_index = bi.movie.currentFrameNumber()
+            source_movie = bi.movie
+            new_movie = MovieContainer()
+            for i in range(bi.movie.frameCount()):
+                self.board_item_animation_file_set_frame(bi, i)
+                captured_pixmap = self.board_crop_n_combine_kernel(bis, capture_rect)
+                _old_frame, delay = MovieContainer.getFrameData(source_movie)[i]
+                new_movie.addFrameToContainer(captured_pixmap, delay)
+            bi.movie = new_movie
 
         # updating
         if update_overrided_data:
-            bi = bis[0]
-            bi.pixmap = captured_pixmap
-            bi.overrided_source_width = captured_pixmap.width()
-            bi.overrided_source_height = captured_pixmap.height()
-            self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
 
-        return captured_pixmap
+            if static:
+                bi.pixmap = captured_pixmap
+                bi.overrided_source_width = captured_pixmap.width()
+                bi.overrided_source_height = captured_pixmap.height()
+                self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, bi.pixmap, bi)
+
+            else:
+                self.board_item_animation_file_set_frame(bi, frame_index)
+                first_frame_pixmap = bi.movie.data[0][0]
+                bi.overrided_source_width = first_frame_pixmap.width()
+                bi.overrided_source_height = first_frame_pixmap.height()
+                self.LibraryData().make_thumbnail_preview_kernel(self.Globals, bi.file_data, first_frame_pixmap, bi)
+
+        if static:
+            return captured_pixmap
+        else:
+            return None
 
     def board_preinit_cropping_data(self, bi):
         bi.pixmap = None
         bi.overrided_source_width = None
         bi.overrided_source_height = None
+        if hasattr(bi, 'movie'):
+            bi.movie = None
         self.trigger_board_item_pixmap_loading(bi)
 
     def board_reapply_cropping_data(self, bi):

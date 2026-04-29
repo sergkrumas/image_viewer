@@ -774,7 +774,7 @@ def generate_info_pixmap(title, message, size=1000, no_background=False):
     p.end()
     return pxm
 
-class MovieContainter():
+class MovieContainer():
 
     def __init__(self):
         self.data = []
@@ -817,7 +817,16 @@ class MovieContainter():
     def frameCount(self):
         return self._frameCount
 
-class APNGMovie(MovieContainter):
+    @staticmethod
+    def getFrameData(movie):
+        movie.jumpToFrame(0)
+        data = []
+        for i in range(movie.frameCount()):
+            data.append((movie.currentPixmap(), movie.nextFrameDelay()))
+            movie.jumpToNextFrame()
+        return data
+
+class APNGMovie(MovieContainer):
 
     def __init__(self, filepath):
         super().__init__()
