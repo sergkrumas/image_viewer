@@ -5779,9 +5779,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_item_animation_file_set_frame(board_item, current_frame)
         self.update()
 
-    def board_item_animation_file_set_frame(self, board_item, frame_index):
+    def board_item_animation_file_set_frame(self, board_item, frame_index, force=False):
         movie = board_item.movie
         need = movie.currentFrameNumber() != frame_index
+        need = need or force
         if need:
             movie.jumpToFrame(frame_index)
             board_item.pixmap = movie.currentPixmap()
@@ -7874,6 +7875,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # restoring transform
         bi.apply_transform_tuple(d)
+
+        if bi.animated:
+            self.board_item_animation_file_set_frame(bi, 0, force=True)
 
     def board_touch_crop_stack(self, purge_all):
         if self.selected_items and len(self.selected_items) == 1:
