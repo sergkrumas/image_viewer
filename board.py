@@ -1960,7 +1960,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_data = None
                 attr_type = 'NoneType'
 
-            elif isinstance(attr_value, (QMovie, APNGMovie)):
+            elif isinstance(attr_value, (QMovie, APNGMovie, MovieContainer)):
                 attr_data = None
                 attr_type = 'NoneType'
 
