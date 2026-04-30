@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-04-28 14:06+0300\n"
+"POT-Creation-Date: 2026-04-30 15:28+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,7 +221,7 @@ msgid ""
 "Use 64-bit Python interpreter to avoid this kind of issues."
 msgstr ""
 
-#: _viewer.pyw:4845 board.py:3410
+#: _viewer.pyw:4845 board.py:3415
 msgid "Please wait"
 msgstr ""
 
@@ -251,205 +251,205 @@ msgstr ""
 msgid "Cursor scrubbing mode disactivated"
 msgstr ""
 
-#: _viewer.pyw:5695
+#: _viewer.pyw:5697
 msgid ""
 "Abort!\n"
 "Animation effects disabled in settings"
 msgstr ""
 
-#: _viewer.pyw:5714
+#: _viewer.pyw:5716
 msgid "Unable to save: no source file or source file is not found"
 msgstr ""
 
-#: _viewer.pyw:5741
+#: _viewer.pyw:5743
 msgid "The folder path is not set or the folder path doesn't exist"
 msgstr ""
 
-#: _viewer.pyw:5748
+#: _viewer.pyw:5750
 msgid "The image is saved in file"
 msgstr ""
 
-#: _viewer.pyw:5769
+#: _viewer.pyw:5771
 msgid "Save file"
 msgstr ""
 
-#: _viewer.pyw:5833
+#: _viewer.pyw:5835
 msgid "Abort! Feature is not implemented yet for animated images"
 msgstr ""
 
-#: _viewer.pyw:5844
+#: _viewer.pyw:5846
 msgid "pasted!"
 msgstr ""
 
-#: _viewer.pyw:5924
+#: _viewer.pyw:5926
 msgid "Open folder \"{0}\" in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:5944
+#: _viewer.pyw:5946
 msgid "Minimize"
 msgstr ""
 
-#: _viewer.pyw:5956
+#: _viewer.pyw:5958
 msgid "DEBUG"
 msgstr ""
 
-#: _viewer.pyw:5961
+#: _viewer.pyw:5963
 msgid "Show FPS"
 msgstr ""
 
-#: _viewer.pyw:5966
+#: _viewer.pyw:5968
 msgid "Antialiasing and pixmap smoothing"
 msgstr ""
 
-#: _viewer.pyw:5975
+#: _viewer.pyw:5977
 msgid "Rounded previews"
 msgstr ""
 
-#: _viewer.pyw:5984
+#: _viewer.pyw:5986
 msgid "Cursor scrubbing for animation files"
 msgstr ""
 
-#: _viewer.pyw:5990
+#: _viewer.pyw:5992
 msgid "DEBUG tools..."
 msgstr ""
 
-#: _viewer.pyw:5996
+#: _viewer.pyw:5998
 msgid "Settings..."
 msgstr ""
 
-#: _viewer.pyw:5997 control_panel.py:570 control_panel.py:588
+#: _viewer.pyw:5999 control_panel.py:570 control_panel.py:588
 msgid "Help"
 msgstr ""
 
-#: _viewer.pyw:5998
+#: _viewer.pyw:6000
 msgid "Message the developer"
 msgstr ""
 
-#: _viewer.pyw:6004
+#: _viewer.pyw:6006
 msgid "Always on top"
 msgstr ""
 
-#: _viewer.pyw:6006
+#: _viewer.pyw:6008
 msgid "Disable \"Always on top\""
 msgstr ""
 
-#: _viewer.pyw:6010
+#: _viewer.pyw:6012
 msgid "Show window frame"
 msgstr ""
 
-#: _viewer.pyw:6012
+#: _viewer.pyw:6014
 msgid "Hide window frame and maximize"
 msgstr ""
 
-#: _viewer.pyw:6016
+#: _viewer.pyw:6018
 msgid "Leave full-screen mode"
 msgstr ""
 
-#: _viewer.pyw:6018
+#: _viewer.pyw:6020
 msgid "Go full screen"
 msgstr ""
 
-#: _viewer.pyw:6024
+#: _viewer.pyw:6026
 msgid "Narrow window back to monitor frame"
 msgstr ""
 
-#: _viewer.pyw:6026
+#: _viewer.pyw:6028
 msgid "Expand window to two monitors frame"
 msgstr ""
 
-#: _viewer.pyw:6029
+#: _viewer.pyw:6031
 msgid "Switch the window to the monitor on the right"
 msgstr ""
 
-#: _viewer.pyw:6030
+#: _viewer.pyw:6032
 msgid "Switch the window to the monitor on the left"
 msgstr ""
 
-#: _viewer.pyw:6032
+#: _viewer.pyw:6034
 msgid "Next grayscale filter state"
 msgstr ""
 
-#: _viewer.pyw:6037
+#: _viewer.pyw:6039
 msgid "Restart app in standard mode"
 msgstr ""
 
-#: _viewer.pyw:6039
+#: _viewer.pyw:6041
 msgid "Restart app (to purge unused data in memory)"
 msgstr ""
 
-#: _viewer.pyw:6041
+#: _viewer.pyw:6043
 msgid "Open in separate app instance"
 msgstr ""
 
-#: _viewer.pyw:6045
+#: _viewer.pyw:6047
 msgid "Line EyeDropper Tool..."
 msgstr ""
 
-#: _viewer.pyw:6065
+#: _viewer.pyw:6067
 msgid "Open unsupported file..."
 msgstr ""
 
-#: _viewer.pyw:6072
+#: _viewer.pyw:6074
 msgid "Edit comment text {0}"
 msgstr ""
 
-#: _viewer.pyw:6075
+#: _viewer.pyw:6077
 msgid "Redefine comment borders {0}"
 msgstr ""
 
-#: _viewer.pyw:6078
+#: _viewer.pyw:6080
 msgid "Delete comment {0}"
 msgstr ""
 
-#: _viewer.pyw:6085
+#: _viewer.pyw:6087
 msgid "Copy metadata to clipboard"
 msgstr ""
 
-#: _viewer.pyw:6090
+#: _viewer.pyw:6092
 msgid "Find on disk"
 msgstr ""
 
-#: _viewer.pyw:6091 board.py:1346
+#: _viewer.pyw:6093 board.py:1348
 msgid "Open in Google Chrome"
 msgstr ""
 
-#: _viewer.pyw:6092
+#: _viewer.pyw:6094
 msgid "Place image in window center"
 msgstr ""
 
-#: _viewer.pyw:6097
+#: _viewer.pyw:6099
 msgid "Change SVG rasterization resolution..."
 msgstr ""
 
-#: _viewer.pyw:6101
+#: _viewer.pyw:6103
 msgid "Save .png file..."
 msgstr ""
 
-#: _viewer.pyw:6102
+#: _viewer.pyw:6104
 msgid "Save .jpg file..."
 msgstr ""
 
-#: _viewer.pyw:6104
+#: _viewer.pyw:6106
 msgid "Copy to clipboard"
 msgstr ""
 
-#: _viewer.pyw:6105
+#: _viewer.pyw:6107
 msgid "Paste from clipboard"
 msgstr ""
 
-#: _viewer.pyw:6109
+#: _viewer.pyw:6111
 msgid "Switch from fovorites folder to actual image folder"
 msgstr ""
 
-#: _viewer.pyw:6123 line_eyedropper_tool.py:356
+#: _viewer.pyw:6125 line_eyedropper_tool.py:356
 msgid "Hide this menu"
 msgstr ""
 
-#: _viewer.pyw:6159
+#: _viewer.pyw:6161
 msgid "Now redefine comment borders by pressing Ctrl+Shift+LMB"
 msgstr ""
 
-#: _viewer.pyw:6192
+#: _viewer.pyw:6194
 msgid "No images to show"
 msgstr ""
 
@@ -475,555 +475,559 @@ msgstr ""
 msgid "autoscroll speed {0}"
 msgstr ""
 
-#: board.py:478
+#: board.py:484
 msgid "FOLDER {0}"
 msgstr ""
 
-#: board.py:481
+#: board.py:487
 msgid "GROUP {0} {1}"
 msgstr ""
 
-#: board.py:484
+#: board.py:490
 msgid "FRAME"
 msgstr ""
 
-#: board.py:487
+#: board.py:493
 msgid "TEXT NOTE"
 msgstr ""
 
-#: board.py:495
+#: board.py:501
 msgid "UNDEFINED ITEM"
 msgstr ""
 
-#: board.py:497
+#: board.py:503
 msgid "IMAGE-ITEM"
 msgstr ""
 
-#: board.py:499
+#: board.py:505
 msgid "AV-ITEM"
 msgstr ""
 
-#: board.py:501
+#: board.py:507
 msgid "FOLDER-ITEM"
 msgstr ""
 
-#: board.py:503
+#: board.py:509
 msgid "GROUP-ITEM"
 msgstr ""
 
-#: board.py:505
+#: board.py:511
 msgid "NODE-ITEM"
 msgstr ""
 
-#: board.py:507
+#: board.py:513
 msgid "LINK-ITEM"
 msgstr ""
 
-#: board.py:509
+#: board.py:515
 msgid "FRAME-ITEM"
 msgstr ""
 
-#: board.py:511
+#: board.py:517
 msgid "NOTE-ITEM"
 msgstr ""
 
-#: board.py:513
+#: board.py:519
 msgid "EDITING TABLE"
 msgstr ""
 
-#: board.py:631
+#: board.py:637
 msgid "{0}/{1} ANIMATION"
 msgstr ""
 
-#: board.py:640
+#: board.py:646
 msgid "FOLDER"
 msgstr ""
 
-#: board.py:642
+#: board.py:648
 msgid "GROUP"
 msgstr ""
 
-#: board.py:865
+#: board.py:862
 msgid "[variable self.debug_file_io_filepath is not set!]"
 msgstr ""
 
-#: board.py:867
+#: board.py:864
 msgid "request processing"
 msgstr ""
 
-#: board.py:929
+#: board.py:928
 msgid "plugin {0} is not found in \\boards_plugins folder!"
 msgstr ""
 
-#: board.py:1006
+#: board.py:1005
 msgid "{0} activated"
 msgstr ""
 
-#: board.py:1076
+#: board.py:1075
 msgid "You're on viewer page now"
 msgstr ""
 
-#: board.py:1251
+#: board.py:1253
 msgid "Plugin Boards"
 msgstr ""
 
-#: board.py:1259 board.py:1271
+#: board.py:1261 board.py:1273
 msgid "No plugins found"
 msgstr ""
 
-#: board.py:1269
+#: board.py:1271
 msgid "Load Plugins..."
 msgstr ""
 
-#: board.py:1281
+#: board.py:1283
 msgid "Show debug graphics for transformation widget"
 msgstr ""
 
-#: board.py:1286
+#: board.py:1288
 msgid "Use pixmap-proxy for text items"
 msgstr ""
 
-#: board.py:1291
+#: board.py:1293
 msgid "Cursor scrubbing optimizer"
 msgstr ""
 
-#: board.py:1296
+#: board.py:1298
 msgid "Сontrol with a gamepad"
 msgstr ""
 
-#: board.py:1301 settings_handling.py:1136
+#: board.py:1303 settings_handling.py:1136
 msgid "Items snapping"
 msgstr ""
 
-#: board.py:1306
+#: board.py:1308
 msgid "Force proportional item scaling"
 msgstr ""
 
-#: board.py:1311
+#: board.py:1313
 msgid "Show point snapping targets"
 msgstr ""
 
-#: board.py:1316
+#: board.py:1318
 msgid "Show user-defined places"
 msgstr ""
 
-#: board.py:1321 settings_handling.py:1139
+#: board.py:1323 settings_handling.py:1139
 msgid "No control panel"
 msgstr ""
 
-#: board.py:1335
+#: board.py:1337
 msgid "Recently opened boards..."
 msgstr ""
 
-#: board.py:1337
+#: board.py:1339
 msgid "Actions"
 msgstr ""
 
-#: board.py:1342
+#: board.py:1344
 msgid "Go to the link in the note (Explorer or Browser)"
 msgstr ""
 
-#: board.py:1344
+#: board.py:1346
 msgid "Open in viewer in separated app copy running in lite mode"
 msgstr ""
 
-#: board.py:1357
+#: board.py:1359
 msgid "The file not found, the path has been removed from the list"
 msgstr ""
 
-#: board.py:1382 control_panel.py:605
+#: board.py:1384 control_panel.py:605
 msgid "Place items in column/row"
 msgstr ""
 
-#: board.py:1384
+#: board.py:1386
 msgid "Align && Distribute..."
 msgstr ""
 
-#: board.py:1386
+#: board.py:1388
 msgid "Multifolder board..."
 msgstr ""
 
-#: board.py:1389
+#: board.py:1391
 msgid "Folder..."
 msgstr ""
 
-#: board.py:1391
+#: board.py:1393
 msgid "Group"
 msgstr ""
 
-#: board.py:1394
+#: board.py:1396
 msgid "{0} (add selected items to it: {1})"
 msgstr ""
 
-#: board.py:1397
+#: board.py:1399
 msgid "Frame"
 msgstr ""
 
-#: board.py:1399 board_note_item.py:404
+#: board.py:1401 board_note_item.py:404
 msgid "Note"
 msgstr ""
 
-#: board.py:1402
+#: board.py:1404
 msgid "Force highres loading of all items right now (may take some time)"
 msgstr ""
 
-#: board.py:1404
+#: board.py:1406
 msgid "Reset item(s) to layout position, scale, rotation"
 msgstr ""
 
-#: board.py:1407
+#: board.py:1409
 msgid "Take current image from group and place nearby"
 msgstr ""
 
-#: board.py:1409
+#: board.py:1411
 msgid "Whole board screenshot"
 msgstr ""
 
-#: board.py:1413
+#: board.py:1415
 msgid "{0} Virtual Folder"
 msgstr ""
 
-#: board.py:1419
+#: board.py:1421
 msgid "Board loading"
 msgstr ""
 
-#: board.py:1423
+#: board.py:1425
 msgid "Board saving"
 msgstr ""
 
-#: board.py:1430
+#: board.py:1432
 msgid "Board File (*.board)"
 msgstr ""
 
-#: board.py:1452
+#: board.py:1454
 msgid ""
 "Error: either the file does not exist or the extension is wrong.\n"
 "Abort!\n"
 "{0}"
 msgstr ""
 
-#: board.py:1473
+#: board.py:1475
 msgid "Invalid header data"
 msgstr ""
 
-#: board.py:1494
+#: board.py:1496
 msgid "Reading error! CBOR2 data corrupted!"
 msgstr ""
 
-#: board.py:1506
+#: board.py:1508
 msgid "Reading error! JSON data corrupted!"
 msgstr ""
 
-#: board.py:1510
+#: board.py:1512
 msgid "Unsupported type of shit"
 msgstr ""
 
-#: board.py:1573
+#: board.py:1575
 msgid "Board has been loaded from file {0} of format {1}"
 msgstr ""
 
-#: board.py:2169
+#: board.py:2171
 msgid "Project is saved to {0}"
 msgstr ""
 
-#: board.py:2188
+#: board.py:2190
 msgid "You cannot dive inside item when board operation is not finished!"
 msgstr ""
 
-#: board.py:2213
+#: board.py:2215
 msgid "Place mouse cursor on item!"
 msgstr ""
 
-#: board.py:2220
+#: board.py:2222
 msgid "You can dive inside groups, folders, nodes and animated items only!"
 msgstr ""
 
-#: board.py:2229
+#: board.py:2231
 msgid "NODE BOARD Virtual Folder"
 msgstr ""
 
-#: board.py:2240
+#: board.py:2242
 msgid "ANIMATED FILE Virtual Folder"
 msgstr ""
 
-#: board.py:2278
+#: board.py:2280
 msgid "No place to return"
 msgstr ""
 
-#: board.py:2334
+#: board.py:2336
 msgid ""
 "WELCOME TO\n"
 "BOARDS"
 msgstr ""
 
-#: board.py:2346
+#: board.py:2348
 msgid "WAITING"
 msgstr ""
 
-#: board.py:2347
+#: board.py:2349
 msgid "creating previews"
 msgstr ""
 
-#: board.py:2473
+#: board.py:2475
 msgid "The board is prepared"
 msgstr ""
 
-#: board.py:2661
+#: board.py:2663
 msgid "perfomance status: {0} images drawn"
 msgstr ""
 
-#: board.py:2729
+#: board.py:2731
 msgid "Links to items in other boards:"
 msgstr ""
 
-#: board.py:2737
+#: board.py:2739
 msgid "from board"
 msgstr ""
 
-#: board.py:3425
+#: board.py:3430
 msgid "Virtual folder board: {}"
 msgstr ""
 
-#: board.py:3427
+#: board.py:3432
 msgid "Board folder: {}"
 msgstr ""
 
-#: board.py:3428
+#: board.py:3433
 msgid "Generation time: {}"
 msgstr ""
 
-#: board.py:3430
+#: board.py:3435
 msgid "File-plugin name: {}"
 msgstr ""
 
-#: board.py:3432
+#: board.py:3437
 msgid "This board has no plugin attached"
 msgstr ""
 
-#: board.py:3433
+#: board.py:3438
 msgid "Current item index: {}"
 msgstr ""
 
-#: board.py:3434
+#: board.py:3439
 msgid "Current item-group index: {}"
 msgstr ""
 
-#: board.py:3435
+#: board.py:3440
 msgid "Board bounding rect: {}"
 msgstr ""
 
-#: board.py:3440
+#: board.py:3445
 msgid "You've entered this board from the board of folder '{}'"
 msgstr ""
 
-#: board.py:3442
+#: board.py:3447
 msgid "Parent folder of this board '{}'"
 msgstr ""
 
-#: board.py:3444
+#: board.py:3449
 msgid "This board parent item title '{}'"
 msgstr ""
 
-#: board.py:3450
+#: board.py:3455
 msgid "Current cross-board item index:: {}"
 msgstr ""
 
-#: board.py:3451
+#: board.py:3456
 msgid "Current cross-board board index:: {}"
 msgstr ""
 
-#: board.py:3452
+#: board.py:3457
 msgid "Children boards count:: {}"
 msgstr ""
 
-#: board.py:3477
+#: board.py:3482
 msgid "Pressing Backspace key returns to board of the folder {0}"
 msgstr ""
 
-#: board.py:3499
+#: board.py:3504
 msgid "Add to the group ({})"
 msgstr ""
 
-#: board.py:3688
+#: board.py:3693
 msgid "AXES"
 msgstr ""
 
-#: board.py:3693
+#: board.py:3698
 msgid "ORIGIN"
 msgstr ""
 
-#: board.py:3810
+#: board.py:3815
 msgid "The camera has been moved"
 msgstr ""
 
-#: board.py:3812
+#: board.py:3817
 msgid "Out of the map frame!"
 msgstr ""
 
-#: board.py:3940
+#: board.py:3945
 msgid "Loading hires images"
 msgstr ""
 
-#: board.py:3951
+#: board.py:3956
 msgid "You cannot delete items from animated file board"
 msgstr ""
 
-#: board.py:3969
+#: board.py:3974
 msgid "items: {}"
 msgstr ""
 
-#: board.py:3971
+#: board.py:3976
 msgid ""
 "\n"
 "links: {}"
 msgstr ""
 
-#: board.py:3972
+#: board.py:3977
 msgid "Items removing confirmation"
 msgstr ""
 
-#: board.py:3973
+#: board.py:3978
 msgid ""
 "Are you sure you want to proceed?\n"
 "{}"
 msgstr ""
 
-#: board.py:4051 board.py:4104
+#: board.py:4056 board.py:4109
 msgid "GROUP Virtual Folder"
 msgstr ""
 
-#: board.py:4074
+#: board.py:4079
 msgid "Nothing to delete, the group is empty"
 msgstr ""
 
-#: board.py:4096
+#: board.py:4101
 msgid "Group-item not found"
 msgstr ""
 
-#: board.py:4102
+#: board.py:4107
 msgid "You cannot create group-item inside virtual folder board"
 msgstr ""
 
-#: board.py:4130
+#: board.py:4135
 msgid "You cannot create note-item inside virtual folder board"
 msgstr ""
 
-#: board.py:4142
+#: board.py:4147
 msgid "Choose folder with images in it"
 msgstr ""
 
-#: board.py:4144
+#: board.py:4149
 msgid "Loading folder to the board"
 msgstr ""
 
-#: board.py:4222
+#: board.py:4227
 msgid "FRAME ITEM"
 msgstr ""
 
-#: board.py:4227 board.py:6064
+#: board.py:4232 board.py:6090
 msgid "No items selected!"
 msgstr ""
 
-#: board.py:4238
+#: board.py:4243
 msgid "Node label"
 msgstr ""
 
-#: board.py:4263
+#: board.py:4268
 msgid "This item was removed to stack"
 msgstr ""
 
-#: board.py:4266
+#: board.py:4271
 msgid "This item was added to stack"
 msgstr ""
 
-#: board.py:6022
+#: board.py:6048
 msgid "Loading image to the board"
 msgstr ""
 
-#: board.py:6058
+#: board.py:6084
 msgid "This element is not presented on the board"
 msgstr ""
 
-#: board.py:6138
+#: board.py:6164
 msgid "Horizontally"
 msgstr ""
 
-#: board.py:6139
+#: board.py:6165
 msgid "Vertically"
 msgstr ""
 
-#: board.py:6154
+#: board.py:6180
 msgid "No items on the board! Abort!"
 msgstr ""
 
-#: board.py:6356
+#: board.py:6382
 msgid "Over user-defined places"
 msgstr ""
 
-#: board.py:6357
+#: board.py:6383
 msgid "Over items"
 msgstr ""
 
-#: board.py:6704
+#: board.py:6730
 msgid "Choose Directories"
 msgstr ""
 
-#: board.py:6735
+#: board.py:6761
 msgid "No folders selected!"
 msgstr ""
 
-#: board.py:6760
+#: board.py:6786
 msgid "No images found in selected folders!"
 msgstr ""
 
-#: board.py:6771
+#: board.py:6797
 msgid "Loading images to the board"
 msgstr ""
 
-#: board.py:6822 board_align_distribution_ui.py:79
+#: board.py:6848 board_align_distribution_ui.py:79
 msgid "Whole board"
 msgstr ""
 
-#: board.py:6951
+#: board.py:6977
 msgid "Nothing selected!"
 msgstr ""
 
-#: board.py:6955
+#: board.py:6981
 msgid "Select at least 3 items!"
 msgstr ""
 
-#: board.py:7235
+#: board.py:7261
 msgid "This item not supported!"
 msgstr ""
 
-#: board.py:7253
+#: board.py:7279
 msgid "You cannot dive inside crossboard when board operation is not finished!"
 msgstr ""
 
-#: board.py:7269
+#: board.py:7295
 msgid "CROSSBOARD Virtual Folder"
 msgstr ""
 
-#: board.py:7400
+#: board.py:7426
 msgid "You've entered crossboard"
 msgstr ""
 
-#: board.py:7403
+#: board.py:7429
 msgid "You've left crossboard"
 msgstr ""
 
-#: board.py:7455
+#: board.py:7481
 msgid ""
 "Possible {} items to paste,\n"
 "choose layout direction for them.\n"
 "Press Escape key to cancel"
 msgstr ""
 
-#: board.py:7734
+#: board.py:7769
 msgid "Too small, aborted!"
 msgstr ""
 
-#: board.py:7809
+#: board.py:7917
+msgid "Nothing to reapply"
+msgstr ""
+
+#: board.py:7932
 msgid "Nothing to cancel"
 msgstr ""
 
