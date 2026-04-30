@@ -7899,19 +7899,25 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         bi = self.selected_items[0]
-        if not bi._crop_data_stack:
-            self.show_center_label(_('Nothing to cancel'), error=True)
-            return
-
-        if len(bi._crop_data_stack) == 1:
-            purge_all = True
-
-        if purge_all:
-            bi.crop_data_purge_all()
-            self.board_preinit_cropping_data(bi)
+        if redo:
+            pass
         else:
-            bi._crop_data_stack.pop()
-            self.board_reapply_cropping_data(bi)
+            if not bi._crop_data_stack:
+                self.show_center_label(_('Nothing to cancel'), error=True)
+                return
+
+
+        if redo:
+            pass
+        else:
+            if len(bi._crop_data_stack) == 1:
+                purge_all = True
+            if purge_all:
+                bi.crop_data_purge_all()
+                self.board_preinit_cropping_data(bi)
+            else:
+                bi._crop_data_stack.pop()
+                self.board_reapply_cropping_data(bi)
 
         self.board_update_selection_box_widget()
 
