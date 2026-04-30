@@ -712,13 +712,6 @@ class BoardItem():
             QRectF(crop_rect),
         ))
 
-    def crop_data_purge_all(self):
-        p = QPointF(self.position)
-        *transform, crop_data = self._crop_data_stack[0]
-        self.apply_transform_tuple(transform)
-        self._crop_data_stack.clear()
-        self.position = p
-
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
         check_2 = self.from_item._board is fodbo
@@ -7902,6 +7895,11 @@ class BoardMixin(BoardTextEditItemMixin):
         if bi.animated:
             self.board_item_animation_file_set_frame(bi, 0, force=True)
 
+    def board_crop_data_get_offset(self, cd):
+        scale_x, scale_y, position, roration, crop_rect = cd
+        offset = crop_rect.center() - position
+        return offset
+
     def board_touch_item_cropping_stack(self, purge_all, redo):
         if self.selected_items and len(self.selected_items) == 1:
             pass
@@ -7916,18 +7914,29 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.show_center_label(_('Nothing to cancel'), error=True)
                 return
 
-
-        if redo:
-            pass
-        else:
-            if len(bi._crop_data_stack) == 1:
-                purge_all = True
             if purge_all:
-                bi.crop_data_purge_all()
+                offset = QPointF(0, 0)
+                for cd in bi._crop_data_stack:
+                    offset += self.board_crop_data_get_offset(cd)
+                bi._crop_data_stack.clear()
+
+                pos = QPointF(bi.position)
                 self.board_preinit_cropping_data(bi)
+
+                bi.position = pos - offset
+
             else:
-                bi._crop_data_stack.pop()
+                cd = bi._crop_data_stack.pop()
+                pos = QPointF(bi.position)
+                offset = self.board_crop_data_get_offset(cd)
+
                 self.board_reapply_cropping_data(bi)
+
+                bi.position = pos - offset
+
+                # если стэк опустел, то надо убирать некоторые данные
+                if len(bi._crop_data_stack) == 0:
+                    self.board_preinit_cropping_data(bi)
 
         self.board_update_selection_box_widget()
 
