@@ -7791,10 +7791,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
             combine_rect = crop_rect # OMG, PLOT TWIST
 
-            captured_pixmap = self.board_crop_n_combine_do_operation(bis, combine_rect, update_overrided_data=False)
+            static = len(bis) == 1 and not bis[0].animated
+            if static or len(bis) > 1:
+                captured_pixmap = self.board_crop_n_combine_do_operation(bis, combine_rect, update_overrided_data=False)
 
-            new_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
-            new_bi.position = combine_rect.center()
+                new_bi = self.board_create_static_image_board_item_from_qpixmap(captured_pixmap)
+                new_bi.position = combine_rect.center()
+            else:
+                bi = bis[0]
+
+                new_bi = bi.make_copy(self, cf)
+                new_bi.add_crop_data_to_stack(crop_rect)
+                self.board_crop_n_combine_do_operation([new_bi], crop_rect)
+                self.board_crop_n_combine_do_resetting(new_bi, crop_rect)
+                new_bi.position = combine_rect.center()
 
             self.board_place_combine_result_invoke(new_bi)
 
