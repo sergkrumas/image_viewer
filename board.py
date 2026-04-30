@@ -339,6 +339,7 @@ class BoardItem():
         self.overrided_source_height = None
         self._overrided_preview = None
         self._crop_data_stack = []
+        self._crop_data_stack_unapplied = []
 
     def set_alert(self):
         self.countdown_red_frame = 10
@@ -450,7 +451,7 @@ class BoardItem():
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
             at = type(attr_value)
-            if attr_name == '_crop_data_stack':
+            if attr_name in ('_crop_data_stack', '_crop_data_stack_unapplied'):
                 attr_value = CropDataHelper.copy(attr_value)
             elif at in [QPointF, QRectF]:
                 attr_value = at(attr_value)
@@ -711,6 +712,7 @@ class BoardItem():
             self.rotation,
             QRectF(crop_rect),
         ))
+        self._crop_data_stack_unapplied.clear()
 
     def check_link_boards(self, fodbo):
         check_1 = self.to_item._board is fodbo
@@ -1878,7 +1880,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if attr_name in ['_tags', '_comments']:
                     attr_data = []
                     attr_type = 'list'
-                elif attr_name == '_crop_data_stack':
+                elif attr_name in ('_crop_data_stack', '_crop_data_stack_unapplied'):
                     attr_data = CropDataHelper.serialize(attr_value)
                     attr_type = 'CropDataStack'
                 else:
@@ -7757,6 +7759,8 @@ class BoardMixin(BoardTextEditItemMixin):
             bi_area_br = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             points.append(bi_area_br.topLeft())
             points.append(bi_area_br.bottomRight())
+        if not points:
+            return
         items_area_bounding_rect = QRectF(*get_bounding_points(points))
 
         crop_rect = bm_input_rect.intersected(items_area_bounding_rect)
@@ -7908,7 +7912,21 @@ class BoardMixin(BoardTextEditItemMixin):
 
         bi = self.selected_items[0]
         if redo:
-            pass
+
+            if not bi._crop_data_stack_unapplied:
+                self.show_center_label(_('Nothing to reapply'), error=True)
+                return
+
+            cd = bi._crop_data_stack_unapplied.pop()
+            bi._crop_data_stack.append(cd)
+
+            pos = QPointF(bi.position)
+            offset = self.board_crop_data_get_offset(cd)
+
+            self.board_reapply_cropping_data(bi)
+
+            bi.position = pos + offset
+
         else:
             if not bi._crop_data_stack:
                 self.show_center_label(_('Nothing to cancel'), error=True)
@@ -7927,6 +7945,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             else:
                 cd = bi._crop_data_stack.pop()
+                bi._crop_data_stack_unapplied.append(cd)
                 pos = QPointF(bi.position)
                 offset = self.board_crop_data_get_offset(cd)
 
