@@ -1210,10 +1210,10 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_interactive_layout_invoke(None)
 
         elif check_scancode_for(event, Qt.Key_BracketLeft):
-            self.board_touch_crop_stack(ctrl_only, False)
+            self.board_touch_item_cropping_stack(ctrl_only, False)
 
         elif check_scancode_for(event, Qt.Key_BracketRight):
-            self.board_touch_crop_stack(ctrl_only, True)
+            self.board_touch_item_cropping_stack(ctrl_only, True)
 
         self.lineEditSkip = False
 
@@ -7892,7 +7892,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if bi.animated:
             self.board_item_animation_file_set_frame(bi, 0, force=True)
 
-    def board_touch_crop_stack(self, purge_all, redo):
+    def board_touch_item_cropping_stack(self, purge_all, redo):
         if self.selected_items and len(self.selected_items) == 1:
             pass
         else:
