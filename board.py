@@ -781,11 +781,11 @@ class BoardMixin(BoardTextEditItemMixin):
         if len(items_list) > 0:
             min_index_item = items_list[0]
             content_pos = QPointF(min_index_item.position.x()*self.canvas_scale_x, min_index_item.position.y()*self.canvas_scale_y)
-            viewport_center_pos = self.get_center_position()
+            viewport_center_pos = self.board_get_viewport_center()
             self.canvas_origin = - content_pos + viewport_center_pos
             # self.show_center_label('placed at first item!')
         else:
-            self.canvas_origin = self.get_center_position()
+            self.canvas_origin = self.board_get_viewport_center()
             # self.show_center_label('placed at board origin')
 
     def board_viewport_reset(self, scale=True, position=True, scale_inplace=False, to_item=False):
@@ -798,7 +798,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if to_item:
                 self.board_viewport_reset_position_to_item()
             else:
-                self.canvas_origin = self.get_center_position()
+                self.canvas_origin = self.board_get_viewport_center()
 
     def board_init(self):
         self.board_viewport_reset()
@@ -3223,7 +3223,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.pixmap is None:
             return
 
-        dist = QVector2D(self.get_center_position() - self.board_MapToViewport(board_item)).length()
+        dist = QVector2D(self.board_get_viewport_center() - self.board_MapToViewport(board_item)).length()
 
         if dist > 10000.0:
             board_item.pixmap = None
@@ -3808,7 +3808,7 @@ class BoardMixin(BoardTextEditItemMixin):
             y = viewport_mapped_board_bounding_rect.height()*normalized_minimap_cursor_pos.y()
             viewport_mapped_bounding_rect_cursor_top_left = QPointF(x, y)
             viewport_mapped_bounding_rect_top_left = self.board_bounding_rect.topLeft()
-            new_canvas_origin = self.canvas_origin - viewport_mapped_bounding_rect_cursor_top_left - viewport_mapped_bounding_rect_top_left + self.get_center_position()
+            new_canvas_origin = self.canvas_origin - viewport_mapped_bounding_rect_cursor_top_left - viewport_mapped_bounding_rect_top_left + self.board_get_viewport_center()
             self.canvas_origin = new_canvas_origin
             # восстанавливаем прежний bounding rect
             self.build_board_bounding_rect(cf, apply_global_scale=False)
@@ -3834,7 +3834,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self_rect.setHeight(self_rect.height()-100)
             minimap_rect = fit_rect_into_rect(minimap_rect.toRect(), self_rect)
 
-            minimap_rect.moveCenter(self.get_center_position().toPoint())
+            minimap_rect.moveCenter(self.board_get_viewport_center().toPoint())
             map_width = minimap_rect.width()
             map_height = minimap_rect.height()
             self.minimap_rect = minimap_rect
@@ -3905,7 +3905,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             # viewport rect
             viewport_rect = self.rect()
-            viewport_pos = -self.canvas_origin + self.get_center_position()
+            viewport_pos = -self.canvas_origin + self.board_get_viewport_center()
             tp = self.board_bounding_rect.topLeft()
 
             # здесь board_scale необходим для правильной передачи смещения вьюпорта
@@ -5764,7 +5764,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_do_scale(self, scroll_value):
-        self.do_scale_board(scroll_value, False, False, False, pivot=self.get_center_position())
+        self.do_scale_board(scroll_value, False, False, False, pivot=self.board_get_viewport_center())
 
     def board_item_scroll_animation_file(self, board_item, scroll_value, set_first_frame=None):
         if board_item.movie is None:
@@ -6098,7 +6098,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 else:
                     board_item = file_data.board_items[0]
                 content_pos = QPointF(board_item.position.x()*canvas_scale_x, board_item.position.y()*canvas_scale_y)
-            viewport_center_pos = self.get_center_position()
+            viewport_center_pos = self.board_get_viewport_center()
 
             self.canvas_origin = - content_pos + viewport_center_pos
 
@@ -6124,9 +6124,15 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_fit_selected_items_on_screen(self):
         self.board_fit_content_on_screen(None, use_selection=True)
 
+    def board_get_viewport_center(self):
+        return QPointF(
+            self.rect().width()/2,
+            self.rect().height()/2
+        )
+
     def set_default_boardviewport_scale(self, keep_position=False, center_as_pivot=False):
         if center_as_pivot:
-            pivot = self.get_center_position()
+            pivot = self.board_get_viewport_center()
         else:
             pivot = self.mapped_cursor_pos()
         if keep_position:
@@ -6233,7 +6239,7 @@ class BoardMixin(BoardTextEditItemMixin):
         factor_x = self._canvas_scale_x/self.canvas_scale_x
         factor_y = self._canvas_scale_y/self.canvas_scale_y
 
-        pivot = self.get_center_position()
+        pivot = self.board_get_viewport_center()
 
         _canvas_origin = self.canvas_origin
 
@@ -6249,7 +6255,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_get_nearest_item(self, folder_data, by_window_center=False):
-        cursor_pos = self.get_center_position() if by_window_center else self.mapped_cursor_pos()
+        cursor_pos = self.board_get_viewport_center() if by_window_center else self.mapped_cursor_pos()
         items = folder_data.board.items_list
         def min_key_function(board_item):
             item_pos = self.board_MapToViewport(board_item.position)
@@ -6278,21 +6284,21 @@ class BoardMixin(BoardTextEditItemMixin):
             first_item = _list[0]
             second_item = _list[1]
             pos = self.board_MapToViewport(first_item.position)
-            distance = QVector2D(pos - self.get_center_position()).length()
+            distance = QVector2D(pos - self.board_get_viewport_center()).length()
             if distance < 5.0:
                 # если цент картинки практически совпадает с центром вьюпорта, то выбираем следующую картинку
                 item_to_center_viewport = second_item
             else:
                 item_to_center_viewport = first_item
 
-            current_pos = self.board_MapToBoard(self.get_center_position())
+            current_pos = self.board_MapToBoard(self.board_get_viewport_center())
 
             item_point = item_to_center_viewport.position
 
             pos1 = QPointF(current_pos.x()*self.canvas_scale_x, current_pos.y()*self.canvas_scale_y)
             pos2 = QPointF(item_point.x()*self.canvas_scale_x, item_point.y()*self.canvas_scale_y)
 
-            viewport_center_pos = self.get_center_position()
+            viewport_center_pos = self.board_get_viewport_center()
 
             pos1 = -pos1 + viewport_center_pos
             pos2 = -pos2 + viewport_center_pos
@@ -6328,7 +6334,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 canvas_scale_x=self.canvas_scale_x,
                 canvas_scale_y=self.canvas_scale_y,
                 canvas_origin=pos2,
-                pivot = self.get_center_position()
+                pivot = self.board_get_viewport_center()
             )
 
             anim_data = [
@@ -6363,11 +6369,11 @@ class BoardMixin(BoardTextEditItemMixin):
             self.fly_pairs = []
             return
 
-        viewport_center_pos = self.get_center_position()
+        viewport_center_pos = self.board_get_viewport_center()
         cf = self.LibraryData().current_folder()
         pair = None
 
-        current_pos = self.board_MapToBoard(self.get_center_position())
+        current_pos = self.board_MapToBoard(self.board_get_viewport_center())
 
         LocData = namedtuple("LocationData", "pos region_width region_height board_item")
 
@@ -6447,7 +6453,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 __, __, new_origin = self.do_scale_board(
                     1.0, False, False, False,
-                    pivot=self.get_center_position(),
+                    pivot=self.board_get_viewport_center(),
                     factor_x=bx/current_canvas_scale_x,
                     factor_y=by/current_canvas_scale_y,
                     precalculate=True,
@@ -6512,7 +6518,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_origin = -self.pr_viewport + viewport_center_pos
             self.update()
 
-        current_pos_ = self.board_MapToBoard(self.get_center_position())
+        current_pos_ = self.board_MapToBoard(self.board_get_viewport_center())
 
         # подменяем первую позицию на текущие данные, чтобы избежать перескоков и прочего неприятного,
         # мало ли, нет блокировки, и из-за этого позиция или масштаб были изменены пользователем
@@ -6621,7 +6627,7 @@ class BoardMixin(BoardTextEditItemMixin):
             factor_y = self.board_magnifier_projected_rect.height()/self.board_magnifier_input_rect.height()
             scale_x, scale_y, origin = self.do_scale_board(1.0, False, False, True,
                                                     factor_x=factor_x, factor_y=factor_y, precalculate=True,
-                                                    pivot=self.get_center_position())
+                                                    pivot=self.board_get_viewport_center())
 
             if self.isAnimationEffectsAllowed():
                 self.animate_properties(
