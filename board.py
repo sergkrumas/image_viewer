@@ -1212,7 +1212,7 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, Qt.Key_BracketLeft):
             self.board_touch_crop_stack(ctrl_only, False)
 
-        elif check_scancode_for(event, QT.Key_BracketRight):
+        elif check_scancode_for(event, Qt.Key_BracketRight):
             self.board_touch_crop_stack(ctrl_only, True)
 
         self.lineEditSkip = False
