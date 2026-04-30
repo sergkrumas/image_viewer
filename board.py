@@ -266,6 +266,7 @@ class BoardItem():
         self.type = item_type
 
         self.pixmap = None
+        self.file_data = None
         self.animated = False
         self.audiovideo_file = False
         self.audio = False
@@ -456,6 +457,8 @@ class BoardItem():
             setattr(copied_item, attr_name, attr_value)
         bw.board_set_tracking_data(copied_item, folder_data)
         folder_data.board.items_list.append(copied_item)
+        if self.file_data is not None:
+            self.file_data.board_items.append(copied_item)
         return copied_item
 
     def info_text(self):
@@ -1207,7 +1210,10 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_interactive_layout_invoke(None)
 
         elif check_scancode_for(event, Qt.Key_BracketLeft):
-            self.board_touch_crop_stack(ctrl_only)
+            self.board_touch_crop_stack(ctrl_only, False)
+
+        elif check_scancode_for(event, QT.Key_BracketRight):
+            self.board_touch_crop_stack(ctrl_only, True)
 
         self.lineEditSkip = False
 
@@ -7886,7 +7892,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if bi.animated:
             self.board_item_animation_file_set_frame(bi, 0, force=True)
 
-    def board_touch_crop_stack(self, purge_all):
+    def board_touch_crop_stack(self, purge_all, redo):
         if self.selected_items and len(self.selected_items) == 1:
             pass
         else:
