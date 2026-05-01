@@ -3123,7 +3123,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     board_item.types.ITEM_IMAGE and board_item.animated_file and (case4 or board_item.scrubbed)
                 ))
                 if full_quality:
-                    self.trigger_board_item_pixmap_loading(board_item)
+                    self.board_trigger_item_pixmap_loading(board_item)
                     image_to_draw = board_item.pixmap
                 elif board_item._overrided_preview:
                     image_to_draw = board_item._overrided_preview
@@ -3234,7 +3234,7 @@ class BoardMixin(BoardTextEditItemMixin):
             msg = f'unloaded from board: {filepath}'
             print(msg)
 
-    def trigger_board_item_pixmap_loading(self, board_item):
+    def board_trigger_item_pixmap_loading(self, board_item):
         if board_item.pixmap is not None:
             return
 
@@ -3945,7 +3945,7 @@ class BoardMixin(BoardTextEditItemMixin):
         with self.show_longtime_process_ongoing(self, _("Loading hires images")):
             items = self.LibraryData().current_folder().board.items_list
             for bi in items:
-                self.trigger_board_item_pixmap_loading(bi)
+                self.board_trigger_item_pixmap_loading(bi)
 
     def board_delete_selected_board_items(self):
         cf = self.LibraryData().current_folder()
@@ -5427,7 +5427,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if bi.type == bi.types.ITEM_IMAGE and bi.animated:
             if bi.movie is None:
                 # такое случается, когда доска загружена из файла
-                self.trigger_board_item_pixmap_loading(bi)
+                self.board_trigger_item_pixmap_loading(bi)
             item_rect = bi.get_selection_area(canvas=self).boundingRect()
             inside_rect_x_offset = event.pos().x() - item_rect.left()
             frame_index = self.map_cursor_pos_inside_rect_to_frame_number(
@@ -5769,7 +5769,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_item_scroll_animation_file(self, board_item, scroll_value, set_first_frame=None):
         if board_item.movie is None:
             # такое случается, когда доска загружена из файла
-            self.trigger_board_item_pixmap_loading(board_item)
+            self.board_trigger_item_pixmap_loading(board_item)
         if scroll_value > 0:
             inc = 1
         else:
@@ -7748,7 +7748,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue
             bi_area_rect = bi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect()
             if bi_area_rect.intersects(bm_input_rect):
-                self.trigger_board_item_pixmap_loading(bi)
+                self.board_trigger_item_pixmap_loading(bi)
                 if bi.pixmap is not None and not bi.pixmap.isNull():
                     bis.append(bi)
 
@@ -7885,7 +7885,7 @@ class BoardMixin(BoardTextEditItemMixin):
         bi.overrided_source_height = None
         if hasattr(bi, 'movie'):
             bi.movie = None
-        self.trigger_board_item_pixmap_loading(bi)
+        self.board_trigger_item_pixmap_loading(bi)
 
     def board_reapply_cropping_data(self, bi):
 
