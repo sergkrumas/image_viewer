@@ -4364,14 +4364,14 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
-    def is_pos_over_item_area(self, item, position):
+    def board_is_pos_over_item_area(self, item, position):
         sa = item.get_selection_area(canvas=self)
         return sa.containsPoint(position, Qt.WindingFill) or \
                 (item.type == BoardItem.types.ITEM_FRAME and item._label_ui_rect is not None and item._label_ui_rect.contains(position))
 
     def is_over_translation_activation_area(self, position):
         for item in self.selected_items:
-            if self.is_pos_over_item_area(item, position):
+            if self.board_is_pos_over_item_area(item, position):
                 return True
         return False
 
@@ -4694,7 +4694,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for board_item in reversed(current_folder.board.items_list):
             item_selection_area = board_item.get_selection_area(canvas=self)
             # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
-            is_under_mouse = self.is_pos_over_item_area(board_item, pos)
+            is_under_mouse = self.board_is_pos_over_item_area(board_item, pos)
 
             if is_under_mouse and not board_item._selected:
                 if board_item.type == BoardItem.types.ITEM_FRAME:
@@ -4729,7 +4729,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for board_item in folder_data.board.items_list:
             item_selection_area = board_item.get_selection_area(canvas=self)
             # is_under_mouse = item_selection_area.containsPoint(pos, Qt.WindingFill)
-            is_under_mouse = self.is_pos_over_item_area(board_item, pos)
+            is_under_mouse = self.board_is_pos_over_item_area(board_item, pos)
             if is_under_mouse:
                 undermouse_items.append(board_item)
         return undermouse_items
@@ -4757,7 +4757,7 @@ class BoardMixin(BoardTextEditItemMixin):
             for board_item in reversed(current_folder.board.items_list):
                 item_selection_area = board_item.get_selection_area(canvas=self)
                 # is_under_mouse = item_selection_area.containsPoint(self.mapped_cursor_pos(), Qt.WindingFill)
-                is_under_mouse = self.is_pos_over_item_area(board_item, pos)
+                is_under_mouse = self.board_is_pos_over_item_area(board_item, pos)
                 if add_to_selection and board_item._selected:
                     # subtract item from selection!
                     if is_under_mouse and not self.prevent_item_deselection:
