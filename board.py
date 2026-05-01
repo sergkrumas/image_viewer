@@ -1600,7 +1600,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_scroll_node_poster(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
-        items = self.find_all_items_under_this_pos(cf, cursor_pos)
+        items = self.board_find_all_items_under_this_pos(cf, cursor_pos)
         for ni in items:
             if ni.type == BoardItem.types.ITEM_NODE:
                 break
@@ -1679,7 +1679,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if not self.autoscroll_is_ongoing():
                     cf = self.LibraryData().current_folder()
                     cursor_pos = self.mapped_cursor_pos()
-                    items = self.find_all_items_under_this_pos(cf, cursor_pos)
+                    items = self.board_find_all_items_under_this_pos(cf, cursor_pos)
                     for ni in items:
                         if ni.type == BoardItem.types.ITEM_NODE:
                             self.board_scroll_node_poster_change_poster_index(ni, 1)
@@ -4327,7 +4327,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_change_node_radius(self, event, scroll_value):
         cf = self.LibraryData().current_folder()
         cursor_pos = event.pos()
-        items = self.find_all_items_under_this_pos(cf, cursor_pos)
+        items = self.board_find_all_items_under_this_pos(cf, cursor_pos)
         for bli in items:
             if bli.type == BoardItem.types.ITEM_NODE and bli._selected:
                 break
@@ -4718,13 +4718,13 @@ class BoardMixin(BoardTextEditItemMixin):
         return False
 
     def board_find_min_area_item(self, folder_data, pos):
-        found_items = self.find_all_items_under_this_pos(folder_data, pos)
+        found_items = self.board_find_all_items_under_this_pos(folder_data, pos)
         if found_items:
             return min(found_items, key=lambda x: x.calc_area)
         else:
             return None
 
-    def find_all_items_under_this_pos(self, folder_data, pos):
+    def board_find_all_items_under_this_pos(self, folder_data, pos):
         undermouse_items = []
         for board_item in folder_data.board.items_list:
             item_selection_area = board_item.get_selection_area(canvas=self)
@@ -7754,7 +7754,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # if started from allowed item area, then we're forcing cropping mode
         force_cropping_mode = False
-        items = self.find_all_items_under_this_pos(cf, CC.start_point)
+        items = self.board_find_all_items_under_this_pos(cf, CC.start_point)
         if items and items[0] in bis:
             force_cropping_mode = True
             bis = [items[0]]
