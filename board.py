@@ -3386,7 +3386,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_long_process_label(painter)
 
-        self.draw_progressive_layout_animation(painter)
+        self.board_draw_progressive_layout_animation(painter)
 
         self.board_draw_snapping_targets(painter)
 
@@ -3408,7 +3408,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.drawRect(o)
             painter.drawRect(i)
 
-    def draw_progressive_layout_animation(self, painter):
+    def board_draw_progressive_layout_animation(self, painter):
         if self.progressive_layout_ongoing:
             self.draw_rounded_frame_progress_label(painter,
                                         (RectHelper(self.rect()).top_center()+QPointF(0, 50)).toPoint(),
