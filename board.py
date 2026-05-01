@@ -823,7 +823,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.selection_ongoing = False
         self.selected_items = []
         self.selection_box = None
-        self.right_click_selection_init()
+        self.board_right_click_selection_init()
 
         self.board_show_minimap = False
         self.images_drawn = 0
@@ -5561,7 +5561,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_clear_items_selection()
         self.board_clear_links_selection()
 
-    def right_click_selection_init(self):
+    def board_right_click_selection_init(self):
         self.RCS = RCS = type('RightClickSelectionData', (), {})()
         RCS.selection_points = QPolygonF()
         RCS.ongoing = False
