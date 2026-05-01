@@ -6232,7 +6232,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 filepath = item.item_folder_data.current_image().filepath
             open_in_google_chrome(filepath)
 
-    def animate_scale_update(self):
+    def board_animate_scale_update_callback(self):
         # надо менять и значение self.canvas_origin для того,
         # чтобы увеличивать относительно центра картинки и центра экрана,
         # а они совпадают в данном случае
@@ -6494,8 +6494,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.animate_properties(
                 [
-                    (self, "_canvas_scale_x", self.canvas_scale_x, bx, self.animate_scale_update),
-                    (self, "_canvas_scale_y", self.canvas_scale_y, by, self.animate_scale_update),
+                    (self, "_canvas_scale_x", self.canvas_scale_x, bx, self.board_animate_scale_update_callback),
+                    (self, "_canvas_scale_y", self.canvas_scale_y, by, self.board_animate_scale_update_callback),
                 ],
                 anim_id="flying",
                 duration=1.5,
