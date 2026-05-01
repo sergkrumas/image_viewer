@@ -4686,7 +4686,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def any_item_area_under_mouse(self, add_selection):
         self.prevent_item_deselection = False
         current_folder = self.LibraryData().current_folder()
-        if self.is_flyover_ongoing():
+        if self.board_is_flyover_ongoing():
             return False
         min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
         # reversed для того, чтобы картинки на переднем плане чекались первыми
@@ -4736,7 +4736,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_selection_callback(self, add_to_selection):
         # (27 мар 26) выделениями также занимается функция any_item_area_under_mouse
-        if self.is_flyover_ongoing():
+        if self.board_is_flyover_ongoing():
             return
         current_folder = self.LibraryData().current_folder()
         if self.selection_rect is not None:
@@ -6355,7 +6355,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             return list(sorted(items_list, key=lambda x: x.board_index))
 
-    def is_flyover_ongoing(self):
+    def board_is_flyover_ongoing(self):
         return bool(self.fly_pairs)
 
     def board_fly_over(self, user_call=False):
