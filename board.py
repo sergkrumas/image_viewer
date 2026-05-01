@@ -3996,7 +3996,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     pass
                 if bi.type == BoardItem.types.ITEM_GROUP:
                     if bi.board_group_index > 9:
-                        self.move_items_to_group(
+                        self.board_move_items_to_group(
                             item_group=gi,
                             items=bi.item_folder_data.board.items_list,
                             items_folder=bi.item_folder_data
@@ -4006,7 +4006,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_delete_attached_links(bi)
                     items_list.remove(bi)
 
-            self.move_items_to_group(item_group=gi, items=self.selected_items)
+            self.board_move_items_to_group(item_group=gi, items=self.selected_items)
 
         if selected_links:
             self.board_delete_link_item(li)
@@ -4123,7 +4123,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             gi.position = item_position
         if move_selection_to_group and self.board_selected_items_count() > 0:
-            self.move_items_to_group(item_group=gi, items=self.selected_items)
+            self.board_move_items_to_group(item_group=gi, items=self.selected_items)
         gi.update_corner_info()
         self.board_select_items([gi])
         self.update()
@@ -4161,7 +4161,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.board_select_items([fi])
                 self.update()
 
-    def move_items_to_group(self, item_group=None, items=None, items_folder=None):
+    def board_move_items_to_group(self, item_group=None, items=None, items_folder=None):
         if items_folder is None:
             items_folder = self.LibraryData().current_folder()
             default = True
@@ -4434,7 +4434,7 @@ class BoardMixin(BoardTextEditItemMixin):
             pass
         else:
             self.build_board_bounding_rect(current_folder)
-            self.move_items_to_group(items=self.selected_items)
+            self.board_move_items_to_group(items=self.selected_items)
             self.check_item_group_under_mouse(reset=True)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
         self.board_items_snapping_finish()
