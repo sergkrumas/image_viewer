@@ -522,7 +522,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def board_set_default_scale(self):
         MW = self.globals.main_window
-        MW.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
+        MW.board_set_default_viewport_scale(keep_position=True, center_as_pivot=True)
 
     def board_zoom_out(self):
         MW = self.globals.main_window

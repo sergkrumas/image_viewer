@@ -349,7 +349,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         board = cf.board
         MW = self.globals.main_window
         if board.scale_x is None:
-            MW.set_default_boardviewport_scale()
+            MW.board_set_default_viewport_scale()
         else:
             MW.canvas_scale_x = board.scale_x
             MW.canvas_scale_y = board.scale_y

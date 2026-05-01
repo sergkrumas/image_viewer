@@ -793,7 +793,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
         if scale_inplace:
-            self.set_default_boardviewport_scale(keep_position=True, center_as_pivot=True)
+            self.board_set_default_viewport_scale(keep_position=True, center_as_pivot=True)
         if position:
             if to_item:
                 self.board_viewport_reset_position_to_item()
@@ -5541,7 +5541,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif alt:
                 if self.transformations_allowed:
-                    self.set_default_boardviewport_scale(keep_position=True)
+                    self.board_set_default_viewport_scale(keep_position=True)
 
         elif event.button() == Qt.RightButton:
             self.right_click_selection_releaseEvent(event)
@@ -6130,7 +6130,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.rect().height()/2
         )
 
-    def set_default_boardviewport_scale(self, keep_position=False, center_as_pivot=False):
+    def board_set_default_viewport_scale(self, keep_position=False, center_as_pivot=False):
         if center_as_pivot:
             pivot = self.board_get_viewport_center()
         else:
