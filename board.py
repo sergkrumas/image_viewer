@@ -1425,7 +1425,7 @@ class BoardMixin(BoardTextEditItemMixin):
         with self.show_longtime_process_ongoing(self, _("Board saving")):
             self.board_saveBoardDefault()
 
-    def dialog_open_boardfile(self):
+    def board_open_boardfile_dialog(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.ExistingFile)
         title = ""
@@ -1445,7 +1445,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if not os.path.exists(board_filepath):
                 board_filepath = ""
-                board_filepath = self.dialog_open_boardfile()
+                board_filepath = self.board_open_boardfile_dialog()
 
         is_file_exists = os.path.exists(board_filepath)
         is_file_extension_ok = board_filepath.lower().endswith(".board")
