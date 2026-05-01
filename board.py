@@ -4683,7 +4683,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         self.item_group_under_mouse = bi
                         break
 
-    def any_item_area_under_mouse(self, add_selection):
+    def board_any_item_area_under_mouse(self, add_selection):
         self.prevent_item_deselection = False
         current_folder = self.LibraryData().current_folder()
         if self.board_is_flyover_ongoing():
@@ -4735,7 +4735,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return undermouse_items
 
     def board_selection_callback(self, add_to_selection):
-        # (27 мар 26) выделениями также занимается функция any_item_area_under_mouse
+        # (27 мар 26) выделениями также занимается функция board_any_item_area_under_mouse
         if self.board_is_flyover_ongoing():
             return
         current_folder = self.LibraryData().current_folder()
@@ -5309,7 +5309,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif self.is_over_rotation_activation_area(event.pos()):
                     self.board_START_selected_items_ROTATION(event.pos())
 
-                elif self.any_item_area_under_mouse(shift):
+                elif self.board_any_item_area_under_mouse(shift):
                     self.board_START_selected_items_TRANSLATION(event.pos())
                     self.board_update_selection_box_widget()
 
