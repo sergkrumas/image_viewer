@@ -1022,7 +1022,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if menu:
                 menu.exec_(QCursor().pos())
 
-    def load_module_and_get_register_function(self, script_filename, full_path):
+    def board_load_module_and_get_register_function(self, script_filename, full_path):
         spec = importlib.util.spec_from_file_location(script_filename, full_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -1036,7 +1036,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_LoadPlugin(self, filepath):
         # print(f'\t{filepath}')
         filename = os.path.basename(filepath)
-        module, plugin_reg_func = self.load_module_and_get_register_function(filename, filepath)
+        module, plugin_reg_func = self.board_load_module_and_get_register_function(filename, filepath)
         pi = PluginInfo(module, self)
         pi.setDefaults(filename)
         if plugin_reg_func:
