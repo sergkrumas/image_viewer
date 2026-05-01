@@ -5617,7 +5617,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.right_click_selection_input_callback()
         self.update()
 
-    def filter_magazin(self, magazin):
+    def board_filter_magazin(self, magazin):
         # делаем это специально, чтобы исключить фреймы на кроссборде,
         # ведь через них невольно пройдёт выделительный провод правой кнопки мыши:
         # у фреймов кроссборды crossboard_index выставлен в None;
@@ -5630,7 +5630,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.selection_points.append(event.pos())
         spbb = RCS.selection_points.boundingRect()
         if all(i.type != i.types.ITEM_LINK for i in self.item_magazin):
-            item_magazin = self.filter_magazin(self.item_magazin)
+            item_magazin = self.board_filter_magazin(self.item_magazin)
             # включаем очистку принудительно,
             # если будут создаваться линки, ибо уже надоело
             if item_magazin:
