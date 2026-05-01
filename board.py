@@ -3076,7 +3076,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if not self.boards_resolve_rects_intersection(self.rect(), sbr_.toRect()):
 
                 if self.STNG.board_unloading:
-                    self.trigger_board_item_pixmap_unloading(board_item)
+                    self.board_trigger_item_pixmap_unloading(board_item)
 
             else:
 
@@ -3219,7 +3219,7 @@ class BoardMixin(BoardTextEditItemMixin):
             painter.drawText(text_rect, alignment, text)
             painter.restore()
 
-    def trigger_board_item_pixmap_unloading(self, board_item):
+    def board_trigger_item_pixmap_unloading(self, board_item):
         if board_item.pixmap is None:
             return
 
