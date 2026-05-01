@@ -1405,7 +1405,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         addItem(_("Reset item(s) to layout position, scale, rotation"), self.board_reset_items_to_layout_transforms)
 
-        if bool(self.is_context_menu_executed_over_group_item()):
+        if bool(self.board_is_context_menu_executed_over_group_item()):
             addItem(_('Take current image from group and place nearby'), self.board_retrieve_current_from_group_item)
 
         addItem(_("Whole board screenshot"), self.board_save_whole_board_screenshot)
@@ -4072,7 +4072,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return gi
 
     def board_retrieve_current_from_group_item(self):
-        gi = self.is_context_menu_executed_over_group_item()
+        gi = self.board_is_context_menu_executed_over_group_item()
         current_folder = self.LibraryData().current_folder()
         current_board = current_folder.board
         if len(gi.item_folder_data.board.items_list) == 0:
@@ -4656,7 +4656,7 @@ class BoardMixin(BoardTextEditItemMixin):
                             append(sa_br.right(), sa_br.top())
                             append(sa_br.right(), sa_br.bottom())
 
-    def is_context_menu_executed_over_group_item(self):
+    def board_is_context_menu_executed_over_group_item(self):
         self.check_item_group_under_mouse(use_context_menu_exec_point=True)
         group_item = self.item_group_under_mouse
         self.check_item_group_under_mouse(reset=True)
