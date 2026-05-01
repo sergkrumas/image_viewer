@@ -5410,7 +5410,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 special_update = self.board_item_cursor_scrubbing(bi, event)
 
         elif event.buttons() == Qt.RightButton:
-            self.right_click_selection_moveEvent(event)
+            self.board_right_click_selection_moveEvent(event)
 
         if self.PTWS_draw_monitor:
             self.board_SCALE_selected_items_choose_nearest_corner()
@@ -5610,7 +5610,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.selection_points.append(event.pos())
         RCS.clear_selection = not shift_pressed
 
-    def right_click_selection_moveEvent(self, event):
+    def board_right_click_selection_moveEvent(self, event):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.append(event.pos())
