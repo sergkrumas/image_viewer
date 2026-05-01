@@ -4261,7 +4261,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_invoke_create_link_item(self):
         cf = self.LibraryData().current_folder()
-        item = self.find_min_area_item(cf, self.mapped_cursor_pos())
+        item = self.board_find_min_area_item(cf, self.mapped_cursor_pos())
         if item:
             if item in self.item_magazin:
                 self.item_magazin.remove(item)
@@ -4688,7 +4688,7 @@ class BoardMixin(BoardTextEditItemMixin):
         current_folder = self.LibraryData().current_folder()
         if self.board_is_flyover_ongoing():
             return False
-        min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
+        min_item = self.board_find_min_area_item(current_folder, self.mapped_cursor_pos())
         # reversed для того, чтобы картинки на переднем плане чекались первыми
         pos = self.mapped_cursor_pos()
         for board_item in reversed(current_folder.board.items_list):
@@ -4717,7 +4717,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 return True
         return False
 
-    def find_min_area_item(self, folder_data, pos):
+    def board_find_min_area_item(self, folder_data, pos):
         found_items = self.find_all_items_under_this_pos(folder_data, pos)
         if found_items:
             return min(found_items, key=lambda x: x.calc_area)
@@ -4751,7 +4751,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     else:
                         board_item._selected = False
         else:
-            min_item = self.find_min_area_item(current_folder, self.mapped_cursor_pos())
+            min_item = self.board_find_min_area_item(current_folder, self.mapped_cursor_pos())
             # reversed для того, чтобы картинки на переднем плане чекались первыми
             pos = self.mapped_cursor_pos()
             for board_item in reversed(current_folder.board.items_list):
