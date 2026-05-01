@@ -3343,18 +3343,18 @@ class BoardMixin(BoardTextEditItemMixin):
             r = self.board_MapRectToViewport(r)
             painter.drawRect(r)
 
-    def draw_grid_wrapper(self, painter):
+    def board_draw_grid_wrapper(self, painter):
         if self.Globals.DEBUG or self.STNG.board_draw_grid:
             self.board_draw_grid(painter)
 
     def board_draw_main_default(self, painter, event):
         cf = self.LibraryData().current_folder()
         if self.Globals.ENABLE_PROGRESSIVE_BOARD_LAYOUT:
-            self.draw_grid_wrapper(painter)
+            self.board_draw_grid_wrapper(painter)
             self.board_draw_content(painter, cf)
         else:
             if cf.previews_done:
-                self.draw_grid_wrapper(painter)
+                self.board_draw_grid_wrapper(painter)
                 if not self.is_board_ready():
                     self.board_prepare_items_layout_and_viewport(cf)
                 else:
