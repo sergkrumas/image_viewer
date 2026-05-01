@@ -4808,14 +4808,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 bounding_box.bottomLeft(),
             ])
 
-    def check_selection_box_is_too_small(self):
+    def board_check_selection_box_is_too_small(self):
         if not self.selection_box:
             return False
         br = self.selection_box.boundingRect()
         return br.width() < 50 and br.height() < 50
 
     def is_over_rotation_activation_area(self, position):
-        if self.check_selection_box_is_too_small():
+        if self.board_check_selection_box_is_too_small():
             return False
         for index, raa in self.rotation_activation_areas:
             if raa.containsPoint(position, Qt.WindingFill):
@@ -4934,7 +4934,7 @@ class BoardMixin(BoardTextEditItemMixin):
             print('cancel rotation')
 
     def is_over_scaling_activation_area(self, position):
-        if self.check_selection_box_is_too_small():
+        if self.board_check_selection_box_is_too_small():
             return False
         if self.selection_box is not None:
             enumerated = list(enumerate(self.selection_box))
