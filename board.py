@@ -3355,7 +3355,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             if cf.previews_done:
                 self.board_draw_grid_wrapper(painter)
-                if not self.is_board_ready():
+                if not self.board_is_board_ready():
                     self.board_prepare_items_layout_and_viewport(cf)
                 else:
                     self.board_draw_content(painter, cf)
@@ -3824,7 +3824,7 @@ class BoardMixin(BoardTextEditItemMixin):
         painter.resetTransform()
 
         cf = self.LibraryData().current_folder()
-        if self.is_board_ready():
+        if self.board_is_board_ready():
             painter.fillRect(self.rect(), QBrush(QColor(20, 20, 20, 220)))
 
             minimap_rect = self.board_bounding_rect
@@ -6542,7 +6542,7 @@ class BoardMixin(BoardTextEditItemMixin):
             # callback_on_finish=self.board_fly_over
         )
 
-    def is_board_ready(self):
+    def board_is_board_ready(self):
         return self.LibraryData().current_folder().board.ready
 
     def board_selected_items_count(self):
@@ -6551,7 +6551,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_viewport_show_first_item(self):
         self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
-        if self.is_board_ready():
+        if self.board_is_board_ready():
             if cf.board.items_list:
                 items_list = self.board_get_original_items_order(cf.board.items_list)
                 item = items_list[0]
@@ -6560,7 +6560,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_viewport_show_last_item(self):
         self.board_unselect_all_items()
         cf = self.LibraryData().current_folder()
-        if self.is_board_ready():
+        if self.board_is_board_ready():
            if cf.board.items_list:
                 items_list = self.board_get_original_items_order(cf.board.items_list)
                 item = items_list[-1]
