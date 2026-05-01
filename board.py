@@ -1627,7 +1627,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
         return True
 
-    def next_cycled(self, current_value, all_values):
+    def board_util_next_cycled(self, current_value, all_values):
         cycled = itertools.cycle(all_values)
         for state in cycled:
             if current_value == state:
@@ -1659,7 +1659,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if ni.poster_board_index in all_indexes:
                 if validate_only:
                     return
-                next_index = self.next_cycled(ni.poster_board_index, all_indexes)
+                next_index = self.board_util_next_cycled(ni.poster_board_index, all_indexes)
                 ni.poster_board_index = next_index
                 ni._poster_board_data = index_item_dict[next_index].file_data.preview
             else:
