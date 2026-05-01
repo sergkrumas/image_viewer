@@ -5332,7 +5332,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.update()
 
         elif event.buttons() == Qt.RightButton:
-            self.right_click_selection_pressEvent(event, shift)
+            self.board_right_click_selection_pressEvent(event, shift)
 
         self.update()
 
@@ -5601,7 +5601,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for li in self.board_get_visible_links():
             check_near_link(li)
 
-    def right_click_selection_pressEvent(self, event, shift_pressed):
+    def board_right_click_selection_pressEvent(self, event, shift_pressed):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.clear()
