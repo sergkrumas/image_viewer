@@ -4358,10 +4358,10 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
         return True
 
-    def isLeftClickAndNoModifiers(self, event):
+    def board_isLeftClickAndNoModifiers(self, event):
         return event.buttons() == Qt.LeftButton and event.modifiers() == Qt.NoModifier
 
-    def isLeftClickAndAlt(self, event):
+    def board_isLeftClickAndAlt(self, event):
         return (event.buttons() == Qt.LeftButton or event.button() == Qt.LeftButton) and event.modifiers() == Qt.AltModifier
 
     def is_pos_over_item_area(self, item, position):
