@@ -3370,7 +3370,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_selection_mouse_rect(painter)
         self.board_draw_selection_transform_box(painter)
-        self.right_click_selection_drawEvent(painter)
+        self.board_draw_right_click_selection(painter)
         self.board_region_zoom_in_draw(painter)
 
         if self.Globals.DEBUG or self.STNG.board_draw_origin_compass:
@@ -5644,7 +5644,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.context_menu_allowed = False
         self.update()
 
-    def right_click_selection_drawEvent(self, painter):
+    def board_draw_right_click_selection(self, painter):
         RCS = self.RCS
         if RCS.ongoing:
             painter.save()
