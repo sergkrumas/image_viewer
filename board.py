@@ -3985,7 +3985,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         if self.selected_items:
-            gi = self.get_removed_items_group(fd)
+            gi = self.board_get_removed_items_group(fd)
 
             # здесь решаем что удалить безвозвратно
             for bi in self.selected_items:
@@ -4048,7 +4048,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     links.append(li)
             return links
 
-    def get_removed_items_group(self, folder_data):
+    def board_get_removed_items_group(self, folder_data):
         for bi in folder_data.board.items_list:
             if bi.board_group_index == 0:
                 return bi
