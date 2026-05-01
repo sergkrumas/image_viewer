@@ -2106,7 +2106,7 @@ class BoardMixin(BoardTextEditItemMixin):
             out[id(fd)] = self.board_serialize_board_data(fd)
         return out
 
-    def serialize_links(self, links):
+    def board_serialize_links(self, links):
         link_items = []
         for item in links:
             link_item_base = list()
@@ -2138,7 +2138,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # сохранение основной доски и вложенных досок
         data_base = dict()
         data_base['crossboard_data'] = self.CrossboardData().store()
-        data_base['all_links'] = self.serialize_links(self.CrossboardData().link_items_list)
+        data_base['all_links'] = self.board_serialize_links(self.CrossboardData().link_items_list)
         data_base['children_boards'] = self.board_gather_children_boards()
         data_base['main_board'] = self.board_serialize_board_data(main_fod)
 
