@@ -5544,7 +5544,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_set_default_viewport_scale(keep_position=True)
 
         elif event.button() == Qt.RightButton:
-            self.right_click_selection_releaseEvent(event)
+            self.board_right_click_selection_releaseEvent(event)
 
         self.prevent_item_deselection = False
 
@@ -5624,7 +5624,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # да и вообще любые вспомогательные айтемы на кроссдоске не должны трекаться через индексы
         return [i for i in magazin if i.crossboard_index is not None]
 
-    def right_click_selection_releaseEvent(self, event):
+    def board_right_click_selection_releaseEvent(self, event):
         RCS = self.RCS
         RCS.ongoing = False
         RCS.selection_points.append(event.pos())
