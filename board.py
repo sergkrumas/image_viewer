@@ -5567,7 +5567,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS.ongoing = False
         RCS.clear_magazin = True
 
-    def right_click_selection_input_callback(self):
+    def board_right_click_selection_input_callback(self):
         RCS = self.RCS
         cf = self.LibraryData().current_folder()
         items = cf.board.items_list
@@ -5614,7 +5614,7 @@ class BoardMixin(BoardTextEditItemMixin):
         RCS = self.RCS
         RCS.ongoing = True
         RCS.selection_points.append(event.pos())
-        self.right_click_selection_input_callback()
+        self.board_right_click_selection_input_callback()
         self.update()
 
     def board_filter_magazin(self, magazin):
