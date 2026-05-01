@@ -777,7 +777,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_viewport_reset_position_to_item(self):
         cf = self.LibraryData().current_folder()
-        items_list = self.get_original_items_order(cf.board.items_list)
+        items_list = self.board_get_original_items_order(cf.board.items_list)
         if len(items_list) > 0:
             min_index_item = items_list[0]
             content_pos = QPointF(min_index_item.position.x()*self.canvas_scale_x, min_index_item.position.y()*self.canvas_scale_y)
@@ -6185,7 +6185,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if not items_list:
             self.show_center_label(_("No items on the board! Abort!"), error=True)
 
-        all_items = self.get_original_items_order(items_list)
+        all_items = self.board_get_original_items_order(items_list)
         item = self.board_get_nearest_item(folder_data, by_window_center=True)
 
         item_index = all_items.index(item)
@@ -6278,7 +6278,7 @@ class BoardMixin(BoardTextEditItemMixin):
             elif _next:
                 reverse = False
 
-            items_list = self.get_original_items_order(cf.board.items_list)
+            items_list = self.board_get_original_items_order(cf.board.items_list)
             _list = shift_list_to_became_first(items_list, nearest_item, reverse=reverse)
 
             first_item = _list[0]
@@ -6349,7 +6349,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 duration=0.7,
             )
 
-    def get_original_items_order(self, items_list):
+    def board_get_original_items_order(self, items_list):
         if all((hasattr(bi, 'sort_index') for bi in items_list)):
             return list(sorted(items_list, key=lambda x: x.sort_index))
         else:
@@ -6401,7 +6401,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     locations_data_list.append(LocData(point, region_width, region_height, None))
             else:
                 nearest_item = self.board_get_nearest_item(cf)
-                items_list = self.get_original_items_order(cf.board.items_list)
+                items_list = self.board_get_original_items_order(cf.board.items_list)
                 if nearest_item:
                     sorted_list = shift_list_to_became_first(items_list, nearest_item)
                 else:
@@ -6553,7 +6553,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
             if cf.board.items_list:
-                items_list = self.get_original_items_order(cf.board.items_list)
+                items_list = self.board_get_original_items_order(cf.board.items_list)
                 item = items_list[0]
                 self.board_fit_content_on_screen(None, item)
 
@@ -6562,7 +6562,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cf = self.LibraryData().current_folder()
         if self.is_board_ready():
            if cf.board.items_list:
-                items_list = self.get_original_items_order(cf.board.items_list)
+                items_list = self.board_get_original_items_order(cf.board.items_list)
                 item = items_list[-1]
                 self.board_fit_content_on_screen(None, item)
 
