@@ -4415,7 +4415,7 @@ class BoardMixin(BoardTextEditItemMixin):
                             for ch_bi in board_item._children_items:
                                 ch_bi.position = ch_bi._position + delta
                 self.prepare_selection_box_widget(current_folder)
-                self.check_item_group_under_mouse()
+                self.board_check_item_group_under_mouse()
                 self.autoscroll_activate_board_item_transform_autoscroll()
         else:
             self.translation_ongoing = False
@@ -4435,7 +4435,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             self.build_board_bounding_rect(current_folder)
             self.board_move_items_to_group(items=self.selected_items)
-            self.check_item_group_under_mouse(reset=True)
+            self.board_check_item_group_under_mouse(reset=True)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
         self.board_items_snapping_finish()
 
@@ -4657,12 +4657,12 @@ class BoardMixin(BoardTextEditItemMixin):
                             append(sa_br.right(), sa_br.bottom())
 
     def board_is_context_menu_executed_over_group_item(self):
-        self.check_item_group_under_mouse(use_context_menu_exec_point=True)
+        self.board_check_item_group_under_mouse(use_context_menu_exec_point=True)
         group_item = self.item_group_under_mouse
-        self.check_item_group_under_mouse(reset=True)
+        self.board_check_item_group_under_mouse(reset=True)
         return group_item
 
-    def check_item_group_under_mouse(self, reset=False, use_context_menu_exec_point=False):
+    def board_check_item_group_under_mouse(self, reset=False, use_context_menu_exec_point=False):
         self.item_group_under_mouse = None
         self.group_inside_selection_items = False
         if reset:
