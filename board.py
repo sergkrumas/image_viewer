@@ -4849,7 +4849,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._rotation_init = bi.rotation
             bi._position_init = QPointF(bi.position)
 
-    def step_rotation(self, rotation_value, interval=45.0):
+    def board_step_rotation(self, rotation_value, interval=45.0):
         # формулу подбирал в графическом калькуляторе desmos.com/calculator
         # value = math.floor((rotation_value-interval/2.0)/interval)*interval+interval
         # ниже упрощённый вариант
@@ -4877,7 +4877,7 @@ class BoardMixin(BoardTextEditItemMixin):
         rotation_delta_degrees = math.degrees(self.rotation_delta)
         rotation = QTransform()
         if ctrl_mod:
-            rotation_delta_degrees = self.step_rotation(rotation_delta_degrees)
+            rotation_delta_degrees = self.board_step_rotation(rotation_delta_degrees)
         rotation.rotate(rotation_delta_degrees)
 
         for bi in self.selected_items:
@@ -4886,7 +4886,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 continue
             bi.rotation = bi._rotation + rotation_delta_degrees
             if not multi_item_mode and ctrl_mod:
-                bi.rotation = self.step_rotation(bi.rotation)
+                bi.rotation = self.board_step_rotation(bi.rotation)
             # position component
             pos_radius_vector = bi._position - pivot
             pos_radius_vector = rotation.map(pos_radius_vector)
@@ -7458,7 +7458,7 @@ class BoardMixin(BoardTextEditItemMixin):
             curpos = self.mapped_cursor_pos()
             curdir = curpos - center
             angle = math.degrees(math.atan2(curdir.y(), -curdir.x()))
-            angle = self.step_rotation(angle, interval=90.0) + 180
+            angle = self.board_step_rotation(angle, interval=90.0) + 180
             angle %= 360
             angle = int(angle)
 
