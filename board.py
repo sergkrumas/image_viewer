@@ -5017,16 +5017,16 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._position_init = QPointF(bi.position)
             # corner
             position_vec = bi.position - self.scaling_pivot_CORNER_point
-            bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec)
+            bi.factor_item_pos_x_corner, bi.factor_item_pos_y_corner = self.board_item_scaling_calculate_vector_projection_factors(x_axis, y_axis, position_vec)
             # center
             position_vec_center = bi.position - self.scaling_pivot_CENTER_point
             # умножение на 2 позволит коду board_DO_selected_items_SCALING отработать как нужно в случае масштабирования нескольких выделенных айтемов
             position_vec_center *= 2
-            bi.factor_item_pos_x_center, bi.factor_item_pos_y_center = self.calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
+            bi.factor_item_pos_x_center, bi.factor_item_pos_y_center = self.board_item_scaling_calculate_vector_projection_factors(x_axis, y_axis, position_vec_center)
 
             # self.show_center_label(f'{position_vec} {position_vec_center}')
 
-    def calculate_vector_projection_factors(self, x_axis, y_axis, vector):
+    def board_item_scaling_calculate_vector_projection_factors(self, x_axis, y_axis, vector):
         x_axis = QVector2D(x_axis)
         y_axis = QVector2D(y_axis)
         x_axis_normalized = x_axis.normalized().toPointF()
@@ -5106,7 +5106,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 scaling_y_axis = - scaling_y_axis
 
             # scaling component
-            x_factor, y_factor = self.calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
+            x_factor, y_factor = self.board_item_scaling_calculate_vector_projection_factors(scaling_x_axis, scaling_y_axis, scaling_vector)
             # self.show_center_label(f'{x_factor} {y_factor}')
 
             if center_is_pivot and multi_item_mode:
