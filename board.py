@@ -6145,7 +6145,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.canvas_scale_x = 1.0
             self.canvas_scale_y = 1.0
 
-    def retrieve_selected_item(self):
+    def board_retrieve_selected_item(self):
         cf = self.LibraryData().current_folder()
         for bi in cf.board.items_list:
             if bi.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_FOLDER]:
@@ -6154,7 +6154,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return None
 
     def board_open_in_app_copy(self):
-        item = self.retrieve_selected_item()
+        item = self.board_retrieve_selected_item()
         if item is not None:
             if item.type == BoardItem.types.ITEM_IMAGE:
                 pass
@@ -6224,7 +6224,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_open_in_google_chrome(self):
-        item = self.retrieve_selected_item()
+        item = self.board_retrieve_selected_item()
         if item is not None:
             if item.type == BoardItem.types.ITEM_IMAGE:
                 filepath = item.file_data.filepath
