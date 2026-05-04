@@ -2267,7 +2267,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
-                self.CrossboardData().add_board_folder_data(fd)
+                # self.CrossboardData().add_board_folder_data(fd)
 
 
 

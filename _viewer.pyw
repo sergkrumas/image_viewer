@@ -2341,7 +2341,14 @@ class MainWindow(QMainWindow,
         self.viewer_reset(simple=True)
         # setting new image
         self.viewer_error = False
-        if filepath == "":
+        if filepath == ".":
+            if file_data.board_items and file_data.board_items[0].pixmap:
+                self.pixmap = file_data.board_items[0].pixmap
+                self.image_filepath = ""
+                self.transformations_allowed = True
+            else:
+                self.error_pixmap_and_reset(_("Unable\nto display"), _("The board item is not loaded"))
+        elif filepath == "":
             self.error_pixmap_and_reset(_("No images"), "", no_background=True)
         else:
             if not LibraryData().is_supported_file(filepath):
