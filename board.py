@@ -4470,78 +4470,6 @@ class BoardMixin(BoardTextEditItemMixin):
             self.SNAPPING.targets.clear()
             self.SNAPPING.anchors.clear()
 
-    def board_items_snapping(self, board_mapped_cursor_pos):
-        cursor_pos = board_mapped_cursor_pos
-
-        if not self.STNG.board_items_snapping:
-            return board_mapped_cursor_pos
-
-        if not self.selected_items:
-            self.show_center_label('skipping', error=True)
-            # ситуация возникает, если начинаешь тащить айтем, который не был выделен перед этим
-            # на самом деле это плохо, надо исправлять эти баги, но пока тут побудет костыль
-            # (24 мар 26) TODO: избавиться от этого костыля
-            return cursor_pos
-
-        class SnapAnchor():
-            def __init__(self, item, offset, place):
-                self.offset = offset
-                self.snapped = False
-                self.cursor_pos = None
-                self.place = place
-                self.item = item
-
-            def draw(self, canvas, painter):
-                point = self.place + self.offset
-                point = canvas.board_MapToViewport(point)
-                painter.setPen(QPen(Qt.white, 20))
-                # painter.drawPoint(point)
-                painter.drawText(point, 'A')
-
-        self.board_snapping_set_targets()
-
-        item = self.selected_items[0]
-        if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
-            sa = item.get_selection_area(canvas=self, apply_global_scale=False)
-            sa_br = sa.boundingRect()
-            center = sa_br.center()
-            self.SNAPPING.anchors = [
-                SnapAnchor(item, sa_br.bottomLeft() - center, center),
-                SnapAnchor(item, sa_br.topLeft() - center, center),
-                SnapAnchor(item, QPointF(0, 0), center), # позиция этого якоря влияет на срабатывание его самого и других якорей
-                SnapAnchor(item, sa_br.bottomRight() - center, center),
-                SnapAnchor(item, sa_br.topRight() - center, center),
-                SnapAnchor(item, sa[0] - center, center),
-                SnapAnchor(item, sa[1] - center, center),
-                SnapAnchor(item, sa[2] - center, center),
-                SnapAnchor(item, sa[3] - center, center),
-            ]
-            # self.show_center_label(f'updating anchors for {item}')
-
-        ACTIVATION_RADIUS = 100.0
-
-        for st in self.SNAPPING.targets:
-            for sa in self.SNAPPING.anchors:
-                snap_offset = sa.offset
-                dist = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position))
-                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
-                if snap_dist < ACTIVATION_RADIUS:
-                    if sa.snapped and st.get_deactivation_length(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
-                        sa.snapped = False
-                        sa.cursor_pos = None
-                        return cursor_pos
-                    offset = QPointF(item._position) + snap_offset
-                    result = self.start_translation_pos - offset + st.point(cursor_pos)
-                    if sa.cursor_pos is None:
-                        sa.snapped = True
-                        sa.cursor_pos = QPointF(cursor_pos)
-                        sa.st = st
-                    return result
-        return cursor_pos
-
-    def board_snapping_map_dist_to_viewport(self, dist_vector):
-        return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
-
     def board_snapping_set_targets(self):
         # self.SNAPPING.targets.clear()
 
@@ -4658,6 +4586,78 @@ class BoardMixin(BoardTextEditItemMixin):
                             append(sa_br.left(), sa_br.bottom())
                             append(sa_br.right(), sa_br.top())
                             append(sa_br.right(), sa_br.bottom())
+
+    def board_items_snapping(self, board_mapped_cursor_pos):
+        cursor_pos = board_mapped_cursor_pos
+
+        if not self.STNG.board_items_snapping:
+            return board_mapped_cursor_pos
+
+        if not self.selected_items:
+            self.show_center_label('skipping', error=True)
+            # ситуация возникает, если начинаешь тащить айтем, который не был выделен перед этим
+            # на самом деле это плохо, надо исправлять эти баги, но пока тут побудет костыль
+            # (24 мар 26) TODO: избавиться от этого костыля
+            return cursor_pos
+
+        class SnapAnchor():
+            def __init__(self, item, offset, place):
+                self.offset = offset
+                self.snapped = False
+                self.cursor_pos = None
+                self.place = place
+                self.item = item
+
+            def draw(self, canvas, painter):
+                point = self.place + self.offset
+                point = canvas.board_MapToViewport(point)
+                painter.setPen(QPen(Qt.white, 20))
+                # painter.drawPoint(point)
+                painter.drawText(point, 'A')
+
+        self.board_snapping_set_targets()
+
+        item = self.selected_items[0]
+        if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
+            sa = item.get_selection_area(canvas=self, apply_global_scale=False)
+            sa_br = sa.boundingRect()
+            center = sa_br.center()
+            self.SNAPPING.anchors = [
+                SnapAnchor(item, sa_br.bottomLeft() - center, center),
+                SnapAnchor(item, sa_br.topLeft() - center, center),
+                SnapAnchor(item, QPointF(0, 0), center), # позиция этого якоря влияет на срабатывание его самого и других якорей
+                SnapAnchor(item, sa_br.bottomRight() - center, center),
+                SnapAnchor(item, sa_br.topRight() - center, center),
+                SnapAnchor(item, sa[0] - center, center),
+                SnapAnchor(item, sa[1] - center, center),
+                SnapAnchor(item, sa[2] - center, center),
+                SnapAnchor(item, sa[3] - center, center),
+            ]
+            # self.show_center_label(f'updating anchors for {item}')
+
+        ACTIVATION_RADIUS = 100.0
+
+        for st in self.SNAPPING.targets:
+            for sa in self.SNAPPING.anchors:
+                snap_offset = sa.offset
+                dist = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position))
+                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+                if snap_dist < ACTIVATION_RADIUS:
+                    if sa.snapped and st.get_deactivation_length(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                        sa.snapped = False
+                        sa.cursor_pos = None
+                        return cursor_pos
+                    offset = QPointF(item._position) + snap_offset
+                    result = self.start_translation_pos - offset + st.point(cursor_pos)
+                    if sa.cursor_pos is None:
+                        sa.snapped = True
+                        sa.cursor_pos = QPointF(cursor_pos)
+                        sa.st = st
+                    return result
+        return cursor_pos
+
+    def board_snapping_map_dist_to_viewport(self, dist_vector):
+        return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
 
     def board_is_context_menu_executed_over_group_item(self):
         self.board_check_item_group_under_mouse(use_context_menu_exec_point=True)
