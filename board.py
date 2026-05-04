@@ -4521,21 +4521,21 @@ class BoardMixin(BoardTextEditItemMixin):
         ACTIVATION_RADIUS = 100.0
 
         for st in self.SNAPPING.targets:
-            for snap_anchor in self.SNAPPING.anchors:
-                snap_offset = snap_anchor.offset
+            for sa in self.SNAPPING.anchors:
+                snap_offset = sa.offset
                 dist = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_RADIUS:
-                    if snap_anchor.snapped and st.get_deactivation_length(snap_anchor.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
-                        snap_anchor.snapped = False
-                        snap_anchor.cursor_pos = None
+                    if sa.snapped and st.get_deactivation_length(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                        sa.snapped = False
+                        sa.cursor_pos = None
                         return cursor_pos
                     offset = QPointF(item._position) + snap_offset
                     result = self.start_translation_pos - offset + st.point(cursor_pos)
-                    if snap_anchor.cursor_pos is None:
-                        snap_anchor.snapped = True
-                        snap_anchor.cursor_pos = QPointF(cursor_pos)
-                        snap_anchor.st = st
+                    if sa.cursor_pos is None:
+                        sa.snapped = True
+                        sa.cursor_pos = QPointF(cursor_pos)
+                        sa.st = st
                     return result
         return cursor_pos
 
