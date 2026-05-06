@@ -4567,11 +4567,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 return canvas_self.board_snapping_map_dist_to_viewport(dist).length()
 
         if not (self.SNAPPING.point_targets or self.SNAPPING.line_targets):
-            if False:
-                self.SNAPPING.targets = [
+            if True:
+                self.SNAPPING.point_targets = [
                     # SnappingTarget(0.0, 0.0),
-                    SnappingTarget(0.0, 500.0),
+                    # SnappingTarget(0.0, 500.0),
                     # SnappingTarget(100.0, 0.0),
+                ]
+                self.SNAPPING.line_targets = [
                     SnappingTarget(100.0, None),
                     SnappingTarget(None, 500.0),
                 ]
@@ -4677,7 +4679,6 @@ class BoardMixin(BoardTextEditItemMixin):
                     if sa.cursor_pos is None:
                         sa.snapped = True
                         sa.cursor_pos = QPointF(cursor_pos)
-                        # st.activated = True
                     st.activated = True
                     return snapped_cursor_pos
             return None
@@ -4693,12 +4694,40 @@ class BoardMixin(BoardTextEditItemMixin):
             if rv:
                 return rv
 
-        for st in self.SNAPPING.line_targets:
-            rv = snap_core_func(st)
-            if rv:
-                return rv
+        for st1 in self.SNAPPING.line_targets:
+            rv1 = snap_core_func(st1)
+            if rv1:
+                for st2 in self.board_snapping_filter_perpendicular_lines(st1):
+                    rv2 = snap_core_func(st2)
+                    if rv2:
+                        return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
+                return rv1
 
         return cursor_pos
+
+    def board_snapping_to_lines_combine_return_values(self, st1, st2, rv1, rv2):
+        if st1.x_snapping is None:
+            if st2.y_snapping is None:
+                return QPointF(rv2.x(), rv1.y())
+            else:
+                Exception('')
+
+        elif st1.y_snapping is None:
+            if st2.x_snapping is None:
+                return QPointF(rv1.x(), rv2.y())
+            else:
+                Exception('')
+
+    def board_snapping_filter_perpendicular_lines(self, ref_target):
+        filtered = []
+        for lt in self.SNAPPING.line_targets:
+            if ref_target.x_snapping is None:
+                if lt.y_snapping is None:
+                    filtered.append(lt)
+            if ref_target.y_snapping is None:
+                if lt.x_snapping is None:
+                    filtered.append(lt)
+        return filtered
 
     def board_snapping_sort_anchors(self, item_position, cursor_pos):
         self.SNAPPING.anchors.sort(key=lambda sa: QVector2D(sa.offset + item_position - cursor_pos).length())
