@@ -4671,6 +4671,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_snapping_sort_anchors(item.position, cursor_pos)
             self.SNAPPING.anchors_sorted = True
 
+        self.board_snapping_sort_targets(item.position, cursor_pos)
+
         for st in self.SNAPPING.point_targets:
             rv = snap_core_func(st)
             if rv:
@@ -4685,6 +4687,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_snapping_sort_anchors(self, item_position, cursor_pos):
         self.SNAPPING.anchors.sort(key=lambda sa: QVector2D(sa.offset + item_position - cursor_pos).length())
+
+    def board_snapping_sort_targets(self, item_position, cursor_pos):
+        st_lambda = lambda st: QVector2D(st.get_target_modified_pos(cursor_pos) - cursor_pos).length()
+        self.SNAPPING.point_targets.sort(key=st_lambda)
+        self.SNAPPING.line_targets.sort(key=st_lambda)
 
     def board_snapping_map_dist_to_viewport(self, dist_vector):
         return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
