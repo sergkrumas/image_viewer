@@ -4535,7 +4535,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         pos_x = pos.x()
                         painter.drawLine(QPointF(pos_x, 0), QPointF(pos_x, canvas_rect.height()))
 
-            def get_deactivation_length(self, snap_pos, cursor_pos):
+            def get_target_deactivation_dist(self, snap_pos, cursor_pos):
                 dist = QVector2D()
                 if self.type == SnappingTarget.types.POINT:
                     dist = QVector2D(snap_pos - cursor_pos)
@@ -4602,11 +4602,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         class SnapAnchor():
             def __init__(self, item, offset, place):
+                self.item = item
                 self.offset = offset
+                self.place = place
+
                 self.snapped = False
                 self.cursor_pos = None
-                self.place = place
-                self.item = item
 
             def draw(self, canvas, painter):
                 point = self.place + self.offset
@@ -4643,7 +4644,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 dist = QVector2D(st.point(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_RADIUS:
-                    if sa.snapped and st.get_deactivation_length(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                    if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
                         sa.snapped = False
                         sa.cursor_pos = None
                         return cursor_pos
