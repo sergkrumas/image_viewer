@@ -4449,9 +4449,10 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_snapping_targets(self, painter):
         if self.STNG.board_items_snapping:
             painter.save()
-            for target in self.SNAPPING.targets:
-                if target.type == target.types.POINT and not self.SNAPPING.show_point_targets:
-                    continue
+            if self.SNAPPING.show_point_targets:
+                for target in self.SNAPPING.point_targets:
+                    target.draw(self, painter)
+            for target in self.SNAPPING.line_targets:
                 target.draw(self, painter)
 
             for anchor in self.SNAPPING.anchors:
@@ -4460,18 +4461,21 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_snapping_init(self):
         self.SNAPPING = SNAPPING = type('SnappingData', (), {})()
-        SNAPPING.targets = list()
+        SNAPPING.point_targets = list()
+        SNAPPING.line_targets = list()
         SNAPPING.anchors = list()
         SNAPPING.show_point_targets = False
 
     def board_items_snapping_finish(self):
         if self.STNG.board_items_snapping:
             self.show_center_label('snapping finished')
-            self.SNAPPING.targets.clear()
+            self.SNAPPING.point_targets.clear()
+            self.SNAPPING.line_targets.clear()
             self.SNAPPING.anchors.clear()
 
     def board_snapping_set_targets(self):
-        # self.SNAPPING.targets.clear()
+        # self.SNAPPING.point_targets.clear()
+        # self.SNAPPING.line_targets.clear()
 
         canvas_self = self
 
@@ -4546,7 +4550,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         dist = QVector2D(QPointF(snap_pos.x(), 0) - QPointF(cursor_pos.x(), 0))
                 return canvas_self.board_snapping_map_dist_to_viewport(dist).length()
 
-        if not self.SNAPPING.targets:
+        if not (self.SNAPPING.point_targets or self.SNAPPING.line_targets):
             if False:
                 self.SNAPPING.targets = [
                     # SnappingTarget(0.0, 0.0),
@@ -4559,9 +4563,12 @@ class BoardMixin(BoardTextEditItemMixin):
                 cf = self.LibraryData().current_folder()
                 viewport_rect = self.rect()
                 board_mapped_viewport_rect = self.board_MapRectToBoard(viewport_rect).toRect()
-                def append(*args):
-                    self.SNAPPING.targets.append(SnappingTarget(*args))
-                self.SNAPPING.targets = []
+                def append_point(*args):
+                    self.SNAPPING.point_targets.append(SnappingTarget(*args))
+                def append_line(*args):
+                    self.SNAPPING.line_targets.append(SnappingTarget(*args))
+                self.SNAPPING.point_targets = []
+                self.SNAPPING.line_targets = []
                 for bi in cf.board.items_list:
                     if bi not in self.selected_items:
                         sa = bi.get_selection_area(canvas=self, apply_global_scale=False)
@@ -4577,15 +4584,15 @@ class BoardMixin(BoardTextEditItemMixin):
                             # и тогда это свойство уже не будет актуальным.
                             # (4 май 26) Но, если это свойство актуально, то перед добавлением таргета надо сравнивать его
                             # не со всем списком таргетов, а только с 4-мя последними добавленными
-                            append(None, sa_br.top())
-                            append(None, sa_br.bottom())
-                            append(sa_br.left(), None)
-                            append(sa_br.right(), None)
+                            append_line(None, sa_br.top())
+                            append_line(None, sa_br.bottom())
+                            append_line(sa_br.left(), None)
+                            append_line(sa_br.right(), None)
 
-                            append(sa_br.left(), sa_br.top())
-                            append(sa_br.left(), sa_br.bottom())
-                            append(sa_br.right(), sa_br.top())
-                            append(sa_br.right(), sa_br.bottom())
+                            append_point(sa_br.left(), sa_br.top())
+                            append_point(sa_br.left(), sa_br.bottom())
+                            append_point(sa_br.right(), sa_br.top())
+                            append_point(sa_br.right(), sa_br.bottom())
 
     def board_items_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
@@ -4638,7 +4645,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         ACTIVATION_RADIUS = 100.0
 
-        for st in self.SNAPPING.targets:
+        def snap_core_func(st, ):
             for sa in self.SNAPPING.anchors:
                 snap_offset = sa.offset
                 dist = QVector2D(st.get_target_modified_pos(snap_offset + item.position) - (snap_offset + item.position))
@@ -4655,6 +4662,18 @@ class BoardMixin(BoardTextEditItemMixin):
                         sa.cursor_pos = QPointF(cursor_pos)
                         sa.st = st
                     return snapped_cursor_pos
+            return None
+
+        for st in self.SNAPPING.point_targets:
+            rv = snap_core_func(st)
+            if rv:
+                return rv
+
+        for st in self.SNAPPING.line_targets:
+            rv = snap_core_func(st)
+            if rv:
+                return rv
+
         return cursor_pos
 
     def board_snapping_map_dist_to_viewport(self, dist_vector):
