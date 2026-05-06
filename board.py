@@ -4507,7 +4507,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif nones == 0:
                     self.type = SnappingTarget.types.POINT
 
-            def get_target_modified_pos(self, cp):
+            def apply_target_metadata_to_pos(self, cp):
                 if self.type == SnappingTarget.types.POINT:
                     return QPointF(self.x_snapping, self.y_snapping)
                 elif self.type == SnappingTarget.types.LINE:
@@ -4657,7 +4657,7 @@ class BoardMixin(BoardTextEditItemMixin):
         def snap_core_func(st, ):
             for sa in self.SNAPPING.anchors:
                 snap_offset = sa.offset
-                dist = QVector2D(st.get_target_modified_pos(snap_offset + item.position) - (snap_offset + item.position))
+                dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_RADIUS:
                     if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
@@ -4665,7 +4665,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         sa.cursor_pos = None
                         return cursor_pos
                     offset = QPointF(item._position) + snap_offset
-                    snapped_cursor_pos = self.start_translation_pos - offset + st.get_target_modified_pos(cursor_pos)
+                    snapped_cursor_pos = self.start_translation_pos - offset + st.apply_target_metadata_to_pos(cursor_pos)
                     if sa.cursor_pos is None:
                         sa.snapped = True
                         sa.cursor_pos = QPointF(cursor_pos)
@@ -4695,7 +4695,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.SNAPPING.anchors.sort(key=lambda sa: QVector2D(sa.offset + item_position - cursor_pos).length())
 
     def board_snapping_sort_targets(self, item_position, cursor_pos):
-        st_lambda = lambda st: QVector2D(st.get_target_modified_pos(cursor_pos) - cursor_pos).length()
+        st_lambda = lambda st: QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos).length()
         self.SNAPPING.point_targets.sort(key=st_lambda)
         self.SNAPPING.line_targets.sort(key=st_lambda)
 
