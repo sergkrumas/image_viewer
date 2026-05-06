@@ -4476,6 +4476,12 @@ class BoardMixin(BoardTextEditItemMixin):
             SNAPPING.anchors.clear()
             SNAPPING.anchors_sorted = False
 
+    def board_snapping_refresh_targets(self):
+        SNAPPING = self.SNAPPING
+        if self.STNG.board_items_snapping:
+            SNAPPING.point_targets.clear()
+            SNAPPING.line_targets.clear()
+
     def board_snapping_set_targets(self):
         # self.SNAPPING.point_targets.clear()
         # self.SNAPPING.line_targets.clear()

@@ -441,6 +441,7 @@ class AutoscrollMixin():
     def autoscroll_desactivate_board_item_transform_autoscroll(self):
         if self.AUTOSCROLL.board_item_transform:
             self.AUTOSCROLL.board_item_transform = False
+            self.board_snapping_refresh_targets()
             self.autoscroll_finish()
 
 if __name__ == '__main__':
