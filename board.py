@@ -4494,7 +4494,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif nones == 0:
                     self.type = SnappingTarget.types.POINT
 
-            def get_pos_modification(self, cp):
+            def get_target_modified_pos(self, cp):
                 if self.type == SnappingTarget.types.POINT:
                     return QPointF(self.x_snapping, self.y_snapping)
                 elif self.type == SnappingTarget.types.LINE:
@@ -4641,7 +4641,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for st in self.SNAPPING.targets:
             for sa in self.SNAPPING.anchors:
                 snap_offset = sa.offset
-                dist = QVector2D(st.get_pos_modification(snap_offset + item.position) - (snap_offset + item.position))
+                dist = QVector2D(st.get_target_modified_pos(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_RADIUS:
                     if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
@@ -4649,7 +4649,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         sa.cursor_pos = None
                         return cursor_pos
                     offset = QPointF(item._position) + snap_offset
-                    snapped_cursor_pos = self.start_translation_pos - offset + st.get_pos_modification(cursor_pos)
+                    snapped_cursor_pos = self.start_translation_pos - offset + st.get_target_modified_pos(cursor_pos)
                     if sa.cursor_pos is None:
                         sa.snapped = True
                         sa.cursor_pos = QPointF(cursor_pos)
