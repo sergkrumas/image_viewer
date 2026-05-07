@@ -4687,52 +4687,95 @@ class BoardMixin(BoardTextEditItemMixin):
             ]
             # self.show_center_label(f'updating anchors for {item}')
 
-    def board_items_scaling_snapping(self, board_mapped_cursor_pos, proportional_scaling_mode):
-        cursor_pos = board_mapped_cursor_pos
+    def board_items_scaling_snapping(self, cursor_mod, board_mapped_cursor_pos, cursor_pos_helper, proportional_scaling_mode):
+
+
+        cursor_pos = scaling_vector = board_mapped_cursor_pos
 
         if not self.STNG.board_items_snapping:
             return cursor_pos
 
-        if proportional_scaling_mode:
+        if proportional_scaling_mode and cursor_mod:
             return cursor_pos
 
         SNPG = self.SNAPPING
 
         self.board_snapping_define_targets()
-
         ACTIVATION_DIST = self.STNG.board_snapping_activation_dist
         DESACTIVATION_DIST = ACTIVATION_DIST + 20.0
 
         SNPG.activated_targets = []
 
-        def snap_core_func(st, anchors):
-            scaling_vector_cursor_pos = cursor_pos - self.scaling_pivot_point
-            scaling_vector_cursor_pos = cursor_pos
-            dist = QVector2D(st.apply_target_metadata_to_pos(scaling_vector_cursor_pos) - scaling_vector_cursor_pos)
-            snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
-            if snap_dist < ACTIVATION_DIST:
-                return st.apply_target_metadata_to_pos(scaling_vector_cursor_pos)
-            return None
+        if cursor_mod:
 
-        if not proportional_scaling_mode:
-            for st in SNPG.point_targets:
-                rv = snap_core_func(st, SNPG.anchors)
-                if rv is not None:
-                    SNPG.activated_targets.append(st)
-                    return rv
+            def snap_core_func(st):
+                dist = QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos)
+                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+                if snap_dist < ACTIVATION_DIST:
+                    return st.apply_target_metadata_to_pos(cursor_pos)
+                return None
 
-        for st1 in SNPG.line_targets:
-            rv1 = snap_core_func(st1, SNPG.line_anchors)
-            if rv1 is not None:
-                SNPG.activated_targets.append(st1)
-                for st2 in self.board_snapping_filter_perpendicular_lines(st1):
-                    rv2 = snap_core_func(st2, SNPG.line_anchors)
-                    if rv2 is not None:
-                        SNPG.activated_targets.append(st2)
-                        return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
-                return rv1
+            if not proportional_scaling_mode:
+                for st in SNPG.point_targets:
+                    rv = snap_core_func(st)
+                    if rv is not None:
+                        SNPG.activated_targets.append(st)
+                        return rv
 
-        return cursor_pos
+            for st1 in SNPG.line_targets:
+                rv1 = snap_core_func(st1)
+                if rv1 is not None:
+                    SNPG.activated_targets.append(st1)
+                    for st2 in self.board_snapping_filter_perpendicular_lines(st1):
+                        rv2 = snap_core_func(st2)
+                        if rv2 is not None:
+                            SNPG.activated_targets.append(st2)
+                            return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
+                    return rv1
+
+            return cursor_pos
+
+        else:
+            
+            scaling_vector = QPointF(cursor_pos)
+
+            def snap_core_func(st):
+                dist = QVector2D(st.apply_target_metadata_to_pos(cursor_pos_helper) - cursor_pos_helper)
+                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+                if snap_dist < ACTIVATION_DIST:
+                    # сначала я затупил и хотел вычислять точку пересечения вектора и линии,
+                    # но нарисовав схему понял, что можно выехать за счёт использования пропорций в подобных треугольниках
+
+                    if st.x_snapping is None:
+                        # horizontal target line
+                        current_dim_length = abs(scaling_vector.y())
+
+                    elif st.y_snapping is None:
+                        # vertical target line
+                        current_dim_length = abs(scaling_vector.x())
+
+                    if current_dim_length == 0.0:
+                        return scaling_vector
+                    else:
+                        # расстояние до линии (по перпендикуляру)
+                        target_dim_length = QVector2D(st.apply_target_metadata_to_pos(self.scaling_pivot_point) - self.scaling_pivot_point).length()
+                        snapping_factor = target_dim_length/current_dim_length
+                        snapped_scaling_vector = scaling_vector*snapping_factor
+                        return snapped_scaling_vector
+                return None
+
+            # смысла проверять SNPG.point_target нет при включённых пропорциях
+
+            for st1 in SNPG.line_targets:
+                rv1 = snap_core_func(st1)
+                if rv1 is not None:
+                    # смысла снапится ко второй линии тоже нет,
+                    # если мы работаем с пропорциональным масштабированием,
+                    # поэтому сразу возвращаем значение
+                    return rv1
+
+            return cursor_pos
+
 
     def board_items_translation_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
@@ -5266,7 +5309,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for bi in self.selected_items:
             ep = self.board_MapToBoard(QPointF(event_pos))
-            cursor_scaling_vector =  self.board_items_scaling_snapping(ep, proportional_scaling) - pivot # не вытаскивать вычисления вектора из цикла!
+            cursor_scaling_vector =  self.board_items_scaling_snapping(True, ep, None, proportional_scaling) - pivot # не вытаскивать вычисления вектора из цикла!
 
             # принудительно задаётся минимальный скейл, значение в экранных координатах
             # MIN_LENGTH = 100.0
@@ -5292,7 +5335,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 factor = QPointF.dotProduct(self.proportional_scaling_vector, self.scaling_vector)
                 self.proportional_scaling_vector *= factor
 
-                self.scaling_vector = scaling_vector = self.proportional_scaling_vector
+                self.scaling_vector = scaling_vector = self.proportional_scaling_vector = \
+                            self.board_items_scaling_snapping(False, self.proportional_scaling_vector, ep, proportional_scaling)
 
             if center_is_pivot:
                 scaling_x_axis = - scaling_x_axis
