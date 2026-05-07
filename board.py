@@ -4629,6 +4629,9 @@ class BoardMixin(BoardTextEditItemMixin):
             # (24 мар 26) TODO: избавиться от этого костыля
             return cursor_pos
 
+
+        self.board_snapping_set_targets()
+
         class SnapAnchor():
             def __init__(self, item, offset, place):
                 self.item = item
@@ -4644,8 +4647,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.setPen(QPen(Qt.white, 20))
                 # painter.drawPoint(point)
                 painter.drawText(point, 'A')
-
-        self.board_snapping_set_targets()
 
         item = self.selected_items[0]
         if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
