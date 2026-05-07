@@ -4632,6 +4632,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return cursor_pos
 
         self.board_snapping_set_targets()
+        SNG = self.SNAPPING
 
         class SnapAnchor():
             def __init__(self, item, offset, place):
@@ -4648,8 +4649,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.setPen(QPen(Qt.white, 20))
                 # painter.drawPoint(point)
                 painter.drawText(point, 'A')
-
-        SNG = self.SNAPPING
 
         item = self.selected_items[0]
         if (not SNG.anchors) or (SNG.anchors[0].item is not item):
