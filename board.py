@@ -4464,6 +4464,7 @@ class BoardMixin(BoardTextEditItemMixin):
         SNAPPING.point_targets = list()
         SNAPPING.line_targets = list()
         SNAPPING.anchors = list()
+        SNAPPING.line_anchors = list()
         SNAPPING.show_point_targets = False
         SNAPPING.anchors_sorted = False
 
@@ -4474,6 +4475,7 @@ class BoardMixin(BoardTextEditItemMixin):
             SNAPPING.point_targets.clear()
             SNAPPING.line_targets.clear()
             SNAPPING.anchors.clear()
+            SNAPPING.line_anchors.clear()
             SNAPPING.anchors_sorted = False
 
     def board_snapping_refresh_targets(self):
@@ -4511,14 +4513,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 elif nones == 0:
                     self.type = SnappingTarget.types.POINT
 
-            def apply_target_metadata_to_pos(self, cp):
+            def apply_target_metadata_to_pos(self, pos):
                 if self.type == SnappingTarget.types.POINT:
                     return QPointF(self.x_snapping, self.y_snapping)
                 elif self.type == SnappingTarget.types.LINE:
                     if self.x_snapping is None:
-                        return QPointF(cp.x(), self.y_snapping)
+                        return QPointF(pos.x(), self.y_snapping)
                     elif self.y_snapping is None:
-                        return QPointF(self.x_snapping, cp.y())
+                        return QPointF(self.x_snapping, pos.y())
 
             def draw(self, canvas, painter):
                 if self.activated:
@@ -4568,6 +4570,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         if not (self.SNAPPING.point_targets or self.SNAPPING.line_targets):
             if True:
+                # debug data
                 self.SNAPPING.point_targets = [
                     # SnappingTarget(0.0, 0.0),
                     # SnappingTarget(0.0, 500.0),
@@ -4577,6 +4580,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     SnappingTarget(100.0, None),
                     SnappingTarget(None, 500.0),
                 ]
+
             else:
                 cf = self.LibraryData().current_folder()
                 viewport_rect = self.rect()
@@ -4651,7 +4655,11 @@ class BoardMixin(BoardTextEditItemMixin):
             self.SNAPPING.anchors = [
                 SnapAnchor(item, sa_br.bottomLeft() - center, center),
                 SnapAnchor(item, sa_br.topLeft() - center, center),
-                SnapAnchor(item, QPointF(0, 0), center), # позиция этого якоря влияет на срабатывание его самого и других якорей
+
+                # позиция этого якоря влияет на срабатывание его самого и других якорей,
+                # поэтому они сортируются по близости к курсору позже
+                SnapAnchor(item, QPointF(0, 0), center),
+
                 SnapAnchor(item, sa_br.bottomRight() - center, center),
                 SnapAnchor(item, sa_br.topRight() - center, center),
                 SnapAnchor(item, sa[0] - center, center),
@@ -4659,12 +4667,22 @@ class BoardMixin(BoardTextEditItemMixin):
                 SnapAnchor(item, sa[2] - center, center),
                 SnapAnchor(item, sa[3] - center, center),
             ]
+
+            self.SNAPPING.line_anchors = [
+                SnapAnchor(item, QPointF(0, 0), center),
+
+                SnapAnchor(item, (sa_br.topLeft() + sa_br.topRight())/2.0 - center, center),
+                SnapAnchor(item, (sa_br.topRight() + sa_br.bottomRight())/2.0 - center, center),
+                SnapAnchor(item, (sa_br.bottomRight() + sa_br.bottomLeft())/2.0 - center, center),
+                SnapAnchor(item, (sa_br.bottomLeft() + sa_br.topLeft())/2.0 - center, center),
+
+            ]
             # self.show_center_label(f'updating anchors for {item}')
 
         ACTIVATION_RADIUS = 100.0
 
-        def snap_core_func(st, ):
-            for sa in self.SNAPPING.anchors:
+        def snap_core_func(st, anchors):
+            for sa in anchors:
                 snap_offset = sa.offset
                 dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
@@ -4690,15 +4708,15 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_snapping_sort_targets(item.position, cursor_pos)
 
         for st in self.SNAPPING.point_targets:
-            rv = snap_core_func(st)
+            rv = snap_core_func(st, self.SNAPPING.anchors)
             if rv:
                 return rv
 
         for st1 in self.SNAPPING.line_targets:
-            rv1 = snap_core_func(st1)
+            rv1 = snap_core_func(st1, self.SNAPPING.line_anchors)
             if rv1:
                 for st2 in self.board_snapping_filter_perpendicular_lines(st1):
-                    rv2 = snap_core_func(st2)
+                    rv2 = snap_core_func(st2, self.SNAPPING.line_anchors)
                     if rv2:
                         return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
                 return rv1
