@@ -4467,6 +4467,7 @@ class BoardMixin(BoardTextEditItemMixin):
         SNAPPING.line_anchors = list()
         SNAPPING.show_point_targets = False
         SNAPPING.anchors_sorted = False
+        SNAPPING.activated_targets = list()
 
     def board_items_snapping_finish(self):
         SNAPPING = self.SNAPPING
@@ -4477,12 +4478,14 @@ class BoardMixin(BoardTextEditItemMixin):
             SNAPPING.anchors.clear()
             SNAPPING.line_anchors.clear()
             SNAPPING.anchors_sorted = False
+            SNAPPING.activated_targets.clear()
 
     def board_snapping_refresh_targets(self):
         SNAPPING = self.SNAPPING
         if self.STNG.board_items_snapping:
             SNAPPING.point_targets.clear()
             SNAPPING.line_targets.clear()
+            SNAPPING.activated_targets.clear()
 
     def board_snapping_set_targets(self):
         # self.SNAPPING.point_targets.clear()
@@ -4503,7 +4506,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 self.x_snapping = x_snapping
                 self.y_snapping = y_snapping
                 self.type = -1
-                self.activated = False
 
                 nones = [self.x_snapping, self.y_snapping].count(None)
                 if nones == 2:
@@ -4523,7 +4525,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         return QPointF(self.x_snapping, pos.y())
 
             def draw(self, canvas, painter):
-                if self.activated:
+                if self in canvas_self.SNAPPING.activated_targets:
                     painter.setPen(self.activated_pen)
                 else:
                     painter.setPen(self.default_pen)
@@ -4687,7 +4689,7 @@ class BoardMixin(BoardTextEditItemMixin):
             for sa in anchors:
                 snap_offset = sa.offset
                 dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
-                snap_dist = self.board_SNG_map_dist_to_viewport(dist).length()
+                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_DIST:
                     if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_DIST+20):
                         sa.snapped = False
@@ -4702,10 +4704,10 @@ class BoardMixin(BoardTextEditItemMixin):
             return None
 
         if not SNG.anchors_sorted:
-            self.board_SNG_sort_anchors(item.position, cursor_pos)
+            self.board_snapping_sort_anchors(item.position, cursor_pos)
             SNG.anchors_sorted = True
 
-        self.board_SNG_sort_targets(item.position, cursor_pos)
+        self.board_snapping_sort_targets(item.position, cursor_pos)
 
         SNG.activated_targets = []
 
@@ -4719,7 +4721,7 @@ class BoardMixin(BoardTextEditItemMixin):
             rv1 = snap_core_func(st1, SNG.line_anchors)
             if rv1:
                 SNG.activated_targets.append(st1)
-                for st2 in self.board_SNG_filter_perpendicular_lines(st1):
+                for st2 in self.board_snapping_filter_perpendicular_lines(st1):
                     rv2 = snap_core_func(st2, SNG.line_anchors)
                     if rv2:
                         SNG.activated_targets.append(st2)
