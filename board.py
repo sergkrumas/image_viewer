@@ -4693,6 +4693,9 @@ class BoardMixin(BoardTextEditItemMixin):
         if not self.STNG.board_items_snapping:
             return cursor_pos
 
+        if proportional_scaling_mode:
+            return cursor_pos
+
         SNPG = self.SNAPPING
 
         self.board_snapping_define_targets()
@@ -5348,6 +5351,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.prepare_selection_box_widget(cf)
             self.build_board_bounding_rect(cf)
         self.autoscroll_desactivate_board_item_transform_autoscroll()
+        self.board_items_snapping_finish()
 
     def board_CANCEL_selected_items_SCALING(self):
         if self.scaling_ongoing:
