@@ -4639,7 +4639,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawText(point, 'A')
 
 
-        if (not SNPG.anchors) or (SNPG.anchors[0].item is not item):
+        if (not SNPG.anchors) or (SNPG.anchors and SNPG.anchors[0].item is not item):
             sa = item.get_selection_area(canvas=self, apply_global_scale=False)
             sa_br = sa.boundingRect()
             center = sa_br.center()
