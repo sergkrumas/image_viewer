@@ -4569,7 +4569,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 return canvas_self.board_snapping_map_dist_to_viewport(dist).length()
 
         if not (self.SNAPPING.point_targets or self.SNAPPING.line_targets):
-            if True:
+            if False:
                 # debug data
                 self.SNAPPING.point_targets = [
                     # SnappingTarget(0.0, 0.0),
@@ -4629,7 +4629,6 @@ class BoardMixin(BoardTextEditItemMixin):
             # (24 мар 26) TODO: избавиться от этого костыля
             return cursor_pos
 
-
         self.board_snapping_set_targets()
 
         class SnapAnchor():
@@ -4648,12 +4647,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 # painter.drawPoint(point)
                 painter.drawText(point, 'A')
 
+        SNG = self.SNAPPING
+
         item = self.selected_items[0]
-        if (not self.SNAPPING.anchors) or (self.SNAPPING.anchors[0].item is not item):
+        if (not SNG.anchors) or (SNG.anchors[0].item is not item):
             sa = item.get_selection_area(canvas=self, apply_global_scale=False)
             sa_br = sa.boundingRect()
             center = sa_br.center()
-            self.SNAPPING.anchors = [
+            SNG.anchors = [
                 SnapAnchor(item, sa_br.bottomLeft() - center, center),
                 SnapAnchor(item, sa_br.topLeft() - center, center),
 
@@ -4669,7 +4670,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 SnapAnchor(item, sa[3] - center, center),
             ]
 
-            self.SNAPPING.line_anchors = [
+            SNG.line_anchors = [
                 SnapAnchor(item, QPointF(0, 0), center),
 
                 SnapAnchor(item, (sa_br.topLeft() + sa_br.topRight())/2.0 - center, center),
@@ -4686,9 +4687,8 @@ class BoardMixin(BoardTextEditItemMixin):
             for sa in anchors:
                 snap_offset = sa.offset
                 dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
-                snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+                snap_dist = self.board_SNG_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_DIST:
-                    st.activated = False
                     if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_DIST+20):
                         sa.snapped = False
                         sa.cursor_pos = None
@@ -4698,27 +4698,31 @@ class BoardMixin(BoardTextEditItemMixin):
                     if sa.cursor_pos is None:
                         sa.snapped = True
                         sa.cursor_pos = QPointF(cursor_pos)
-                    st.activated = True
                     return snapped_cursor_pos
             return None
 
-        if not self.SNAPPING.anchors_sorted:
-            self.board_snapping_sort_anchors(item.position, cursor_pos)
-            self.SNAPPING.anchors_sorted = True
+        if not SNG.anchors_sorted:
+            self.board_SNG_sort_anchors(item.position, cursor_pos)
+            SNG.anchors_sorted = True
 
-        self.board_snapping_sort_targets(item.position, cursor_pos)
+        self.board_SNG_sort_targets(item.position, cursor_pos)
 
-        for st in self.SNAPPING.point_targets:
-            rv = snap_core_func(st, self.SNAPPING.anchors)
+        SNG.activated_targets = []
+
+        for st in SNG.point_targets:
+            rv = snap_core_func(st, SNG.anchors)
             if rv:
+                SNG.activated_targets.append(st)
                 return rv
 
-        for st1 in self.SNAPPING.line_targets:
-            rv1 = snap_core_func(st1, self.SNAPPING.line_anchors)
+        for st1 in SNG.line_targets:
+            rv1 = snap_core_func(st1, SNG.line_anchors)
             if rv1:
-                for st2 in self.board_snapping_filter_perpendicular_lines(st1):
-                    rv2 = snap_core_func(st2, self.SNAPPING.line_anchors)
+                SNG.activated_targets.append(st1)
+                for st2 in self.board_SNG_filter_perpendicular_lines(st1):
+                    rv2 = snap_core_func(st2, SNG.line_anchors)
                     if rv2:
+                        SNG.activated_targets.append(st2)
                         return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
                 return rv1
 
