@@ -1305,6 +1305,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 partial(self.toggle_boolean_var_generic, self.STNG, 'board_items_snapping')
             ),
             (
+                _('Items snapping while translating'),
+                self.STNG.board_items_snapping_while_translating,
+                partial(self.toggle_boolean_var_generic, self.STNG, 'board_items_snapping_while_translating')
+            ),
+            (
                 _('Force proportional item scaling'),
                 self.boards_proportional_item_scaling_as_default,
                 partial(self.toggle_boolean_var_generic, self, 'boards_proportional_item_scaling_as_default')
@@ -4781,6 +4786,9 @@ class BoardMixin(BoardTextEditItemMixin):
         cursor_pos = board_mapped_cursor_pos
 
         if not self.STNG.board_items_snapping:
+            return cursor_pos
+
+        if not self.STNG.board_items_snapping_while_translating:
             return cursor_pos
 
         if not self.selected_items:
