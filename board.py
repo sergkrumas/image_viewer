@@ -4487,7 +4487,7 @@ class BoardMixin(BoardTextEditItemMixin):
             SNAPPING.line_targets.clear()
             SNAPPING.activated_targets.clear()
 
-    def board_snapping_set_targets(self):
+    def board_snapping_define_targets(self):
         # self.SNAPPING.point_targets.clear()
         # self.SNAPPING.line_targets.clear()
 
@@ -4618,20 +4618,8 @@ class BoardMixin(BoardTextEditItemMixin):
                             append_point(sa_br.right(), sa_br.top())
                             append_point(sa_br.right(), sa_br.bottom())
 
-    def board_items_snapping(self, board_mapped_cursor_pos):
-        cursor_pos = board_mapped_cursor_pos
+    def board_snapping_define_anchors(self, item):
 
-        if not self.STNG.board_items_snapping:
-            return board_mapped_cursor_pos
-
-        if not self.selected_items:
-            self.show_center_label('skipping', error=True)
-            # ситуация возникает, если начинаешь тащить айтем, который не был выделен перед этим
-            # на самом деле это плохо, надо исправлять эти баги, но пока тут побудет костыль
-            # (24 мар 26) TODO: избавиться от этого костыля
-            return cursor_pos
-
-        self.board_snapping_set_targets()
         SNG = self.SNAPPING
 
         class SnapAnchor():
@@ -4650,7 +4638,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 # painter.drawPoint(point)
                 painter.drawText(point, 'A')
 
-        item = self.selected_items[0]
+
         if (not SNG.anchors) or (SNG.anchors[0].item is not item):
             sa = item.get_selection_area(canvas=self, apply_global_scale=False)
             sa_br = sa.boundingRect()
@@ -4681,6 +4669,25 @@ class BoardMixin(BoardTextEditItemMixin):
 
             ]
             # self.show_center_label(f'updating anchors for {item}')
+
+    def board_items_snapping(self, board_mapped_cursor_pos):
+        cursor_pos = board_mapped_cursor_pos
+
+        if not self.STNG.board_items_snapping:
+            return board_mapped_cursor_pos
+
+        if not self.selected_items:
+            self.show_center_label('skipping', error=True)
+            # ситуация возникает, если начинаешь тащить айтем, который не был выделен перед этим
+            # на самом деле это плохо, надо исправлять эти баги, но пока тут побудет костыль
+            # (24 мар 26) TODO: избавиться от этого костыля
+            return cursor_pos
+
+        SNG = self.SNAPPING
+        item = self.selected_items[0]
+
+        self.board_snapping_define_anchors(item)
+        self.board_snapping_define_targets()
 
         ACTIVATION_DIST = 100.0
         DESACTIVATION_DIST = ACTIVATION_DIST + 20.0
