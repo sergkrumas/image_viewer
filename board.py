@@ -4741,7 +4741,7 @@ class BoardMixin(BoardTextEditItemMixin):
             return cursor_pos
 
         else:
-            
+
             scaling_vector = QPointF(cursor_pos)
 
             def snap_core_func(st):
