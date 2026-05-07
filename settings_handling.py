@@ -1134,6 +1134,7 @@ class Settings(SettingsWindow):
             'one_key_selected_items_scaling_factor': (20.0, (5.0, 300.0), _('Diagonal factor for one-key selected items scaling (in screen pixels)')),
             'board_autoscroll_speed': (1.0, (0.5, 3.0), _('Board Page autoscroll speed')),
             'board_items_snapping': (False, _('Items snapping')),
+            'board_snapping_activation_dist': (50.0, (20.0, 100.0), _("Item snapping activation distance")),
             'board_draw_bbr': (False, _('Draw board bounding rect')),
             'board_always_hide_control_panel_if_not_hovered': (True, _("Always hide control panel if it is not hovered")),
             BOARD_NO_CONTROL_PANEL_SETTING_ID: (False, _("No control panel")),

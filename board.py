@@ -4620,7 +4620,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_snapping_define_anchors(self, item):
 
-        SNG = self.SNAPPING
+        SNPG = self.SNAPPING
 
         class SnapAnchor():
             def __init__(self, item, offset, place):
@@ -4639,11 +4639,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.drawText(point, 'A')
 
 
-        if (not SNG.anchors) or (SNG.anchors[0].item is not item):
+        if (not SNPG.anchors) or (SNPG.anchors[0].item is not item):
             sa = item.get_selection_area(canvas=self, apply_global_scale=False)
             sa_br = sa.boundingRect()
             center = sa_br.center()
-            SNG.anchors = [
+            SNPG.anchors = [
                 SnapAnchor(item, sa_br.bottomLeft() - center, center),
                 SnapAnchor(item, sa_br.topLeft() - center, center),
 
@@ -4659,7 +4659,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 SnapAnchor(item, sa[3] - center, center),
             ]
 
-            SNG.line_anchors = [
+            SNPG.line_anchors = [
                 SnapAnchor(item, QPointF(0, 0), center),
 
                 SnapAnchor(item, (sa_br.topLeft() + sa_br.topRight())/2.0 - center, center),
@@ -4683,13 +4683,13 @@ class BoardMixin(BoardTextEditItemMixin):
             # (24 мар 26) TODO: избавиться от этого костыля
             return cursor_pos
 
-        SNG = self.SNAPPING
+        SNPG = self.SNAPPING
         item = self.selected_items[0]
 
         self.board_snapping_define_anchors(item)
         self.board_snapping_define_targets()
 
-        ACTIVATION_DIST = 100.0
+        ACTIVATION_DIST = self.STNG.board_snapping_activation_dist
         DESACTIVATION_DIST = ACTIVATION_DIST + 20.0
 
         def snap_core_func(st, anchors):
@@ -4710,28 +4710,28 @@ class BoardMixin(BoardTextEditItemMixin):
                     return snapped_cursor_pos
             return None
 
-        if not SNG.anchors_sorted:
+        if not SNPG.anchors_sorted:
             self.board_snapping_sort_anchors(item.position, cursor_pos)
-            SNG.anchors_sorted = True
+            SNPG.anchors_sorted = True
 
         self.board_snapping_sort_targets(item.position, cursor_pos)
 
-        SNG.activated_targets = []
+        SNPG.activated_targets = []
 
-        for st in SNG.point_targets:
-            rv = snap_core_func(st, SNG.anchors)
+        for st in SNPG.point_targets:
+            rv = snap_core_func(st, SNPG.anchors)
             if rv:
-                SNG.activated_targets.append(st)
+                SNPG.activated_targets.append(st)
                 return rv
 
-        for st1 in SNG.line_targets:
-            rv1 = snap_core_func(st1, SNG.line_anchors)
+        for st1 in SNPG.line_targets:
+            rv1 = snap_core_func(st1, SNPG.line_anchors)
             if rv1:
-                SNG.activated_targets.append(st1)
+                SNPG.activated_targets.append(st1)
                 for st2 in self.board_snapping_filter_perpendicular_lines(st1):
-                    rv2 = snap_core_func(st2, SNG.line_anchors)
+                    rv2 = snap_core_func(st2, SNPG.line_anchors)
                     if rv2:
-                        SNG.activated_targets.append(st2)
+                        SNPG.activated_targets.append(st2)
                         return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
                 return rv1
 
