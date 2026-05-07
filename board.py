@@ -4468,6 +4468,7 @@ class BoardMixin(BoardTextEditItemMixin):
         SNAPPING.show_point_targets = False
         SNAPPING.anchors_sorted = False
         SNAPPING.activated_targets = list()
+        SNAPPING.selection_box_board_mapped = None
 
     def board_items_snapping_finish(self):
         SNAPPING = self.SNAPPING
@@ -4640,7 +4641,23 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         if (not SNPG.anchors) or (SNPG.anchors and SNPG.anchors[0].item is not item):
-            sa = item.get_selection_area(canvas=self, apply_global_scale=False)
+
+            if len(self.selected_items) > 1:
+                sb = self.selection_box
+                self.selection_box_board_mapped = QPolygonF([
+                                self.board_MapToBoard(sb[0]),
+                                self.board_MapToBoard(sb[1]),
+                                self.board_MapToBoard(sb[2]),
+                                self.board_MapToBoard(sb[3]),
+                            ])
+
+                sa = self.selection_box_board_mapped
+                SNPG.selection_box_board_mapped = self.selection_box_board_mapped
+
+            else:
+                sa = item.get_selection_area(canvas=self, apply_global_scale=False)
+                SNPG.selection_box_board_mapped = None
+
             sa_br = sa.boundingRect()
             center = sa_br.center()
             SNPG.anchors = [
@@ -4692,17 +4709,29 @@ class BoardMixin(BoardTextEditItemMixin):
         ACTIVATION_DIST = self.STNG.board_snapping_activation_dist
         DESACTIVATION_DIST = ACTIVATION_DIST + 20.0
 
+        # (7 май 26) TODO: вот это всё лучше отрефакторить позже,
+        # потому что код писался изначально для поддержки снаппинга одного айтема,
+        # а теперь их поддерживается несколько
+        if len(self.selected_items) == 1:
+            current_item_position = item.position
+            item_start_position = item._position
+        else:
+            ce = SNPG.selection_box_board_mapped.boundingRect().center()
+            cursor_delta = cursor_pos - self.start_translation_pos
+            current_item_position = ce + cursor_delta
+            item_start_position = ce
+
         def snap_core_func(st, anchors):
             for sa in anchors:
                 snap_offset = sa.offset
-                dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
+                dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + current_item_position) - (snap_offset + current_item_position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
                 if snap_dist < ACTIVATION_DIST:
                     if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > DESACTIVATION_DIST:
                         sa.snapped = False
                         sa.cursor_pos = None
                         return cursor_pos
-                    offset = QPointF(item._position) + snap_offset
+                    offset = QPointF(item_start_position) + snap_offset
                     snapped_cursor_pos = self.start_translation_pos - offset + st.apply_target_metadata_to_pos(cursor_pos)
                     if sa.cursor_pos is None:
                         sa.snapped = True
@@ -4711,10 +4740,10 @@ class BoardMixin(BoardTextEditItemMixin):
             return None
 
         if not SNPG.anchors_sorted:
-            self.board_snapping_sort_anchors(item.position, cursor_pos)
+            self.board_snapping_sort_anchors(current_item_position, cursor_pos)
             SNPG.anchors_sorted = True
 
-        self.board_snapping_sort_targets(item.position, cursor_pos)
+        self.board_snapping_sort_targets(current_item_position, cursor_pos)
 
         SNPG.activated_targets = []
 
