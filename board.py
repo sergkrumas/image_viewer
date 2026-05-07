@@ -4405,7 +4405,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_DO_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
             current_folder = self.LibraryData().current_folder()
-            cursor_pos = self.board_items_snapping(QPointF(self.board_MapToBoard(event_pos)))
+            cursor_pos = self.board_items_translation_snapping(QPointF(self.board_MapToBoard(event_pos)))
             delta = cursor_pos - self.start_translation_pos
             if self.translation_ongoing:
                 for board_item in current_folder.board.items_list:
@@ -4687,7 +4687,7 @@ class BoardMixin(BoardTextEditItemMixin):
             ]
             # self.show_center_label(f'updating anchors for {item}')
 
-    def board_items_snapping(self, board_mapped_cursor_pos):
+    def board_items_translation_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
 
         if not self.STNG.board_items_snapping:
