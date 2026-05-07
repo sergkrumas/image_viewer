@@ -2256,6 +2256,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     fd_bi.pixmap = pixmap
 
                     fd_bi.file_data = self.LibraryData().create_file_data("", fd)
+                    fd_bi.file_data.virtual = True
                     fd_bi.file_data.board_items.append(fd_bi)
 
                     fd.board.items_list.append(fd_bi)
@@ -2272,6 +2273,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fd.board.ready = True
                 fd.board.root_folder = cf
                 fd.board.root_item = item
+                # папки для досок фреймов анимированных файлов не должны добавляться в список досок!
                 # self.CrossboardData().add_board_folder_data(fd)
 
 

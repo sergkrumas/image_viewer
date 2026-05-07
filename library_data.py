@@ -1987,6 +1987,8 @@ class FileData():
 
         self.set_id(self)
 
+        self.virtual = False
+
         self.scale = None
         self.position = None
         self.hint_position = None
@@ -1997,7 +1999,10 @@ class FileData():
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
         self.filename = os.path.basename(filepath)
-        self.filepath = os.path.normpath(filepath)
+        if filepath:
+            self.filepath = os.path.normpath(filepath)
+        else:
+            self.filepath = ""
         self.preview_size = QSize(0, 0)
         self.anim_paused = False
         self.svg_scale_factor = 2

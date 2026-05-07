@@ -2341,7 +2341,7 @@ class MainWindow(QMainWindow,
         self.viewer_reset(simple=True)
         # setting new image
         self.viewer_error = False
-        if filepath == ".":
+        if file_data.virtual:
             if file_data.board_items and file_data.board_items[0].pixmap:
                 self.pixmap = file_data.board_items[0].pixmap
                 self.image_filepath = ""
