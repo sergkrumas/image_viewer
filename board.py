@@ -4687,11 +4687,55 @@ class BoardMixin(BoardTextEditItemMixin):
             ]
             # self.show_center_label(f'updating anchors for {item}')
 
+    def board_items_scaling_snapping(self, board_mapped_cursor_pos, proportional_scaling_mode):
+        cursor_pos = board_mapped_cursor_pos
+
+        if not self.STNG.board_items_snapping:
+            return cursor_pos
+
+        SNPG = self.SNAPPING
+
+        self.board_snapping_define_targets()
+
+        ACTIVATION_DIST = self.STNG.board_snapping_activation_dist
+        DESACTIVATION_DIST = ACTIVATION_DIST + 20.0
+
+        SNPG.activated_targets = []
+
+        def snap_core_func(st, anchors):
+            scaling_vector_cursor_pos = cursor_pos - self.scaling_pivot_point
+            scaling_vector_cursor_pos = cursor_pos
+            dist = QVector2D(st.apply_target_metadata_to_pos(scaling_vector_cursor_pos) - scaling_vector_cursor_pos)
+            snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
+            if snap_dist < ACTIVATION_DIST:
+                return st.apply_target_metadata_to_pos(scaling_vector_cursor_pos)
+            return None
+
+        if not proportional_scaling_mode:
+            for st in SNPG.point_targets:
+                rv = snap_core_func(st, SNPG.anchors)
+                if rv is not None:
+                    SNPG.activated_targets.append(st)
+                    return rv
+
+        for st1 in SNPG.line_targets:
+            rv1 = snap_core_func(st1, SNPG.line_anchors)
+            if rv1 is not None:
+                SNPG.activated_targets.append(st1)
+                for st2 in self.board_snapping_filter_perpendicular_lines(st1):
+                    rv2 = snap_core_func(st2, SNPG.line_anchors)
+                    if rv2 is not None:
+                        SNPG.activated_targets.append(st2)
+                        return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
+                return rv1
+
+        return cursor_pos
+
     def board_items_translation_snapping(self, board_mapped_cursor_pos):
         cursor_pos = board_mapped_cursor_pos
 
         if not self.STNG.board_items_snapping:
-            return board_mapped_cursor_pos
+            return cursor_pos
 
         if not self.selected_items:
             self.show_center_label('skipping', error=True)
@@ -4749,17 +4793,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for st in SNPG.point_targets:
             rv = snap_core_func(st, SNPG.anchors)
-            if rv:
+            if rv is not None:
                 SNPG.activated_targets.append(st)
                 return rv
 
         for st1 in SNPG.line_targets:
             rv1 = snap_core_func(st1, SNPG.line_anchors)
-            if rv1:
+            if rv1 is not None:
                 SNPG.activated_targets.append(st1)
                 for st2 in self.board_snapping_filter_perpendicular_lines(st1):
                     rv2 = snap_core_func(st2, SNPG.line_anchors)
-                    if rv2:
+                    if rv2 is not None:
                         SNPG.activated_targets.append(st2)
                         return self.board_snapping_to_lines_combine_return_values(st1, st2, rv1, rv2)
                 return rv1
@@ -5218,7 +5262,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.scaling_pivot_point_y_axis = scaling_y_axis
 
         for bi in self.selected_items:
-            cursor_scaling_vector =  self.board_MapToBoard(QPointF(event_pos)) - pivot # не вытаскивать вычисления вектора из цикла!
+            ep = self.board_MapToBoard(QPointF(event_pos))
+            cursor_scaling_vector =  self.board_items_scaling_snapping(ep, proportional_scaling) - pivot # не вытаскивать вычисления вектора из цикла!
 
             # принудительно задаётся минимальный скейл, значение в экранных координатах
             # MIN_LENGTH = 100.0
