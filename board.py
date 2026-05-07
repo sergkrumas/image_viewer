@@ -4679,16 +4679,16 @@ class BoardMixin(BoardTextEditItemMixin):
             ]
             # self.show_center_label(f'updating anchors for {item}')
 
-        ACTIVATION_RADIUS = 100.0
+        ACTIVATION_DIST = 100.0
 
         def snap_core_func(st, anchors):
             for sa in anchors:
                 snap_offset = sa.offset
                 dist = QVector2D(st.apply_target_metadata_to_pos(snap_offset + item.position) - (snap_offset + item.position))
                 snap_dist = self.board_snapping_map_dist_to_viewport(dist).length()
-                if snap_dist < ACTIVATION_RADIUS:
+                if snap_dist < ACTIVATION_DIST:
                     st.activated = False
-                    if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_RADIUS+20):
+                    if sa.snapped and st.get_target_deactivation_dist(sa.cursor_pos, cursor_pos) > (ACTIVATION_DIST+20):
                         sa.snapped = False
                         sa.cursor_pos = None
                         return cursor_pos
