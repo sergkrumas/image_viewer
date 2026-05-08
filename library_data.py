@@ -140,7 +140,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
     def find_file_data_with_filepath(self, filepath, fod):
         _filepath = os.path.normpath(filepath)
         for fda in fod.images_list:
-            if fda.filepath and fda.filepath == _filepath:
+            if fda.filepath != "" and fda.filepath == _filepath:
                 return fda
         return None
 
