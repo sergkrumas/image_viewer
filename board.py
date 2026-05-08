@@ -4384,23 +4384,23 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_START_selected_items_TRANSLATION(self, event_pos):
         self.start_translation_pos = QPointF(self.board_MapToBoard(event_pos))
-        current_folder = self.LibraryData().current_folder()
-        items_list = current_folder.board.items_list
+        cf = self.LibraryData().current_folder()
+        items_list = cf.board.items_list
 
-        for board_item in items_list:
-            board_item._position = QPointF(board_item.position)
-            self.board_stash_current_transform_to_history(board_item)
-            board_item._position_init = QPointF(board_item.position)
-            board_item._children_items = []
-            if board_item.type == BoardItem.types.ITEM_FRAME:
-                this_frame_area = board_item.calc_area
-                item_frame_area = board_item.get_selection_area(canvas=self)
-                for bi in current_folder.board.items_list[:]:
-                    bi_area = bi.get_selection_area(canvas=self)
-                    center_point = bi_area.boundingRect().center()
+        for bi in items_list:
+            bi._position = QPointF(bi.position)
+            self.board_stash_current_transform_to_history(bi)
+            bi._position_init = QPointF(bi.position)
+            if bi.type == BoardItem.types.ITEM_FRAME:
+                bi._children_items = []
+                this_frame_area = bi.calc_area
+                item_frame_area = bi.get_selection_area(canvas=self)
+                for bi2 in cf.board.items_list[:]:
+                    bi2_area = bi2.get_selection_area(canvas=self)
+                    center_point = bi2_area.boundingRect().center()
                     if item_frame_area.containsPoint(QPointF(center_point), Qt.WindingFill):
-                        if bi.type != BoardItem.types.ITEM_FRAME or (bi.type == BoardItem.types.ITEM_FRAME and bi.calc_area < this_frame_area):
-                            board_item._children_items.append(bi)
+                        if bi2.type != BoardItem.types.ITEM_FRAME or (bi2.type == BoardItem.types.ITEM_FRAME and bi2.calc_area < this_frame_area):
+                            bi._children_items.append(bi2)
 
     def board_ALLOW_selected_items_TRANSLATION(self, event_pos):
         if self.start_translation_pos:
