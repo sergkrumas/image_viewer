@@ -137,6 +137,22 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         fod.images_list.append(fda)
         return fda
 
+    def find_file_data_with_filepath(self, filepath, fod):
+        _filepath = os.path.normpath(filepath)
+        for fda in fod.images_list:
+            if fda.filepath == _filepath:
+                return fda
+        return None
+
+    def find_file_data_with_filepath_or_create_it(self, filepath, fod):
+        fda = self.find_file_data_with_filepath(filepath, fod)
+        if fda is not None:
+            # TODO: тут может быть интересный случай, когда найденный FileData может быть связан с айтемом,
+            # который обрезали, и это значит, что превьюшка у него будет изменена. Тогда придётся создавать новый FileData
+            return fda
+        else:
+            return self.create_file_data(filepath, fod)
+
     def update_progressbar(self):
         app = QApplication.instance()
         stray_icon = app.property("stray_icon")

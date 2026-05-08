@@ -7792,8 +7792,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_create_new_image_item(self, filepath, fod, make_previews=True):
         INT_LAYOUT = self.INT_LAYOUT
 
-        # TODO: перед созданием FileData надо проверять есть уже подобная FileData в наличии
-        file_data = self.LibraryData().create_file_data(filepath, fod)
+        file_data = self.LibraryData().find_file_data_with_filepath_or_create_it(filepath, fod)
         if make_previews:
             self.LibraryData().make_thumbnails_and_previews(fod, None)
 
