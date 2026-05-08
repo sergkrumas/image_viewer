@@ -1963,18 +1963,6 @@ class FolderData():
                 folder_data.library_previews = pg
 
 class FileData():
-    def get_creation_date(self):
-        path_to_file = self.filepath
-        if platform.system() == 'Windows':
-            return os.path.getctime(path_to_file)
-        else:
-            stat = os.stat(path_to_file)
-            try:
-                return stat.st_birthtime
-            except AttributeError:
-                # We're probably on Linux. No easy way to get creation dates here,
-                # so we'll settle for when its content was last modified.
-                return stat.st_mtime
 
     CURRENT_ID = 0
     @classmethod
@@ -2085,6 +2073,19 @@ class FileData():
     @preview.deleter
     def preview(self):
         del self._preview
+
+    def get_creation_date(self):
+        path_to_file = self.filepath
+        if platform.system() == 'Windows':
+            return os.path.getctime(path_to_file)
+        else:
+            stat = os.stat(path_to_file)
+            try:
+                return stat.st_birthtime
+            except AttributeError:
+                # We're probably on Linux. No easy way to get creation dates here,
+                # so we'll settle for when its content was last modified.
+                return stat.st_mtime
 
     def store_ui_data(self):
         MW = LibraryData().globals.main_window
