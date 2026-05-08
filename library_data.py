@@ -2141,8 +2141,7 @@ class FileData():
         return self.thumbnail
 
     def __repr__(self):
-        filename = os.path.basename(self.filepath)
-        return f'IMAGE from {filename}'
+        return f'IMAGE from {self.filename}'
 
 
 
