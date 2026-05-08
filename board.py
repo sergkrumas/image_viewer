@@ -7693,14 +7693,18 @@ class BoardMixin(BoardTextEditItemMixin):
         for item in items_to_replace:
             if item._fod_to_move is not None:
 
+                prev_fod = item._board._folder
                 prev_list = item._board.items_list
                 if item in prev_list:
                     prev_list.remove(item)
 
-                item._board = item._fod_to_move.board
+                new_fod = item._fod_to_move
+                item._board = new_fod.board
                 item._board.items_list.append(item)
 
-                item.position = item._move_pos
+                cfi = new_fod._crossboard_frame_item
+                tl_point = cfi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect().topLeft()
+                item.position = new_fod.board.bounding_rect.topLeft() + (item._move_pos - tl_point)
 
             del item._fod_to_move
             del item._move_pos
@@ -7709,8 +7713,6 @@ class BoardMixin(BoardTextEditItemMixin):
         CROSSBOARD = self.CROSSBOARD
         CROSSBOARD.prepared = False
         cross_fod = self.LibraryData().current_folder()
-        self.board_make_board_current(CROSSBOARD.intro_fod)
-        self.LibraryData().remove_cross_fod(cross_fod)
         items_to_replace = []
         for fod in CROSSBOARD.all_fods:
             for item in fod.board.items_list:
@@ -7718,8 +7720,11 @@ class BoardMixin(BoardTextEditItemMixin):
                     items_to_replace.append(item)
                     item._move_pos = QPointF(item.position)
                 item.restore_transform()
-            del fod._crossboard_frame_item
         self.board_crossboard_change_item_board(items_to_replace)
+        for fod in CROSSBOARD.all_fods:
+            del fod._crossboard_frame_item
+        self.board_make_board_current(CROSSBOARD.intro_fod)
+        self.LibraryData().remove_cross_fod(cross_fod)
         CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
         CROSSBOARD.intro_fod = None
