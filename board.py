@@ -7699,12 +7699,15 @@ class BoardMixin(BoardTextEditItemMixin):
                     prev_list.remove(item)
 
                 new_fod = item._fod_to_move
+
                 item._board = new_fod.board
                 item._board.items_list.append(item)
 
                 cfi = new_fod._crossboard_frame_item
                 tl_point = cfi.get_selection_area(canvas=self, apply_global_scale=False).boundingRect().topLeft()
                 item.position = new_fod.board.bounding_rect.topLeft() + (item._move_pos - tl_point)
+
+                item.board_index = new_fod.board.acquire_item_index()
 
             del item._fod_to_move
             del item._move_pos
