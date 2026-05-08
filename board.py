@@ -4391,6 +4391,7 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
             bi._position_init = QPointF(bi.position)
+
             if bi.type == BoardItem.types.ITEM_FRAME:
                 bi._children_items = []
                 this_frame_area = bi.calc_area
@@ -4791,6 +4792,9 @@ class BoardMixin(BoardTextEditItemMixin):
             return cursor_pos
 
         if not self.STNG.board_items_snapping_while_translating:
+            return cursor_pos
+
+        if self.CROSSBOARD.activated:
             return cursor_pos
 
         if not self.selected_items:
