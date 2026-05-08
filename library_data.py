@@ -1989,7 +1989,7 @@ class FileData():
     def make_copy(self, linked=False):
         copied_file_data = FileData(self.filepath, self.folder_data, make_copy=True)
         attributes = self.__dict__.items()
-        exclude = ("board_items", "folder_data")
+        exclude = ("id", "board_items", "folder_data")
         for attr_name, attr_value in attributes:
             if attr_name in exclude:
                 continue
