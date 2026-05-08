@@ -4391,9 +4391,8 @@ class BoardMixin(BoardTextEditItemMixin):
             bi._position = QPointF(bi.position)
             self.board_stash_current_transform_to_history(bi)
             bi._position_init = QPointF(bi.position)
-
+            bi._children_items = []
             if bi.type == BoardItem.types.ITEM_FRAME:
-                bi._children_items = []
                 this_frame_area = bi.calc_area
                 item_frame_area = bi.get_selection_area(canvas=self)
                 for bi2 in cf.board.items_list[:]:
@@ -4436,6 +4435,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.position = QPointF(board_item._position_init)
             else:
                 board_item._position = None
+                self.board_crossboard_selected_items_translation_finish(board_item)
             board_item._children_items = []
         self.translation_ongoing = False
         if cancel:
@@ -7568,6 +7568,7 @@ class BoardMixin(BoardTextEditItemMixin):
             fi.label = f'«{fod.folder_label}»'
             fi.frame_color = gray_color
             fod._crossboard_frame_item = fi
+            fi.fod = fod
             crossboard_frames_fods.append(fod)
 
             bbr_topleft = bbr.topLeft()
@@ -7661,16 +7662,64 @@ class BoardMixin(BoardTextEditItemMixin):
                     # возвращаем трансформации айтема на кроссборде
                     item.restore_transform()
 
+    def board_crossboard_selected_items_translation_finish(self, board_item):
+        CROSSBOARD = self.CROSSBOARD
+        def check_board_frame(bi):
+            bi_area_center_point = bi.get_selection_area(canvas=self).boundingRect().center()
+            for fod in CROSSBOARD.all_fods:
+                bf = fod._crossboard_frame_item
+                bf_area = bf.get_selection_area(canvas=self)
+                if bf_area.containsPoint(bi_area_center_point, Qt.WindingFill):
+                    return fod
+            return None
+
+        def prepare_move_if_required(bi):
+            new_board_fod = check_board_frame(bi)
+            if new_board_fod is None:
+                # когда айтем вынесли так, что он не попал ни в один айтем-фрейм
+                bi._fod_to_move = None
+            else:
+                if new_board_fod is not bi._board:
+                    bi._fod_to_move = new_board_fod
+                else:
+                    bi._fod_to_move = None
+
+        if CROSSBOARD.activated:
+            prepare_move_if_required(board_item)
+            for ch_bi in board_item._children_items:
+                prepare_move_if_required(ch_bi)
+
+    def board_crossboard_change_item_board(self, items_to_replace):
+        for item in items_to_replace:
+            if item._fod_to_move is not None:
+
+                prev_list = item._board.items_list
+                if item in prev_list:
+                    prev_list.remove(item)
+
+                item._board = item._fod_to_move.board
+                item._board.items_list.append(item)
+
+                item.position = item._move_pos
+
+            del item._fod_to_move
+            del item._move_pos
+
     def board_leave_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
         CROSSBOARD.prepared = False
         cross_fod = self.LibraryData().current_folder()
         self.board_make_board_current(CROSSBOARD.intro_fod)
         self.LibraryData().remove_cross_fod(cross_fod)
+        items_to_replace = []
         for fod in CROSSBOARD.all_fods:
-            del fod._crossboard_frame_item
             for item in fod.board.items_list:
+                if hasattr(item, '_fod_to_move'):
+                    items_to_replace.append(item)
+                    item._move_pos = QPointF(item.position)
                 item.restore_transform()
+            del fod._crossboard_frame_item
+        self.board_crossboard_change_item_board(items_to_replace)
         CROSSBOARD.all_fods = ()
         self.LibraryData().setBoardItemsTracking(True)
         CROSSBOARD.intro_fod = None
