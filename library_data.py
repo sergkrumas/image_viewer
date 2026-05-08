@@ -1970,7 +1970,25 @@ class FileData():
         obj.id = cls.CURRENT_ID
         cls.CURRENT_ID += 1
 
-    def __init__(self, filepath, folder_data):
+    def make_copy(self, linked=False):
+        copied_file_data = FileData(self.filepath, self.folder_data, make_copy=True)
+        attributes = self.__dict__.items()
+        exclude = ("board_items", "folder_data")
+        for attr_name, attr_value in attributes:
+            if attr_name in exclude:
+                continue
+            at = type(attr_value)
+            if at in [QPointF, QRectF]:
+                attr_value = at(attr_value)
+            setattr(copied_item, attr_name, attr_value)
+        if linked:
+            copied_file_data.folder_data = self.folder_data
+            self.folder_data.images_list.append(copied_file_data)
+        else:
+            copied_file_data.folder_data = None
+        return copied_file_data
+
+    def __init__(self, filepath, folder_data, make_copy=False):
         super().__init__()
 
         self.set_id(self)
@@ -2003,23 +2021,24 @@ class FileData():
 
         self.preview_ui_rect = QRect()
 
-        self.is_supported_filetype = LibraryData.is_interest_file(self.filepath)
-        self.is_audio_video_filetype, self.is_video_filetype = LibraryData.is_audio_video_file(self.filepath)
+        if not make_copy:
+            self.is_supported_filetype = LibraryData.is_interest_file(self.filepath)
+            self.is_audio_video_filetype, self.is_video_filetype = LibraryData.is_audio_video_file(self.filepath)
 
-        self._preview = None
-        if self.filepath and not LibraryData().globals.lite_mode:
-            if LibraryData.is_interest_file(self.filepath):
-                self.md5, self.md5_tuple = generate_md5(self.filepath)
+            self._preview = None
+            if self.filepath and not LibraryData().globals.lite_mode:
+                if LibraryData.is_interest_file(self.filepath):
+                    self.md5, self.md5_tuple = generate_md5(self.filepath)
+                else:
+                    self.md5, self.md5_tuple = "", ()
+                self.creation_date = self.get_creation_date()
+                self.image_metadata = dict()
+                self.disk_size = get_file_size(self.filepath)
             else:
+                self.creation_date = 0
                 self.md5, self.md5_tuple = "", ()
-            self.creation_date = self.get_creation_date()
-            self.image_metadata = dict()
-            self.disk_size = get_file_size(self.filepath)
-        else:
-            self.creation_date = 0
-            self.md5, self.md5_tuple = "", ()
-            self.image_metadata = dict()
-            self.disk_size = 0
+                self.image_metadata = dict()
+                self.disk_size = 0
 
         self._waterfall_preview_column_absolute_offset = 0
 
