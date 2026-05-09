@@ -497,10 +497,11 @@ class ToolWindow(QWidget):
         draw_layout()
 
     def is_toolbox_inactive_area_click(self, event):
+        control_clicked = ToolWindow.toolbox_layout_mouse(self, event)
         return all((
             self.AD_TOOLBOX.layout_ready,
             self.AD_TOOLBOX.blr.contains(event.pos() - self.AD_TOOLBOX.pos),
-            not ToolWindow.toolbox_layout_mouse(self, event)
+            not control_clicked
         ))
 
     def toolbox_layout_mouse(self, event, call_handler=False):
