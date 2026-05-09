@@ -7709,6 +7709,39 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 item.board_index = new_fod.board.acquire_item_index()
 
+                if item.file_data is not None:
+
+                    # убираем айтем из списка айтемов объекта FileData
+                    if item in item.file_data.board_items:
+                        item.file_data.board_items.remove(item)
+
+                    # сначала пробуем поискать
+                    fda = self.LibraryData().find_file_data_with_filepath(item.file_data.filepath, new_fod)
+                    # если не нашли, то копируем
+                    if fda is None:
+                        fda = item.file_data.make_copy()
+                        fda.folder_data = new_fod
+
+                    new_fod.images_list.append(fda)
+
+                    # заменяем FileData для айтема
+                    item.file_data = fda
+                    # добавляем айтем в список
+                    fda.board_items.append(item)
+
+                    # TODO: (9 май 26) здесь FileData либо обнаруживается среди имеющихся,
+                    # либо копируется, но никогда не перемещается.
+                    # Возможно, стоит реализовать перемещение FileData,
+                    # если prev_fod это виртуальная доска (например, доска ноды)
+                    # и в file_data.board_items больше не лежит ссылок ни на один другой айтем
+
+                    # TODO: (9 май 26) потенциальное место для серьёзных багов,
+                    # апосля это надо проверять через перемещение айтемов-изображений с доски на доску
+                    # перемешивая это с сохранением и загрузкой из файла.
+                    # TODO: (9 май 26) Возможно даже стоит сделать визуализатор ссылок FileData <---> BoardItem,
+                    # чтобы отслеживать нарушения связности, типа, BoardItem ссылается на FileData,
+                    # которая лежит в другой папке, нежели доска, в которой лежит BoardItem
+
             del item._fod_to_move
             del item._move_pos
 

@@ -1996,7 +1996,7 @@ class FileData():
             at = type(attr_value)
             if at in [QPointF, QRectF]:
                 attr_value = at(attr_value)
-            setattr(copied_item, attr_name, attr_value)
+            setattr(copied_file_data, attr_name, attr_value)
         if linked:
             copied_file_data.folder_data = self.folder_data
             self.folder_data.images_list.append(copied_file_data)
