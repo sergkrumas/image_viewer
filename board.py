@@ -8188,7 +8188,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_crop_n_combine_do_operation(self, bis, capture_rect, update_overrided_data=True):
 
-        static = len(bis) == 1 and not bis[0].animated
+        static = len(bis) > 1 or (len(bis) == 1 and not bis[0].animated)
         bi = bis[0]
         frame_index = -1
 
