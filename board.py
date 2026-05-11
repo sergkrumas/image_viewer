@@ -145,7 +145,15 @@ main.board_mixin_method()
 
 """
 
+def get_projection(p, v1, v2):
+    seg = v2-v1
+    len_squared = dot(seg, seg)
+    factor = dot(p-v1, v2-v1)/len_squared
+    projection = v1 + factor * (v2 - v1)
+    return projection, factor
 
+def dot(vec1, vec2):
+    return vec1.x()*vec2.x() + vec1.y()*vec2.y()
 
 @contextmanager
 def show_longtime_process_ongoing(board_window, text):
@@ -335,6 +343,8 @@ class BoardItem():
 
         self._path = None
 
+        self._debug_index = None
+
         self.overrided_source_width = None
         self.overrided_source_height = None
         self._overrided_preview = None
@@ -392,18 +402,9 @@ class BoardItem():
                 self.LINK_ACTIVATION_DIST
             )
 
+
     @staticmethod
     def segment_dist(a, b, pos, dist_threshold):
-
-        def dot(vec1, vec2):
-            return vec1.x()*vec2.x() + vec1.y()*vec2.y()
-
-        def get_projection(p, v1, v2):
-            seg = v2-v1
-            len_squared = dot(seg, seg)
-            factor = dot(p-v1, v2-v1)/len_squared
-            projection = v1 + factor * (v2 - v1)
-            return projection, factor
 
         seg = b-a
         if dot(seg, seg) == 0.0:
@@ -466,6 +467,8 @@ class BoardItem():
         passport_info = f'\nCB-index: {self.crossboard_index}\nB-index: {self.board_index}'
         if self.board_group_index is not None:
             passport_info = f'{passport_info}\nBG-index: {self.board_group_index}'
+        if self._debug_index is not None:
+            passport_info = f'{passport_info}\nDEBUG-index: {self._debug_index}'
 
         if self.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             file_data = self.file_data
@@ -7448,7 +7451,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif btn_id == B_IDs.DISTRIBUTE_H:
 
-                items = sorted(items, key=lambda i: i.left())
+                # items = sorted(items, key=lambda i: i.left())
+                items = self.sort_by_arranging_mode(items)
+                self.board_debug_set_indexes(items)
 
                 # totalWidth = sum(item.width() for item in items)
                 totalWidth, left, right, do_fix = get_distribute_inputs(items,
@@ -7474,7 +7479,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif btn_id == B_IDs.DISTRIBUTE_V:
 
-                items = sorted(items, key=lambda i: i.top())
+                # items = sorted(items, key=lambda i: i.top())
+                items = self.sort_by_arranging_mode(items)
+                self.board_debug_set_indexes(items)
 
                 # totalHeight = sum(item.height() for item in items)
                 totalHeight, top, bottom, do_fix = get_distribute_inputs(items,
@@ -7501,6 +7508,30 @@ class BoardMixin(BoardTextEditItemMixin):
         self.build_board_bounding_rect(cf)
         self.prepare_selection_box_widget(cf)
         self.update()
+
+    def board_debug_set_indexes(self, items):
+        for item in items:
+            item.board_item._debug_index = items.index(item)
+
+    def sort_by_arranging_mode(self, items):
+
+        sb_br = self.selection_box.boundingRect()
+        bm_sb_br = self.board_MapRectToBoard(sb_br)
+        start_pos = bm_sb_br.topLeft()
+        end_pos = bm_sb_br.bottomRight()
+
+        for item in items:
+            bi = item.board_item
+            proj, fac = get_projection(bi.position, start_pos, end_pos)
+            bi.temp_sort_index = max(0.0, min(1.0, fac))
+
+        sorted_items = sorted(items, key=lambda i: i.board_item.temp_sort_index)
+
+        for item in items:
+            bi = item.board_item
+            del bi.temp_sort_index
+
+        return sorted_items
 
     def board_do_change_item_text(self, board_item):
         user_text = self.modal_input_field_text()
