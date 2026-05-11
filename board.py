@@ -7243,12 +7243,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def get_target(get_func, result_func):
 
-            if align_type == AlignType.ALIGN_TO_VIEWPORT:
-                vr = self.board_MapToBoard(self.rect())
-                return get_func(vr)
-
-            elif align_type == AlignType.ALIGN_TO_SELECTION:
+            if align_type == AlignType.ALIGN_TO_SELECTION:
                 return result_func(get_func(item) for item in items)
+
+            elif align_type == AlignType.ALIGN_TO_VIEWPORT:
+                vr = self.board_MapRectToBoard(self.rect())
+                return get_func(vr)
 
             elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
                 return get_func(self.board_bounding_rect)
@@ -7276,21 +7276,21 @@ class BoardMixin(BoardTextEditItemMixin):
 
         def get_distribute_inputs(input_items, get_func, get_min_func, get_max_func):
 
-            if align_type == AlignType.ALIGN_TO_VIEWPORT:
+            if align_type == AlignType.ALIGN_TO_SELECTION:
+                return (
+                    sum(get_func(item) for item in input_items),
+                    get_min_func(items[0]),
+                    get_max_func(items[-1]),
+                    False
+                )
+
+            elif align_type == AlignType.ALIGN_TO_VIEWPORT:
                 br = self.board_MapRectToBoard(self.rect())
                 return (
                     sum(get_func(item) for item in input_items),
                     get_min_func(br),
                     get_max_func(br),
                     True
-                )
-
-            elif align_type == AlignType.ALIGN_TO_SELECTION:
-                return (
-                    sum(get_func(item) for item in input_items),
-                    get_min_func(items[0]),
-                    get_max_func(items[-1]),
-                    False
                 )
 
             elif align_type == AlignType.ALIGN_TO_WHOLE_BOARD:
