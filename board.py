@@ -24,6 +24,7 @@ import urllib.request
 import functools
 import importlib
 import http
+import tempfile
 import datetime
 from functools import partial
 from contextlib import contextmanager
@@ -6983,9 +6984,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     return default_path
         return "."
 
-    def board_prepare_multifolder_board(self):
-        default_path = self.board_retrieve_default_path_for_multifolder()
-
+    def board_select_folders_dialog(self, default_path):
         selected_folders = []
         dialog = QFileDialog(self)
         dialog.setWindowTitle(_('Choose Directories'))
@@ -7017,6 +7016,12 @@ class BoardMixin(BoardTextEditItemMixin):
         if dialog.exec_() == QDialog.Accepted:
             selected_folders = dialog.selectedFiles()
         dialog.deleteLater()
+        return selected_folders
+
+    def board_prepare_multifolder_board(self):
+        default_path = self.board_retrieve_default_path_for_multifolder()
+
+        selected_folders = self.board_select_folders_dialog(default_path)
 
         if not selected_folders:
             self.show_center_label(_('No folders selected!'), error=True)
@@ -8392,6 +8397,103 @@ class BoardMixin(BoardTextEditItemMixin):
         CC.placing_result_mode = False
         CC.placing_default_pos = None
         CC.placing_board_item = None
+
+    def board_write_file_in_temp_folder(self, filename):
+        filepath = os.path.join(tempfile.gettempdir(), filename)
+        return open(filepath, "w", encoding="utf-8")
+
+    def board_find_lost(self):
+
+        lost_fdas = []
+
+        for fod in self.board_get_all_crossboard_fods():
+            for fda in fod.images_list:
+                if not fda.board_items:
+                    continue
+                if os.path.exists(fda.filepath):
+                    continue
+                lost_fdas.append(fda)
+
+
+        # with self.board_write_file_in_temp_folder('lost_paths.log') as temp:
+        #     temp.write("\n".join(fda.filepath for fda in lost_fdas))
+        #     temp.flush()
+            # execute_clickable_text(temp.name)
+
+
+        default_path = self.Settings.get_path_for_saved_pictures()
+        selected_folders = self.board_select_folders_dialog(default_path)
+
+        if not selected_folders:
+            self.show_center_label(_("No folders selected!"), error=True)
+            return
+
+        gathered_data = defaultdict(list)
+
+        _lost_fdas = list(lost_fdas)
+
+        for folderpath in selected_folders:
+            for cur_dir, folders, files in os.walk(folderpath):
+                for filename in files:
+                    # TODO: по идее, если у fda нашёлся альтернативный путь,
+                    # то его надо убирать из lost_fdas,
+                    # чтобы он зря не крутился в цикле,
+                    # но пока оставляю так
+                    for fda in lost_fdas:
+                        if fda.filename == filename:
+                            gathered_data[fda].append(os.path.join(cur_dir, filename))
+
+        not_found_fdas = []
+        for fda in lost_fdas:
+            if fda not in gathered_data.keys():
+                not_found_fdas.append(fda)
+
+
+        with self.board_write_file_in_temp_folder('found_paths.log') as temp:
+            for fda, filepaths in gathered_data.items():
+                temp.write(f"{fda.filepath}\n")
+                for fp in filepaths:
+                    temp.write(f"\t{fp}\n")
+
+            if not_found_fdas:
+                temp.write("\n"*3)
+                temp.write("NOT FOUND:\n")
+                temp.write("\n".join(fda.filepath for fda in not_found_fdas))
+
+            temp.flush()
+            execute_clickable_text(temp.name)
+
+
+        fods = defaultdict(list)
+
+        for fda, filepaths in gathered_data.items():
+            fp = filepaths[0]
+            fda.filepath = os.path.normpath(fp)
+            fda.filename = os.path.basename(fp)
+            fda.thumbnail = None #чтобы make_thumbnails_and_previews сгенерил превьюшку
+
+            fods[fda.folder_data].append(fda)
+
+        self.show_center_label(_('Updating...'))
+        processAppEvents()
+
+        for fod in fods.keys():
+            self.LibraryData().make_thumbnails_and_previews(fod, None)
+
+        # TODO: (11 май 26) после нахождения надо заново
+        # применять все обрезки (crop_data), если они есть у айтема
+
+    def board_copy_or_move_to_board_folder(self):
+        pass
+
+        # сделать кнопку на панели задач
+        # дать выбор между переносом и копированием
+        # убедиться, что путь до файла существует
+        # проверить, что файл не в текущей папке и не в подпапках текущей папки
+        # try except при копировании и переносе файла
+        # писать логи через board_write_file_in_temp_folder
+
+
 
 # для запуска программы прямо из этого файла при разработке и отладке
 if __name__ == '__main__':

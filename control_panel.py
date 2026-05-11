@@ -389,7 +389,10 @@ class ControlPanelButton(QPushButton):
 
             r = painter.drawText(self.rect(), Qt.AlignCenter, "GO")
 
+        elif self.id == "find_lost":
 
+            self.set_font(painter, special=34)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "FIND")
 
         elif self.id == "space":
             pass
@@ -620,6 +623,11 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.space_btn_generator(),
 
                 ControlPanelButton("update_list", _("Update files list"), callback=self.update_folder_list),
+
+
+                self.space_btn_generator(),
+
+                ControlPanelButton("find_lost", _("Find lost files in other folder"), callback=partial(MW.board_find_lost)),
 
 
             ]
