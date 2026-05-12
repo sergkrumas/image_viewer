@@ -8398,7 +8398,7 @@ class BoardMixin(BoardTextEditItemMixin):
         CC.placing_default_pos = None
         CC.placing_board_item = None
 
-    def board_write_file_in_temp_folder(self, filename):
+    def board_open_file_in_temp_folder(self, filename):
         filepath = os.path.join(tempfile.gettempdir(), filename)
         return open(filepath, "w", encoding="utf-8")
 
@@ -8415,7 +8415,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 lost_fdas.append(fda)
 
 
-        # with self.board_write_file_in_temp_folder('lost_paths.log') as temp:
+        # with self.board_open_file_in_temp_folder('lost_paths.log') as temp:
         #     temp.write("\n".join(fda.filepath for fda in lost_fdas))
         #     temp.flush()
             # execute_clickable_text(temp.name)
@@ -8451,7 +8451,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 not_found_fdas.append(fda)
 
 
-        with self.board_write_file_in_temp_folder('found_paths.log') as temp:
+        with self.board_open_file_in_temp_folder('found_paths.log') as temp:
             for fda, filepaths in gathered_data.items():
                 temp.write(f"{fda.filepath}\n")
                 for fp in filepaths:
@@ -8500,7 +8500,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # убедиться, что путь до файла существует
         # проверить, что файл не в текущей папке и не в подпапках текущей папки
         # try except при копировании и переносе файла
-        # писать логи с ошибками из except через board_write_file_in_temp_folder
+        # писать логи с ошибками из except через board_open_file_in_temp_folder
         # (12 май 26) при переносе и копировании могут имена файлов совпасть, надо их как-то переименовывать!
                 # - надо дописывать суффикс, не менять имя файла совсем и навсегда
                 # - кстати, суффикс может не получиться добавить, поэтому надо обрезать имя файла перед добавлением суффикса
