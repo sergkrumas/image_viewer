@@ -8432,8 +8432,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         _lost_fdas = list(lost_fdas)
 
-        self.show_center_label(_('Searching...'))
-        processAppEvents()
+        self.board_force_show_center_label(_('Searching...'))
 
         for folderpath in selected_folders:
             for cur_dir, folders, files in os.walk(folderpath):
@@ -8471,13 +8470,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for fda, filepaths in gathered_data.items():
             fp = filepaths[0]
+            # TODO: здесь файл надо выбирать по разрешению картинки, которое сохраняется в файл доски.
+            # TODO: Ещё бы подключить сюда и размер файла
             fda.set_filepath(fp)
             fda.thumbnail = None #чтобы make_thumbnails_and_previews сгенерил превьюшку
 
             fods[fda.folder_data].append(fda)
 
-        self.show_center_label(_('Updating...'))
-        processAppEvents()
+        self.board_force_show_center_label(_('Updating...'))
 
         for fod in fods.keys():
             self.LibraryData().make_thumbnails_and_previews(fod, None)
@@ -8486,6 +8486,10 @@ class BoardMixin(BoardTextEditItemMixin):
         # применять все обрезки (crop_data), если они есть у айтема
 
         # TODO: (11 май 26) добавить возможность искать только те файлы, айтемы которых выделены
+
+    def board_force_show_center_label(self, text):
+        self.show_center_label(text)
+        processAppEvents()
 
     def board_bring_files_together(self):
         pass
