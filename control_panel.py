@@ -394,6 +394,11 @@ class ControlPanelButton(QPushButton):
             self.set_font(painter, special=34)
             r = painter.drawText(self.rect(), Qt.AlignCenter, "FIND")
 
+        elif self.id == "bring_together":
+
+            self.set_font(painter, special=38)
+            r = painter.drawText(self.rect(), Qt.AlignCenter, "BRING\nTOGE\nTHER")
+
         elif self.id == "space":
             pass
 
@@ -628,6 +633,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 self.space_btn_generator(),
 
                 ControlPanelButton("find_lost", _("Find lost files in other folder"), callback=partial(MW.board_find_lost)),
+                ControlPanelButton("bring_together", _("Copy/move files to board folder"), callback=partial(MW.board_bring_files_together)),
 
 
             ]
