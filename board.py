@@ -8432,6 +8432,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         _lost_fdas = list(lost_fdas)
 
+        self.show_center_label(_('Searching...'))
+        processAppEvents()
+
         for folderpath in selected_folders:
             for cur_dir, folders, files in os.walk(folderpath):
                 for filename in files:
