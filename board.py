@@ -8437,10 +8437,11 @@ class BoardMixin(BoardTextEditItemMixin):
         for folderpath in selected_folders:
             for cur_dir, folders, files in os.walk(folderpath):
                 for filename in files:
-                    # TODO: по идее, если у fda нашёлся альтернативный путь,
+                    # по идее, если у fda нашёлся альтернативный путь,
                     # то его надо убирать из lost_fdas,
                     # чтобы он зря не крутился в цикле,
-                    # но пока оставляю так
+                    # но совпадение имён файлов не гарантирует того,
+                    # что это нужный файл, поэтому собираем все варианты
                     filename = os.path.normpath(filename)
                     for fda in lost_fdas:
                         if fda.filename == filename:
