@@ -8441,6 +8441,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     # то его надо убирать из lost_fdas,
                     # чтобы он зря не крутился в цикле,
                     # но пока оставляю так
+                    filename = os.path.normpath(filename)
                     for fda in lost_fdas:
                         if fda.filename == filename:
                             gathered_data[fda].append(os.path.join(cur_dir, filename))
