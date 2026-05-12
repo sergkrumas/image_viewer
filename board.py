@@ -8468,8 +8468,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for fda, filepaths in gathered_data.items():
             fp = filepaths[0]
-            fda.filepath = os.path.normpath(fp)
-            fda.filename = os.path.basename(fp)
+            fda.set_filepath(fp)
             fda.thumbnail = None #чтобы make_thumbnails_and_previews сгенерил превьюшку
 
             fods[fda.folder_data].append(fda)

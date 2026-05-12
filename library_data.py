@@ -2020,11 +2020,7 @@ class FileData():
         self.is_video_filetype = False
         self.thumbnail = None or LibraryData().globals.DEFAULT_THUMBNAIL
         self.folder_data = folder_data
-        self.filename = os.path.basename(filepath)
-        if filepath:
-            self.filepath = os.path.normpath(filepath)
-        else:
-            self.filepath = ""
+        self.set_filepath(filepath)
         self.preview_size = QSize(0, 0)
         self.anim_paused = False
         self.svg_scale_factor = 2
@@ -2069,6 +2065,13 @@ class FileData():
         self._is_animated_apng = None
 
         self.previews_grids_cached_original = None
+
+    def set_filepath(self, filepath):
+        self.filename = os.path.basename(filepath)
+        if filepath:
+            self.filepath = os.path.normpath(filepath)
+        else:
+            self.filepath = ""
 
     # для страниц Boards и Library
     @property
