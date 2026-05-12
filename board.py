@@ -8472,6 +8472,8 @@ class BoardMixin(BoardTextEditItemMixin):
             fp = filepaths[0]
             # TODO: здесь файл надо выбирать по разрешению картинки, которое сохраняется в файл доски.
             # TODO: Ещё бы подключить сюда и размер файла
+            # TODO: есть идея запрашивать размер файла, если идёт сохранение доски
+                # - запрашивать эти данные в другое время чревато лагами
             fda.set_filepath(fp)
             fda.thumbnail = None #чтобы make_thumbnails_and_previews сгенерил превьюшку
 
