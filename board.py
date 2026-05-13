@@ -26,6 +26,7 @@ import importlib
 import http
 import tempfile
 import datetime
+import shutil
 from functools import partial
 from contextlib import contextmanager
 from collections import defaultdict
@@ -1985,13 +1986,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
             new_obj_base.append((attr_name, attr_type, attr_data))
 
-    def board_prepare_filepath_to_relative(self, path):
+    def board_prepare_filepath_to_relative(self, file_path):
         if self.save_root_folderpath is None:
-            return path
+            return file_path
+        return self.board_get_relpath(self.save_root_folderpath, file_path)
+
+    def board_get_relpath(self, folder_path, file_path):
         try:
-            commonpath = os.path.commonpath((self.save_root_folderpath, path))
-            return os.path.relpath(path, start=commonpath)
+            commonpath = os.path.commonpath((folder_path, file_path))
+            # QMessageBox.critical(None, '', f'{folder_path}\n{file_path}\n{commonpath}\n{relpath}')
             if commonpath == folder_path:
+                return os.path.relpath(file_path, start=commonpath)
             else:
                 return file_path
         except ValueError:
