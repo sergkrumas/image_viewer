@@ -8486,8 +8486,11 @@ class BoardMixin(BoardTextEditItemMixin):
         for fod in fods.keys():
             self.LibraryData().make_thumbnails_and_previews(fod, None)
 
-        # TODO: (11 май 26) после нахождения надо заново
         # применять все обрезки (crop_data), если они есть у айтема
+        for fda, filepaths in gathered_data.items():
+            for bi in fda.board_items:
+                if bi._crop_data_stack:
+                    self.board_reapply_cropping_data(bi)
 
         # TODO: (11 май 26) добавить возможность искать только те файлы, айтемы которых выделены
 
