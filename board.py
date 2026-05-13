@@ -1991,8 +1991,11 @@ class BoardMixin(BoardTextEditItemMixin):
         try:
             commonpath = os.path.commonpath((self.save_root_folderpath, path))
             return os.path.relpath(path, start=commonpath)
+            if commonpath == folder_path:
+            else:
+                return file_path
         except ValueError:
-            return path
+            return file_path
 
     def board_serialize_board_data(self, fod):
         board = fod.board
@@ -8499,19 +8502,78 @@ class BoardMixin(BoardTextEditItemMixin):
         processAppEvents()
 
     def board_bring_files_together(self):
-        pass
 
-        # дать выбор между переносом и копированием
-        # убедиться, что путь до файла существует
-        # проверить, что файл не в текущей папке и не в подпапках текущей папки
-        # try except при копировании и переносе файла
-        # писать логи с ошибками из except через board_open_file_in_temp_folder
-        # (12 май 26) при переносе и копировании могут имена файлов совпасть, надо их как-то переименовывать!
-                # - надо дописывать суффикс, не менять имя файла совсем и навсегда
-                # - кстати, суффикс может не получиться добавить, поэтому надо обрезать имя файла перед добавлением суффикса
+        interest_fdas = []
 
 
-        # (11 май 26) добавить возможность перемещать/копировать только те файлы, айтемы которых выделены
+
+        for fod in self.board_get_all_crossboard_fods():
+            for fda in fod.images_list:
+                # нас интересуют только те fda, которые прозваниваются
+                if not os.path.exists(fda.filepath):
+                    continue
+                interest_fdas.append(fda)
+
+        # проверка, что файл не находится в своей папке или её подпапках
+        for fda in interest_fdas[:]:
+
+            if fda.folder_data.virtual:
+                main_fod, other = self.board_get_all_crossboard_fods()
+                fod = main_fod
+            else
+                fod = fda.folder_data
+
+            folder_path = os.path.normpath(fod.folder_path)
+            common_path = os.path.normpath(os.path.commonpath((folder_path, fda.filepath)))
+
+            # QMessageBox.critical(None, '', f'{folder_path}\n{common_path}\n\n{fda.filepath}')
+            if common_path == folder_path:
+                interest_fdas.remove(fda)
+
+        # перенос или копирование
+        core_function_copy = lambda source, destination: shutil.copy2(source, destination)
+        core_function_move = lambda source, destination: shutil.move(source, destination)
+
+        # TODO: (12 май 26) дать выбор между переносом и копированием
+        core_function = core_function_copy
+
+        log_lines = []
+
+        for fda in interest_fdas:
+            try:
+
+                # при переносе и копировании имя файла может совпасть именем файлов,
+                # которые уже есть в папке, поэтому надо добавлять к имени файла суффикс
+                filename = os.path.basename(fda.filepath)
+                name, ext = os.path.splitext(filename)
+                if not ext.startswith("."):
+                    ext = f'.{ext}'
+                filename = f'{name[:50]}_{time.time()}{ext}'
+
+                new_filepath = os.path.join(fda.folder_data.folder_path, filename)
+                old_path = fda.filepath
+
+                core_function(old_path, new_filepath)
+
+                fda.set_filepath(new_filepath)
+
+                status = f"{old_path}\n\t NEW PATH: {new_filepath}"
+                log_lines.append(status)
+
+            except Exception as e:
+
+                status = f"{fda.filepath}\n\t ERROR OCCURRED: {e}"
+                log_lines.append(status)
+
+        with self.board_open_file_in_temp_folder('relocated_files_log.log') as temp:
+
+            temp.write("\n"*3)
+            temp.write("\n".join(log_lines))
+
+            temp.flush()
+            execute_clickable_text(temp.name)
+
+        # TODO: (11 май 26) добавить возможность перемещать/копировать только те файлы, айтемы которых выделены
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
