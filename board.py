@@ -7197,7 +7197,10 @@ class BoardMixin(BoardTextEditItemMixin):
         check = ToolWindow.is_toolbox_inactive_area_click(self, event)
         if check:
             self.board_hide_AD_toolbox()
-        return True
+        if self.AD_TOOLBOX.visible:
+            return True
+        else:
+            return False
 
     def board_AD_do_align_and_distribute(self, btn_id, action_id, align_type):
 
