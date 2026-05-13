@@ -2828,6 +2828,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
             is_odd = bool(links_count % 2 == 1)
 
+            # TODO: (13 май 26) из-за этого линки меняют ориентацию в слоте при добавлении новых,
+            # надо брать направление по индексам нод,
+            # и не надо брать направление по первой линке и всё.
+            # Критично, только когда линков становиться больше 2-3, поэтому сейчас исправлять не буду
             check_to_item = slot[0].to_item
 
             for n, li in enumerate(slot):
@@ -2884,6 +2888,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         # painter.drawPoint(b)
                         # correction for arrow
                         center_pos = path.pointAtPercent(0.5)
+
+                    painter.drawText(center_pos, f'  {id(li)}')
                 else:
                     painter.drawLine(to_pos, from_pos)
 
