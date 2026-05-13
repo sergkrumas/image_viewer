@@ -8543,16 +8543,32 @@ class BoardMixin(BoardTextEditItemMixin):
                 interest_fdas.remove(fda)
 
         if not interest_fdas:
-            self.board_force_show_center_label(_("Checked. Nothing to do"))
+            self.board_force_show_center_label(_("Checked: nothing to do"))
             return
 
-        # перенос или копирование
         core_function_copy = lambda source, destination: shutil.copy2(source, destination)
         core_function_move = lambda source, destination: shutil.move(source, destination)
 
-        # TODO: (12 май 26) дать выбор между переносом и копированием
-        core_function = core_function_copy
+        # перенос или копирование: спрашиваем у пользователя
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(_('Choose option'))
+        msgBox.setText(_("Copy or move?"))
 
+        cancel_btn = msgBox.addButton(_("Cancel"), QMessageBox.NoRole)
+        copy_btn = msgBox.addButton(_('Copy'), QMessageBox.YesRole)
+        move_btn = msgBox.addButton(_('Move'), QMessageBox.YesRole)
+        msgBox.exec()
+        btn = msgBox.clickedButton()
+        if btn is None:
+            pass
+        elif btn == copy_btn:
+            core_function = core_function_copy
+        elif btn == move_btn:
+            core_function = core_function_move
+        elif btn == cancel_btn:
+            return
+
+        # производим перенос или копирование
         log_lines = []
 
         self.board_force_show_center_label(_("Starting..."))
