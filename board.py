@@ -8510,8 +8510,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
         interest_fdas = []
 
-
-
         for fod in self.board_get_all_crossboard_fods():
             for fda in fod.images_list:
                 # нас интересуют только те fda, которые прозваниваются
@@ -8525,7 +8523,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if fda.folder_data.virtual:
                 main_fod, other = self.board_get_all_crossboard_fods()
                 fod = main_fod
-            else
+            else:
                 fod = fda.folder_data
 
             folder_path = os.path.normpath(fod.folder_path)
@@ -8535,6 +8533,10 @@ class BoardMixin(BoardTextEditItemMixin):
             if common_path == folder_path:
                 interest_fdas.remove(fda)
 
+        if not interest_fdas:
+            self.board_force_show_center_label(_("Checked. Nothing to do"))
+            return
+
         # перенос или копирование
         core_function_copy = lambda source, destination: shutil.copy2(source, destination)
         core_function_move = lambda source, destination: shutil.move(source, destination)
@@ -8543,6 +8545,8 @@ class BoardMixin(BoardTextEditItemMixin):
         core_function = core_function_copy
 
         log_lines = []
+
+        self.board_force_show_center_label(_("Starting..."))
 
         for fda in interest_fdas:
             try:
@@ -8577,6 +8581,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             temp.flush()
             execute_clickable_text(temp.name)
+
+        self.board_force_show_center_label(_("Finished!"))
+
 
         # TODO: (11 май 26) добавить возможность перемещать/копировать только те файлы, айтемы которых выделены
 
