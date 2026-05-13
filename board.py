@@ -8551,7 +8551,7 @@ class BoardMixin(BoardTextEditItemMixin):
         for fda in interest_fdas:
             try:
 
-                # при переносе и копировании имя файла может совпасть именем файлов,
+                # при переносе и копировании имя файла может совпасть с именами файлов,
                 # которые уже есть в папке, поэтому надо добавлять к имени файла суффикс
                 filename = os.path.basename(fda.filepath)
                 name, ext = os.path.splitext(filename)
