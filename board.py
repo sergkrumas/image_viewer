@@ -4599,7 +4599,7 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 cf = self.LibraryData().current_folder()
                 viewport_rect = self.rect()
-                board_mapped_viewport_rect = self.board_MapRectToBoard(viewport_rect).toRect()
+                board_mapped_viewport_rect = self.board_MapRectToBoard(viewport_rect)
                 def append_point(*args):
                     self.SNAPPING.point_targets.append(SnappingTarget(*args))
                 def append_line(*args):
@@ -4609,7 +4609,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 for bi in cf.board.items_list:
                     if bi not in self.selected_items:
                         sa = bi.get_selection_area(canvas=self, apply_global_scale=False)
-                        sa_br = sa.boundingRect().toRect()
+                        sa_br = sa.boundingRect()
                         if sa_br.intersects(board_mapped_viewport_rect):
                             # TODO: (24 мар 26) лэйаут создаётся так,
                             # что айтемы прилегают вплотную друг к другу,
