@@ -1133,6 +1133,9 @@ class BoardMixin(BoardTextEditItemMixin):
         elif check_scancode_for(event, Qt.Key_V) and ctrl_mod:
             self.board_control_v()
 
+        elif check_scancode_for(event, Qt.Key_X) and ctrl_mod:
+            self.board_control_x()
+
         elif check_scancode_for(event, Qt.Key_B) and ctrl_mod:
             self.grab().save('grab.png')
 
@@ -6184,11 +6187,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 bi._show_file_info_overlay = not bi._show_file_info_overlay
         self.update()
 
-    def board_control_c(self):
-        cb = QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
-
     def board_handle_incoming_url(self, url):
         if url.isLocalFile():
             path = url.path()
@@ -6222,6 +6220,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 incoming_count=len(mime_data.urls()),
             )
 
+    def board_control_c(self):
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
+
     def board_control_v(self):
         app = QApplication.instance()
         cb = app.clipboard()
@@ -6241,6 +6244,9 @@ class BoardMixin(BoardTextEditItemMixin):
             print('nothing')
 
         self.update()
+
+    def board_control_x(self):
+        pass
 
     def board_generate_filepath(self, cf, dot_ext):
         cb_fp = self.CrossboardData().incoming_attachments_folderpath
