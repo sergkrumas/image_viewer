@@ -6204,6 +6204,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_paste_selected_items(self):
         selected_items = []
+        if not self.selection_box:
+            return
         selection_center = self.board_MapToBoard(self.selection_box.boundingRect().center())
         rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
         for bi in self.LibraryData().current_folder().board.items_list:
@@ -6214,7 +6216,6 @@ class BoardMixin(BoardTextEditItemMixin):
             cf = self.LibraryData().current_folder()
             for sel_item in selected_items:
                 new_item = sel_item.make_copy(self, cf)
-                # new_item.position += QPointF(100, 100)
                 delta = new_item.position - selection_center
                 new_item.position = rel_cursor_pos + delta
                 new_item._selected = True
@@ -6223,7 +6224,9 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_control_c(self):
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
-        cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
+        serialized_data = ""
+        clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
+        cb.setText(clipboard_text, mode=cb.Clipboard)
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
 
     def board_control_v(self):
@@ -6232,8 +6235,21 @@ class BoardMixin(BoardTextEditItemMixin):
         text = cb.text()
         mdata = cb.mimeData()
 
-        if text and text == COPY_SELECTED_BOARD_ITEMS_STR:
-            self.board_paste_selected_items()
+        if text and text.startswith(COPY_SELECTED_BOARD_ITEMS_STR):
+            text = text[len(COPY_SELECTED_BOARD_ITEMS_STR):]
+            data_to_read = None
+            text_parts = text.split(":", maxsplit=2)
+            if len(text_parts) == 3:
+                null, pid_str, data = text_parts
+                if pid_str.isdigit():
+                    pid = int(pid_str)
+                    if os.getpid() != pid:
+                        data_to_read = data
+
+            if data_to_read is not None:
+                self.show_center_label(f'from other app copy {text}')
+            else:
+                self.board_paste_selected_items()
 
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
