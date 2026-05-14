@@ -6221,10 +6221,16 @@ class BoardMixin(BoardTextEditItemMixin):
                 new_item._selected = True
             self.prepare_selection_box_widget(cf)
 
+    def board_serialize_to_CutCopyPaste(self):
+        pass
+
+    def board_unserialize_from_CutCopyPaste(self, serialized_data):
+        pass
+
     def board_control_c(self):
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
-        serialized_data = ""
+        serialized_data = self.board_serialize_to_CutCopyPaste()
         clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
         cb.setText(clipboard_text, mode=cb.Clipboard)
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
@@ -6247,6 +6253,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         data_to_read = data
 
             if data_to_read is not None:
+                self.board_unserialize_from_CutCopyPaste(data_to_read)
                 self.show_center_label(f'from other app copy {text}')
             else:
                 self.board_paste_selected_items()
