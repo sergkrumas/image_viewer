@@ -449,7 +449,7 @@ class BoardItem():
             file_data = self.label
         return file_data
 
-    def make_copy(self, bw, folder_data):
+    def make_copy(self, canvas, folder_data):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
@@ -459,7 +459,7 @@ class BoardItem():
             elif at in [QPointF, QRectF]:
                 attr_value = at(attr_value)
             setattr(copied_item, attr_name, attr_value)
-        bw.board_set_tracking_data(copied_item, folder_data)
+        canvas.board_set_tracking_data(copied_item, folder_data)
         folder_data.board.items_list.append(copied_item)
         if self.file_data is not None:
             self.file_data.board_items.append(copied_item)
