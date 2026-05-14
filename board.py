@@ -6224,6 +6224,7 @@ class BoardMixin(BoardTextEditItemMixin):
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(COPY_SELECTED_BOARD_ITEMS_STR, mode=cb.Clipboard)
+        self.show_center_label(_("Copied to clipboard"), duration=1.0)
 
     def board_control_v(self):
         app = QApplication.instance()
@@ -6241,7 +6242,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_prepare_incoming_urls(mdata)
 
         else:
-            print('nothing')
+            self.show_center_label(_("Nothing to paste"), error=True)
 
         self.update()
 
