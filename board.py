@@ -5960,24 +5960,6 @@ class BoardMixin(BoardTextEditItemMixin):
         board_pos = QPointF(delta.x()/self.canvas_scale_x, delta.y()/self.canvas_scale_y)
         return board_pos
 
-    def board_paste_selected_items(self):
-        selected_items = []
-        selection_center = self.board_MapToBoard(self.selection_box.boundingRect().center())
-        rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
-        for bi in self.LibraryData().current_folder().board.items_list:
-            if bi._selected:
-                selected_items.append(bi)
-                bi._selected = False
-        if selected_items:
-            cf = self.LibraryData().current_folder()
-            for sel_item in selected_items:
-                new_item = sel_item.make_copy(self, cf)
-                # new_item.position += QPointF(100, 100)
-                delta = new_item.position - selection_center
-                new_item.position = rel_cursor_pos + delta
-                new_item._selected = True
-            self.prepare_selection_box_widget(cf)
-
     def do_scale_board(self, scroll_value, ctrl, shift, no_mod,
                 pivot=None, factor_x=None, factor_y=None, precalculate=False, canvas_origin=None, canvas_scale_x=None, canvas_scale_y=None, scale_speed=0.1):
 
@@ -6219,6 +6201,24 @@ class BoardMixin(BoardTextEditItemMixin):
                 exec_callback=partial(self.board_do_prepare_incoming_urls, self.board_copy_mimedata(mime_data)),
                 incoming_count=len(mime_data.urls()),
             )
+
+    def board_paste_selected_items(self):
+        selected_items = []
+        selection_center = self.board_MapToBoard(self.selection_box.boundingRect().center())
+        rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
+        for bi in self.LibraryData().current_folder().board.items_list:
+            if bi._selected:
+                selected_items.append(bi)
+                bi._selected = False
+        if selected_items:
+            cf = self.LibraryData().current_folder()
+            for sel_item in selected_items:
+                new_item = sel_item.make_copy(self, cf)
+                # new_item.position += QPointF(100, 100)
+                delta = new_item.position - selection_center
+                new_item.position = rel_cursor_pos + delta
+                new_item._selected = True
+            self.prepare_selection_box_widget(cf)
 
     def board_control_c(self):
         cb = QApplication.clipboard()
