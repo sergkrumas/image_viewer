@@ -6384,9 +6384,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_paste_selected_items(self):
         items = self.CrossboardData()._cutcopy_buffer_list
+        is_cut = self.CrossboardData()._cutcopy_is_cut
         if items:
-            rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
             cf = self.LibraryData().current_folder()
+            rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
             selection_center = self.CrossboardData()._cutcopy_selection_center
             for bi in items:
                 new_item = bi.make_copy(self, cf)
