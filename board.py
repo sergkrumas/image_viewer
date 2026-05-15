@@ -1159,6 +1159,7 @@ class BoardMixin(BoardTextEditItemMixin):
         shift_only = event.modifiers() == Qt.ShiftModifier
         shift = event.modifiers() & Qt.ShiftModifier
         ctrl_only = event.modifiers() == Qt.ControlModifier
+        no_mod = event.modifiers() == Qt.NoModifier
 
         if self.textEdit.parent():
             event.setAccepted(True)
@@ -1201,9 +1202,9 @@ class BoardMixin(BoardTextEditItemMixin):
         elif key == Qt.Key_F8:
             self.board_change_links_draw_order()
 
-        elif check_scancode_for(event, Qt.Key_X):
+        elif check_scancode_for(event, Qt.Key_X) and no_mod:
             self.autoscroll_toggle_x()
-        elif check_scancode_for(event, Qt.Key_Y):
+        elif check_scancode_for(event, Qt.Key_Y) and no_mod:
             self.autoscroll_toggle_y()
 
         elif key == Qt.Key_F6:
