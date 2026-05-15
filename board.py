@@ -6232,7 +6232,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     interested_fids[bi.file_data].append(bi)
 
             self.referenceItemAttrs = BoardItem(BoardItem.types.ITEM_UNDEFINED).__dict__
-    
+
             files_data = dict()
             for fid in interested_fids.keys():
                 if fid.virtual:
