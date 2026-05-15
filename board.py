@@ -6202,25 +6202,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 incoming_count=len(mime_data.urls()),
             )
 
-    def board_paste_selected_items(self):
-        selected_items = []
-        if not self.selection_box:
-            return
-        selection_center = self.board_MapToBoard(self.selection_box.boundingRect().center())
-        rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
-        for bi in self.LibraryData().current_folder().board.items_list:
-            if bi._selected:
-                selected_items.append(bi)
-                bi._selected = False
-        if selected_items:
-            cf = self.LibraryData().current_folder()
-            for sel_item in selected_items:
-                new_item = sel_item.make_copy(self, cf)
-                delta = new_item.position - selection_center
-                new_item.position = rel_cursor_pos + delta
-                new_item._selected = True
-            self.prepare_selection_box_widget(cf)
-
     def board_serialize_to_CutCopyPasteData(self):
         selected_items = []
         allowed = [
@@ -6357,6 +6338,7 @@ class BoardMixin(BoardTextEditItemMixin):
         serialized_data = self.board_serialize_to_CutCopyPasteData()
         clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
         cb.setText(clipboard_text, mode=cb.Clipboard)
+        self.board_control_x_c_base()
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
 
     def board_control_v(self):
@@ -6392,8 +6374,42 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
+    def board_paste_selected_items(self):
+        items = self.CrossboardData()._cutcopy_buffer_list
+        if items:
+            rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
+            cf = self.LibraryData().current_folder()
+            selection_center = self.CrossboardData()._cutcopy_selection_center
+            for bi in items:
+                new_item = bi.make_copy(self, cf)
+                delta = new_item.position - selection_center
+                new_item.position = rel_cursor_pos + delta
+                new_item._selected = True
+            self.prepare_selection_box_widget(cf)
+
+    def board_get_selected_items_cutcopy(self):
+        selected_items = []
+        for bi in self.LibraryData().current_folder().board.items_list:
+            if bi._selected:
+                selected_items.append(bi)
+                bi._selected = False
+        return selected_items
+
     def board_control_x(self):
-        pass
+        self.board_control_x_c_base(cut=True)
+
+    def board_control_x_c_base(self, cut=False):
+        if not self.selection_box:
+            return
+        items = self.board_get_selected_items_cutcopy()
+        selection_center_viewport = self.selection_box.boundingRect().center()
+        selection_center_board = self.board_MapToBoard(selection_center_viewport)
+        if cut:
+            self.CrossboardData().cut_items(items, selection_center_board)
+            cf = self.LibraryData().current_folder()
+            self.prepare_selection_box_widget(cf)
+        else:
+            self.CrossboardData().copy_items(items, selection_center_board)
 
     def board_generate_filepath(self, cf, dot_ext):
         cb_fp = self.CrossboardData().incoming_attachments_folderpath

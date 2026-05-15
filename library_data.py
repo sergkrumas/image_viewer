@@ -1357,7 +1357,38 @@ class CrossboardData():
             i._link_slots_list = defaultdict(list)
             i.plugin_activated = False
             i.incoming_attachments_folderpath = ""
+            i._cutcopy_buffer_list = []
+            i._cutcopy_is_cut = False
+            i._cutcopy_selection_center = QPointF(0.0, 0.0)
         return cls.instance
+
+    def cut_items(self, items, selection_center):
+        self.place_back_if_need()
+        self._cutcopy_buffer_list = items[:]
+        self._cutcopy_selection_center = selection_center
+        self._cutcopy_is_cut = True
+        if self._cutcopy_buffer_list:
+            board = self._cutcopy_buffer_list[0]._board
+            for bi in self._cutcopy_buffer_list:
+                if bi in board.items_list:
+                    board.items_list.remove(bi)
+
+    def copy_items(self, items, selection_center):
+        self.place_back_if_need()
+        self._cutcopy_buffer_list = items[:]
+        self._cutcopy_selection_center = selection_center
+        self._cutcopy_is_cut = False
+
+    def place_back_if_need(self):
+        if self._cutcopy_is_cut:
+            if self._cutcopy_buffer_list:
+                board = self._cutcopy_buffer_list[0]._board
+                for bi in self._cutcopy_buffer_list:
+                    if bi not in board.items_list:
+                        board.items_list.append(bi) 
+
+    def clear_cutcopy_buffer(self):
+        self._cutcopy_buffer_list.clear()
 
     def add_board_folder_data(self, fod):
         self.children_boards_folder_data.append(fod)
