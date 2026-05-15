@@ -6392,18 +6392,24 @@ class BoardMixin(BoardTextEditItemMixin):
 
             is_same_board = items[0]._board is cf.board
 
+            def set_position_and_select(item):
+                delta = item.position - selection_center
+                item.position = rel_cursor_pos + delta
+                item._selected = True
+
             if is_cut: #CUT-PASTE
 
                 if is_same_board: # вырезка и вставка на доску происхождения
                     for bi in items:
+                        # просто добавляем обратно и меняем позицию
                         cf.board.items_list.append(bi)
-                        delta = bi.position - selection_center
-                        bi.position = rel_cursor_pos + delta
-                        bi._selected = True
+                        set_position_and_select(bi)
                     # self.show_center_label('cut, same board')
 
 
                 else: # вырезка и вставка на другую доску
+                    # отвязать от FileData
+                    # сделать копию FileData и привязать к копии
                     # TODO:
                     self.show_center_label('cut, other board')
 
@@ -6412,9 +6418,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if is_same_board: # копирование на доску происхождения
                     for bi in items:
                         new_item = bi.make_copy(self, cf)
-                        delta = new_item.position - selection_center
-                        new_item.position = rel_cursor_pos + delta
-                        new_item._selected = True
+                        set_position_and_select(new_item)
                     # self.show_center_label('copy, same board')
 
 
