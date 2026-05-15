@@ -6292,7 +6292,7 @@ class BoardMixin(BoardTextEditItemMixin):
             self.show_center_label(_('Error during parsint copy-paste data') + f', {e}', error=True)
             return
 
-        files_data = data_base.get("files_data", [])
+        files_data = data_base.get("files_data", {})
         items_data = data_base.get("items_data", [])
         selection_center = QPointF(*data_base.get("selection_center", (0.0, 0.0)))
 
@@ -6362,7 +6362,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 null, pid_str, data = text_parts
                 if pid_str.isdigit():
                     pid = int(pid_str)
-                    if os.getpid() != pid:
+                    current_pid = os.getpid()
+                    if current_pid != pid:
                         data_to_read = data
 
             if data_to_read is not None:
@@ -6393,21 +6394,22 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if is_cut: #CUT-PASTE
 
-                if is_same_board:
-                    # вырезка и вставка на доску происхождения
-                    # TODO:
-                    self.show_center_label('cut, same board')
+                if is_same_board: # вырезка и вставка на доску происхождения
+                    for bi in items:
+                        cf.board.items_list.append(bi)
+                        delta = bi.position - selection_center
+                        bi.position = rel_cursor_pos + delta
+                        bi._selected = True
+                    # self.show_center_label('cut, same board')
 
 
-                else:
-                    # вырезка и вставка на другую доску
+                else: # вырезка и вставка на другую доску
                     # TODO:
                     self.show_center_label('cut, other board')
 
             else: #COPY-PASTE
 
-                if is_same_board:
-                    # копирование на доску происхождения
+                if is_same_board: # копирование на доску происхождения
                     for bi in items:
                         new_item = bi.make_copy(self, cf)
                         delta = new_item.position - selection_center
@@ -6416,8 +6418,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     # self.show_center_label('copy, same board')
 
 
-                else:
-                    # копирование на другую доску
+                else: # копирование на другую доску
                     # TODO:
                     self.show_center_label('copy, other board')
 
