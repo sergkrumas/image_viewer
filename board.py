@@ -6345,7 +6345,7 @@ class BoardMixin(BoardTextEditItemMixin):
         serialized_data = self.board_serialize_to_CutCopyPasteData()
         clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
         cb.setText(clipboard_text, mode=cb.Clipboard)
-        self.board_control_x_c_base()
+        self.board_control_x_c_common()
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
 
     def board_control_v(self):
@@ -6435,10 +6435,12 @@ class BoardMixin(BoardTextEditItemMixin):
         return selected_items
 
     def board_control_x(self):
-        self.board_control_x_c_base(cut=True)
+        self.board_control_x_c_common(cut=True)
 
-    def board_control_x_c_base(self, cut=False):
+    def board_control_x_c_common(self, cut=False):
         if not self.selection_box:
+            self.CrossboardData().place_back_if_need()
+            self.CrossboardData().clear_cutcopy_buffer()
             return
         items = self.board_get_selected_items_cutcopy()
         selection_center_viewport = self.selection_box.boundingRect().center()
