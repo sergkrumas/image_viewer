@@ -6222,7 +6222,39 @@ class BoardMixin(BoardTextEditItemMixin):
             self.prepare_selection_box_widget(cf)
 
     def board_serialize_to_CutCopyPaste(self):
-        pass
+        selected_items = []
+        allowed = [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV, BoardItem.types.ITEM_NOTE]
+        for bi in self.LibraryData().current_folder().board.items_list:
+            if bi._selected:
+                if bi.type in allowed:
+                    selected_items.append(bi)
+
+        data_base = dict()
+        if selected_items:
+            needed_fids = defaultdict(list)
+
+            for bi in selected_items:
+                if bi.file_data is not None:
+                    needed_fids[bi.file_data].append(bi)
+
+            self.referenceItemAttrs = BoardItem(BoardItem.types.ITEM_UNDEFINED).__dict__
+    
+            files_data = dict()
+            for fid in needed_fids.keys():
+                files_data[id(fid)] = (fid.filepath, fid.source_width, fid.source_height)
+
+            items_data = []
+            for bi in selected_items:
+                new_item_base = list()
+                items_data.append(new_item_base)
+                self.board_object_attributes_to_serial(bi, new_item_base)
+
+            del self.referenceItemAttrs
+
+            data_base["files_data"] = files_data
+            data_base["items_data"] = items_data
+
+        return cbor2.dumps(data_base)
 
     def board_unserialize_from_CutCopyPaste(self, serialized_data):
         pass
@@ -6254,7 +6286,6 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if data_to_read is not None:
                 self.board_unserialize_from_CutCopyPaste(data_to_read)
-                self.show_center_label(f'from other app copy {text}')
             else:
                 self.board_paste_selected_items()
 
