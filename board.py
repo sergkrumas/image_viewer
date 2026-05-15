@@ -6246,7 +6246,18 @@ class BoardMixin(BoardTextEditItemMixin):
     
             files_data = dict()
             for fid in interested_fids.keys():
-                files_data[id(fid)] = (fid.filepath, fid.source_width, fid.source_height)
+                if fid.virtual:
+                    pixmaps = []
+                    for bi in fid.board_items:
+                        self.board_trigger_item_pixmap_loading(bi)
+                        if (bi.pixmap is not None) and (not bi.pixmap.isNull()):
+                            pixmaps.append(bi.pixmap)
+                            break
+                    data = self.board_pixmap_to_png_bytes(pixmaps[0])
+                else:
+                    data = fid.filepath
+                files_data[id(fid)] = (fid.virtual, data, fid.source_width, fid.source_height)
+
 
             items_data = []
             for bi in selected_items:
@@ -6261,17 +6272,33 @@ class BoardMixin(BoardTextEditItemMixin):
             sc = self.board_MapToBoard(self.selection_box.boundingRect().center())
             data_base["selection_center"] = (sc.x(), sc.y())
 
-
         data = cbor2.dumps(data_base)
-        out = "".join(f"\\x{b:02x}" for b in data) #тупо, но зато работает
-        return out
+        return self.board_bytestring_to_string(data)
+
+    def board_pixmap_to_png_bytes(self, pixmap):
+        ba = QByteArray()
+        buffer = QBuffer(ba)
+        buffer.open(QIODevice.WriteOnly)
+        pixmap.save(buffer, "PNG")
+        pixmap_bytes = ba.data()
+        return pixmap_bytes
+
+    def board_png_bytes_to_pixmap(self, pixmap_bytes):
+        pixmap = QPixmap()
+        pixmap.loadFromData(QByteArray(pixmap_bytes), "PNG")
+        return pixmap
+
+    def board_bytestring_to_string(self, bytes_data):
+        return "".join(f"\\x{b:02x}" for b in bytes_data) #тупо, но зато работает
+
+    def board_string_to_bytestring(self, string_value):
+        hex_only = string_value.replace("\\x", "")
+        return bytes.fromhex(hex_only)
 
     def board_unserialize_from_CutCopyPasteData(self, serialized_data):
         data_base = dict()
         try:
-            hex_only = serialized_data.replace("\\x", "")
-            reconstructed_bytes = bytes.fromhex(hex_only)
-            data_base = cbor2.loads(reconstructed_bytes)
+            data_base = cbor2.loads(self.board_string_to_bytestring(serialized_data))
         except Exception as e:
             self.show_center_label(_('Error during parsint copy-paste data') + f', {e}', error=True)
             return
@@ -6287,7 +6314,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         id_to_filedata = dict()
         for id_key, bfd in files_data.items():
-            filepath, source_width, source_height = bfd
+            is_virtual, data, source_width, source_height = bfd
+            if is_virtual:
+                pixmap = self.board_png_bytes_to_pixmap(data)
+                filepath = self.board_generate_filepath(cf, '.png')
+                pixmap.save(filepath)
+            else:
+                filepath = data
             fid = self.LibraryData().create_file_data(filepath, cf)
             fid.source_width = source_width
             fid.source_height = source_height
