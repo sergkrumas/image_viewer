@@ -462,7 +462,14 @@ class BoardItem():
         canvas.board_set_tracking_data(copied_item, folder_data)
         folder_data.board.items_list.append(copied_item)
         if self.file_data is not None:
-            self.file_data.board_items.append(copied_item)
+            if self.file_data.folder_data is folder_data:
+                self.file_data.board_items.append(copied_item)
+            else:
+                fid_copy = self.file_data.make_copy()
+                fid_copy.folder_data = folder_data
+                fid_copy.board_items.append(copied_item)
+                copied_item.file_data = fid_copy
+                folder_data.images_list.append(fid_copy)
         return copied_item
 
     def info_text(self):
@@ -6340,11 +6347,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_control_c(self):
-        cb = QApplication.clipboard()
-        cb.clear(mode=cb.Clipboard)
-        serialized_data = self.board_serialize_to_CutCopyPasteData()
-        clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
-        cb.setText(clipboard_text, mode=cb.Clipboard)
         self.board_control_x_c_common()
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
 
@@ -6408,10 +6410,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
                 else: # вырезка и вставка на другую доску
-                    # отвязать от FileData
-                    # сделать копию FileData и привязать к копии
-                    # TODO:
-                    self.show_center_label('cut, other board')
+                    for bi in items:
+                        new_item = bi.make_copy(self, cf)
+                        set_position_and_select(new_item)
+                    # TODO: тут просто надо перепамить ссылки и всё вроде как, перед этим скопировав FileData
+                    # self.show_center_label('cut, other board')
 
             else: #COPY-PASTE
 
@@ -6423,8 +6426,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
                 else: # копирование на другую доску
-                    # TODO:
-                    self.show_center_label('copy, other board')
+                    for bi in items:
+                        new_item = bi.make_copy(self, cf)
+                        set_position_and_select(new_item)
+                    # self.show_center_label('copy, other board')
 
             self.CrossboardData().clear_cutcopy_buffer()
 
@@ -6440,12 +6445,20 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_control_x(self):
         self.board_control_x_c_common(cut=True)
+        self.show_center_label(_("Cut to clipboard"), duration=1.0)
 
     def board_control_x_c_common(self, cut=False):
         if not self.selection_box:
             self.CrossboardData().place_back_if_need()
             self.CrossboardData().clear_cutcopy_buffer()
             return
+
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        serialized_data = self.board_serialize_to_CutCopyPasteData()
+        clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
+        cb.setText(clipboard_text, mode=cb.Clipboard)
+
         items = self.board_get_selected_items_cutcopy()
         selection_center_viewport = self.selection_box.boundingRect().center()
         selection_center_board = self.board_MapToBoard(selection_center_viewport)
