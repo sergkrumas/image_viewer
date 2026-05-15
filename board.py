@@ -6263,7 +6263,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         data = cbor2.dumps(data_base)
-        out = "".join(f"\\x{b:02x}" for b in data)
+        out = "".join(f"\\x{b:02x}" for b in data) #тупо, но зато работает
         return out
 
     def board_unserialize_from_CutCopyPaste(self, serialized_data):
