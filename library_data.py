@@ -144,14 +144,18 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 return fda
         return None
 
-    def find_file_data_with_filepath_or_create_it(self, filepath, fod):
+    def find_file_data_with_filepath_or_create_it(self, filepath, fod, force_new=False):
         fda = self.find_file_data_with_filepath(filepath, fod)
-        if fda is not None:
-            # TODO: тут может быть интересный случай, когда найденный FileData может быть связан с айтемом,
-            # который обрезали, и это значит, что превьюшка у него будет изменена. Тогда придётся создавать новый FileData
-            return fda
-        else:
-            return self.create_file_data(filepath, fod)
+        if fda is not None and not force_new:
+            if not (fda.board_items and any(bool(bi._crop_data_stack) for bi in fda.board_items)):
+                # тут может быть интересный случай,
+                # когда найденный FileData может быть связан с айтемом,
+                # который обрезали, и это значит,
+                # что превьюшка у него будет изменена,
+                # и тогда придётся создавать новый FileData
+                return fda
+
+        return self.create_file_data(filepath, fod)
 
     def update_progressbar(self):
         app = QApplication.instance()

@@ -465,11 +465,14 @@ class BoardItem():
             if self.file_data.folder_data is folder_data:
                 self.file_data.board_items.append(copied_item)
             else:
-                fid_copy = self.file_data.make_copy()
+                force_new = bool(copied_item._crop_data_stack)
+                fid_copy = canvas.LibraryData().find_file_data_with_filepath_or_create_it(self.file_data.filepath, folder_data, force_new=force_new)
+                # fid_copy = self.file_data.make_copy()
                 fid_copy.folder_data = folder_data
                 fid_copy.board_items.append(copied_item)
                 copied_item.file_data = fid_copy
-                folder_data.images_list.append(fid_copy)
+                if fid_copy not in folder_data.images_list:
+                    folder_data.images_list.append(fid_copy)
         return copied_item
 
     def info_text(self):
@@ -6438,6 +6441,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     # self.show_center_label('copy, other board')
 
             self.CrossboardData().clear_cutcopy_buffer()
+            self.LibraryData().make_thumbnails_and_previews(cf, None)
 
             self.prepare_selection_box_widget(cf)
 
