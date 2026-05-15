@@ -6221,7 +6221,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 new_item._selected = True
             self.prepare_selection_box_widget(cf)
 
-    def board_serialize_to_CutCopyPaste(self):
+    def board_serialize_to_CutCopyPasteData(self):
         selected_items = []
         allowed = [
                       BoardItem.types.ITEM_IMAGE
@@ -6266,7 +6266,7 @@ class BoardMixin(BoardTextEditItemMixin):
         out = "".join(f"\\x{b:02x}" for b in data) #тупо, но зато работает
         return out
 
-    def board_unserialize_from_CutCopyPaste(self, serialized_data):
+    def board_unserialize_from_CutCopyPasteData(self, serialized_data):
         data_base = dict()
         try:
             hex_only = serialized_data.replace("\\x", "")
@@ -6321,7 +6321,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_control_c(self):
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
-        serialized_data = self.board_serialize_to_CutCopyPaste()
+        serialized_data = self.board_serialize_to_CutCopyPasteData()
         clipboard_text = f'{COPY_SELECTED_BOARD_ITEMS_STR}:{os.getpid()}:{serialized_data}'
         cb.setText(clipboard_text, mode=cb.Clipboard)
         self.show_center_label(_("Copied to clipboard"), duration=1.0)
@@ -6344,7 +6344,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         data_to_read = data
 
             if data_to_read is not None:
-                self.board_unserialize_from_CutCopyPaste(data_to_read)
+                self.board_unserialize_from_CutCopyPasteData(data_to_read)
             else:
                 self.board_paste_selected_items()
 
