@@ -6223,7 +6223,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_serialize_to_CutCopyPaste(self):
         selected_items = []
-        allowed = [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV, BoardItem.types.ITEM_NOTE]
+        allowed = [
+                      BoardItem.types.ITEM_IMAGE
+                    , BoardItem.types.ITEM_AV
+                    , BoardItem.types.ITEM_NOTE
+                    , BoardItem.types.ITEM_FRAME
+                ]
         for bi in self.LibraryData().current_folder().board.items_list:
             if bi._selected:
                 if bi.type in allowed:
@@ -6231,16 +6236,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
         data_base = dict()
         if selected_items:
-            needed_fids = defaultdict(list)
+            interested_fids = defaultdict(list)
 
             for bi in selected_items:
                 if bi.file_data is not None:
-                    needed_fids[bi.file_data].append(bi)
+                    interested_fids[bi.file_data].append(bi)
 
             self.referenceItemAttrs = BoardItem(BoardItem.types.ITEM_UNDEFINED).__dict__
     
             files_data = dict()
-            for fid in needed_fids.keys():
+            for fid in interested_fids.keys():
                 files_data[id(fid)] = (fid.filepath, fid.source_width, fid.source_height)
 
             items_data = []
@@ -6253,11 +6258,60 @@ class BoardMixin(BoardTextEditItemMixin):
 
             data_base["files_data"] = files_data
             data_base["items_data"] = items_data
+            sc = self.board_MapToBoard(self.selection_box.boundingRect().center())
+            data_base["selection_center"] = (sc.x(), sc.y())
 
-        return cbor2.dumps(data_base)
+
+        data = cbor2.dumps(data_base)
+        out = "".join(f"\\x{b:02x}" for b in data)
+        return out
 
     def board_unserialize_from_CutCopyPaste(self, serialized_data):
-        pass
+        data_base = dict()
+        try:
+            hex_only = serialized_data.replace("\\x", "")
+            reconstructed_bytes = bytes.fromhex(hex_only)
+            data_base = cbor2.loads(reconstructed_bytes)
+        except Exception as e:
+            self.show_center_label(_('Error during parsint copy-paste data') + f', {e}', error=True)
+            return
+
+        files_data = data_base.get("files_data", [])
+        items_data = data_base.get("items_data", [])
+        selection_center = data_base.get("selection_center", QPointF())
+        selection_center = QPointF(*selection_center)
+
+        cf = self.LibraryData().current_folder()
+        cbo = cf.board
+
+
+        id_to_filedata = dict()
+        for id_key, bfd in files_data.items():
+            filepath, source_width, source_height = bfd
+            fid = self.LibraryData().create_file_data(filepath, cf)
+            fid.source_width = source_width
+            fid.source_height = source_height
+            id_to_filedata[int(id_key)] = fid
+
+        all_items = []
+        for board_item_attributes in items_data:
+            bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
+            self.board_serial_to_object_attributes(bi, board_item_attributes, [], id_to_filedata=id_to_filedata)
+            bi._board = cbo
+            cbo.items_list.append(bi)
+            self.board_set_tracking_data(bi, cf)
+            all_items.append(bi)
+
+        self.LibraryData().make_thumbnails_and_previews(cf, None)
+
+        rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
+        for bi in all_items:
+            delta = bi.position - selection_center
+            bi.position = rel_cursor_pos + delta
+            bi._selected = True
+            self.prepare_selection_box_widget(cf)
+
+        self.update()
 
     def board_control_c(self):
         cb = QApplication.clipboard()
