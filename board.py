@@ -6293,6 +6293,7 @@ class BoardMixin(BoardTextEditItemMixin):
             fid.source_height = source_height
             id_to_filedata[int(id_key)] = fid
 
+        self.cropping_data_promises = []
         all_items = []
         for board_item_attributes in items_data:
             bi = self.BoardItem(self.BoardItem.types.ITEM_UNDEFINED)
@@ -6303,6 +6304,10 @@ class BoardMixin(BoardTextEditItemMixin):
             all_items.append(bi)
 
         self.LibraryData().make_thumbnails_and_previews(cf, None)
+
+        for bi in self.cropping_data_promises:
+            self.board_reapply_cropping_data(bi)
+        self.cropping_data_promises.clear()
 
         rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
         for bi in all_items:
