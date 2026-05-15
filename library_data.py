@@ -1379,6 +1379,13 @@ class CrossboardData():
         self._cutcopy_selection_center = selection_center
         self._cutcopy_is_cut = False
 
+    def cutcopy_buffer_status(self):
+        if self._cutcopy_is_cut:
+            msg = _('CutCopy buffer contains {} items')
+            items_count = len(self._cutcopy_buffer_list)
+            return msg.format(items_count)
+        return None
+
     def place_back_if_need(self):
         if self._cutcopy_is_cut:
             if self._cutcopy_buffer_list:
@@ -1389,6 +1396,7 @@ class CrossboardData():
 
     def clear_cutcopy_buffer(self):
         self._cutcopy_buffer_list.clear()
+        self._cutcopy_is_cut = False
 
     def add_board_folder_data(self, fod):
         self.children_boards_folder_data.append(fod)

@@ -3427,6 +3427,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_draw_interactive_layout_direction_menu(painter)
 
+        self.board_cutcopybuffer_status(painter)
+
+    def board_cutcopybuffer_status(self, painter):
+        status = self.CrossboardData().cutcopy_buffer_status()
+        if status is not None:
+            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter, status)
+
     def board_draw_debug_item_transform_autoscroll_activation_zones(self, painter):
         if self.Globals.DEBUG:
             o, i = self.autoscroll_activation_zones_for_board_item_transform()
@@ -6360,8 +6367,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if data_to_read is not None:
                 self.board_unserialize_from_CutCopyPasteData(data_to_read)
-            else:
-                self.board_paste_selected_items()
+
+        elif self.CrossboardData()._cutcopy_buffer_list:
+            self.board_paste_selected_items()
 
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
