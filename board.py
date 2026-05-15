@@ -6286,8 +6286,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         files_data = data_base.get("files_data", [])
         items_data = data_base.get("items_data", [])
-        selection_center = data_base.get("selection_center", QPointF())
-        selection_center = QPointF(*selection_center)
+        selection_center = QPointF(*data_base.get("selection_center", (0.0, 0.0)))
 
         cf = self.LibraryData().current_folder()
         cbo = cf.board
