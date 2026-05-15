@@ -6367,9 +6367,8 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if data_to_read is not None:
                 self.board_unserialize_from_CutCopyPasteData(data_to_read)
-
-        elif self.CrossboardData()._cutcopy_buffer_list:
-            self.board_paste_selected_items()
+            elif self.CrossboardData()._cutcopy_buffer_list:
+                self.board_paste_selected_items()
 
         elif mdata and mdata.hasImage():
             self.board_save_pasted_image_bytes_from_metadata(mdata)
@@ -6389,11 +6388,41 @@ class BoardMixin(BoardTextEditItemMixin):
             cf = self.LibraryData().current_folder()
             rel_cursor_pos = self.board_MapToBoard(self.mapped_cursor_pos())
             selection_center = self.CrossboardData()._cutcopy_selection_center
-            for bi in items:
-                new_item = bi.make_copy(self, cf)
-                delta = new_item.position - selection_center
-                new_item.position = rel_cursor_pos + delta
-                new_item._selected = True
+
+            is_same_board = items[0]._board is cf.board
+
+            if is_cut: #CUT-PASTE
+
+                if is_same_board:
+                    # вырезка и вставка на доску происхождения
+                    # TODO:
+                    self.show_center_label('cut, same board')
+
+
+                else:
+                    # вырезка и вставка на другую доску
+                    # TODO:
+                    self.show_center_label('cut, other board')
+
+            else: #COPY-PASTE
+
+                if is_same_board:
+                    # копирование на доску происхождения
+                    for bi in items:
+                        new_item = bi.make_copy(self, cf)
+                        delta = new_item.position - selection_center
+                        new_item.position = rel_cursor_pos + delta
+                        new_item._selected = True
+                    # self.show_center_label('copy, same board')
+
+
+                else:
+                    # копирование на другую доску
+                    # TODO:
+                    self.show_center_label('copy, other board')
+
+            self.CrossboardData().clear_cutcopy_buffer()
+
             self.prepare_selection_box_widget(cf)
 
     def board_get_selected_items_cutcopy(self):
