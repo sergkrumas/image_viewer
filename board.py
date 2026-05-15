@@ -6413,8 +6413,14 @@ class BoardMixin(BoardTextEditItemMixin):
                     for bi in items:
                         new_item = bi.make_copy(self, cf)
                         set_position_and_select(new_item)
-                    # TODO: тут просто надо перепамить ссылки и всё вроде как, перед этим скопировав FileData
+
+                        # удаляем исходники совсем, убираем последние ссылки
+                        if bi in bi.file_data.board_items:
+                            bi.file_data.board_items.remove(bi)
+                            bi.file_data = None
+                        # TODO: потом здесь для bi надо будет вызвать purgerator
                     # self.show_center_label('cut, other board')
+
 
             else: #COPY-PASTE
 
