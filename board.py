@@ -4048,6 +4048,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if bi.type == BoardItem.types.ITEM_NODE:
                     pass
 
+                # общий блок
                 self.board_delete_attached_links(bi)
                 if bi.file_data is not None:
                     if bi in bi.file_data.board_items:
