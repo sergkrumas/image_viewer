@@ -7916,7 +7916,7 @@ class BoardMixin(BoardTextEditItemMixin):
         main_fod = CROSSBOARD.all_fods[0]
         self.graph_offsets = defaultdict(float)
         self.cross_fod = cross_fod
-        self.board_build_relationships_graph(origin, main_fod)
+        self.board_build_boards_hierarchy_graph(origin, main_fod)
 
         self.board_make_board_current(cross_fod)
         cross_fod.board.referer_board_folder = cufod
@@ -7946,7 +7946,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.CROSSBOARD.tech_links.append(li)
         return li
 
-    def board_build_relationships_graph(self, origin, fod, level=0, parent_node=None):
+    def board_build_boards_hierarchy_graph(self, origin, fod, level=0, parent_node=None):
         ni = self.board_build_relationships_node()
         self.graph_offsets[level] += 100
         ni.position = QPointF(origin) + QPointF(self.graph_offsets[level], level*100) + QPointF(0, 200)
@@ -7960,7 +7960,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
                 board_fod = getattr(item, 'item_folder_data', None)
                 if board_fod is not None:
-                    self.board_build_relationships_graph(origin, board_fod, level=level+1, parent_node=ni)
+                    self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
 
     def board_cancel_crossboard_transforms(self):
         if self.CROSSBOARD.activated:
