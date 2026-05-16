@@ -6377,7 +6377,7 @@ class BoardMixin(BoardTextEditItemMixin):
         mdata = cb.mimeData()
 
         if self.CROSSBOARD.activated:
-            self.show_center_label(_("Disabled temporarily for crossword"), error=True)
+            self.show_center_label(_("Disabled temporarily for crossboard"), error=True)
             return
 
         if text and text.startswith(COPY_SELECTED_BOARD_ITEMS_STR):
@@ -6477,7 +6477,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_control_x(self):
 
         if self.CROSSBOARD.activated:
-            self.show_center_label(_("Disabled temporarily for crossword"), error=True)
+            self.show_center_label(_("Disabled temporarily for crossboard"), error=True)
             return
 
         self.board_control_x_c_common(cut=True)
