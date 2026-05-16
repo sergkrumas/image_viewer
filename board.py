@@ -7939,7 +7939,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.cross_fod.board.items_list.append(bi)
         return bi
 
-    def board_build_relationships_link(self, ni1, ni2):
+    def board_create_hierarchy_graph_link(self, ni1, ni2):
         li = BoardItem(BoardItem.types.ITEM_LINK)
         li.from_item = ni1
         li.to_item = ni2
@@ -7955,7 +7955,7 @@ class BoardMixin(BoardTextEditItemMixin):
         else:
             ni.label = fod.get_label_or_path()
         if parent_node is not None:
-            self.board_build_relationships_link(parent_node, ni)
+            self.board_create_hierarchy_graph_link(parent_node, ni)
         for item in fod.board.items_list:
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
                 board_fod = getattr(item, 'item_folder_data', None)
