@@ -4072,11 +4072,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_purgerator(self, obj):
         if obj is BoardItem:
-            attributes = obj.__dict__.items()
-            for attr_name, attr_value in attributes:
-                if isinstance(attr_value, list):
-                    attr_value.clear()
-                delattr(obj, attr_name)
+            pass
+        attributes = obj.__dict__.items()
+        for attr_name, attr_value in attributes:
+            if isinstance(attr_value, list):
+                attr_value.clear()
+            delattr(obj, attr_name)
 
     def board_get_visible_link_slots(self, fod):
         slots = []
