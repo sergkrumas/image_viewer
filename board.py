@@ -7962,6 +7962,31 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_fod is not None:
                     self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
 
+    def board_gather_hierarchy_metadata(self, bi, level=0, data=None):
+        if level == 0:
+            data = defaultdict(list)
+
+        fod = getattr(bi, 'item_folder_data', None)
+        if fod is None:
+            return
+
+        items_links = []
+        for item in fod.board.items_list:
+            if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
+                self.board_gather_hierarchy_metadata(item, level=level+1, data=data)
+
+            for link in self.CrossboardData().link_items_list:
+                if (link.to_item is item) or (link.from_item is item):
+                    items_links.append(link)
+
+        is_child_board = fod in self.CrossboardData().children_boards_folder_data
+        data[level].append({
+            'fod': fod,
+            'is_child_board': is_child_board,
+            'root_item': bi,
+            'links': items_links
+        })
+
     def board_cancel_crossboard_transforms(self):
         if self.CROSSBOARD.activated:
             for fod in self.CROSSBOARD.all_fods:
