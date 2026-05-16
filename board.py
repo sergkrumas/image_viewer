@@ -6442,7 +6442,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         if bi in bi.file_data.board_items:
                             bi.file_data.board_items.remove(bi)
                             bi.file_data = None
-                        # TODO: потом здесь для bi надо будет вызвать purgerator
+                        self.board_purgerator(bi)
                     # self.show_center_label('cut, other board')
 
 
