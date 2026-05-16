@@ -4054,8 +4054,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     if bi in bi.file_data.board_items:
                         bi.file_data.board_items.remove(bi)
                         bi.file_data = None
-                # TODO: вызывать здесь purgerator для bi
                 items_list.remove(bi)
+
+                self.board_purgerator(bi)
 
             # (16 май 26) добавление удалённого в группу, которая содержит удалённые айтемы;
             # на данный момент решил не пользоваться этой фичей и сносить айтемы безвозвратно,
@@ -4068,6 +4069,14 @@ class BoardMixin(BoardTextEditItemMixin):
         self.prepare_selection_box_widget(cf)
 
         self.update()
+
+    def board_purgerator(self, obj):
+        if obj is BoardItem:
+            attributes = obj.__dict__.items()
+            for attr_name, attr_value in attributes:
+                if isinstance(attr_value, list):
+                    attr_value.clear()
+                delattr(obj, attr_name)
 
     def board_get_visible_link_slots(self, fod):
         slots = []
