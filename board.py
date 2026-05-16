@@ -4031,28 +4031,35 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
         if self.selected_items:
-            gi = self.board_get_removed_items_group(fd)
+            # gi = self.board_get_removed_items_group(fd)
 
             # здесь решаем что удалить безвозвратно
             for bi in self.selected_items:
                 bi._selected = False
-                if bi.type == BoardItem.types.ITEM_FRAME:
-                    items_list.remove(bi)
-                if bi.type == BoardItem.types.ITEM_IMAGE:
-                    pass
-                if bi.type == BoardItem.types.ITEM_GROUP:
-                    if bi.board_group_index > 9:
-                        self.board_move_items_to_group(
-                            item_group=gi,
-                            items=bi.item_folder_data.board.items_list,
-                            items_folder=bi.item_folder_data
-                        )
-                        items_list.remove(bi)
-                if bi.type == BoardItem.types.ITEM_NODE:
-                    self.board_delete_attached_links(bi)
-                    items_list.remove(bi)
 
-            self.board_move_items_to_group(item_group=gi, items=self.selected_items)
+                # if bi.type == BoardItem.types.ITEM_GROUP:
+                    # if bi.board_group_index > 9:
+                    #     self.board_move_items_to_group(
+                    #         item_group=gi,
+                    #         items=bi.item_folder_data.board.items_list,
+                    #         items_folder=bi.item_folder_data
+                    #     )
+
+                if bi.type == BoardItem.types.ITEM_NODE:
+                    pass
+
+                self.board_delete_attached_links(bi)
+                if bi.file_data is not None:
+                    if bi in bi.file_data.board_items:
+                        bi.file_data.board_items.remove(bi)
+                        bi.file_data = None
+                # TODO: вызывать здесь purgerator для bi
+                items_list.remove(bi)
+
+            # (16 май 26) добавление удалённого в группу, которая содержит удалённые айтемы;
+            # на данный момент решил не пользоваться этой фичей и сносить айтемы безвозвратно,
+            # если не учитывать, что история действий будет добавлена чуть поздней
+            # self.board_move_items_to_group(item_group=gi, items=self.selected_items)
 
         if selected_links:
             self.board_delete_link_item(li)
