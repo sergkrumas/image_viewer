@@ -7999,6 +7999,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 links = fod_dict['links']
 
                 fod_COPY = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                # если доска в crossboardData, то и копию нужно засунуть ту да же
+                if is_sub_board:
+                    self.CrossboardData().add_board_folder_data(fod_COPY)
                 # fod_COPY = fod.make_copy()
                 fod_copies[id(fod)] = fod_COPY
 
@@ -8022,9 +8025,6 @@ class BoardMixin(BoardTextEditItemMixin):
                     # TODO: посмотреть функцию загрузки досок для того, чтобы проверить, что я ничего не упустил из подобного
 
 
-                # если доска в crossboardData, то и копию нужно засунуть ту да же
-                if is_sub_board:
-                    self.CrossboardData().add_board_folder_data(fod_COPY)
 
                 self.build_board_bounding_rect(fod_COPY)
 
