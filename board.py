@@ -7978,6 +7978,10 @@ class BoardMixin(BoardTextEditItemMixin):
         # Собственно, я пока не решил чего делать: или делать копию всей невиртуальной папки (а это перерасход памяти),
         # или просто дать ссылку на исходную. Но во втором случае надо переписывать код.
 
+        fod_copies = dict()
+        fda_copies = dict()
+        bi_copies = dict()
+
         if metadata:
             levels = sorted(metadata.keys(), reverse=True)
             for level in levels:
@@ -7986,6 +7990,16 @@ class BoardMixin(BoardTextEditItemMixin):
                     is_sub_board = fod_dict['is_sub_board']
                     root_item = fod_dict['root_item']
                     links = fod_dict['links']
+
+                    for fid in fod.images_list:
+                        pass
+                    for item in fod.board.items_list:
+                        pass
+                    for link in links:
+                        pass
+
+                    if is_sub_board:
+                        self.CrossboardData().add_board_folder_data(fod)
 
           # - ассоциативный словарь для пар (исходник; копия)
           #     - для BoardItem и FileData
