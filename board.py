@@ -449,7 +449,7 @@ class BoardItem():
             file_data = self.label
         return file_data
 
-    def make_copy(self, canvas, folder_data, file_data=None, copy_dependent_data=True):
+    def make_item_copy(self, canvas, folder_data, file_data=None, copy_dependent_data=True):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
@@ -479,7 +479,11 @@ class BoardItem():
 
         if copy_dependent_data:
             metadata = canvas.board_gather_hierarchy_metadata(self)
-            canvas.board_copy_hierarchically_dependent_data(metadata, self, copied_item)
+            bi_copies, link_promises = canvas.board_copy_hierarchically_dependent_data(metadata, self, copied_item)
+            canvas.bi_copies.update(bi_copies)
+            for link in link_promises:
+                if link not in canvas.link_promises:
+                    canvas.link_promises.append(link)
 
         return copied_item
 
@@ -934,6 +938,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_crop_n_combine_init()
 
         self.draw_content_only = False
+
+        self.bi_copies = dict()
+        self.link_promises = list()
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -6445,7 +6452,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 else: # вырезка и вставка на другую доску
                     for bi in items:
-                        new_item = bi.make_copy(self, cf)
+                        new_item = bi.make_item_copy(self, cf)
                         set_position_and_select(new_item)
 
                         # удаляем исходники совсем, убираем последние ссылки
@@ -6460,14 +6467,14 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 if is_same_board: # копирование на доску происхождения
                     for bi in items:
-                        new_item = bi.make_copy(self, cf)
+                        new_item = bi.make_item_copy(self, cf)
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, same board')
 
 
                 else: # копирование на другую доску
                     for bi in items:
-                        new_item = bi.make_copy(self, cf)
+                        new_item = bi.make_item_copy(self, cf)
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, other board')
 
@@ -8021,7 +8028,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 for item in fod.board.items_list:
                     file_data = fda_copies.get(id(item.file_data), None)
-                    item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
+                    item_COPY = item.make_item_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
                     bi_copies[id(item)] = item_COPY
 
                     # INFO: этот абзац надо держать в соответствии с кодом загрузки айтемов из файла
@@ -8620,7 +8627,7 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 bi = bis[0]
 
-                new_bi = bi.make_copy(self, cf)
+                new_bi = bi.make_item_copy(self, cf)
                 new_bi.add_crop_data_to_stack(crop_rect)
                 self.board_crop_n_combine_do_operation([new_bi], crop_rect)
                 self.board_crop_n_combine_do_resetting(new_bi, crop_rect)
