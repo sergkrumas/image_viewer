@@ -4019,7 +4019,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if self.selected_items:
                 stat += _("items: {}").format(len(self.selected_items))
             if selected_links:
-                stat += _("\nlinks: {}").format(len(selected_links))
+                stat += '\n' + _("links: {}").format(len(selected_links))
             reply = QMessageBox.question(self, _('Items removing confirmation'),
                                          _("Are you sure you want to proceed?\n{}").format(stat),
                                          QMessageBox.Yes | QMessageBox.No,
