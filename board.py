@@ -449,7 +449,7 @@ class BoardItem():
             file_data = self.label
         return file_data
 
-    def make_copy(self, canvas, folder_data):
+    def make_copy(self, canvas, folder_data, file_data=None, copy_dependent_data=True):
         copied_item = BoardItem(self.type)
         attributes = self.__dict__.items()
         for attr_name, attr_value in attributes:
@@ -464,6 +464,8 @@ class BoardItem():
         if self.file_data is not None:
             if self.file_data.folder_data is folder_data:
                 self.file_data.board_items.append(copied_item)
+            elif file_data is not None:
+                file_data.board_items.append(copied_item)
             else:
                 force_new = bool(copied_item._crop_data_stack)
                 fid_copy = canvas.LibraryData().find_file_data_with_filepath_or_create_it(self.file_data.filepath, folder_data, force_new=force_new)
@@ -474,8 +476,9 @@ class BoardItem():
                 if fid_copy not in folder_data.images_list:
                     folder_data.images_list.append(fid_copy)
 
-        metadata = canvas.board_gather_hierarchy_metadata(self)
-        canvas.board_copy_hierarchically_dependent_data(metadata)
+        if copy_dependent_data:
+            metadata = canvas.board_gather_hierarchy_metadata(self)
+            canvas.board_copy_hierarchically_dependent_data(metadata)
 
         return copied_item
 
@@ -7991,6 +7994,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     root_item = fod_dict['root_item']
                     links = fod_dict['links']
 
+                    fod_COPY = fod.make_copy()
+                    fod_copies[fod] = fod_COPY
+
                     for fid in fod.images_list:
                         pass
                     for item in fod.board.items_list:
@@ -7998,8 +8004,19 @@ class BoardMixin(BoardTextEditItemMixin):
                     for link in links:
                         pass
 
+
+                    # FOD = fd = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                    # fd.folder_label = item.label
+                    # item.item_folder_data = fd
+                    # self.build_board_bounding_rect(fd)
+                    # fd.previews_done = True
+                    # fd.board.ready = True
+                    # fd.board.root_folder = cf
+                    # fd.board.root_item = item
+                    # self.CrossboardData().add_board_folder_data(fd)
+
                     if is_sub_board:
-                        self.CrossboardData().add_board_folder_data(fod)
+                        self.CrossboardData().add_board_folder_data(fod_COPY)
 
           # - ассоциативный словарь для пар (исходник; копия)
           #     - для BoardItem и FileData

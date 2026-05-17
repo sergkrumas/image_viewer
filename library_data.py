@@ -2033,7 +2033,7 @@ class FileData():
         cls.CURRENT_ID += 1
 
     def make_copy(self, linked=False):
-        copied_file_data = FileData(self.filepath, self.folder_data, make_copy=True)
+        copied_fda = FileData(self.filepath, self.folder_data, make_copy=True)
         attributes = self.__dict__.items()
         exclude = ("id", "board_items", "folder_data")
         for attr_name, attr_value in attributes:
@@ -2042,13 +2042,13 @@ class FileData():
             at = type(attr_value)
             if at in [QPointF, QRectF]:
                 attr_value = at(attr_value)
-            setattr(copied_file_data, attr_name, attr_value)
+            setattr(copied_fda, attr_name, attr_value)
         if linked:
-            copied_file_data.folder_data = self.folder_data
-            self.folder_data.images_list.append(copied_file_data)
+            copied_fda.folder_data = self.folder_data
+            self.folder_data.images_list.append(copied_fda)
         else:
-            copied_file_data.folder_data = None
-        return copied_file_data
+            copied_fda.folder_data = None
+        return copied_fda
 
     def __init__(self, filepath, folder_data, make_copy=False):
         super().__init__()
