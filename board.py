@@ -479,7 +479,7 @@ class BoardItem():
 
         if copy_dependent_data:
             metadata = canvas.board_gather_hierarchy_metadata(self)
-            canvas.board_copy_hierarchically_dependent_data(metadata)
+            canvas.board_copy_hierarchically_dependent_data(metadata, self, copied_item)
 
         return copied_item
 
@@ -7972,7 +7972,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_fod is not None:
                     self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
 
-    def board_copy_hierarchically_dependent_data(self, metadata):
+    def board_copy_hierarchically_dependent_data(self, metadata, original_item, copied_item):
         # (13 май 26) TODO:
         # если внизу по иерархии встретится невиртуальная папка (как содержимое айтема-папки), то тогда получается,
         # что надо делать копию для её FolderData или делать ссылку на оригинал.
@@ -8022,7 +8022,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
                     bi_copies[item] = item_COPY
 
-                    # INFO: этот раздел надо держать в соотвествии с кодом загрузки айтемов из файла
+                    # INFO: этот раздел надо держать в соответствии с кодом загрузки айтемов из файла
                     if item_COPY._crop_data_stack:
                         self.board_reapply_cropping_data(item_COPY)
 
@@ -8031,6 +8031,8 @@ class BoardMixin(BoardTextEditItemMixin):
         for level in levels:
             for fod_dict in metadata[level]:
                 pass
+                # тут всё упирается в то, что мне нужны исходный айтем и его копия
+
                 # TODO: задавать root_folder, root_item для BoardData и item_folder_data для [root_item]
                     # item.item_folder_data = fd
                     # fod_COPY.board.root_folder = cf
