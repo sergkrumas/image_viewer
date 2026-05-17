@@ -8020,6 +8020,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 for item in fod.board.items_list:
                     file_data = fda_copies.get(id(item.file_data), None)
                     item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
+                    bi_copies[item] = item_COPY
 
                     # INFO: этот раздел надо держать в соотвествии с кодом загрузки айтемов из файла
                     if item_COPY._crop_data_stack:
