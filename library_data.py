@@ -1405,6 +1405,9 @@ class CrossboardData():
     def add_board_folder_data(self, fod):
         self.children_boards_folder_data.append(fod)
 
+    def remove_board_folder_data(self, fod):
+        self.children_boards_folder_data.remove(fod)
+
     @classmethod
     def load(cls, data, children):
         i = cls.instance

@@ -4046,9 +4046,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     #     )
 
                 if bi.type == BoardItem.types.ITEM_NODE:
-                    pass
-
-                    self.board_gather_hierarchy_metadata(bi)
+                    metadata = self.board_gather_hierarchy_metadata(bi)
+                    self.board_delete_hierarchically_dependent_data(metadata)
 
                 # общий блок
                 self.board_delete_attached_links(bi)
@@ -4072,10 +4071,37 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
+    def board_delete_hierarchically_dependent_data(self, metadata):
+        if metadata:
+            levels = sorted(metadata.keys(), reverse=True)
+            for level in levels:
+                for fod_dict in metadata[level]:
+                    fod = fod_dict['fod']
+                    is_sub_board = fod_dict['is_sub_board']
+                    root_item = fod_dict['root_item']
+                    links = fod_dict['links']
+
+                    for link in links:
+                        self.board_delete_link_item(link)
+
+                    for fid in fod.images_list:
+                        self.board_purge_object(fid)
+                    for item in fod.board.items_list:
+                        self.board_purge_object(item)
+                    for link in links:
+                        self.board_purge_object(link)
+
+                    if is_sub_board:
+                        self.CrossboardData().remove_board_folder_data(fod)
+                    self.LibraryData().folders.remove(fod)
+
+                    self.board_purge_object(fod.board)
+                    self.board_purge_object(fod)
+
     def board_purge_object(self, obj):
         if obj is BoardItem:
             pass
-        attributes = obj.__dict__.items()
+        attributes = obj.__dict__.copy().items()
         for attr_name, attr_value in attributes:
             if isinstance(attr_value, list):
                 attr_value.clear()
