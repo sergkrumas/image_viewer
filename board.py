@@ -473,6 +473,10 @@ class BoardItem():
                 copied_item.file_data = fid_copy
                 if fid_copy not in folder_data.images_list:
                     folder_data.images_list.append(fid_copy)
+
+        metadata = canvas.board_gather_hierarchy_metadata(self)
+        canvas.board_copy_hierarchically_dependent_data(metadata)
+
         return copied_item
 
     def info_text(self):
@@ -4070,33 +4074,6 @@ class BoardMixin(BoardTextEditItemMixin):
         self.prepare_selection_box_widget(cf)
 
         self.update()
-
-    def board_delete_hierarchically_dependent_data(self, metadata):
-        if metadata:
-            levels = sorted(metadata.keys(), reverse=True)
-            for level in levels:
-                for fod_dict in metadata[level]:
-                    fod = fod_dict['fod']
-                    is_sub_board = fod_dict['is_sub_board']
-                    root_item = fod_dict['root_item']
-                    links = fod_dict['links']
-
-                    for link in links:
-                        self.board_delete_link_item(link)
-
-                    for fid in fod.images_list:
-                        self.board_purge_object(fid)
-                    for item in fod.board.items_list:
-                        self.board_purge_object(item)
-                    for link in links:
-                        self.board_purge_object(link)
-
-                    if is_sub_board:
-                        self.CrossboardData().remove_board_folder_data(fod)
-                    self.LibraryData().folders.remove(fod)
-
-                    self.board_purge_object(fod.board)
-                    self.board_purge_object(fod)
 
     def board_purge_object(self, obj):
         if obj is BoardItem:
@@ -7990,6 +7967,36 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_fod = getattr(item, 'item_folder_data', None)
                 if board_fod is not None:
                     self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
+
+    def board_copy_hierarchically_dependent_data(self, metadata):
+        pass
+
+    def board_delete_hierarchically_dependent_data(self, metadata):
+        if metadata:
+            levels = sorted(metadata.keys(), reverse=True)
+            for level in levels:
+                for fod_dict in metadata[level]:
+                    fod = fod_dict['fod']
+                    is_sub_board = fod_dict['is_sub_board']
+                    root_item = fod_dict['root_item']
+                    links = fod_dict['links']
+
+                    for link in links:
+                        self.board_delete_link_item(link)
+
+                    for fid in fod.images_list:
+                        self.board_purge_object(fid)
+                    for item in fod.board.items_list:
+                        self.board_purge_object(item)
+                    for link in links:
+                        self.board_purge_object(link)
+
+                    if is_sub_board:
+                        self.CrossboardData().remove_board_folder_data(fod)
+                    self.LibraryData().folders.remove(fod)
+
+                    self.board_purge_object(fod.board)
+                    self.board_purge_object(fod)
 
     def board_gather_hierarchy_metadata(self, bi, level=0, metadata=None):
         if level == 0 or metadata is None:
