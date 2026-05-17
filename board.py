@@ -7971,21 +7971,22 @@ class BoardMixin(BoardTextEditItemMixin):
         if fod is None:
             return
 
-        items_links = []
+        links = []
         for item in fod.board.items_list:
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
                 self.board_gather_hierarchy_metadata(item, level=level+1, data=data)
 
             for link in self.CrossboardData().link_items_list:
                 if (link.to_item is item) or (link.from_item is item):
-                    items_links.append(link)
+                    if link not in links:
+                        links.append(link)
 
         is_child_board = fod in self.CrossboardData().children_boards_folder_data
         data[level].append({
             'fod': fod,
             'is_child_board': is_child_board,
             'root_item': bi,
-            'links': items_links
+            'links': links
         })
 
     def board_cancel_crossboard_transforms(self):
