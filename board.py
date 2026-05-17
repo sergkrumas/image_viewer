@@ -7969,7 +7969,24 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
 
     def board_copy_hierarchically_dependent_data(self, metadata):
-        pass
+        # (13 май 26) TODO:
+        # если внизу по иерархии встретится невиртуальная папка, то тогда получается,
+        # что надо делать копию для её FolderData или делать ссылку на оригинал.
+        # Но если сделать ссылку на оригинал, то тогда получается,
+        # что на эту доску можно зайти из двух айтемов в разных досках,
+        # чего пока по архитектуре делать не надо.
+        # Собственно, я пока не решил чего делать: или делать копию всей невиртуальной папки (а это перерасход памяти),
+        # или просто дать ссылку на исходную. Но во втором случае надо переписывать код.
+
+        if metadata:
+            levels = sorted(metadata.keys(), reverse=True)
+            for level in levels:
+                for fod_dict in metadata[level]:
+                    fod = fod_dict['fod']
+                    is_sub_board = fod_dict['is_sub_board']
+                    root_item = fod_dict['root_item']
+                    links = fod_dict['links']
+
 
     def board_delete_hierarchically_dependent_data(self, metadata):
         if metadata:
