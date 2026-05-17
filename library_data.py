@@ -2079,11 +2079,12 @@ class FileData():
 
         self.preview_ui_rect = QRect()
 
+        self._preview = None
+
         if not make_copy:
             self.is_supported_filetype = LibraryData.is_interest_file(self.filepath)
             self.is_audio_video_filetype, self.is_video_filetype = LibraryData.is_audio_video_file(self.filepath)
 
-            self._preview = None
             if self.filepath and not LibraryData().globals.lite_mode:
                 if LibraryData.is_interest_file(self.filepath):
                     self.md5, self.md5_tuple = generate_md5(self.filepath)
