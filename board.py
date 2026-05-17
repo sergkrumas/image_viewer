@@ -7987,57 +7987,59 @@ class BoardMixin(BoardTextEditItemMixin):
         fda_copies = dict()
         bi_copies = dict()
 
-        if metadata:
-            levels = sorted(metadata.keys(), reverse=True)
-            for level in levels:
-                for fod_dict in metadata[level]:
-                    fod = fod_dict['fod']
-                    is_sub_board = fod_dict['is_sub_board']
-                    root_item = fod_dict['root_item']
-                    links = fod_dict['links']
+        if not metadata:
+            return
 
-                    fod_COPY = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
-                    # fod_COPY = fod.make_copy()
-                    fod_copies[id(fod)] = fod_COPY
+        levels = sorted(metadata.keys(), reverse=True)
+        for level in levels:
+            for fod_dict in metadata[level]:
+                fod = fod_dict['fod']
+                is_sub_board = fod_dict['is_sub_board']
+                root_item = fod_dict['root_item']
+                links = fod_dict['links']
 
-                    fod_COPY.folder_label = fod.folder_label
+                fod_COPY = self.LibraryData().create_folder_data(_("NODE BOARD Virtual Folder"), "", [], image_filepath=None, make_current=False, virtual=True)
+                # fod_COPY = fod.make_copy()
+                fod_copies[id(fod)] = fod_COPY
 
-                    fod_COPY.previews_done = True
-                    fod_COPY.board.ready = True
+                fod_COPY.folder_label = fod.folder_label
 
-                    for fda in fod.images_list:
-                        fda_COPY = fda.make_copy()
-                        fda_copies[id(fda)] = fda_COPY
+                fod_COPY.previews_done = True
+                fod_COPY.board.ready = True
 
-                        fda_COPY.folder_data = fod_COPY
-                        fod_COPY.images_list.append(fda_COPY)
+                for fda in fod.images_list:
+                    fda_COPY = fda.make_copy()
+                    fda_copies[id(fda)] = fda_COPY
 
-                    for item in fod.board.items_list:
-                        file_data = fda_copies.get(id(item.file_data), None)
-                        item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
+                    fda_COPY.folder_data = fod_COPY
+                    fod_COPY.images_list.append(fda_COPY)
 
-                        # TODO: применить данные обрезки для айтемов, если они есть
-                        # TODO: посмотреть функцию загрузки досок для того, чтобы проверить, что я ничего не упустил из подобного
+                for item in fod.board.items_list:
+                    file_data = fda_copies.get(id(item.file_data), None)
+                    item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
+
+                    # TODO: применить данные обрезки для айтемов, если они есть
+                    # TODO: посмотреть функцию загрузки досок для того, чтобы проверить, что я ничего не упустил из подобного
 
 
-                    # если доска в crossboardData, то и копию нужно засунуть ту да же
-                    if is_sub_board:
-                        self.CrossboardData().add_board_folder_data(fod_COPY)
+                # если доска в crossboardData, то и копию нужно засунуть ту да же
+                if is_sub_board:
+                    self.CrossboardData().add_board_folder_data(fod_COPY)
 
-                    self.build_board_bounding_rect(fod_COPY)
+                self.build_board_bounding_rect(fod_COPY)
 
-            for level in levels:
-                for fod_dict in metadata[level]:
-                    pass
-                    # TODO: задавать root_folder, root_item для BoardData и item_folder_data для [root_item]
-                        # item.item_folder_data = fd
-                        # fod_COPY.board.root_folder = cf
-                        # fod_COPY.board.root_item = item
+        for level in levels:
+            for fod_dict in metadata[level]:
+                pass
+                # TODO: задавать root_folder, root_item для BoardData и item_folder_data для [root_item]
+                    # item.item_folder_data = fd
+                    # fod_COPY.board.root_folder = cf
+                    # fod_COPY.board.root_item = item
 
-          # TODO: копировать линки во вложенных досках, надо объединить списки линков со всех досок и убедиться, что все линки в нём уникальные
+        # TODO: копировать линки во вложенных досках, надо объединить списки линков со всех досок и убедиться, что все линки в нём уникальные
               # линки могут быть между айтемами на разных уровнях иерархии, поэтому линки надо делать после того как созданы айтемы на всех копируемых досках
 
-          # TODO: проверить копирование айтемов-нод с постерами
+        # TODO: проверить копирование айтемов-нод с постерами
 
 
     def board_delete_hierarchically_dependent_data(self, metadata):
