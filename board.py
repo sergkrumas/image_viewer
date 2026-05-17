@@ -8020,7 +8020,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 for item in fod.board.items_list:
                     file_data = fda_copies.get(id(item.file_data), None)
                     item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
-                    bi_copies[item] = item_COPY
+                    bi_copies[id(item)] = item_COPY
 
                     # INFO: этот раздел надо держать в соответствии с кодом загрузки айтемов из файла
                     if item_COPY._crop_data_stack:
@@ -8030,16 +8030,26 @@ class BoardMixin(BoardTextEditItemMixin):
 
         for level in levels:
             for fod_dict in metadata[level]:
-                pass
-                # тут всё упирается в то, что мне нужны исходный айтем и его копия
 
-                # TODO: задавать root_folder, root_item для BoardData и item_folder_data для [root_item]
-                    # item.item_folder_data = fd
-                    # fod_COPY.board.root_folder = cf
-                    # fod_COPY.board.root_item = item
+                fod = fod_dict['fod']
+                fod_COPY = fod_copies[id(fod)]
+                if level == 0:
+                    # тут всё упирается в то, что сюда надо подать исходный айтем и его копию
+                    ri = copied_item
+                else:
+                    ri = bi_copies[id(fod.board.root_item)]
+                ri.item_folder_data = fod_COPY
+                fod_COPY.board.root_folder = ri._board.folder_data
+                fod_COPY.board.root_item = ri
+
 
         # TODO: копировать линки во вложенных досках, надо объединить списки линков со всех досок и убедиться, что все линки в нём уникальные
               # линки могут быть между айтемами на разных уровнях иерархии, поэтому линки надо делать после того как созданы айтемы на всех копируемых досках
+
+
+        # а что будет, если линки будут между айтемами, которые зависимо находятся каждый в своей айтеме-ноде?
+            # полуяается, линки надо копировать только под конец копирования всего?
+            # походу тут надо делать промисы
 
         # TODO: проверить копирование айтемов-нод с постерами
 
