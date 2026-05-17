@@ -8021,10 +8021,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     file_data = fda_copies.get(id(item.file_data), None)
                     item_COPY = item.make_copy(self, fod_COPY, file_data=file_data, copy_dependent_data=False)
 
-                    # TODO: применить данные обрезки для айтемов, если они есть
-                    # TODO: посмотреть функцию загрузки досок для того, чтобы проверить, что я ничего не упустил из подобного
-
-
+                    # INFO: этот раздел надо держать в соотвествии с кодом загрузки айтемов из файла
+                    if item_COPY._crop_data_stack:
+                        self.board_reapply_cropping_data(item_COPY)
 
                 self.build_board_bounding_rect(fod_COPY)
 
