@@ -7981,10 +7981,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     if link not in links:
                         links.append(link)
 
-        is_child_board = fod in self.CrossboardData().children_boards_folder_data
         data[level].append({
             'fod': fod,
-            'is_child_board': is_child_board,
+            'is_sub_board': fod in self.CrossboardData().children_boards_folder_data,
             'root_item': bi,
             'links': links
         })
