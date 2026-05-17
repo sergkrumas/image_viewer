@@ -4048,6 +4048,8 @@ class BoardMixin(BoardTextEditItemMixin):
                 if bi.type == BoardItem.types.ITEM_NODE:
                     pass
 
+                    self.board_gather_hierarchy_metadata(bi)
+
                 # общий блок
                 self.board_delete_attached_links(bi)
                 if bi.file_data is not None:
@@ -7963,9 +7965,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 if board_fod is not None:
                     self.board_build_boards_hierarchy_graph(origin, board_fod, level=level+1, parent_node=ni)
 
-    def board_gather_hierarchy_metadata(self, bi, level=0, data=None):
-        if level == 0:
-            data = defaultdict(list)
+    def board_gather_hierarchy_metadata(self, bi, level=0, metadata=None):
+        if level == 0 or metadata is None:
+            metadata = defaultdict(list)
 
         fod = getattr(bi, 'item_folder_data', None)
         if fod is None:
@@ -7974,19 +7976,21 @@ class BoardMixin(BoardTextEditItemMixin):
         links = []
         for item in fod.board.items_list:
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
-                self.board_gather_hierarchy_metadata(item, level=level+1, data=data)
+                self.board_gather_hierarchy_metadata(item, level=level+1, metadata=metadata)
 
             for link in self.CrossboardData().link_items_list:
                 if (link.to_item is item) or (link.from_item is item):
                     if link not in links:
                         links.append(link)
 
-        data[level].append({
+        metadata[level].append({
             'fod': fod,
             'is_sub_board': fod in self.CrossboardData().children_boards_folder_data,
             'root_item': bi,
             'links': links
         })
+
+        return metadata
 
     def board_cancel_crossboard_transforms(self):
         if self.CROSSBOARD.activated:
