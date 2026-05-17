@@ -6440,6 +6440,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 item.position = rel_cursor_pos + delta
                 item._selected = True
 
+            self.bi_copies = dict()
+            self.links_promises = list()
+
             if is_cut: #CUT-PASTE
 
                 if is_same_board: # вырезка и вставка на доску происхождения
@@ -6458,7 +6461,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         # удаляем исходники совсем, убираем ссылки на объекты
                         # TODO: (17 май 26) сука, а ведь тут могут быть айтемы-ноды,
                         # а в них свои доски. Ну и где код их удаления?
-                        # Походу вместо удаления надо менять ссылки или всё-таки переносить без сноса оригиналов
+                        # Походу вместо удаления надо менять ссылки
+                        # или всё-таки переносить данные без сноса оригиналов
                         if bi in bi.file_data.board_items:
                             bi.file_data.board_items.remove(bi)
                             bi.file_data = None
@@ -6480,6 +6484,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         new_item = bi.make_item_copy(self, cf)
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, other board')
+
+            self.bi_copies.clear()
+            self.links_promises.clear()
 
             self.CrossboardData().clear_cutcopy_buffer()
             self.LibraryData().make_thumbnails_and_previews(cf, None)
@@ -8070,6 +8077,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return bi_copies, links_promises
 
     def board_copy_hierarchically_dependent_data_close_links_promises(self, items_copies, links_promises):
+        # TODO:
         pass
 
     def board_delete_hierarchically_dependent_data(self, metadata):
