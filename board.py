@@ -6455,7 +6455,10 @@ class BoardMixin(BoardTextEditItemMixin):
                         new_item = bi.make_item_copy(self, cf)
                         set_position_and_select(new_item)
 
-                        # удаляем исходники совсем, убираем последние ссылки
+                        # удаляем исходники совсем, убираем ссылки на объекты
+                        # TODO: (17 май 26) сука, а ведь тут могут быть айтемы-ноды,
+                        # а в них свои доски. Ну и где код их удаления?
+                        # Походу вместо удаления надо менять ссылки или всё-таки переносить без сноса оригиналов
                         if bi in bi.file_data.board_items:
                             bi.file_data.board_items.remove(bi)
                             bi.file_data = None
