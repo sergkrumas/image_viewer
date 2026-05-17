@@ -1538,8 +1538,9 @@ class FolderData():
 
         self.init_images(files, library_loading=library_loading)
         if image_filepath:
+            image_filepath = os.path.normpath(image_filepath)
             for n, image in enumerate(self.images_list):
-                if os.path.normpath(image.filepath) == os.path.normpath(image_filepath):
+                if image.filepath == image_filepath:
                     self._image_index = n
             if self._image_index == -1:
                 # it happens when image_filepath points to non-image file
