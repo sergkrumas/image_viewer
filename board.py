@@ -7987,6 +7987,8 @@ class BoardMixin(BoardTextEditItemMixin):
         fda_copies = dict()
         bi_copies = dict()
 
+        bi_copies.update({id(original_item): copied_item})
+
         if not metadata:
             return
 
@@ -8033,11 +8035,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 fod = fod_dict['fod']
                 fod_COPY = fod_copies[id(fod)]
-                if level == 0:
-                    # тут всё упирается в то, что сюда надо подать исходный айтем и его копию
-                    ri = copied_item
-                else:
-                    ri = bi_copies[id(fod.board.root_item)]
+                ri = bi_copies[id(fod.board.root_item)]
                 ri.item_folder_data = fod_COPY
                 fod_COPY.board.root_folder = ri._board.folder_data
                 fod_COPY.board.root_item = ri
