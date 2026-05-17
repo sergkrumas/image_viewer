@@ -4056,7 +4056,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         bi.file_data = None
                 items_list.remove(bi)
 
-                self.board_purgerator(bi)
+                self.board_purge_object(bi)
 
             # (16 май 26) добавление удалённого в группу, которая содержит удалённые айтемы;
             # на данный момент решил не пользоваться этой фичей и сносить айтемы безвозвратно,
@@ -4070,7 +4070,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.update()
 
-    def board_purgerator(self, obj):
+    def board_purge_object(self, obj):
         if obj is BoardItem:
             pass
         attributes = obj.__dict__.items()
@@ -6443,7 +6443,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         if bi in bi.file_data.board_items:
                             bi.file_data.board_items.remove(bi)
                             bi.file_data = None
-                        self.board_purgerator(bi)
+                        self.board_purge_object(bi)
                     # self.show_center_label('cut, other board')
 
 
