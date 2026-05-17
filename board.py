@@ -6443,6 +6443,9 @@ class BoardMixin(BoardTextEditItemMixin):
             self.bi_copies = dict()
             self.links_promises = list()
 
+            # TODO: надо проверить для всех случаев вызова make_item_copy,
+            # что именованный аргумент copy_dependent_data работает правильно
+
             if is_cut: #CUT-PASTE
 
                 if is_same_board: # вырезка и вставка на доску происхождения
@@ -8079,6 +8082,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_copy_hierarchically_dependent_data_close_links_promises(self, items_copies, links_promises):
         # TODO:
         pass
+        # этот код не вызывается пока нигде
 
     def board_delete_hierarchically_dependent_data(self, metadata):
         if metadata:
