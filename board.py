@@ -478,7 +478,7 @@ class BoardItem():
                     folder_data.images_list.append(fid_copy)
 
         if copy_dependent_data:
-            metadata = canvas.board_gather_hierarchy_metadata(self)
+            metadata = canvas.board_gather_item_hierarchy_metadata(self)
             bi_copies, link_promises = canvas.board_copy_hierarchically_dependent_data(metadata, self, copied_item)
             canvas.bi_copies.update(bi_copies)
             for link in link_promises:
@@ -4061,7 +4061,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     #     )
 
                 if bi.type == BoardItem.types.ITEM_NODE:
-                    metadata = self.board_gather_hierarchy_metadata(bi)
+                    metadata = self.board_gather_item_hierarchy_metadata(bi)
                     self.board_delete_hierarchically_dependent_data(metadata)
 
                 # общий блок
@@ -8074,6 +8074,7 @@ class BoardMixin(BoardTextEditItemMixin):
         # Более того, линки могут быть между айтемами, каждый из которых находится в зависимых от выделенных айтемов-нод досках,
         # отсюда получается, что линки надо делать даже не здесь, а только под конец копирования выделенных пользователем айтемов.
         # Поэтому здесь мы только готовим промисы, которые будем исполнять потом
+
         links_promises = all_links[:]
 
         # TODO: проверить, чтобы это всё работало после сохранения и открытия файла
@@ -8112,7 +8113,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_purge_object(fod.board)
                     self.board_purge_object(fod)
 
-    def board_gather_hierarchy_metadata(self, bi, level=0, metadata=None):
+    def board_gather_item_hierarchy_metadata(self, bi, level=0, metadata=None):
         if level == 0 or metadata is None:
             metadata = defaultdict(list)
 
@@ -8121,14 +8122,21 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         links = []
+        def gather_links_from_item(i):
+            for li in self.CrossboardData().link_items_list:
+                if (li.to_item is i) or (li.from_item is i):
+                    if li not in links:
+                        links.append(li)
+
         for item in fod.board.items_list:
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
-                self.board_gather_hierarchy_metadata(item, level=level+1, metadata=metadata)
+                self.board_gather_item_hierarchy_metadata(item, level=level+1, metadata=metadata)
+            gather_links_from_item(item)
 
-            for link in self.CrossboardData().link_items_list:
-                if (link.to_item is item) or (link.from_item is item):
-                    if link not in links:
-                        links.append(link)
+        # технически, линки к bi это уже не hierarchy metadata,
+        # но для удобства я здесь это пропишу
+        if level == 0:
+            gather_links_from_item(bi)
 
         metadata[level].append({
             'fod': fod,
