@@ -6384,8 +6384,9 @@ class BoardMixin(BoardTextEditItemMixin):
         self.update()
 
     def board_control_c(self):
-        self.board_control_x_c_common()
-        self.show_center_label(_("Copied to clipboard"), duration=1.0)
+        count = self.board_control_x_c_common()
+        text = _("Copied to clipboard") + f': {count}'
+        self.show_center_label(text, duration=1.0)
 
     def board_control_v(self):
         app = QApplication.instance()
@@ -6533,6 +6534,8 @@ class BoardMixin(BoardTextEditItemMixin):
             self.prepare_selection_box_widget(cf)
         else:
             self.CrossboardData().copy_items(items, selection_center_board)
+
+        return len(items)
 
     def board_generate_filepath(self, cf, dot_ext):
         cb_fp = self.CrossboardData().incoming_attachments_folderpath
@@ -8092,6 +8095,8 @@ class BoardMixin(BoardTextEditItemMixin):
             _to_item = self.bi_copies.get(id(link.to_item), None) or link.to_item
 
             self.board_create_link_item(_from_item, _to_item)
+
+            link._selected = True
 
         self.bi_copies.clear()
         self.link_promises.clear()
