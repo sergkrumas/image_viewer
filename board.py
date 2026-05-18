@@ -6441,7 +6441,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 item._selected = True
 
             self.bi_copies = dict()
-            self.links_promises = list()
+            self.link_promises = list()
 
             # TODO: надо проверить для всех случаев вызова make_item_copy,
             # что именованный аргумент copy_dependent_data работает правильно
@@ -6488,10 +6488,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, other board')
 
-            self.board_copy_hierarchically_dependent_data_perform_links_promises(self.bi_copies, self.links_promises)
+            self.board_copy_hierarchically_dependent_data_perform_link_promises()
 
-            self.bi_copies.clear()
-            self.links_promises.clear()
 
             self.CrossboardData().clear_cutcopy_buffer()
             self.LibraryData().make_thumbnails_and_previews(cf, None)
@@ -8074,17 +8072,28 @@ class BoardMixin(BoardTextEditItemMixin):
         # Более того, линки могут быть между айтемами, каждый из которых находится в зависимых от выделенных айтемов-нод досках,
         # отсюда получается, что линки надо делать даже не здесь, а только под конец копирования выделенных пользователем айтемов.
         # Поэтому здесь мы только готовим промисы, которые будем исполнять потом
-
-        links_promises = all_links[:]
+        link_promises = all_links[:]
 
         # TODO: проверить, чтобы это всё работало после сохранения и открытия файла
         # TODO: проверить копирование айтемов-нод с постерами
 
-        return bi_copies, links_promises
+        return bi_copies, link_promises
 
-    def board_copy_hierarchically_dependent_data_perform_links_promises(self, bi_copies, links_promises):
-        # TODO:
-        pass
+    def board_copy_hierarchically_dependent_data_perform_link_promises(self):
+
+        raise
+        for link in self.link_promises:
+            # линка, которую надо скопировать, может быть проведена между айтемами,
+            # которые как прошли через копирование, так и не прошли
+            # (не прошли, потому что этого не требуется, а не потому, что это не произошло на данный момент),
+            # поэтому здесь для этого прописан специальный код через or
+            _from_item = self.bi_copies.get(id(link.from_item), None) or link.from_item
+            _to_item = self.bi_copies.get(id(link.to_item), None) or link.to_item
+
+            self.board_create_link_item(_from_item, _to_item)
+
+        self.bi_copies.clear()
+        self.link_promises.clear()
 
     def board_delete_hierarchically_dependent_data(self, metadata):
         if metadata:
