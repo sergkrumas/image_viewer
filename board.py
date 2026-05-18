@@ -8012,7 +8012,11 @@ class BoardMixin(BoardTextEditItemMixin):
         bi_copies.update({id(original_item): copied_item})
 
         if not metadata:
-            return dict(), list()
+            links_promises = []
+            for li in self.CrossboardData().link_items_list:
+                if (li.from_item is original_item) or (li.to_item is original_item):
+                    links_promises.append(li)
+            return bi_copies, links_promises
 
         levels = sorted(metadata.keys(), reverse=True)
         for level in levels:
