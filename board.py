@@ -8008,15 +8008,14 @@ class BoardMixin(BoardTextEditItemMixin):
         fod_copies = dict()
         fda_copies = dict()
         bi_copies = dict()
+        link_promises = []
 
         bi_copies.update({id(original_item): copied_item})
 
+        self.board_gather_links_from_item(original_item, link_promises)
+
         if not metadata:
-            links_promises = []
-            for li in self.CrossboardData().link_items_list:
-                if (li.from_item is original_item) or (li.to_item is original_item):
-                    links_promises.append(li)
-            return bi_copies, links_promises
+            return bi_copies, link_promises
 
         levels = sorted(metadata.keys(), reverse=True)
         for level in levels:
@@ -8068,17 +8067,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
         # линки
         # Линки могут быть между айтемами на разных уровнях иерархии, поэтому линки надо копировать после того как созданы копии айтемов
-        all_links = []
         for level in levels:
             for fod_dict in metadata[level]:
                 for link in fod_dict['links']:
                     # убеждаемся, что одна и та же линка не повторяется несколько раз
-                    if link not in all_links:
-                        all_links.append(link)
+                    if link not in link_promises:
+                        link_promises.append(link)
         # Более того, линки могут быть между айтемами, каждый из которых находится в зависимых от выделенных айтемов-нод досках,
-        # отсюда получается, что линки надо делать даже не здесь, а только под конец копирования выделенных пользователем айтемов.
+        # отсюда получается, что линки надо копировать даже не здесь, а только под конец копирования выделенных пользователем айтемов.
         # Поэтому здесь мы только готовим промисы, которые будем исполнять потом
-        link_promises = all_links[:]
 
         # TODO: проверить, чтобы это всё работало после сохранения и открытия файла
         # TODO: проверить копирование айтемов-нод с постерами
@@ -8100,7 +8097,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.board_create_link_item(_from_item, _to_item)
 
-            link._selected = True
+            # link._selected = True # for debug only
 
         self.bi_copies.clear()
         self.link_promises.clear()
@@ -8132,6 +8129,12 @@ class BoardMixin(BoardTextEditItemMixin):
                     self.board_purge_object(fod.board)
                     self.board_purge_object(fod)
 
+    def board_gather_links_from_item(self, bi, gather_list):
+        for li in self.CrossboardData().link_items_list:
+            if (li.to_item is bi) or (li.from_item is bi):
+                if li not in gather_list:
+                    gather_list.append(li)
+
     def board_gather_item_hierarchy_metadata(self, bi, level=0, metadata=None):
         if level == 0 or metadata is None:
             metadata = defaultdict(list)
@@ -8141,21 +8144,11 @@ class BoardMixin(BoardTextEditItemMixin):
             return
 
         links = []
-        def gather_links_from_item(i):
-            for li in self.CrossboardData().link_items_list:
-                if (li.to_item is i) or (li.from_item is i):
-                    if li not in links:
-                        links.append(li)
 
         for item in fod.board.items_list:
             if item.type in [BoardItem.types.ITEM_GROUP, BoardItem.types.ITEM_NODE]:
                 self.board_gather_item_hierarchy_metadata(item, level=level+1, metadata=metadata)
-            gather_links_from_item(item)
-
-        # технически, линки к bi это уже не hierarchy metadata,
-        # но для удобства я здесь это пропишу
-        if level == 0:
-            gather_links_from_item(bi)
+            self.board_gather_links_from_item(item, links)
 
         metadata[level].append({
             'fod': fod,
