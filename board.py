@@ -6513,11 +6513,28 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_control_x_c_common(cut=True)
         self.show_center_label(_("Cut to clipboard"), duration=1.0)
 
+    def board_is_one_node_selected(self):
+        cf = self.LibraryData().current_folder()
+        bis = []
+        for bi in cf.board.items_list:
+            if bi.type == BoardItem.types.ITEM_NODE and bi._selected:
+                bis.append(bi)
+        if len(bis) == 1:
+            return bis[0]
+        return None
+
     def board_control_x_c_common(self, cut=False):
+
         if not self.selection_box:
-            self.CrossboardData().place_back_if_need()
-            self.CrossboardData().clear_cutcopy_buffer()
-            return
+            one_node_item = self.board_is_one_node_selected()
+            if not one_node_item:
+                self.CrossboardData().place_back_if_need()
+                self.CrossboardData().clear_cutcopy_buffer()
+                return
+            else:
+                selection_center_board = QPointF(one_node_item.position)
+        else:
+            selection_center_board = self.board_MapToBoard(self.selection_box.boundingRect().center())
 
         cb = QApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
@@ -6526,8 +6543,6 @@ class BoardMixin(BoardTextEditItemMixin):
         cb.setText(clipboard_text, mode=cb.Clipboard)
 
         items = self.board_get_selected_items_cutcopy()
-        selection_center_viewport = self.selection_box.boundingRect().center()
-        selection_center_board = self.board_MapToBoard(selection_center_viewport)
         if cut:
             self.CrossboardData().cut_items(items, selection_center_board)
             cf = self.LibraryData().current_folder()
