@@ -6451,6 +6451,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if is_same_board: # вырезка и вставка на доску происхождения
                     for bi in items:
                         # просто добавляем обратно и меняем позицию
+                        # TODO: (18 май 26) кстати, а ведь по идее надо удалять из board_items объекта file_data, а здесь обратно добавлять  
                         cf.board.items_list.append(bi)
                         set_position_and_select(bi)
                     # self.show_center_label('cut, same board')
@@ -6466,6 +6467,9 @@ class BoardMixin(BoardTextEditItemMixin):
                         # а в них свои доски. Ну и где код их удаления?
                         # Походу вместо удаления надо менять ссылки
                         # или всё-таки переносить данные без сноса оригиналов
+                        # (18 май 26) ЗДЕСЬ НУЖНО ИСПОЛЬЗОВАТЬ КОД ПЕРЕНОСА АЙТЕМОВ ИЗ ДОСКИ В ГРУППУ ДОСКИ,
+                        # этот код уже давно написан, надо только проверить, нормально ли там всё
+                            # скорее всего, там надо будет менять аттрибут _board
                         if bi in bi.file_data.board_items:
                             bi.file_data.board_items.remove(bi)
                             bi.file_data = None
