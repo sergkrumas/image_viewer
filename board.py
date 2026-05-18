@@ -8010,10 +8010,13 @@ class BoardMixin(BoardTextEditItemMixin):
         bi_copies = dict()
         link_promises = []
 
+        bi_copies.update({id(original_item): copied_item})
+
+
         # TODO: тут копируется инфа о линках выделенных айтемов,
         # и надо бы спрашивать пользователя, а хочет ли он эти линки копировать.
         # но, конечно, спрашивать надо это один раз, а не отдельно для каждого выделенного айтема
-        bi_copies.update({id(original_item): copied_item})
+        # INFO: если такие линки не нужны, то надо просто убрать вызов функции ниже
         self.board_gather_links_from_item(original_item, link_promises)
 
         if not metadata:
