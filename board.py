@@ -6440,8 +6440,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 item.position = rel_cursor_pos + delta
                 item._selected = True
 
-            self.bi_copies = dict()
-            self.link_promises = list()
+            self.board_copy_hierarchically_dependent_data_init_link_promises()
 
             # TODO: надо проверить для всех случаев вызова make_item_copy,
             # что именованный аргумент copy_dependent_data работает правильно
@@ -8079,11 +8078,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         return bi_copies, link_promises
 
-    def board_copy_hierarchically_dependent_data_perform_link_promises(self):
+    def board_copy_hierarchically_dependent_data_init_link_promises(self):
+        self.bi_copies = dict()
+        self.link_promises = list()
 
-        raise
+    def board_copy_hierarchically_dependent_data_perform_link_promises(self):
         for link in self.link_promises:
-            # линка, которую надо скопировать, может быть проведена между айтемами,
+            # линка, которую надо скопировать, может связывать айтемы,
             # которые как прошли через копирование, так и не прошли
             # (не прошли, потому что этого не требуется, а не потому, что это не произошло на данный момент),
             # поэтому здесь для этого прописан специальный код через or
