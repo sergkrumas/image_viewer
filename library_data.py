@@ -1396,7 +1396,7 @@ class CrossboardData():
                 board = self._cutcopy_buffer_list[0]._board
                 for bi in self._cutcopy_buffer_list:
                     if bi not in board.items_list:
-                        board.items_list.append(bi) 
+                        board.items_list.append(bi)
 
     def clear_cutcopy_buffer(self):
         self._cutcopy_buffer_list.clear()
