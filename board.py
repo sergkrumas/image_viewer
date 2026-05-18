@@ -6488,7 +6488,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, other board')
 
-            self.board_copy_hierarchically_dependent_data_close_links_promises(self.bi_copies, self.links_promises)
+            self.board_copy_hierarchically_dependent_data_perform_links_promises(self.bi_copies, self.links_promises)
 
             self.bi_copies.clear()
             self.links_promises.clear()
@@ -8082,7 +8082,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         return bi_copies, links_promises
 
-    def board_copy_hierarchically_dependent_data_close_links_promises(self, bi_copies, links_promises):
+    def board_copy_hierarchically_dependent_data_perform_links_promises(self, bi_copies, links_promises):
         # TODO:
         pass
 
