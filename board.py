@@ -6488,6 +6488,8 @@ class BoardMixin(BoardTextEditItemMixin):
                         set_position_and_select(new_item)
                     # self.show_center_label('copy, other board')
 
+            self.board_copy_hierarchically_dependent_data_close_links_promises(self.bi_copies, self.links_promises)
+
             self.bi_copies.clear()
             self.links_promises.clear()
 
@@ -8010,7 +8012,7 @@ class BoardMixin(BoardTextEditItemMixin):
         bi_copies.update({id(original_item): copied_item})
 
         if not metadata:
-            return
+            return dict(), list()
 
         levels = sorted(metadata.keys(), reverse=True)
         for level in levels:
@@ -8057,7 +8059,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 fod_COPY = fod_copies[id(fod)]
                 ri = bi_copies[id(fod.board.root_item)]
                 ri.item_folder_data = fod_COPY
-                fod_COPY.board.root_folder = ri._board.folder_data
+                fod_COPY.board.root_folder = ri._board._folder
                 fod_COPY.board.root_item = ri
 
         # линки
@@ -8079,10 +8081,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         return bi_copies, links_promises
 
-    def board_copy_hierarchically_dependent_data_close_links_promises(self, items_copies, links_promises):
+    def board_copy_hierarchically_dependent_data_close_links_promises(self, bi_copies, links_promises):
         # TODO:
         pass
-        # этот код не вызывается пока нигде
 
     def board_delete_hierarchically_dependent_data(self, metadata):
         if metadata:
