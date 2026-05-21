@@ -308,7 +308,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
         return LibraryData().is_webp_file(filepath) and is_webp_file_animated(filepath)
 
     def shift_current_folder(self, delta):
-        index = self.folders[self._current_folder]
+        index = self.folders.index(self._current_folder)
         if index > 0:
             index += delta
         else:
