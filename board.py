@@ -9082,7 +9082,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 status = f"{fda.filepath}\n\t ERROR OCCURRED: {e}"
                 log_lines.append(status)
 
-        with self.board_open_file_in_temp_folder('relocated_files_log.log') as temp:
+        with self.board_open_file_in_temp_folder('relocated_files.log') as temp:
 
             temp.write("\n"*3)
             temp.write("\n".join(log_lines))
