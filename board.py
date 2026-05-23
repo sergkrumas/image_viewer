@@ -5871,6 +5871,12 @@ class BoardMixin(BoardTextEditItemMixin):
         elif event.button() == Qt.RightButton:
             self.board_right_click_selection_releaseEvent(event)
 
+        elif event.button() == Qt.ForwardButton:
+            self.board_dive_inside_board_item()
+
+        elif event.button() == Qt.BackButton:
+            self.board_dive_inside_board_item(back_to_referer=True)
+
         self.prevent_item_deselection = False
 
     def board_clear_items_selection(self):
