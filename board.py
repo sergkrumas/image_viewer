@@ -8912,13 +8912,18 @@ class BoardMixin(BoardTextEditItemMixin):
 
         lost_fdas = []
 
-        for fod in self.board_get_all_crossboard_fods():
-            for fda in fod.images_list:
-                if not fda.board_items:
-                    continue
-                if os.path.exists(fda.filepath):
-                    continue
-                lost_fdas.append(fda)
+        fdas = self.board_get_selected_fdas()
+
+        if not fdas:
+            for fod in self.board_get_all_crossboard_fods():
+                fdas.extend(fod.images_list)
+
+        for fda in fdas:
+            if not fda.board_items:
+                continue
+            if os.path.exists(fda.filepath):
+                continue
+            lost_fdas.append(fda)
 
 
         # with self.board_open_file_in_temp_folder('lost_paths.log') as temp:
@@ -9008,12 +9013,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
         interest_fdas = []
 
-        for fod in self.board_get_all_crossboard_fods():
-            for fda in fod.images_list:
-                # нас интересуют только те fda, которые прозваниваются
-                if not os.path.exists(fda.filepath):
-                    continue
-                interest_fdas.append(fda)
+        fdas = self.board_get_selected_fdas()
+
+        if not fdas:
+            for fod in self.board_get_all_crossboard_fods():
+                fdas.extend(fod.images_list)
+
+        for fda in fdas:
+            # нас интересуют только те fda, которые прозваниваются
+            if not os.path.exists(fda.filepath):
+                continue
+            interest_fdas.append(fda)
 
         # проверка, что файл не находится в своей папке или её подпапках
         for fda in interest_fdas[:]:
@@ -9025,7 +9035,10 @@ class BoardMixin(BoardTextEditItemMixin):
                 fod = fda.folder_data
 
             folder_path = os.path.normpath(fod.folder_path)
-            common_path = os.path.normpath(os.path.commonpath((folder_path, fda.filepath)))
+            try:
+                common_path = os.path.normpath(os.path.commonpath((folder_path, fda.filepath)))
+            except:
+                common_path = ""
 
             # QMessageBox.critical(None, '', f'{folder_path}\n{common_path}\n\n{fda.filepath}')
             if common_path == folder_path:
@@ -9099,7 +9112,14 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_force_show_center_label(_("Finished!"))
 
 
-        # TODO: (11 май 26) добавить возможность перемещать/копировать только те файлы, айтемы которых выделены
+    def board_get_selected_fdas(self):
+        selected_fdas = []
+        cf = self.LibraryData().current_folder()
+        for bi in cf.board.items_list:
+            if bi._selected and bi.folder_data is not None:
+                if bi.folder_data not in selected_fdas:
+                    selected_fdas.append(bi.folder_data)
+        return selected_fdas
 
 
 # для запуска программы прямо из этого файла при разработке и отладке
