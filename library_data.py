@@ -1439,7 +1439,7 @@ class CrossboardData():
 class BoardNonAutoSerializedData():
     pass
 
-class PBPClass():
+class ProgressiveBoardPreparationData():
 
     def __init__(self):
         self.forward_offset = QPointF()
@@ -1485,7 +1485,7 @@ class BoardData():
 
         self.nonAutoSerialized = BoardNonAutoSerializedData()
 
-        self.progressive_board_preparation = PBPClass()
+        self.progressive_board_preparation = ProgressiveBoardPreparationData()
 
         self.prepareBoardOnFileLoad = False
 
