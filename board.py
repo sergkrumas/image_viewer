@@ -1835,7 +1835,7 @@ class BoardMixin(BoardTextEditItemMixin):
                     file_data.board_items.append(board_item)
 
             elif attr_name == 'progressive_board_preparation':
-                obj2 = type('PBPClass', (), {})()
+                obj2 = obj.progressive_board_preparation
                 self.board_serial_to_object_attributes(obj2, attr_data, ())
                 attr_value = obj2
 
@@ -2526,19 +2526,12 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_progressive_fill_layout(self, folder_data, file_data):
         """
             Превьюшки могут генерится в совершенно произвольном порядке,
-            но нам всё-таки надо сохранить порядок,
+            но нам всё-таки надо сохранить изначальный порядок,
             поэтому здесь очень много кода, который это делает
         """
 
         board = folder_data.board
-        if not hasattr(board, "progressive_board_preparation"):
-            board.items_list = []
-            PBP = board.progressive_board_preparation = type('PBPClass', (), {})()
-            PBP.forward_offset = QPointF()
-            PBP.backward_offset = QPointF()
-            PBP.pivot_index = None
-        else:
-            PBP = board.progressive_board_preparation
+        PBP = board.progressive_board_preparation
 
         PBP.direction = 1
         if PBP.pivot_index is not None:

@@ -1439,6 +1439,14 @@ class CrossboardData():
 class BoardNonAutoSerializedData():
     pass
 
+class PBPClass():
+
+    def __init__(self):
+        self.forward_offset = QPointF()
+        self.backward_offset = QPointF()
+        self.pivot_index = None
+        self.direction = 1
+
 class BoardData():
 
     def __init__(self, folder_data):
@@ -1476,6 +1484,8 @@ class BoardData():
         self.root_item = None
 
         self.nonAutoSerialized = BoardNonAutoSerializedData()
+
+        self.progressive_board_preparation = PBPClass()
 
         self.prepareBoardOnFileLoad = False
 
