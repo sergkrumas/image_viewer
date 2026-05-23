@@ -1824,7 +1824,19 @@ class BoardMixin(BoardTextEditItemMixin):
                 attr_value = QColor()
                 attr_value.setRgbF(*attr_data)
 
-            elif attr_type in ['NoneType'] or attr_name in ["text_doc"]:
+            elif attr_name == 'progressive_board_preparation':
+                obj2 = obj.progressive_board_preparation
+                if attr_data is not None:
+                    # (23 май 26) так как я до конца апреля 2026 года сохранял
+                    # progressive_board_preparation как None,
+                    # нужна проверка для совместимости со старыми board-файлами
+                    self.board_serial_to_object_attributes(obj2, attr_data, ())
+                attr_value = obj2
+
+            elif attr_type in ['NoneType']:
+                attr_value = None
+
+            elif attr_name in ["text_doc"]:
                 attr_value = None
 
             elif attr_type == 'FileData':
@@ -1833,11 +1845,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 if isinstance(obj, self.BoardItem):
                     board_item = obj
                     file_data.board_items.append(board_item)
-
-            elif attr_name == 'progressive_board_preparation':
-                obj2 = obj.progressive_board_preparation
-                self.board_serial_to_object_attributes(obj2, attr_data, ())
-                attr_value = obj2
 
             elif attr_type == 'CropDataStack':
                 attr_value = CropDataHelper.unserialize(attr_data)
