@@ -9003,8 +9003,6 @@ class BoardMixin(BoardTextEditItemMixin):
                 if bi._crop_data_stack:
                     self.board_reapply_cropping_data(bi)
 
-        # TODO: (11 май 26) добавить возможность искать только те файлы, айтемы которых выделены
-
     def board_force_show_center_label(self, text):
         self.show_center_label(text)
         processAppEvents()
