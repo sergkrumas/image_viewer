@@ -44,6 +44,8 @@ class Window(QWidget):
         self.images_done = defaultdict(bool)
         self.setMouseTracking(True)
 
+        self.finish_calc_done = False
+
         self.time_start = None
 
     def paintEvent(self, event):
@@ -103,7 +105,8 @@ class Window(QWidget):
         # что значения self.images_done опрашиваются в отрисовке,
         # а как раз после опрашивания значение становится False, поэтому
         # надо обяазательно проверять, что все они выставлены в True 
-        if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT:
+        if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT and not self.finish_calc_done:
+            self.finish_calc_done = True
             # IPC time
             ipc_job_time = time.time() - self.time_start
 
