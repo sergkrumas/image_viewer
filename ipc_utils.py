@@ -441,9 +441,7 @@ class ServerWrapper():
             cli_sock_conn = server_obj.nextPendingConnection()
             sw = SocketWrapper(cli_sock_conn)
             cli_sock_conn.readyRead.connect(sw.processReadyRead)
-
-            # TODO: тут можно отдать таску
-
+            # таска воркеру отдаётся через sendTaskToWorker
             clients_sockets.append(sw)
 
             # cli_sock_conn.disconnected.connect(cli_sock_conn.deleteLater)
