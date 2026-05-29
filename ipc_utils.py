@@ -137,9 +137,8 @@ class Consts:
 
 class DataType:
     Undefined = 0
-    Greeting = 1
-    RequestJob = 2
-    JobDescription = 3
+    ReadyForWork = 1
+    TaskDescription = 3
     TaskResult = 4
 
     Image = 5
@@ -153,6 +152,7 @@ class JSONKEYS():
     FORMAT = 3
     WORKER_INDEX = 4
     FILEPATH = 5
+    TASK_DATA = 6
 
 class SocketWrapper():
 
@@ -213,6 +213,13 @@ class SocketWrapper():
         }
         self.socket.write(self.prepare_data_to_write(data, None, None))
 
+    def sendReadyForWork(self, worker_index):
+        data = {
+            JSONKEYS.MESSAGE_TYPE: DataType.ReadyForWork,
+            JSONKEYS.WORKER_INDEX: worker_index,
+        }
+        self.socket.write(self.prepare_data_to_write(data, None, None))
+
     def sendQImage(self, image, worker_index, filepath):
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
             # На практике у изображения может может быть формат Index8,
@@ -238,6 +245,25 @@ class SocketWrapper():
         # print(format_str, filepath)
 
         self.socket.write(self.prepare_data_to_write(data, barray, None))
+
+    def sendTaskToWorker(self, worker_index):
+        path = self.ipc_utils_debug_input_data(workder_index)
+
+        task_filepaths = []
+        for curdir, folders, files in os.walk(path):
+            for filename in files:
+                filepath = os.path.join(curdir, filename)
+                if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                    task_filepaths.append(filepath)
+
+        data = {
+            JSONKEYS.MESSAGE_TYPE: DataType.TaskDescription,
+            JSONKEYS.TASK_DATA: task_filepaths,
+        }
+        self.socker.write(self.prepare_data_to_write(data, None, None))
+
+    def prepare_task(self, task_data):
+        pass
 
     def processReadyRead(self):
 
@@ -285,9 +311,17 @@ class SocketWrapper():
 
                             if isinstance(data, dict):
                                 self.currentDataType = data[JSONKEYS.MESSAGE_TYPE]
-                                if self.currentDataType == DataType.Greeting:
-                                    pass
+
+                                if self.currentDataType == DataType.ReadyForWork:
+                                    # worker wants to work
+                                    self.sendTaskToWorker(data[JSONKEYS.WORKER_INDEX])
+
+                                elif self.currentDataType == DataType.TaskDescription:
+                                    # worker receives task
+                                    self.prepare_task(data[JSONKEYS.TASK_DATA])
+
                                 elif self.currentDataType == DataType.Image:
+                                    # worker sends image
                                     image = QImage(binary_data_1,
                                         data[JSONKEYS.WIDTH],
                                         data[JSONKEYS.HEIGHT],
@@ -299,8 +333,9 @@ class SocketWrapper():
                                     )
 
                                 elif self.currentDataType == DataType.Done:
-
+                                    # worker finsihes his work
                                     Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
+
                                 else:
                                     print(f'Undefined crap has been received {data}')
 
@@ -338,15 +373,7 @@ def ipc_utils_debug_input_data(worker_index):
 
 def task_function(socket, worker_index):
 
-    filepaths = []
-
-    path = ipc_utils_debug_input_data(worker_index)
-    Globals.window.setWindowTitle(f'{worker_index} {path}')
-    for curdir, folders, files in os.walk(path):
-        for filename in files:
-            filepath = os.path.join(curdir, filename)
-            if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                filepaths.append(filepath)
+    # Globals.window.setWindowTitle(f'{worker_index} {path}')
 
     for filepath in filepaths:
         qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -366,8 +393,14 @@ def worker_init(window, SERVER_NAME, worker_index):
         window.update()
         QApplication.processEvents()
         cli_sock_wrapper = Globals.cli_sock_wrapper
-        task_function(cli_sock_wrapper, worker_index)
-        cli_sock_wrapper.sendDone(worker_index)
+        cli_sock_wrapper.sendReadyForWork(worker_index)
+
+        if False:
+            task_function(cli_sock_wrapper, worker_index)
+            cli_sock_wrapper.sendDone(worker_index)
+
+
+
 
     def client_socket_error(socketError):
         errors = {
