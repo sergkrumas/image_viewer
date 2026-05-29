@@ -55,13 +55,14 @@ class Window(QWidget):
         )
 
         is_servername_set = bool(self.servername)
+        x_offset = int(not is_servername_set)
 
         WIDTH = 50
         for y_co, worker_list in self.images.items():
             for x, image in enumerate(worker_list):
                 if is_servername_set:
                     y_co = 0
-                dest_rect = QRect(x*WIDTH, y_co*WIDTH, WIDTH, WIDTH)
+                dest_rect = QRect((x+x_offset)*WIDTH, y_co*WIDTH, WIDTH, WIDTH)
                 src_width = min(image.width(), image.height())
                 source_rect = QRect(0, 0, src_width, src_width)
                 painter.drawImage(dest_rect, image, source_rect)
