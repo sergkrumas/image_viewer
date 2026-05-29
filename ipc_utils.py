@@ -113,7 +113,7 @@ class Window(QWidget):
         # однако оно необходимо из-за того,
         # что значения self.images_done опрашиваются в отрисовке,
         # а как раз после опрашивания значение становится False, поэтому
-        # надо обяазательно проверять, что все они выставлены в True 
+        # надо обяазательно проверять, что все они выставлены в True
         if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT and not self.finish_calc_done:
             self.finish_calc_done = True
             # IPC time
@@ -159,7 +159,6 @@ class TaskThread(QThread):
         self.updateWindowSignal.connect(self.updateWorkerWindow)
 
     def sendImage(self, qimage, filepath):
-
         self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
 
     def sendDone(self):
