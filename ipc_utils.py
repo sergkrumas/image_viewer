@@ -544,9 +544,40 @@ def set_system_tray_icon(app, icon):
 
 
 
+
+def _excepthook(cls, exc_type, exc_value, exc_tb):
+    # пишем инфу о краше
+    if type(exc_tb) is str:
+        traceback_lines = exc_tb
+    else:
+        traceback_lines = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    # locale.setlocale(locale.LC_ALL, "russian")
+    datetime_string = time.strftime("%A, %d %B %Y %X").capitalize()
+    spaces = " "*15
+    dt = f"{spaces} {datetime_string} {spaces}"
+    dashes = "-"*len(dt)
+    dt_framed = f"{dashes}\n{dt}\n{dashes}\n"
+    with open(cls.APP_get_crashlog_filepath(), "a+", encoding="utf8") as crash_log:
+        crash_log.write("\n"*10)
+        crash_log.write(dt_framed)
+        crash_log.write("\n")
+        crash_log.write(sys.version)
+        crash_log.write("\n\n")
+        crash_log.write(traceback_lines)
+    print(traceback_lines)
+    app = QApplication.instance()
+    stray_icon = app.property("stray_icon")
+    if stray_icon:
+        stray_icon.hide()
+    if not Globals.DEBUG:
+        cls.APP_restart(aftercrash=True)
+    sys.exit()
+
 def main():
 
     app = QApplication([])
+
+    sys.excepthook = _excepthook
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('path', nargs='?', default=None)
