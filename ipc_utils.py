@@ -98,6 +98,11 @@ class Window(QWidget):
         self.update()
 
     def calc_ipc_and_non_ipc_job_time_when_all_finished(self):
+        # может показаться, что можно убрать первое условие,
+        # однако оно необходимо из-за того,
+        # что значения self.images_done опрашиваются в отрисовке,
+        # а как раз после опрашивания значение становится False, поэтому
+        # надо обяазательно проверять, что все они выставлены в True 
         if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT:
             # IPC time
             ipc_job_time = time.time() - self.time_start
