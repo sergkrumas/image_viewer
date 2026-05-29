@@ -111,10 +111,11 @@ class Window(QWidget):
             ipc_job_time = time.time() - self.time_start
 
             # non IPC time
-            time2 = time.time()
-            for i in range(Globals.WORKER_COUNT):
-                task_function(None, i)
-            non_ipc_job_time = time.time() - time2
+            # time2 = time.time()
+            # for i in range(Globals.WORKER_COUNT):
+            #     task_function(None, i)
+            # non_ipc_job_time = time.time() - time2
+            non_ipc_job_time = 0.0
 
             # information
             QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
@@ -154,7 +155,9 @@ class JSONKEYS():
     FILEPATH = 5
     TASK_DATA = 6
 
-class SocketWrapper():
+class SocketWrapper(QObject):
+
+    task_received = pyqtSignal(object)
 
     class states():
         readSize = 0
@@ -202,9 +205,13 @@ class SocketWrapper():
         return data_to_sent
 
     def __init__(self, socket):
+        super().__init__()
+
         self.socket = socket
         self.socket_buffer = bytes()
         self.readState = self.states.readSize
+
+        self.task_received.connect(self.do_task)
 
     def sendDone(self, worker_index):
         data = {
@@ -247,7 +254,7 @@ class SocketWrapper():
         self.socket.write(self.prepare_data_to_write(data, barray, None))
 
     def sendTaskToWorker(self, worker_index):
-        path = self.ipc_utils_debug_input_data(workder_index)
+        path = ipc_utils_debug_input_data(worker_index)
 
         task_filepaths = []
         for curdir, folders, files in os.walk(path):
@@ -260,29 +267,28 @@ class SocketWrapper():
             JSONKEYS.MESSAGE_TYPE: DataType.TaskDescription,
             JSONKEYS.TASK_DATA: task_filepaths,
         }
-        self.socker.write(self.prepare_data_to_write(data, None, None))
+        self.socket.write(self.prepare_data_to_write(data, None, None))
 
     def prepare_task(self, task_data):
-        pass
+        self.task_received.emit(task_data)
 
+    def do_task(self, task_data):
+
+        filepaths = task_data
+        worker_index = Globals.worker_index
 
         for filepath in filepaths:
             qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             if not qimage.isNull():
-                if socket:
-                    try:
-                        socket.sendQImage(qimage, worker_index, filepath)
-                    except Exception as e:
-                        pass
-                    Globals.window.addImage(qimage, worker_index)
+                try:
+                    self.sendQImage(qimage, worker_index, filepath)
+                except Exception as e:
+                    pass
+                Globals.window.addImage(qimage, worker_index)
                 Globals.window.update()
                 QApplication.processEvents()
 
-        if False:
-            task_function(cli_sock_wrapper, worker_index)
-            cli_sock_wrapper.sendDone(worker_index)
-
-
+        self.sendDone(worker_index)
 
     def processReadyRead(self):
 
@@ -413,6 +419,7 @@ def worker_init(window, SERVER_NAME, worker_index):
         msg = errors.get(socketError, default_error_msg)
         print(msg)
 
+    Globals.worker_index = worker_index
 
     cli_sock = QLocalSocket()
     Globals.cli_sock_wrapper = sw = SocketWrapper(cli_sock)
@@ -531,7 +538,7 @@ def main():
         window.show()
 
         servers = []
-        Globals.WORKER_COUNT = 5
+        Globals.WORKER_COUNT = 1
         for i in range(Globals.WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
