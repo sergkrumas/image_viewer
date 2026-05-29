@@ -265,6 +265,25 @@ class SocketWrapper():
     def prepare_task(self, task_data):
         pass
 
+
+        for filepath in filepaths:
+            qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            if not qimage.isNull():
+                if socket:
+                    try:
+                        socket.sendQImage(qimage, worker_index, filepath)
+                    except Exception as e:
+                        pass
+                    Globals.window.addImage(qimage, worker_index)
+                Globals.window.update()
+                QApplication.processEvents()
+
+        if False:
+            task_function(cli_sock_wrapper, worker_index)
+            cli_sock_wrapper.sendDone(worker_index)
+
+
+
     def processReadyRead(self):
 
         def retrieve_data(length):
@@ -371,21 +390,6 @@ def ipc_utils_debug_input_data(worker_index):
         path = file.readlines()[worker_index].strip()
         return path
 
-def task_function(socket, worker_index):
-
-    # Globals.window.setWindowTitle(f'{worker_index} {path}')
-
-    for filepath in filepaths:
-        qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        if not qimage.isNull():
-            if socket:
-                try:
-                    socket.sendQImage(qimage, worker_index, filepath)
-                except Exception as e:
-                    pass
-                Globals.window.addImage(qimage, worker_index)
-            Globals.window.update()
-            QApplication.processEvents()
 
 def worker_init(window, SERVER_NAME, worker_index):
 
@@ -394,13 +398,6 @@ def worker_init(window, SERVER_NAME, worker_index):
         QApplication.processEvents()
         cli_sock_wrapper = Globals.cli_sock_wrapper
         cli_sock_wrapper.sendReadyForWork(worker_index)
-
-        if False:
-            task_function(cli_sock_wrapper, worker_index)
-            cli_sock_wrapper.sendDone(worker_index)
-
-
-
 
     def client_socket_error(socketError):
         errors = {
