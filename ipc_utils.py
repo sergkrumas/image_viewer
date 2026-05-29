@@ -57,6 +57,12 @@ class Window(QWidget):
 
         self.time_start = None
 
+        if Globals.is_worker:
+            self.list_widget = QListWidget(self)
+            self.list_widget.move(self.list_widget.pos() + QPoint(0, 55))
+            self.list_widget.resize(1000, 50)
+            self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
@@ -107,6 +113,10 @@ class Window(QWidget):
 
         self.images[worker_index].append(image)
         self.update()
+
+    def addLogMessage(self, msg):
+        self.list_widget.addItem(msg)
+        self.list_widget.scrollToBottom() 
 
     def calc_ipc_and_non_ipc_job_time_when_all_finished(self):
         # может показаться, что можно убрать первое условие,
@@ -160,6 +170,7 @@ class TaskThread(QThread):
 
     def sendImage(self, qimage, filepath):
         self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
+        Globals.window.addLogMessage(f'::: послано изображение {filepath}')
 
     def sendDone(self):
         self.socket_wrapper.sendDone(self.worker_index)
@@ -195,6 +206,8 @@ class Globals:
     timers = []
 
     exit_timer = None
+
+    is_worker = False
 
     @classmethod
     def set_singleshot_timer(cls, millisecs_delay, callback):
@@ -413,19 +426,26 @@ class SocketWrapper(QObject):
                             if isinstance(data, dict):
                                 self.currentDataType = data[JSONKEYS.MESSAGE_TYPE]
 
-                                if self.currentDataType == DataType.ReadyForWork:
-                                    # worker wants to work
-                                    self.sendTaskToWorker(data[JSONKEYS.WORKER_INDEX])
-                                    # self.sendRollUpSignal()
 
-                                elif self.currentDataType == DataType.TaskDescription:
+
+
+                                if self.currentDataType == DataType.TaskDescription:
                                     # worker receives task
                                     Globals.stop_exit_timer()
                                     self.prepare_task(data[JSONKEYS.TASK_DATA])
 
+                                    Globals.window.addLogMessage('::: принята таска')
+
                                 elif self.currentDataType == DataType.RollUp:
                                     # worker receives exit signal from server
                                     sys.exit()
+
+
+
+                                elif self.currentDataType == DataType.ReadyForWork:
+                                    # worker wants to work
+                                    self.sendTaskToWorker(data[JSONKEYS.WORKER_INDEX])
+                                    # self.sendRollUpSignal()
 
                                 elif self.currentDataType == DataType.Image:
                                     # server receives image
@@ -442,6 +462,8 @@ class SocketWrapper(QObject):
                                 elif self.currentDataType == DataType.Done:
                                     # servers receives worker signal, worker finishes his work
                                     Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
+
+
 
                                 else:
                                     print(f'Undefined crap has been received {data}')
@@ -626,6 +648,7 @@ def main():
     parser.add_argument('-showworkerwindow', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
+    Globals.is_worker = args.worker
     if args.worker:
         # client
         SERVER_NAME = args.servername
