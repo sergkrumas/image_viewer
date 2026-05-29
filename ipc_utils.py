@@ -57,16 +57,16 @@ class Window(QWidget):
         is_servername_set = bool(self.servername)
 
         WIDTH = 50
-        for list_y_coord, worker_list in self.images.items():
+        for y_co, worker_list in self.images.items():
             for x, image in enumerate(worker_list):
                 if is_servername_set:
-                    list_y_coord = 0
-                dest_rect = QRect(x*WIDTH, list_y_coord*WIDTH, WIDTH, WIDTH)
+                    y_co = 0
+                dest_rect = QRect(x*WIDTH, y_co*WIDTH, WIDTH, WIDTH)
                 src_width = min(image.width(), image.height())
                 source_rect = QRect(0, 0, src_width, src_width)
                 painter.drawImage(dest_rect, image, source_rect)
-            if self.images_done[list_y_coord]:
-                dest_rect = QRect(0, list_y_coord*WIDTH, WIDTH, WIDTH)
+            if self.images_done[y_co]:
+                dest_rect = QRect(0, y_co*WIDTH, WIDTH, WIDTH)
                 painter.setPen(QPen(Qt.white, 1))
                 painter.drawText(dest_rect, Qt.AlignLeft, 'DONE')
 
