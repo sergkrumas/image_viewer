@@ -611,13 +611,15 @@ def main():
     parser.add_argument('-worker', help="", action="store_true")
     parser.add_argument('-servername', help="")
     parser.add_argument('-i', nargs="?", default=0)
+    parser.add_argument('-showworkerwindow', default=False)
     args = parser.parse_args(sys.argv[1:])
 
     if args.worker:
         # client
         SERVER_NAME = args.servername
         Globals.window = window = Window(Qt.black)
-        window.show()
+        if args.showworkerwindow:
+            window.show()
         window.resize(1500, 100)
         worker_index = int(args.i)
         window.move(100, 900+100*worker_index)
@@ -644,7 +646,12 @@ def main():
         for i in range(Globals.WORKER_COUNT):
             serv = ServerWrapper()
             servers.append(serv)
-            subprocess.Popen([sys.executable, __file__, '-worker', '-servername', serv.SERVER_NAME, '-i', str(i)])
+            subprocess.Popen([sys.executable, __file__, 
+                '-worker',
+                '-servername', serv.SERVER_NAME,
+                '-i', str(i),
+                # '-showworkerwindow' #раскоментировать для показа окна воркера
+            ])
         app.exec()
 
 if __name__ == '__main__':
