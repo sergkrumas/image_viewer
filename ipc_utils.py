@@ -225,10 +225,11 @@ class DataType:
     ReadyForWork = 1
     TaskDescription = 3
     TaskResult = 4
+    RollUp = 5
 
-    Image = 5
+    Image = 6
 
-    Done = 6
+    Done = 7
 
 class JSONKEYS():
     MESSAGE_TYPE = 0
@@ -337,6 +338,12 @@ class SocketWrapper(QObject):
 
         self.socket.write(self.prepare_data_to_write(data, barray, None))
 
+    def sendRollUpSignal(self):
+        data = {
+            JSONKEYS.MESSAGE_TYPE: DataType.RollUp,
+        }
+        self.socket.write(self.prepare_data_to_write(data, None, None))        
+
     def sendTaskToWorker(self, worker_index):
         path = ipc_utils_debug_input_data(worker_index)
 
@@ -409,14 +416,19 @@ class SocketWrapper(QObject):
                                 if self.currentDataType == DataType.ReadyForWork:
                                     # worker wants to work
                                     self.sendTaskToWorker(data[JSONKEYS.WORKER_INDEX])
+                                    # self.sendRollUpSignal()
 
                                 elif self.currentDataType == DataType.TaskDescription:
                                     # worker receives task
                                     Globals.stop_exit_timer()
                                     self.prepare_task(data[JSONKEYS.TASK_DATA])
 
+                                elif self.currentDataType == DataType.RollUp:
+                                    # worker receives exit signal from server
+                                    sys.exit()
+
                                 elif self.currentDataType == DataType.Image:
-                                    # worker sends image
+                                    # server receives image
                                     image = QImage(binary_data_1,
                                         data[JSONKEYS.WIDTH],
                                         data[JSONKEYS.HEIGHT],
@@ -428,7 +440,7 @@ class SocketWrapper(QObject):
                                     )
 
                                 elif self.currentDataType == DataType.Done:
-                                    # worker finsihes his work
+                                    # servers receives worker signal, worker finishes his work
                                     Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
 
                                 else:
