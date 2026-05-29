@@ -400,16 +400,16 @@ class ServerWrapper():
         self.clients_sockets = []
 
         def receive_incoming_worker(server_obj, clients_sockets):
-            clientConnSocket = server_obj.nextPendingConnection()
-            sw = SocketWrapper(clientConnSocket)
-            clientConnSocket.readyRead.connect(sw.processReadyRead)
+            cli_sock_conn = server_obj.nextPendingConnection()
+            sw = SocketWrapper(cli_sock_conn)
+            cli_sock_conn.readyRead.connect(sw.processReadyRead)
 
             # TODO: тут можно отдать таску
 
             clients_sockets.append(sw)
 
-            # clientConnSocket.disconnected.connect(clientConnSocket.deleteLater)
-            # clientConnSocket.disconnectFromServer()
+            # cli_sock_conn.disconnected.connect(cli_sock_conn.deleteLater)
+            # cli_sock_conn.disconnectFromServer()
 
         if self.server_obj.listen(self.SERVER_NAME):
             self.server_obj.newConnection.connect(lambda: receive_incoming_worker(self.server_obj, self.clients_sockets))
