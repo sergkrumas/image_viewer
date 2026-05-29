@@ -383,13 +383,13 @@ def worker_init(window, SERVER_NAME, worker_index):
         print(msg)
 
 
-    client_socket = QLocalSocket()
-    Globals.client_socket_wrapper = sw = SocketWrapper(client_socket)
-    client_socket.connected.connect(connected_to_server)
-    client_socket.error.connect(client_socket_error)
-    client_socket.readyRead.connect(sw.processReadyRead)
-    client_socket.abort()
-    client_socket.connectToServer(SERVER_NAME)
+    cli_sock = QLocalSocket()
+    Globals.client_socket_wrapper = sw = SocketWrapper(cli_sock)
+    cli_sock.connected.connect(connected_to_server)
+    cli_sock.error.connect(client_socket_error)
+    cli_sock.readyRead.connect(sw.processReadyRead)
+    cli_sock.abort()
+    cli_sock.connectToServer(SERVER_NAME)
 
 
 class ServerWrapper():
