@@ -163,6 +163,7 @@ class TaskThread(QThread):
 
     def sendDone(self):
         self.socket_wrapper.sendDone(self.worker_index)
+        QTimer.singleShot(2000, sys.exit)
 
     def updateWorkerWindow(self, qimage):
         Globals.window.addImage(qimage, self.worker_index)
