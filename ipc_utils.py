@@ -90,24 +90,31 @@ class Window(QWidget):
         self.random_value = value
 
     def addImage(self, image, worker_index):
-
+        # IPC time init
         if self.time_start is None:
             self.time_start = time.time()
 
         self.images[worker_index].append(image)
         self.update()
 
-    def addDone(self, worker_index):
-        self.images_done[worker_index] = True
-
+    def calc_ipc_and_non_ipc_job_time(self):
         if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT:
+            # IPC time
             ipc_job_time = time.time() - self.time_start
 
+            # non IPC time
             time2 = time.time()
             for i in range(Globals.WORKER_COUNT):
                 task_function(None, i)
             non_ipc_job_time = time.time() - time2
+
+            # information
             QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
+
+    def addDone(self, worker_index):
+        self.images_done[worker_index] = True
+
+        self.calc_ipc_and_non_ipc_job_time()
 
         self.update()
 
