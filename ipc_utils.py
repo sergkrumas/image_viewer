@@ -97,7 +97,7 @@ class Window(QWidget):
         self.images[worker_index].append(image)
         self.update()
 
-    def calc_ipc_and_non_ipc_job_time(self):
+    def calc_ipc_and_non_ipc_job_time_when_all_finished(self):
         if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT:
             # IPC time
             ipc_job_time = time.time() - self.time_start
@@ -111,10 +111,10 @@ class Window(QWidget):
             # information
             QMessageBox.critical(None, "DONE", f'{ipc_job_time} vs {non_ipc_job_time}')
 
-    def addDone(self, worker_index):
+    def markAsFinished(self, worker_index):
         self.images_done[worker_index] = True
 
-        self.calc_ipc_and_non_ipc_job_time()
+        self.calc_ipc_and_non_ipc_job_time_when_all_finished()
 
         self.update()
 
@@ -292,7 +292,7 @@ class SocketWrapper():
 
                                 elif self.currentDataType == DataType.Done:
 
-                                    Globals.window.addDone(data[JSONKEYS.WORKER_INDEX])
+                                    Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
                                 else:
                                     print(f'Undefined crap has been received {data}')
 
