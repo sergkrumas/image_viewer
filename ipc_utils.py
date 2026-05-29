@@ -547,7 +547,7 @@ def set_system_tray_icon(app, icon):
 def get_crashlog_filepath():
     return "ipc_crash.log"
 
-def _excepthook(cls, exc_type, exc_value, exc_tb):
+def _excepthook(exc_type, exc_value, exc_tb):
     # пишем инфу о краше
     if type(exc_tb) is str:
         traceback_lines = exc_tb
@@ -572,7 +572,7 @@ def _excepthook(cls, exc_type, exc_value, exc_tb):
     if stray_icon:
         stray_icon.hide()
     # if not Globals.DEBUG:
-    #     cls.APP_restart(aftercrash=True)
+    #     _restart(aftercrash=True)
     sys.exit()
 
 def main():
