@@ -192,6 +192,29 @@ class Globals:
     WORKER_COUNT = None
     worker_socket = None
     threads = []
+    timers = []
+
+    exit_timer = None
+
+    @classmethod
+    def set_singleshot_timer(cls, millisecs_delay, callback):
+        timer = QTimer()
+        cls.timers.append(timer)
+        timer.setInterval(millisecs_delay)
+        timer.timeout.connect(callback)
+        timer.setSingleShot(True)
+        timer.start()
+        return timer
+
+    @classmethod
+    def stop_exit_timer(cls):
+        if cls.exit_timer is not None:
+            cls.exit_timer.stop()
+
+    @classmethod
+    def start_exit_timer(cls):
+        _10_SEC = 10_000
+        cls.exit_timer = cls.set_singleshot_timer(_10_SEC, sys.exit)
 
 class Consts:
     INT_SIZE = 8
@@ -389,6 +412,7 @@ class SocketWrapper(QObject):
 
                                 elif self.currentDataType == DataType.TaskDescription:
                                     # worker receives task
+                                    Globals.stop_exit_timer()
                                     self.prepare_task(data[JSONKEYS.TASK_DATA])
 
                                 elif self.currentDataType == DataType.Image:
@@ -450,6 +474,7 @@ def worker_init(window, SERVER_NAME, worker_index):
         QApplication.processEvents()
         cli_sock_wrapper = Globals.cli_sock_wrapper
         cli_sock_wrapper.sendReadyForWork(worker_index)
+        Globals.start_exit_timer()
 
     def client_socket_error(socketError):
         errors = {
