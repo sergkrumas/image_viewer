@@ -365,8 +365,9 @@ def worker_init(window, SERVER_NAME, worker_index):
     def connected_to_server():
         window.update()
         QApplication.processEvents()
-        task_function(Globals.cli_sock_wrapper, worker_index)
-        Globals.cli_sock_wrapper.sendDone(worker_index)
+        cli_sock_wrapper = Globals.cli_sock_wrapper
+        task_function(cli_sock_wrapper, worker_index)
+        cli_sock_wrapper.sendDone(worker_index)
 
     def client_socket_error(socketError):
         errors = {
