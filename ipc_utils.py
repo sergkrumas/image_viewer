@@ -117,6 +117,8 @@ class Window(QWidget):
         if all(self.images_done.values()) and len(self.images_done) == Globals.WORKER_COUNT and not self.finish_calc_done:
             self.finish_calc_done = True
             # IPC time
+            if self.time_start is None:
+                return
             ipc_job_time = time.time() - self.time_start
 
             # non IPC time
@@ -137,42 +139,59 @@ class Window(QWidget):
         self.update()
 
 
+
 class TaskThread(QThread):
 
-    update_signal = pyqtSignal(object)
+    sendImageSignal = pyqtSignal(object, object)
+    sendDoneSignal = pyqtSignal()
+    updateWindowSignal = pyqtSignal(object)
 
     def __init__(self, task_data, worker_index, socket_wrapper):
         QThread.__init__(self)
+        Globals.threads.append(self)
 
         self.task_data = task_data
         self.worker_index = worker_index
         self.socket_wrapper = socket_wrapper
 
-        self.update_signal.connect(lambda data: _globals.main_window.update_signal_from_threads(data))
+        self.sendImageSignal.connect(self.sendImage)
+        self.sendDoneSignal.connect(self.sendDone)
+        self.updateWindowSignal.connect(self.updateWorkerWindow)
 
-    def start(self):
-        super().start(QThread.IdlePriority)
+    def sendImage(self, qimage, filepath):
+
+        self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
+
+    def sendDone(self):
+        self.socket_wrapper.sendDone(self.worker_index)
+
+    def updateWorkerWindow(self, qimage):
+        Globals.window.addImage(qimage, self.worker_index)
+        Globals.window.update()
+        QApplication.processEvents()
+
+    # def start(self):
+    #     super().start(QThread.IdlePriority)
 
     def run(self):
         for filepath in self.task_data:
             qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             if not qimage.isNull():
                 try:
-                    self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
+                    self.sendImageSignal.emit(qimage, filepath)
                 except Exception as e:
                     pass
-                Globals.window.addImage(qimage, self.worker_index)
-                Globals.window.update()
-                QApplication.processEvents()
 
-        self.socket_wrapper.sendDone(self.worker_index)
+                self.updateWindowSignal.emit(qimage)
 
+        self.sendDoneSignal.emit()
 
 
 class Globals:
     window = None
     WORKER_COUNT = None
     worker_socket = None
+    threads = []
 
 class Consts:
     INT_SIZE = 8
@@ -315,9 +334,7 @@ class SocketWrapper(QObject):
         self.task_received.emit(task_data)
 
     def do_task(self, task_data):
-
-        TaskThread(task_data, worker_index, self).start()
-
+        TaskThread(task_data, Globals.worker_index, self).start()
 
     def processReadyRead(self):
 
