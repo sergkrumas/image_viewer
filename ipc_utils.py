@@ -136,6 +136,39 @@ class Window(QWidget):
 
         self.update()
 
+
+class TaskThread(QThread):
+
+    update_signal = pyqtSignal(object)
+
+    def __init__(self, task_data, worker_index, socket_wrapper):
+        QThread.__init__(self)
+
+        self.task_data = task_data
+        self.worker_index = worker_index
+        self.socket_wrapper = socket_wrapper
+
+        self.update_signal.connect(lambda data: _globals.main_window.update_signal_from_threads(data))
+
+    def start(self):
+        super().start(QThread.IdlePriority)
+
+    def run(self):
+        for filepath in self.task_data:
+            qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            if not qimage.isNull():
+                try:
+                    self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
+                except Exception as e:
+                    pass
+                Globals.window.addImage(qimage, self.worker_index)
+                Globals.window.update()
+                QApplication.processEvents()
+
+        self.socket_wrapper.sendDone(self.worker_index)
+
+
+
 class Globals:
     window = None
     WORKER_COUNT = None
@@ -283,21 +316,8 @@ class SocketWrapper(QObject):
 
     def do_task(self, task_data):
 
-        filepaths = task_data
-        worker_index = Globals.worker_index
+        TaskThread(task_data, worker_index, self).start()
 
-        for filepath in filepaths:
-            qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            if not qimage.isNull():
-                try:
-                    self.sendQImage(qimage, worker_index, filepath)
-                except Exception as e:
-                    pass
-                Globals.window.addImage(qimage, worker_index)
-                Globals.window.update()
-                QApplication.processEvents()
-
-        self.sendDone(worker_index)
 
     def processReadyRead(self):
 
