@@ -623,7 +623,7 @@ def main():
     parser.add_argument('-worker', help="", action="store_true")
     parser.add_argument('-servername', help="")
     parser.add_argument('-i', nargs="?", default=0)
-    parser.add_argument('-showworkerwindow', default=False)
+    parser.add_argument('-showworkerwindow', action="store_true")
     args = parser.parse_args(sys.argv[1:])
 
     if args.worker:
@@ -662,7 +662,7 @@ def main():
                 '-worker',
                 '-servername', serv.SERVER_NAME,
                 '-i', str(i),
-                # '-showworkerwindow' #раскоментировать для показа окна воркера
+                '-showworkerwindow', # раскоментировать для показа окна воркера
             ])
         app.exec()
 
