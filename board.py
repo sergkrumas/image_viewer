@@ -3327,7 +3327,8 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_handle_pending_image_items(self):
         if self.pending_image_items:
             PAIR_INDEX = 0
-            self.ipc_servers.clear()
+            # нельзя ничего тут чистить через clear, потому что сервер ещё мог не отработать
+            # self.ipc_servers.clear()
             srv = ipc_utils.make_server_worker_pair(PAIR_INDEX, self.pending_image_items.copy(), self.board_image_received_callback)
             self.ipc_servers.append(srv)
 

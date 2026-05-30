@@ -694,7 +694,7 @@ def make_server_worker_pair(index, task_description, image_received_callback):
         '-worker',
         '-servername', serv.SERVER_NAME,
         '-i', str(index),
-        '-showworkerwindow', # раскоментировать для показа окна воркера
+        # '-showworkerwindow', # раскоментировать для показа окна воркера
     ])
     return serv
 
