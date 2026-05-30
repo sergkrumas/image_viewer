@@ -281,6 +281,7 @@ class BoardItem():
         self.audiovideo_file = False
         self.audio = False
         self.video = False
+        self.svg_file = False
 
         self.visible = visible
 
@@ -2603,6 +2604,7 @@ class BoardMixin(BoardTextEditItemMixin):
             board_item.audiovideo_file = file_data.is_audio_video_filetype
             board_item.video = file_data.is_audio_video_filetype
             board_item.audio = file_data.is_audio_video_filetype and not file_data.is_video_filetype
+            board_item.svg_file = file_data.is_svg_file
             self.board_set_tracking_data(board_item, file_data.folder_data)
             if direction == 1:
                 _set_position(board_item, file_data, offset)
@@ -3341,7 +3343,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 board_item.pixmap = QPixmap()
                 if board_item.animated_file:
                     __load_animated(filepath)
-                elif self.LibraryData().is_svg_file(filepath):
+                elif board_item.svg_file:
                     __load_svg(filepath)
                 elif board_item.audiovideo_file:
                     __load_audio_video(filepath)

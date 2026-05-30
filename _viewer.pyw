@@ -2362,7 +2362,7 @@ class MainWindow(QMainWindow,
                     animated = animated or LibraryData().is_apng_file_animated(filepath)
                     if animated:
                         self.show_animated(filepath, file_data.is_animated_apng)
-                    elif LibraryData().is_svg_file(filepath):
+                    elif file_data.is_svg_file:
                         self.show_svg(filepath)
                     else:
                         self.show_static(filepath)
@@ -3063,7 +3063,7 @@ class MainWindow(QMainWindow,
                 else:
                     data = load_image_respect_orientation(
                         active_item.filepath,
-                        highres_svg=LibraryData().is_svg_file(active_item.filepath)
+                        highres_svg=active_item.is_svg_file
                     )
                 active_item.previews_grids_cached_original = data
 

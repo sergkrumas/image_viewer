@@ -978,7 +978,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
                 file_data.source_width = 500
                 file_data.source_height = 500
 
-            if LibraryData().is_svg_file(file_data.filepath):
+            if file_data.is_svg_file:
                 file_data.source_width *= DEFAULT_SVG_SCALE_FACTOR
                 file_data.source_height *= DEFAULT_SVG_SCALE_FACTOR
 
@@ -2121,6 +2121,7 @@ class FileData():
 
         self._is_animated_file = None
         self._is_animated_apng = None
+        self._is_svg_file = None
 
         self.previews_grids_cached_original = None
 
@@ -2130,6 +2131,13 @@ class FileData():
             self.filepath = os.path.normpath(filepath)
         else:
             self.filepath = ""
+
+    @property
+    def is_svg_file(self):
+        if self._is_svg_file is None:
+            LD = LibraryData
+            self._is_svg_file = LD.is_svg_file(self.filepath)
+        return self._is_svg_file
 
     # для страниц Boards и Library
     @property
