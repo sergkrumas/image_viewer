@@ -1139,7 +1139,7 @@ class Settings(SettingsWindow):
             'board_draw_bbr': (False, _('Draw board bounding rect')),
             'board_always_hide_control_panel_if_not_hovered': (True, _("Always hide control panel if it is not hovered")),
             BOARD_NO_CONTROL_PANEL_SETTING_ID: (False, _("No control panel")),
-            'board_load_hires_in_sep_process': (True, _("Load High-Resolution Images in a Separate Process")),
+            'board_load_hires_in_sep_process': (False, _("Load High-Resolution Images in a Separate Process")),
 
             '---pagestransparent': _('Pages transparent setting for full-screen mode'),
             'viewer_page_transparency': (0.7, (0.0, 1.0), _('Viewer page transparent value')),

@@ -3198,7 +3198,13 @@ class BoardMixin(BoardTextEditItemMixin):
                 ))
                 if full_quality:
                     self.board_trigger_item_pixmap_loading(board_item)
-                    image_to_draw = board_item.pixmap
+                    if self.STNG.board_load_hires_in_sep_process:
+                        if board_item._is_pending_hiRes:
+                            image_to_draw = file_data.preview
+                        else:
+                            image_to_draw = board_item.pixmap
+                    else:
+                        image_to_draw = board_item.pixmap
                 elif board_item._overrided_preview:
                     image_to_draw = board_item._overrided_preview
                 else:
@@ -3332,11 +3338,12 @@ class BoardMixin(BoardTextEditItemMixin):
             srv = ipc_utils.make_server_worker_pair(PAIR_INDEX, self.pending_image_items.copy(), self.board_image_received_callback)
             self.ipc_servers.append(srv)
 
-        self.pending_image_items.clear()
+            self.pending_image_items.clear()
 
     def board_image_received_callback(self, image, bi_id):
 
-        try:
+        if True:
+        # try:
 
             if isinstance(bi_id, str):
                 bi_id = int(bi_id)
@@ -3349,10 +3356,11 @@ class BoardMixin(BoardTextEditItemMixin):
             if bi is not None:
                 # bi.pixmap = QPixmap.fromImage(image)
 
-                # TODO: вызов QPixmap.fromImage создаёт silent crash,
+                # TODO: вызов QPixmap.fromImage вызывает silent crash,
                 # поэтому пришлось пока задействовать другой костыльный способ
-                # вызов image.save(f'{bi_id}.png') доказывает, что дело не в image, а в чём-то другом
-                #
+                # вызов image.save(f'{bi_id}.png') доказывает, что дело не в image,
+                # а в чём-то другом, но я пока не понимаю в чём
+
                 pixmap = QPixmap(image.size())
                 painter = QPainter()
                 painter.begin(pixmap)
@@ -3360,8 +3368,11 @@ class BoardMixin(BoardTextEditItemMixin):
                 painter.end()
                 bi.pixmap = pixmap
 
-        except Exception as e:
-            self.show_center_label(f'{e}')
+
+                bi._is_pending_hiRes = False
+
+        # except Exception as e:
+        #     self.show_center_label(f'{e}')
 
         self.update()
 
