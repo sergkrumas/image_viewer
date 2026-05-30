@@ -284,6 +284,7 @@ class BoardItem():
         self.svg_file = False
 
         self.visible = visible
+        self._is_pending_hiRes = False
 
         self.scale_x = 1.0
         self.scale_y = 1.0
@@ -943,6 +944,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.bi_copies = dict()
         self.link_promises = list()
 
+        self.is_inside_paintEvent_handler = False
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -984,13 +987,26 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_draw_mainBoardCallback = partial(paint_callback, self)
 
     def board_draw_main(self, painter, event):
+
+        lhrisp = self.STNG.board_load_hires_in_sep_process
+
+        self.is_inside_paintEvent_handler = True
+
+        if lhrisp:
+            self.pending_image_items = dict()
+
         self.board_draw_mainBoardCallback(painter, event)
+
+        if lhrisp:
+            self.board_handle_pending_image_items()
 
         if self.STNG.show_gamepad_monitor:
             hidapi_adapter.draw_gamepad_monitor(self, painter, event)
 
         if self.show_easeInExpo_monitor:
             hidapi_adapter.draw_gamepad_easing_monitor(self, painter, event)
+
+        self.is_inside_paintEvent_handler = False
 
     def board_mousePressEvent(self, event):
         self.mousePressEventBoardCallback(event)
@@ -3291,10 +3307,20 @@ class BoardMixin(BoardTextEditItemMixin):
             print(msg)
 
     def board_trigger_item_pixmap_loading(self, board_item):
+        if board_item._is_pending_hiRes:
+            return
+
         if board_item.pixmap is not None:
             return
 
         self.board_hires_loading(board_item)
+
+    def board_gather_pending_board_items(self, board_item, filepath):
+        self.pending_image_items[id(board_item)] = filepath
+
+    def board_handle_pending_image_items(self):
+        # TODO: тут надо отдавать серваку всё
+        self.pending_image_items.clear()
 
     def board_item_loaded_msg(self, filepath):
         msg = f'loaded to board: {filepath}'
@@ -3333,8 +3359,11 @@ class BoardMixin(BoardTextEditItemMixin):
             self.board_item_loaded_msg(filepath)
 
         def __load_static(filepath):
-            board_item.pixmap = load_image_respect_orientation(filepath)
-            self.board_item_loaded_msg(filepath)
+            if self.STNG.board_load_hires_in_sep_process and self.is_inside_paintEvent_handler:
+                self.board_gather_pending_board_items(board_item, filepath)
+            else:
+                board_item.pixmap = load_image_respect_orientation(filepath)
+                self.board_item_loaded_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             filepath = board_item.file_data.filepath
