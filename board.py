@@ -3352,7 +3352,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 # TODO: вызов QPixmap.fromImage создаёт silent crash,
                 # поэтому пришлось пока задействовать другой костыльный способ
                 # вызов image.save(f'{bi_id}.png') доказывает, что дело не в image, а в чём-то другом
-                # 
+                #
                 pixmap = QPixmap(image.size())
                 painter = QPainter()
                 painter.begin(pixmap)
@@ -6537,7 +6537,7 @@ class BoardMixin(BoardTextEditItemMixin):
                 if is_same_board: # вырезка и вставка на доску происхождения
                     for bi in items:
                         # просто добавляем обратно и меняем позицию
-                        # TODO: (18 май 26) кстати, а ведь по идее надо удалять из board_items объекта file_data, а здесь обратно добавлять  
+                        # TODO: (18 май 26) кстати, а ведь по идее надо удалять из board_items объекта file_data, а здесь обратно добавлять
                         cf.board.items_list.append(bi)
                         set_position_and_select(bi)
                     # self.show_center_label('cut, same board')

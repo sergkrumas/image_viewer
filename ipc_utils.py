@@ -118,7 +118,7 @@ class Window(QWidget):
 
     def addLogMessage(self, msg):
         self.list_widget.addItem(msg)
-        self.list_widget.scrollToBottom() 
+        self.list_widget.scrollToBottom()
 
     def calc_ipc_and_non_ipc_job_time_when_all_finished(self):
         # может показаться, что можно убрать первое условие,
@@ -385,7 +385,7 @@ class SocketWrapper(QObject):
         data = {
             JSONKEYS.MESSAGE_TYPE: DataType.RollUp,
         }
-        self.socket.write(self.prepare_data_to_write(data, None, None))        
+        self.socket.write(self.prepare_data_to_write(data, None, None))
 
     def sendTaskToWorker(self, worker_index):
         if self.server_wrapper is not None and self.server_wrapper.task_description is not None:
@@ -690,7 +690,7 @@ def _excepthook(exc_type, exc_value, exc_tb):
 
 def make_server_worker_pair(index, task_description, image_received_callback):
     serv = ServerWrapper(task_description, image_received_callback)
-    subprocess.Popen([sys.executable, __file__, 
+    subprocess.Popen([sys.executable, __file__,
         '-worker',
         '-servername', serv.SERVER_NAME,
         '-i', str(index),
