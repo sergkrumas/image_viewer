@@ -339,7 +339,7 @@ class SocketWrapper(QObject):
 
     def image_result_received_handler(self, image, bi_id):
         if self.server_wrapper is not None:
-            self.server_wrapper.image_received_callback(QImage(image), bi_id)
+            self.server_wrapper.image_received_callback(image, bi_id)
 
     def sendDone(self, worker_index):
         data = {
