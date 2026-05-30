@@ -3294,6 +3294,10 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.pixmap is not None:
             return
 
+        self.board_hires_loading(board_item)
+
+    def board_hires_loading(self, board_item):
+
         def loaded_msg(filepath):
             msg = f'loaded to board: {filepath}'
             print(msg)
@@ -3319,6 +3323,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
+
             if board_item.pixmap:
                 board_item.update_corner_info()
                 loaded_msg(filepath)
