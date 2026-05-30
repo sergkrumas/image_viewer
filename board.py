@@ -3313,14 +3313,6 @@ class BoardMixin(BoardTextEditItemMixin):
             else:
                 show_msg(filepath)
 
-        def __load_svg(filepath):
-            board_item.pixmap = load_svg(filepath)
-            show_msg(filepath)
-
-        def __load_static(filepath):
-            board_item.pixmap = load_image_respect_orientation(filepath)
-            show_msg(filepath)
-
         def __load_audio_video(filepath):
             if board_item.video:
                 board_item.pixmap = getattr(board_item.file_data, 'full_quality_video_frame', None)
@@ -3328,6 +3320,14 @@ class BoardMixin(BoardTextEditItemMixin):
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
             board_item.update_corner_info()
+            show_msg(filepath)
+
+        def __load_svg(filepath):
+            board_item.pixmap = load_svg(filepath)
+            show_msg(filepath)
+
+        def __load_static(filepath):
+            board_item.pixmap = load_image_respect_orientation(filepath)
             show_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
