@@ -33,6 +33,8 @@ import pickle
 from collections import defaultdict
 
 
+__all__ = ('make_server_worker_pair')
+
 
 
 # ПРОТОКОЛ ТЕСТОВОГО СТЕНДА
@@ -156,21 +158,22 @@ class TaskThread(QThread):
     sendDoneSignal = pyqtSignal()
     updateWindowSignal = pyqtSignal(object)
 
-    def __init__(self, task_data, worker_index, socket_wrapper):
+    def __init__(self, task_data, worker_index, socket_wrapper, is_debug_task):
         QThread.__init__(self)
         Globals.threads.append(self)
 
         self.task_data = task_data
         self.worker_index = worker_index
         self.socket_wrapper = socket_wrapper
+        self.is_debug_task = is_debug_task
 
         self.sendImageSignal.connect(self.sendImage)
         self.sendDoneSignal.connect(self.sendDone)
         self.updateWindowSignal.connect(self.updateWorkerWindow)
 
-    def sendImage(self, qimage, filepath):
-        self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath)
-        Globals.window.addLogMessage(f'::: послано изображение {filepath}')
+    def sendImage(self, qimage, filepath_or_bi_id):
+        self.socket_wrapper.sendQImage(qimage, self.worker_index, filepath_or_bi_id)
+        Globals.window.addLogMessage(f'::: послано изображение {filepath_or_bi_id}')
 
     def sendDone(self):
         self.socket_wrapper.sendDone(self.worker_index)
@@ -185,18 +188,34 @@ class TaskThread(QThread):
     #     super().start(QThread.IdlePriority)
 
     def run(self):
-        for filepath in self.task_data:
-            qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            if not qimage.isNull():
-                try:
-                    self.sendImageSignal.emit(qimage, filepath)
-                except Exception as e:
-                    pass
 
-                self.updateWindowSignal.emit(qimage)
+        if self.is_debug_task:
+            for filepath in self.task_data:
+                qimage = QImage(filepath).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                if not qimage.isNull():
+                    try:
+                        self.sendImageSignal.emit(qimage, filepath)
+                    except Exception as e:
+                        pass
 
-        self.sendDoneSignal.emit()
+                    self.updateWindowSignal.emit(qimage)
 
+            self.sendDoneSignal.emit()
+
+        else:
+            # open('test.txt', 'a+', encoding="utf-8").write(str(self.task_data) + "\n")
+            for bi_id, filepath in self.task_data.items():
+                qimage = QImage(filepath)
+                if not qimage.isNull():
+                    try:
+                    # if True:
+                        self.sendImageSignal.emit(qimage, bi_id)
+                    except Exception as e:
+                        pass
+
+                    self.updateWindowSignal.emit(qimage)
+
+            self.sendDoneSignal.emit()
 
 class Globals:
     window = None
@@ -252,10 +271,13 @@ class JSONKEYS():
     WORKER_INDEX = 4
     FILEPATH = 5
     TASK_DATA = 6
+    TASK_DEBUG = 7
 
 class SocketWrapper(QObject):
 
     task_received = pyqtSignal(object)
+
+    image_result_received = pyqtSignal(object, object)
 
     class states():
         readSize = 0
@@ -311,6 +333,14 @@ class SocketWrapper(QObject):
 
         self.task_received.connect(self.do_task)
 
+        self.server_wrapper = None
+
+        self.image_result_received.connect(self.image_result_received_handler)
+
+    def image_result_received_handler(self, image, bi_id):
+        if self.server_wrapper is not None:
+            self.server_wrapper.image_received_callback(QImage(image), bi_id)
+
     def sendDone(self, worker_index):
         data = {
             JSONKEYS.MESSAGE_TYPE: DataType.Done,
@@ -325,7 +355,7 @@ class SocketWrapper(QObject):
         }
         self.socket.write(self.prepare_data_to_write(data, None, None))
 
-    def sendQImage(self, image, worker_index, filepath):
+    def sendQImage(self, image, worker_index, filepath_or_bi_id):
         if image.format() not in [QImage.Format_RGB32, QImage.Format_ARGB32]:
             # На практике у изображения может может быть формат Index8,
             # который не даёт ничего отправить,
@@ -344,10 +374,10 @@ class SocketWrapper(QObject):
             JSONKEYS.HEIGHT: image.height(),
             JSONKEYS.FORMAT: image.format(),
             JSONKEYS.WORKER_INDEX: worker_index,
-            JSONKEYS.FILEPATH: filepath,
+            JSONKEYS.FILEPATH: filepath_or_bi_id,
         }
         # format_str = self.qt_images_formats_dict[image.format()]
-        # print(format_str, filepath)
+        # print(format_str, filepath_or_bi_id)
 
         self.socket.write(self.prepare_data_to_write(data, barray, None))
 
@@ -358,26 +388,39 @@ class SocketWrapper(QObject):
         self.socket.write(self.prepare_data_to_write(data, None, None))        
 
     def sendTaskToWorker(self, worker_index):
-        path = ipc_utils_debug_input_data(worker_index)
+        if self.server_wrapper is not None and self.server_wrapper.task_description is not None:
 
-        task_filepaths = []
-        for curdir, folders, files in os.walk(path):
-            for filename in files:
-                filepath = os.path.join(curdir, filename)
-                if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
-                    task_filepaths.append(filepath)
+            # QMessageBox.critical(None, "", str(self.server_wrapper.task_description))
+            data = {
+                JSONKEYS.MESSAGE_TYPE: DataType.TaskDescription,
+                JSONKEYS.TASK_DATA: self.server_wrapper.task_description,
+                JSONKEYS.TASK_DEBUG: False,
+            }
 
-        data = {
-            JSONKEYS.MESSAGE_TYPE: DataType.TaskDescription,
-            JSONKEYS.TASK_DATA: task_filepaths,
-        }
+        else:
+            path = ipc_utils_debug_input_data(worker_index)
+
+            task_filepaths = []
+            for curdir, folders, files in os.walk(path):
+                for filename in files:
+                    filepath = os.path.join(curdir, filename)
+                    if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                        task_filepaths.append(filepath)
+
+            data = {
+                JSONKEYS.MESSAGE_TYPE: DataType.TaskDescription,
+                JSONKEYS.TASK_DATA: task_filepaths,
+                JSONKEYS.TASK_DEBUG: True,
+            }
+
         self.socket.write(self.prepare_data_to_write(data, None, None))
 
-    def prepare_task(self, task_data):
+    def prepare_task(self, task_data, is_debug_task):
+        self.is_debug_task = is_debug_task
         self.task_received.emit(task_data)
 
     def do_task(self, task_data):
-        TaskThread(task_data, Globals.worker_index, self).start()
+        TaskThread(task_data, Globals.worker_index, self, self.is_debug_task).start()
 
     def processReadyRead(self):
 
@@ -432,9 +475,10 @@ class SocketWrapper(QObject):
                                 if self.currentDataType == DataType.TaskDescription:
                                     # worker receives task
                                     Globals.stop_exit_timer()
-                                    self.prepare_task(data[JSONKEYS.TASK_DATA])
+                                    task_data = data[JSONKEYS.TASK_DATA]
+                                    self.prepare_task(task_data, data[JSONKEYS.TASK_DEBUG])
 
-                                    Globals.window.addLogMessage('::: принята таска')
+                                    Globals.window.addLogMessage('::: принята таска ' + str(task_data))
 
                                 elif self.currentDataType == DataType.RollUp:
                                     # worker receives exit signal from server
@@ -455,13 +499,20 @@ class SocketWrapper(QObject):
                                         data[JSONKEYS.FORMAT],
                                     )
                                     # print('take', image, image.width())
-                                    Globals.window.addImage(image,
-                                        data[JSONKEYS.WORKER_INDEX]
-                                    )
+                                    if Globals.window is not None:
+                                        # окно создаётся только в тестовом отладочном режиме
+                                        Globals.window.addImage(image,
+                                            data[JSONKEYS.WORKER_INDEX]
+                                        )
+                                    else:
+                                        bi_id = data[JSONKEYS.FILEPATH]
+                                        self.image_result_received.emit(image, bi_id)
+
 
                                 elif self.currentDataType == DataType.Done:
                                     # servers receives worker signal, worker finishes his work
-                                    Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
+                                    if Globals.window is not None:
+                                        Globals.window.markAsFinished(data[JSONKEYS.WORKER_INDEX])
 
 
 
@@ -520,7 +571,7 @@ def worker_init(window, SERVER_NAME, worker_index):
             QLocalSocket.PeerClosedError:
                 None,
         }
-        default_error_msg = "The following error occurred on client socket: %s." % client_socket.errorString()
+        default_error_msg = "The following error occurred on client socket: %s." % cli_sock.errorString()
         msg = errors.get(socketError, default_error_msg)
         print(msg)
 
@@ -537,10 +588,12 @@ def worker_init(window, SERVER_NAME, worker_index):
 
 class ServerWrapper():
 
-    def __init__(self, ):
+    def __init__(self, task_description, image_received_callback):
         self.SERVER_NAME = f'kiv_ipc_{time.time()}'
         self.server_obj = QLocalServer()
         self.clients_sockets = []
+        self.task_description = task_description
+        self.image_received_callback = image_received_callback
 
         def receive_incoming_worker(server_obj, clients_sockets):
             cli_sock_conn = server_obj.nextPendingConnection()
@@ -548,6 +601,7 @@ class ServerWrapper():
             cli_sock_conn.readyRead.connect(sw.processReadyRead)
             # таска воркеру отдаётся через sendTaskToWorker
             clients_sockets.append(sw)
+            sw.server_wrapper = self
 
             # cli_sock_conn.disconnected.connect(cli_sock_conn.deleteLater)
             # cli_sock_conn.disconnectFromServer()
@@ -634,6 +688,16 @@ def _excepthook(exc_type, exc_value, exc_tb):
     #     _restart(aftercrash=True)
     sys.exit()
 
+def make_server_worker_pair(index, task_description, image_received_callback):
+    serv = ServerWrapper(task_description, image_received_callback)
+    subprocess.Popen([sys.executable, __file__, 
+        '-worker',
+        '-servername', serv.SERVER_NAME,
+        '-i', str(index),
+        '-showworkerwindow', # раскоментировать для показа окна воркера
+    ])
+    return serv
+
 def main():
 
     sys.excepthook = _excepthook
@@ -679,15 +743,12 @@ def main():
         servers = []
         Globals.WORKER_COUNT = 1
         for i in range(Globals.WORKER_COUNT):
-            serv = ServerWrapper()
+            serv = make_server_worker_pair(i, None, None)
             servers.append(serv)
-            subprocess.Popen([sys.executable, __file__, 
-                '-worker',
-                '-servername', serv.SERVER_NAME,
-                '-i', str(i),
-                '-showworkerwindow', # раскоментировать для показа окна воркера
-            ])
         app.exec()
+
+
+
 
 if __name__ == '__main__':
     main()

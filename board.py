@@ -31,6 +31,7 @@ from functools import partial
 from contextlib import contextmanager
 from collections import defaultdict
 from _utils import *
+import ipc_utils
 import hidapi_adapter
 from board_note_item import BoardTextEditItemMixin
 from board_align_distribution_ui import (TOOLWINDOW_BUTTONSIDS, ToolActions, ToolWindow, AlignType)
@@ -945,6 +946,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.link_promises = list()
 
         self.is_inside_paintEvent_handler = False
+        self.ipc_servers = []
 
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
@@ -3316,11 +3318,48 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_hires_loading(board_item)
 
     def board_gather_pending_board_items(self, board_item, filepath):
+        board_item._is_pending_hiRes = True
         self.pending_image_items[id(board_item)] = filepath
 
     def board_handle_pending_image_items(self):
-        # TODO: тут надо отдавать серваку всё
+        if self.pending_image_items:
+            PAIR_INDEX = 0
+            self.ipc_servers.clear()
+            srv = ipc_utils.make_server_worker_pair(PAIR_INDEX, self.pending_image_items.copy(), self.board_image_received_callback)
+            self.ipc_servers.append(srv)
+
         self.pending_image_items.clear()
+
+    def board_image_received_callback(self, image, bi_id):
+
+        try:
+
+            if isinstance(bi_id, str):
+                bi_id = int(bi_id)
+
+            cf = self.LibraryData().current_folder()
+
+            id_to_bi = {id(bi): bi for bi in cf.board.items_list}
+            bi = id_to_bi.get(bi_id, None)
+
+            if bi is not None:
+                # bi.pixmap = QPixmap.fromImage(image)
+
+                # TODO: вызов QPixmap.fromImage создаёт silent crash,
+                # поэтому пришлось пока задействовать другой костыльный способ
+                # вызов image.save(f'{bi_id}.png') доказывает, что дело не в image, а в чём-то другом
+                # 
+                pixmap = QPixmap(image.size())
+                painter = QPainter()
+                painter.begin(pixmap)
+                painter.drawImage(QPoint(0, 0), image)
+                painter.end()
+                bi.pixmap = pixmap
+
+        except Exception as e:
+            self.show_center_label(f'{e}')
+
+        self.update()
 
     def board_item_loaded_msg(self, filepath):
         msg = f'loaded to board: {filepath}'
