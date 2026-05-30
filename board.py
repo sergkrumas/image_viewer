@@ -3310,7 +3310,10 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_trigger_item_pixmap_loading(self, board_item):
         if board_item._is_pending_hiRes:
-            return
+            if self.STNG.board_load_hires_in_sep_process:
+                return
+            else:
+                board_item._is_pending_hiRes = False
 
         if board_item.pixmap is not None:
             return
