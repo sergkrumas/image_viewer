@@ -3296,11 +3296,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
         self.board_hires_loading(board_item)
 
-    def board_hires_loading(self, board_item):
+    def board_item_loaded_msg(self, filepath):
+        msg = f'loaded to board: {filepath}'
+        print(msg)
 
-        def loaded_msg(filepath):
-            msg = f'loaded to board: {filepath}'
-            print(msg)
+    def board_hires_loading(self, board_item):
 
         def __load_animated(filepath):
             if board_item.file_data.is_animated_apng:
@@ -3315,7 +3315,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if board_item.movie.frameRect().isNull():
                 board_item.pixmap = None
             else:
-                loaded_msg(filepath)
+                self.board_item_loaded_msg(filepath)
 
         def __load_audio_video(filepath):
             if board_item.video:
@@ -3326,15 +3326,15 @@ class BoardMixin(BoardTextEditItemMixin):
 
             if board_item.pixmap:
                 board_item.update_corner_info()
-                loaded_msg(filepath)
+                self.board_item_loaded_msg(filepath)
 
         def __load_svg(filepath):
             board_item.pixmap = load_svg(filepath)
-            loaded_msg(filepath)
+            self.board_item_loaded_msg(filepath)
 
         def __load_static(filepath):
             board_item.pixmap = load_image_respect_orientation(filepath)
-            loaded_msg(filepath)
+            self.board_item_loaded_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             filepath = board_item.file_data.filepath
