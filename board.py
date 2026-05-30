@@ -3294,7 +3294,7 @@ class BoardMixin(BoardTextEditItemMixin):
         if board_item.pixmap is not None:
             return
 
-        def show_msg(filepath):
+        def loaded_msg(filepath):
             msg = f'loaded to board: {filepath}'
             print(msg)
 
@@ -3311,7 +3311,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if board_item.movie.frameRect().isNull():
                 board_item.pixmap = None
             else:
-                show_msg(filepath)
+                loaded_msg(filepath)
 
         def __load_audio_video(filepath):
             if board_item.video:
@@ -3319,16 +3319,17 @@ class BoardMixin(BoardTextEditItemMixin):
 
             elif board_item.audio:
                 board_item.pixmap = QPixmap()
-            board_item.update_corner_info()
-            show_msg(filepath)
+            if board_item.pixmap:
+                board_item.update_corner_info()
+                loaded_msg(filepath)
 
         def __load_svg(filepath):
             board_item.pixmap = load_svg(filepath)
-            show_msg(filepath)
+            loaded_msg(filepath)
 
         def __load_static(filepath):
             board_item.pixmap = load_image_respect_orientation(filepath)
-            show_msg(filepath)
+            loaded_msg(filepath)
 
         if board_item.type in [BoardItem.types.ITEM_IMAGE, BoardItem.types.ITEM_AV]:
             filepath = board_item.file_data.filepath
