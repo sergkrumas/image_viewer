@@ -205,6 +205,7 @@ class TaskThread(QThread):
         else:
             # open('test.txt', 'a+', encoding="utf-8").write(str(self.task_data) + "\n")
             for bi_id, filepath in self.task_data.items():
+                # TODO: тут не учитывается ориентация, а при генерации превьюшки - учитывается
                 qimage = QImage(filepath)
                 if not qimage.isNull():
                     try:
