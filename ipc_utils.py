@@ -507,7 +507,9 @@ class SocketWrapper(QObject):
                                         )
                                     else:
                                         bi_id = data[JSONKEYS.FILEPATH]
-                                        self.image_result_received.emit(image, bi_id)
+                                        # пропихиваем и буфер, потому что QImage только указывает на него, а не копирует;
+                                        # поэтому и пропихиваем, чтобы сборщик мусора нечаянно его не удалил
+                                        self.image_result_received.emit((image, binary_data_1), bi_id)
 
 
                                 elif self.currentDataType == DataType.Done:

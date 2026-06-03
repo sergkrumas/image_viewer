@@ -3340,7 +3340,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
             self.pending_image_items.clear()
 
-    def board_image_received_callback(self, image, bi_id):
+    def board_image_received_callback(self, image_n_buffer, bi_id):
 
         if True:
         # try:
@@ -3354,21 +3354,10 @@ class BoardMixin(BoardTextEditItemMixin):
             bi = id_to_bi.get(bi_id, None)
 
             if bi is not None:
-                # bi.pixmap = QPixmap.fromImage(image)
-
-                # TODO: вызов QPixmap.fromImage вызывает silent crash,
-                # поэтому пришлось пока задействовать другой костыльный способ
-                # вызов image.save(f'{bi_id}.png') доказывает, что дело не в image,
-                # а в чём-то другом, но я пока не понимаю в чём
-
-                pixmap = QPixmap(image.size())
-                painter = QPainter()
-                painter.begin(pixmap)
-                painter.drawImage(QPoint(0, 0), image)
-                painter.end()
-                bi.pixmap = pixmap
-
-
+                image, image_buffer = image_n_buffer
+                # INFO: здесь обязательно вызываем copy(), иначе получим slient crash,
+                # потому что сборщик мусора отчистит буфер
+                bi.pixmap = QPixmap.fromImage(image.copy())
                 bi._is_pending_hiRes = False
 
         # except Exception as e:
