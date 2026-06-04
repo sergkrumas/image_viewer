@@ -692,7 +692,7 @@ class PluginNodeEditor():
 
     type_state = TYPE_NODE
     op_state = OPERATION_VIEW
-    
+
     ############################
 
     drag_node = None
@@ -805,7 +805,7 @@ class PluginNodeEditor():
             ]
             # toggle corresponding attribute
             for _key, attr_name in zip(keys, attrs):
-                if _key == key: 
+                if _key == key:
                     value = not getattr(PluginNodeEditor, attr_name)
                     setattr(PluginNodeEditor, attr_name, value)
                     status = 'on' if value else 'off'
