@@ -1048,7 +1048,7 @@ def preparePluginBoard(self, plugin_info):
 
 def register(board_obj, plugin_info):
 
-    plugin_info.name = 'ELASTIQUES NODES PLUGIN'
+    plugin_info.name = 'ELASTIQUES NODES'
 
     # plugin_info.add_to_menu = False
 
