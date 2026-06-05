@@ -5052,12 +5052,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
     def board_snapping_sort_targets(self, item_position, cursor_pos):
         for st in self.SNAPPING.point_targets:
-            st._key_value = QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos).length()
+            st._dist_value = QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos).length()
         for st in self.SNAPPING.line_targets:
-            st._key_value = QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos).length()
+            st._dist_value = QVector2D(st.apply_target_metadata_to_pos(cursor_pos) - cursor_pos).length()
 
-        self.SNAPPING.point_targets.sort(key=lambda o: o._key_value)
-        self.SNAPPING.line_targets.sort(key=lambda o: o._key_value)
+        self.SNAPPING.point_targets.sort(key=lambda o: o._dist_value)
+        self.SNAPPING.line_targets.sort(key=lambda o: o._dist_value)
 
     def board_snapping_map_dist_to_viewport(self, dist_vector):
         return dist_vector * QVector2D(self.canvas_scale_x, self.canvas_scale_y)
