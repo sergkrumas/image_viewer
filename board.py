@@ -5004,11 +5004,25 @@ class BoardMixin(BoardTextEditItemMixin):
 
         SNPG.activated_targets = []
 
-        for st in SNPG.point_targets:
-            rv = snap_core_func(st, SNPG.anchors)
-            if rv is not None:
-                SNPG.activated_targets.append(st)
-                return rv
+        if False:
+            for st in SNPG.point_targets:
+                rv = snap_core_func(st, SNPG.anchors)
+                if rv is not None:
+                    SNPG.activated_targets.append(st)
+                    return rv
+
+        else:
+            if SNPG.point_targets:
+                closest_target = SNPG.point_targets[0]
+                closest_anchor = SNPG.anchors[0]
+                # self.show_center_label(f'{closest_target._dist_value}, {ACTIVATION_DIST}')
+                if closest_target._dist_value < ACTIVATION_DIST*2:
+                    snap_offset = closest_anchor.offset
+                    offset = QPointF(item_start_position) + snap_offset
+                    snapped_cursor_pos = self.start_translation_pos - offset + closest_target.apply_target_metadata_to_pos(cursor_pos)
+                    return snapped_cursor_pos
+
+        # return cursor_pos
 
         for st1 in SNPG.line_targets:
             rv1 = snap_core_func(st1, SNPG.line_anchors)
