@@ -8388,8 +8388,12 @@ class BoardMixin(BoardTextEditItemMixin):
                     # ИЛИ вместо защиты: сохранять кадр на куда-то на диск,
                     # и уже создавать новый FileData с кадром от файла на диске
 
-            del item._fod_to_move
-            del item._move_pos
+            if hasattr(item, '_fod_to_move'):
+                delattr(item, '_fod_to_move')
+
+            if hasattr(item, '_move_pos'):
+                delattr(item, '_move_pos')
+
 
     def board_leave_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
