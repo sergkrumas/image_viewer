@@ -4358,6 +4358,7 @@ class BoardMixin(BoardTextEditItemMixin):
         self.board_move_items_to_board(items)
 
         for bi in items:
+            # TODO: (8 июн 26) айтемы-фреймы не поддерживаются пока в этом коде, надо сделать
             rect = bi.get_size_rect(scaled=True)
             width = rect.width()
             height = rect.height()
