@@ -1376,6 +1376,9 @@ class CrossboardData():
             for bi in self._cutcopy_buffer_list:
                 if bi in board.items_list:
                     board.items_list.remove(bi)
+                if bi.folder_data is not None:
+                    if bi in bi.folder_data.board_items:
+                        bi.folder_data.board_items.remove(bi)
 
     def copy_items(self, items, selection_center):
         self.place_back_if_need()

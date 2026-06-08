@@ -6554,9 +6554,11 @@ class BoardMixin(BoardTextEditItemMixin):
 
                 if is_same_board: # вырезка и вставка на доску происхождения
                     for bi in items:
-                        # просто добавляем обратно и меняем позицию
-                        # TODO: (18 май 26) кстати, а ведь по идее надо удалять из board_items объекта file_data, а здесь обратно добавлять
+                        # просто добавляем обратно и изменяем позицию
                         cf.board.items_list.append(bi)
+                        if bi.folder_data is not None:
+                            if bi not in bi.folder_data.board_items:
+                                bi.folder_data.board_items.append(bi)
                         set_position_and_select(bi)
                     # self.show_center_label('cut, same board')
 
@@ -8368,7 +8370,8 @@ class BoardMixin(BoardTextEditItemMixin):
                     # заменяем FileData для айтема
                     item.file_data = fda
                     # добавляем айтем в список
-                    fda.board_items.append(item)
+                    if item not in fda.board_items:
+                        fda.board_items.append(item)
 
                     # TODO: (9 май 26) здесь FileData либо обнаруживается среди имеющихся,
                     # либо копируется, но никогда не перемещается.
