@@ -6553,6 +6553,7 @@ class BoardMixin(BoardTextEditItemMixin):
             if is_cut: #CUT-PASTE
 
                 if is_same_board: # вырезка и вставка на доску происхождения
+
                     for bi in items:
                         # просто добавляем обратно и изменяем позицию
                         cf.board.items_list.append(bi)
@@ -6564,22 +6565,12 @@ class BoardMixin(BoardTextEditItemMixin):
 
 
                 else: # вырезка и вставка на другую доску
-                    for bi in items:
-                        new_item = bi.make_item_copy(self, cf)
-                        set_position_and_select(new_item)
 
-                        # удаляем исходники совсем, убираем ссылки на объекты
-                        # TODO: (17 май 26) сука, а ведь тут могут быть айтемы-ноды,
-                        # а в них свои доски. Ну и где код их удаления?
-                        # Походу вместо удаления надо менять ссылки
-                        # или всё-таки переносить данные без сноса оригиналов
-                        # (18 май 26) ЗДЕСЬ НУЖНО ИСПОЛЬЗОВАТЬ КОД ПЕРЕНОСА АЙТЕМОВ ИЗ ДОСКИ В ГРУППУ ДОСКИ,
-                        # этот код уже давно написан, надо только проверить, нормально ли там всё
-                            # скорее всего, там надо будет менять аттрибут _board
-                        if bi in bi.file_data.board_items:
-                            bi.file_data.board_items.remove(bi)
-                            bi.file_data = None
-                        self.board_purge_object(bi)
+                    for bi in items:
+                        bi._fod_to_move = cf
+                    self.board_move_items_to_board(items)
+                    for bi in items:
+                        set_position_and_select(bi)
                     # self.show_center_label('cut, other board')
 
 
