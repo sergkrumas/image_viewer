@@ -6557,9 +6557,9 @@ class BoardMixin(BoardTextEditItemMixin):
                     for bi in items:
                         # просто добавляем обратно и изменяем позицию
                         cf.board.items_list.append(bi)
-                        if bi.folder_data is not None:
-                            if bi not in bi.folder_data.board_items:
-                                bi.folder_data.board_items.append(bi)
+                        if bi.file_data is not None:
+                            if bi not in bi.file_data.board_items:
+                                bi.file_data.board_items.append(bi)
                         set_position_and_select(bi)
                     # self.show_center_label('cut, same board')
 
@@ -9213,9 +9213,9 @@ class BoardMixin(BoardTextEditItemMixin):
         selected_fdas = []
         cf = self.LibraryData().current_folder()
         for bi in cf.board.items_list:
-            if bi._selected and bi.folder_data is not None:
-                if bi.folder_data not in selected_fdas:
-                    selected_fdas.append(bi.folder_data)
+            if bi._selected and bi.file_data is not None:
+                if bi.file_data not in selected_fdas:
+                    selected_fdas.append(bi.file_data)
         return selected_fdas
 
 
