@@ -8380,6 +8380,10 @@ class BoardMixin(BoardTextEditItemMixin):
                     # ИЛИ вместо защиты: сохранять кадр на куда-то на диск,
                     # и уже создавать новый FileData с кадром от файла на диске
 
+
+                if hasattr(item, 'item_folder_data') and item.item_folder_data:
+                    item.item_folder_data.board.root_folder = item._board.folder_data
+
             if hasattr(item, '_fod_to_move'):
                 delattr(item, '_fod_to_move')
 
