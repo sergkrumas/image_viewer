@@ -8331,8 +8331,11 @@ class BoardMixin(BoardTextEditItemMixin):
             for ch_bi in board_item._children_items:
                 prepare_move_if_required(ch_bi)
 
-    def board_crossboard_change_item_board(self, items_to_replace):
-        for item in items_to_replace:
+    def board_crossboard_change_items_board(self, items_to_move):
+        self.board_change_items_board(items_to_move)
+
+    def board_change_items_board(self, items_to_move):
+        for item in items_to_move:
             if item._fod_to_move is not None:
 
                 prev_fod = item._board._folder
@@ -8398,19 +8401,18 @@ class BoardMixin(BoardTextEditItemMixin):
             if hasattr(item, '_move_pos'):
                 delattr(item, '_move_pos')
 
-
     def board_leave_crossboard(self):
         CROSSBOARD = self.CROSSBOARD
         CROSSBOARD.prepared = False
         cross_fod = self.LibraryData().current_folder()
-        items_to_replace = []
+        items_to_move = []
         for fod in CROSSBOARD.all_fods:
             for item in fod.board.items_list:
                 if hasattr(item, '_fod_to_move'):
-                    items_to_replace.append(item)
+                    items_to_move.append(item)
                     item._move_pos = QPointF(item.position)
                 item.restore_transform()
-        self.board_crossboard_change_item_board(items_to_replace)
+        self.board_crossboard_change_items_board(items_to_move)
         for fod in CROSSBOARD.all_fods:
             del fod._crossboard_frame_item
         self.board_make_board_current(CROSSBOARD.intro_fod)
