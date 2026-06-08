@@ -4348,23 +4348,16 @@ class BoardMixin(BoardTextEditItemMixin):
 
         topLeftCorner = item_board_bb.topRight()
 
-        for bi in items[:]:
+        for bi in items:
+            # if bi.type is bi.types.ITEM_GROUP:
+            #     continue
+            # if bi.type is bi.types.ITEM_FRAME:
+            #     continue
+            bi._fod_to_move = item_fd
 
-            if bi.type is bi.types.ITEM_GROUP:
-                continue
-            if bi.type is bi.types.ITEM_FRAME:
-                continue
-            if bi in board_item_list:
-                board_item_list.remove(bi)
-            else:
-                # значит элемент был перемещён или удалён ранее и нам не надо его обрабатывать здесь
-                continue
-            group_board_item_list.append(bi)
-            if bi.type is bi.types.ITEM_IMAGE:
-                # items_folder.images_list.remove(bi.file_data)
-                item_fd.images_list.append(bi.file_data)
-                bi.file_data.folder_data = item_fd
+        self.board_move_items_to_board(items)
 
+        for bi in items:
             rect = bi.get_size_rect(scaled=True)
             width = rect.width()
             height = rect.height()
