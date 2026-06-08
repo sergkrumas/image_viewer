@@ -8332,9 +8332,9 @@ class BoardMixin(BoardTextEditItemMixin):
                 prepare_move_if_required(ch_bi)
 
     def board_crossboard_change_items_board(self, items_to_move):
-        self.board_change_items_board(items_to_move)
+        self.board_move_items_to_board(items_to_move)
 
-    def board_change_items_board(self, items_to_move):
+    def board_move_items_to_board(self, items_to_move):
         for item in items_to_move:
             if item._fod_to_move is not None:
 
