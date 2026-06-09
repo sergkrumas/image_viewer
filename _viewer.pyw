@@ -2441,8 +2441,9 @@ class MainWindow(QMainWindow,
             name = os.path.basename(self.file_data.filepath)
             if w and h:
                 try:
-                    n = LibraryData().current_folder()._index + 1
-                    l = len(LibraryData().current_folder().images_list)
+                    il = LibraryData().current_folder().images_list
+                    n = il.index(self.file_data) + 1
+                    l = len(il)
                     return f"{name} ({w}x{h}) [{n}/{l}]"
                 except:
                     pass
