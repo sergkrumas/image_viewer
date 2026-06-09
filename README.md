@@ -33,11 +33,12 @@ If you don't like the red color, you can desaturate it in the app settings.
 
 ### [Ultrashort Viewer Page Presentation on Youtube](https://www.youtube.com/watch?v=hlu9MMdf4-A)
 
+### [Cursor Scrubbing for animated images](https://www.youtube.com/watch?v=SJfZS_eH4aI)
+
 ## Start page
 Start page shows up when the app is run directly i.e. without request from Windows Explorer. You can select UI language at the bottom. The picture on the background is desktop wallpaper.
 
 ![](docs/startpage.png)
-
 
 
 
