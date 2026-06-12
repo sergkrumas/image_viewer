@@ -2938,7 +2938,7 @@ class BoardMixin(BoardTextEditItemMixin):
                         # correction for arrow
                         center_pos = path.pointAtPercent(0.5)
 
-                    painter.drawText(center_pos, f'  {id(li)}')
+                    # painter.drawText(center_pos, f'  {id(li)}')
                 else:
                     painter.drawLine(to_pos, from_pos)
 
@@ -2954,19 +2954,20 @@ class BoardMixin(BoardTextEditItemMixin):
                     a2 = a2.toPointF() + center_pos
                     painter.drawPolyline(a1, center_pos, a2)
 
-            links_count_str = f'{links_count}'
+            if False:
+                links_count_str = f'{links_count}'
 
-            count_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, links_count_str)
-            size = max(count_rect.width(), count_rect.height())
-            count_rect.setWidth(size)
-            count_rect.setHeight(size)
-            count_rect.adjust(-4, -4, 4, 4)
-            count_rect.moveCenter(center_pos + QPointF(0, -25))
+                count_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, links_count_str)
+                size = max(count_rect.width(), count_rect.height())
+                count_rect.setWidth(size)
+                count_rect.setHeight(size)
+                count_rect.adjust(-4, -4, 4, 4)
+                count_rect.moveCenter(center_pos + QPointF(0, -25))
 
-            painter.setPen(Qt.NoPen)
-            painter.drawEllipse(count_rect)
-            painter.setPen(QPen(Qt.white, 1))
-            painter.drawText(count_rect, Qt.AlignVCenter | Qt.AlignHCenter, links_count_str)
+                painter.setPen(Qt.NoPen)
+                painter.drawEllipse(count_rect)
+                painter.setPen(QPen(Qt.white, 1))
+                painter.drawText(count_rect, Qt.AlignVCenter | Qt.AlignHCenter, links_count_str)
 
     def draw_selection(self, painter, folder_data):
         painter.save()
