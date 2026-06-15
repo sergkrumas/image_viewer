@@ -6456,7 +6456,6 @@ class BoardMixin(BoardTextEditItemMixin):
             fid.source_width = source_width
             fid.source_height = source_height
             id_to_filedata[int(id_key)] = fid
-            cf.images_list.append(fid)
 
         self.cropping_data_promises = []
         all_items = []

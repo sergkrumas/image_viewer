@@ -627,7 +627,7 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
         if MW.is_viewer_page_active():
 
-            # TODO: это, пожалуй, надо будет вызывать это при смене страницы тоже
+            # TODO: это, пожалуй, надо будет вызывать при смене страницы тоже
             MW.update_thumbnails_row_relative_offset(cf, only_set=True)
 
         MW.show_center_label(_("Updated"))
@@ -1701,6 +1701,19 @@ class FolderData():
 
         # добавляем новые файлы в конец списка
         self.images_list.extend(new_files_data)
+
+        # INFO: Надо добавлять обратно те FileData,
+        # которые нужны для представления файлов
+        # находящихся за пределами текущей папки.
+        # Это очень важно для досок,
+        # потому что иначе сохранённые board-файлы
+        # не смогут загрузится и при загрузке
+        # будет происходить краш.
+        if old_files_data:
+            for fd in old_files_data:
+                if fd not in self.images_list:
+                    if os.path.exists(fd.filepath):
+                        self.images_list.append(fd)
 
         self.original_list = self.images_list[:]
 
