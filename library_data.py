@@ -1712,7 +1712,11 @@ class FolderData():
         if old_files_data:
             for fd in old_files_data:
                 if fd not in self.images_list:
-                    if os.path.exists(fd.filepath):
+                    # INFO: отключаю необходимость проверять наличие файла по заданному пути,
+                    # потому что файл может быть перенесён (а если он перенесён,
+                    # то его можно потом найти с помощью специальной фичи уже реализованной),
+                    # и тогда мы его потеряем, и получим ту же ситуацию снова 
+                    if True or os.path.exists(fd.filepath):
                         self.images_list.append(fd)
 
         self.original_list = self.images_list[:]
