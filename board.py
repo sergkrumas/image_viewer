@@ -1495,6 +1495,7 @@ class BoardMixin(BoardTextEditItemMixin):
         return data[0]
 
     def board_loadBoardDefault(self, path=None):
+        board_filepath = ""
         if path is not None:
             board_filepath = path
         else:
