@@ -408,7 +408,7 @@ class ListenThread(QThread):
 
         self.exec_()
 
-def gamepad_reading_dispatcher(MainWindowObj, thread, data):
+def gamepad_reading_dispatcher(MainWindowObj, thread_instance, data):
     if MainWindowObj.STNG.gamepad_input_requires_focus:
         if MainWindowObj.isActiveWindow():
             allowed = True
@@ -417,7 +417,7 @@ def gamepad_reading_dispatcher(MainWindowObj, thread, data):
     else:
         allowed = True
     if allowed:
-        update_board_viewer(MainWindowObj, thread, data)
+        update_board_viewer(MainWindowObj, thread_instance, data)
 
 def update_board_viewer(MainWindowObj, thread_instance, data):
 
@@ -463,21 +463,21 @@ def update_board_viewer(MainWindowObj, thread_instance, data):
                     MainWindowObj.show_center_label('viewport scale is reset!')
                     MainWindowObj.board_update_selection_box_widget()
                 if button == SignalConstants.BUTTON_LEFT_STICK:
-                    if thread.is_sticks_roles_swapped:
+                    if thread_instance.is_sticks_roles_swapped:
                         reset_scale()
                     else:
                         reset_position()
                 elif button == SignalConstants.BUTTON_RIGHT_STICK:
-                    if thread.is_sticks_roles_swapped:
+                    if thread_instance.is_sticks_roles_swapped:
                         reset_position()
                     else:
                         reset_scale()
             elif button in [SignalConstants.BUTTON_L1, SignalConstants.BUTTON_R1]:
-                MainWindowObj.STNG.gamepad_move_stick_ease_in_expo_param = thread.easeInExpo
+                MainWindowObj.STNG.gamepad_move_stick_ease_in_expo_param = thread_instance.easeInExpo
                 MainWindowObj.show_easeInExpo_monitor = True
-                MainWindowObj.show_center_label(f'easeInExponenta: {thread.easeInExpo}')
+                MainWindowObj.show_center_label(f'easeInExponenta: {thread_instance.easeInExpo}')
                 MainWindowObj.boards_generate_expo_values()
-                MainWindowObj.boards_postponed_set_expo('gamepad_move_stick_ease_in_expo_param', thread.easeInExpo)
+                MainWindowObj.boards_postponed_set_expo('gamepad_move_stick_ease_in_expo_param', thread_instance.easeInExpo)
 
         if True: # no matter the button state
             if button in [SignalConstants.BUTTON_ARROW_EAST, SignalConstants.BUTTON_ARROW_WEST]:
