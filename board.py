@@ -948,6 +948,8 @@ class BoardMixin(BoardTextEditItemMixin):
         self.is_inside_paintEvent_handler = False
         self.ipc_servers = []
 
+        self.board_loading_details_text = None
+
     def board_FindPlugin(self, plugin_filename):
         found_pi = None
         for pi in self.board_plugins:
@@ -1588,9 +1590,9 @@ class BoardMixin(BoardTextEditItemMixin):
 
         children_boards_folders = dict()
         for fd_key, folder_data in children_boards_dict.items():
-            children_boards_folders[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, all_items, main_board=False)
+            children_boards_folders[int(fd_key)] = self.board_recreate_board_from_serial(folder_data, promises, all_items, main_board=False, board_loading=True)
 
-        main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, all_items, main_board=True, board_load_filepath=board_filepath)
+        main_fod = self.board_recreate_board_from_serial(main_board_dict, promises, all_items, main_board=True, board_load_filepath=board_filepath, board_loading=True)
 
         # обязательно делаем это до линков,
         # иначе линки в дочерних досках крашнут загрузку вместе с приложением
@@ -1612,12 +1614,14 @@ class BoardMixin(BoardTextEditItemMixin):
                 ch_bo_fod.board.root_folder = item._board._folder
                 ch_bo_fod.board.root_item = item
                 # и подготавливаем доску
-                self.LibraryData().make_thumbnails_and_previews(ch_bo_fod, None)
+                self.LibraryData().make_thumbnails_and_previews(ch_bo_fod, None, board_loading=True)
                 ch_bo_fod.board.ready = True
 
                 self.board_init_node_poster(item, ch_bo_fod)
 
                 # QMessageBox.critical(None, '', f'{obj} {attr_name} {obj.label}, {ch_bo_fod.folder_path} {ch_bo_fod.folder_label}')
+
+        self.board_loading_details_text = None
 
         for bi in self.cropping_data_promises:
             self.board_reapply_cropping_data(bi)
@@ -1748,7 +1752,7 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_validate_node_poster(self, ni):
         self.board_scroll_node_poster_change_poster_index(ni, 1, validate_only=True)
 
-    def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None):
+    def board_recreate_board_from_serial(self, board_dict, promises, all_items, main_board=False, board_load_filepath=None, board_loading=False):
         board_items = board_dict.get('board_items', [])
         board_attributes = board_dict.get('board_attributes', [])
         board_folder_data = board_dict.get('board_folder_data', dict())
@@ -1795,7 +1799,7 @@ class BoardMixin(BoardTextEditItemMixin):
 
         fod.board.nonAutoSerialized = self.board_loadNonAutoSerialized(board_nonAutoSerialized)
 
-        self.LibraryData().make_thumbnails_and_previews(fod, None)
+        self.LibraryData().make_thumbnails_and_previews(fod, None, board_loading=board_loading)
         fod.board.ready = True
         self.LibraryData().load_board_data() #callbacks are set here
         found_pi = self.board_FindPlugin(fod.board.plugin_filename)
@@ -2417,11 +2421,13 @@ class BoardMixin(BoardTextEditItemMixin):
     def board_draw_long_process_label(self, painter):
         if self.long_loading:
             self.board_draw_wait_label(painter,
-                socondary_text=self.long_process_label_text
+                socondary_text=self.long_process_label_text,
+                details_text=self.board_loading_details_text
             )
 
     def board_draw_wait_label(self, painter, primary_text=_("WAITING"),
-                                                        socondary_text=_("creating previews")):
+                                                        socondary_text=_("creating previews"),
+                                                        details_text=None):
         painter.save()
         font = painter.font()
         font.setPixelSize(100)
@@ -2453,6 +2459,13 @@ class BoardMixin(BoardTextEditItemMixin):
 
         painter.drawText(secondary_text_rect, alignment, text)
         painter.setBrush(Qt.NoBrush)
+
+        if details_text is not None:
+            text_value = details_text
+            details_rect = painter.boundingRect(QRectF(), Qt.AlignLeft, text_value)
+            details_rect.moveCenter(secondary_text_rect.center() + QPointF(0, 150))
+            painter.drawText(details_rect, alignment, text_value)
+
         painter.restore()
 
     def board_set_tracking_data(self, item, folder_data):

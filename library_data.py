@@ -1010,7 +1010,8 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
     @classmethod
     def make_thumbnails_and_previews(cls, folder_data, thread_instance, from_board_items=False,
-                                                        do_progressive_grid_layout=False, do_progressive_board_layout=False):
+                                                        do_progressive_grid_layout=False, do_progressive_board_layout=False,
+                                                        board_loading=False):
 
         if thread_instance is not None and thread_instance.current_index_centered_order:
             current_image = folder_data.current_image()
@@ -1079,6 +1080,11 @@ class LibraryData(BoardLibraryDataMixin, CommentingLibraryDataMixin, TaggingLibr
 
             pass_time = time.time() - start_time
             LibraryData().total_TIME += pass_time
+
+            if board_loading:
+                MW.board_loading_details_text = file_data.filepath[:]
+                MW.update()
+                processAppEvents(update_only=True)
 
             if thread_instance is not None:
                 thread_instance.update_signal.emit(ThreadRuntimeData(
