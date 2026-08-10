@@ -7,7 +7,7 @@ In addition, the program has some PureRef features if you switch to BOARD page (
 
 ~~The first release is planned for the summer 2025, so there's no full user guide at the moment~~
 
-**(sergkrumas, 30 August 2025): with the translating project (to German, French, Spanish and Italian) falling behind schedule and Qt5 losts support in May of 2025 (but PyQt5 is still available), this postponed the first release to the summer 2026.**
+**(sergkrumas, 10 August 2026): The release has been postponed to next year summer every year since 2024, but it is undefined from now as boards page needs more developing after major refactoring & feature adding in the begining of 2026 year. Stay tuned. More commits and updates soon.**
 
 **Feel free to test the viewer, report issues and use it further! Thank you for your attention!**
 
