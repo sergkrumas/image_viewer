@@ -1040,7 +1040,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     if btn.underMouse():
                         mouse_over_control_button = True
                         break
-        # нужно для того, чтобы не было искажений картинки
+        # нужно для того, чтобы избежать искажений картинки
         s_thumb_rect = QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
 
         cursor_pos = self.mapFromGlobal(QCursor().pos())

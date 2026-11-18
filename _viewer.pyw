@@ -4665,14 +4665,39 @@ class MainWindow(QMainWindow,
             text = f"{images_list_len} {folder_label}"
             painter.drawText(text_rect, Qt.AlignLeft, text)
 
+
+            pos_x=50+thumb_ui_size
+            pos_y=scroll_offset + 50+n*H
+            library_page_rect=left_col_check_rect
+            additional_y_offset=30
+            THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
+            s_thumb_rect = QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+
+            painter.setPen(Qt.NoPen)
+
             if folder_data.images_list:
-                ControlPanel.thumbnails_drawing(
-                    self, painter, folder_data,
-                    pos_x=50+thumb_ui_size,
-                    pos_y=scroll_offset + 50+n*H,
-                    library_page_rect=left_col_check_rect,
-                    draw_mirror=False
-                )
+                # отрисовка одного ряда в панели управления, в истории прсмотров и в папках библиотеки
+                for image_index, file_data in enumerate(folder_data.images_list):
+                    thumbnail = file_data.get_thumbnail()
+                    if not thumbnail:
+                        continue
+                    offset_x = 0
+                    if pos_x:
+                        offset_x = pos_x + THUMBNAIL_WIDTH*image_index
+
+                    thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
+
+                    # если миниатюра помещается в отведённой зоне library_page_rect
+                    if library_page_rect.contains(thumb_rect.topRight()):
+
+                        # draw thumbnail
+                        if thumbnail != self.globals.DEFAULT_THUMBNAIL:
+                            painter.drawRect(thumb_rect)
+
+                        painter.drawPixmap(thumb_rect, thumbnail, s_thumb_rect)
+
+
+
             source = QRect(0, 0, tw, tw)
             target = QRect(30, int(scroll_offset + 30+H*n), thumb_ui_size, thumb_ui_size)
             w = thumb_size
