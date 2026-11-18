@@ -4666,10 +4666,10 @@ class MainWindow(QMainWindow,
             painter.drawText(text_rect, Qt.AlignLeft, text)
 
 
-            pos_x=50+thumb_ui_size
-            pos_y=scroll_offset + 50+n*H
-            library_page_rect=left_col_check_rect
-            additional_y_offset=30
+            pos_x = 50+thumb_ui_size
+            pos_y = scroll_offset + 50 + n * H
+            library_page_rect = left_col_check_rect
+            additional_y_offset = 30
             THUMBNAIL_WIDTH = Globals.THUMBNAIL_WIDTH
             s_thumb_rect = QRect(0, 0, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
 
@@ -4681,10 +4681,8 @@ class MainWindow(QMainWindow,
                     thumbnail = file_data.get_thumbnail()
                     if not thumbnail:
                         continue
-                    offset_x = 0
-                    if pos_x:
-                        offset_x = pos_x + THUMBNAIL_WIDTH*image_index
 
+                    offset_x = pos_x + THUMBNAIL_WIDTH*image_index
                     thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
 
                     # если миниатюра помещается в отведённой зоне library_page_rect
