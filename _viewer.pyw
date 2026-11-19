@@ -5236,7 +5236,8 @@ class MainWindow(QMainWindow,
                     pos_y=1,
                     current_index=index,
                     draw_mirror=False,
-                    additional_y_offset=offset
+                    additional_y_offset=offset,
+                    history_row=True,
                 )
             painter.save()
             painter.setPen(QPen(Qt.white))

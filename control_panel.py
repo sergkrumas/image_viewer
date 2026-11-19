@@ -980,7 +980,7 @@ class ControlPanel(QWidget, UtilsMixin):
 
     def thumbnails_drawing(self, painter, imgs_to_show, pos_x=0, pos_y=0,
                     library_page_rect=None, current_index=None, draw_mirror=True,
-                    additional_y_offset=30):
+                    additional_y_offset=30, history_row=False):
         THUMBNAIL_WIDTH = self.globals.THUMBNAIL_WIDTH
         AUGMENTED_THUBNAIL_INCREMENT = self.globals.AUGMENTED_THUBNAIL_INCREMENT
         MULTIROW_THUMBNAILS_PADDING = self.globals.MULTIROW_THUMBNAILS_PADDING
@@ -1056,8 +1056,9 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.setPen(Qt.NoPen)
 
 
-        for image_index, file_data in enumerate(images_list):
-            file_data._ui_control_panel_rect = None
+        if not history_row:
+            for image_index, file_data in enumerate(images_list):
+                file_data._ui_control_panel_rect = None
 
 
         if multirow:
@@ -1093,7 +1094,8 @@ class ControlPanel(QWidget, UtilsMixin):
                     if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                         painter.drawRect(thumb_rect_)
                     painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
-                    file_data._ui_control_panel_rect = thumb_rect_
+                    if not history_row:
+                        file_data._ui_control_panel_rect = thumb_rect_
 
         else:
 
@@ -1159,7 +1161,8 @@ class ControlPanel(QWidget, UtilsMixin):
                     # draw thumbnail
                     if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                         painter.drawRect(thumb_rect)
-                    file_data._ui_control_panel_rect = thumb_rect_
+                    if not history_row:
+                        file_data._ui_control_panel_rect = thumb_rect_
 
                     if file_data._selected:
                         painter.setOpacity(1.0)
