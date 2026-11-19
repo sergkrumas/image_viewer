@@ -2118,6 +2118,8 @@ class FileData():
 
         self._preview = None
 
+        self._ui_control_panel_rect = None
+
         if not make_copy:
             self.is_supported_filetype = LibraryData.is_interest_file(self.filepath)
             self.is_audio_video_filetype, self.is_video_filetype = LibraryData.is_audio_video_file(self.filepath)

@@ -1055,6 +1055,11 @@ class ControlPanel(QWidget, UtilsMixin):
         painter.setBrush(QBrush(QColor(0, 0, 0)))
         painter.setPen(Qt.NoPen)
 
+
+        for image_index, file_data in enumerate(images_list):
+            file_data._ui_control_panel_rect = None
+
+
         if multirow:
 
             # отрисовка рядов в полноэкранном режиме
@@ -1088,6 +1093,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                         painter.drawRect(thumb_rect_)
                     painter.drawPixmap(thumb_rect_, thumbnail, s_thumb_rect_)
+                    file_data._ui_control_panel_rect = thumb_rect_
 
         else:
 
@@ -1153,6 +1159,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     # draw thumbnail
                     if thumbnail != self.globals.DEFAULT_THUMBNAIL:
                         painter.drawRect(thumb_rect)
+                    file_data._ui_control_panel_rect = thumb_rect_
 
                     if file_data._selected:
                         painter.setOpacity(1.0)
@@ -1359,19 +1366,18 @@ class ControlPanel(QWidget, UtilsMixin):
             for ri, image_row in enumerate(image_rows):
                 for iri, file_data in enumerate(image_row):
 
-                    # обратить внимание, что именно здесь фантомный элемент в рачёт не берём,
+                    # обратить внимание, что именно здесь фантомный элемент в расчёт не берём,
                     # поэтому здесь единица не прибавляется
                     _ROW_LENGTH = ROW_LENGTH
                     image_index_draw += 1
                     image_index += 1
 
 
-                    d_rect = QRectF(
-                            self.get_multirow_thumbnail_pos(image_index_draw, _ROW_LENGTH),
-                            QSizeF(THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
-                        ).toRect()
-
+                    if not file_data._ui_control_panel_rect:
+                        continue
+                    d_rect = file_data._ui_control_panel_rect
                     d_rect.adjust(5, 0, -5, 0) # немного сплющиваем
+
 
                     if file_data._selected:
                         d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
@@ -1405,19 +1411,10 @@ class ControlPanel(QWidget, UtilsMixin):
 
             for image_index, file_data in enumerate(images_list):
                 thumbnail = file_data.get_thumbnail()
-                # ради анимационного эффекта пришлось разделить выражение
-                # offset_x = r.width()/2-THUMBNAIL_WIDTH/2+THUMBNAIL_WIDTH*(image_index-current_index)
-                # на зависимую и независимую от current_index части
-                if False:
-                    relative_offset_x = -THUMBNAIL_WIDTH*current_index
-                else:
-                    relative_offset_x = fod.relative_thumbnails_row_offset_x
-                if is_board_page_active and not is_call_from_main_window:
-                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + fod.absolute_board_thumbnails_row_offset_x
-                else:
 
-                    offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
-                d_rect = QRect(int(offset_x), 30, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
+                if not file_data._ui_control_panel_rect:
+                    continue
+                d_rect = file_data._ui_control_panel_rect
 
                 if file_data._selected:
                     d_rect = d_rect.adjusted(0, -AUGMENTED_THUBNAIL_INCREMENT, 0, 0)
