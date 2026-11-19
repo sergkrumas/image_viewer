@@ -1331,10 +1331,10 @@ class ControlPanel(QWidget, UtilsMixin):
 
         ROW_LENGTH = self.calculate_row_length()
 
-        folder_data = self.LibraryData().current_folder()
-        _images_list_selected = folder_data._images_list_selected
-        images_list = folder_data.images_list
-        current_index = folder_data.get_current_index()
+        fod = self.LibraryData().current_folder()
+        _images_list_selected = fod._images_list_selected
+        images_list = fod.images_list
+        current_index = fod.get_current_index()
         r = self.rect()
         check_rect = r.adjusted(-THUMBNAIL_WIDTH, -THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
         pos = QCursor().pos()
@@ -1350,14 +1350,13 @@ class ControlPanel(QWidget, UtilsMixin):
                 _images_list_selected.remove(im_data)
 
 
-        is_call_from_main_window = isinstance(self, self.globals.main_window.__class__)
         multirow = not is_call_from_main_window and self.fullscreen_flag
 
         if multirow:
 
             image_index = -1
             image_index_draw = -1
-            image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
+            image_rows = fod.get_phantomed_image_rows(ROW_LENGTH)
             for ri, image_row in enumerate(image_rows):
                 for iri, file_data in enumerate(image_row):
 
@@ -1413,9 +1412,9 @@ class ControlPanel(QWidget, UtilsMixin):
                 if False:
                     relative_offset_x = -THUMBNAIL_WIDTH*current_index
                 else:
-                    relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                    relative_offset_x = fod.relative_thumbnails_row_offset_x
                 if is_board_page_active and not is_call_from_main_window:
-                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + folder_data.absolute_board_thumbnails_row_offset_x
+                    offset_x = THUMBNAIL_WIDTH*(image_index+1) + fod.absolute_board_thumbnails_row_offset_x
                 else:
 
                     offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
