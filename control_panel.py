@@ -1337,8 +1337,7 @@ class ControlPanel(QWidget, UtilsMixin):
         current_index = fod.get_current_index()
         r = self.rect()
         check_rect = r.adjusted(-THUMBNAIL_WIDTH, -THUMBNAIL_WIDTH, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH)
-        pos = QCursor().pos()
-        cursor_pos = self.mapFromGlobal(pos)
+        cursor_pos = self.mapFromGlobal(QCursor().pos())
 
         def toggle_selection_flag(im_data):
             if not im_data._is_phantom:
