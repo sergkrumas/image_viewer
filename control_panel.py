@@ -997,13 +997,13 @@ class ControlPanel(QWidget, UtilsMixin):
             return
         elif isinstance(imgs_to_show, self.LibraryData.FolderData):
             # library folders rows and control panel row
-            folder_data = imgs_to_show
-            current_index = folder_data.get_current_index()
+            fod = imgs_to_show
+            current_index = fod.get_current_index()
             overrided_current_index = False
-            if not folder_data.images_list:
+            if not fod.images_list:
                 return
             images_list = imgs_to_show.images_list
-            _images_list_selected = folder_data._images_list_selected
+            _images_list_selected = fod._images_list_selected
         else:
             # history row
             overrided_current_index = True
@@ -1108,13 +1108,13 @@ class ControlPanel(QWidget, UtilsMixin):
                     # на зависимую и независимую от current_index части
                     if isinstance(imgs_to_show, self.LibraryData.FolderData):
                         # control panel row
-                        relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                        relative_offset_x = fod.relative_thumbnails_row_offset_x
                     else:
                         # history row
                         relative_offset_x = -THUMBNAIL_WIDTH*current_index
 
                     if is_board_page_active and not is_call_from_main_window:
-                        offset_x = THUMBNAIL_WIDTH*(image_index + 1) + folder_data.absolute_board_thumbnails_row_offset_x
+                        offset_x = THUMBNAIL_WIDTH*(image_index + 1) + fod.absolute_board_thumbnails_row_offset_x
                     else:
                         offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index-THUMBNAIL_WIDTH/2 + relative_offset_x
                 thumb_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
@@ -1225,7 +1225,7 @@ class ControlPanel(QWidget, UtilsMixin):
         if multirow:
             image_index = -1
             image_index_draw = -1
-            image_rows = folder_data.get_phantomed_image_rows(ROW_LENGTH)
+            image_rows = fod.get_phantomed_image_rows(ROW_LENGTH)
             for ri, image_row in enumerate(image_rows):
                 for iri, file_data in enumerate(image_row):
 
@@ -1241,7 +1241,7 @@ class ControlPanel(QWidget, UtilsMixin):
                     sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
 
                     if sel_rect.contains(self.mapped_cursor_pos()):
-                        if folder_data.check_insert_position(image_index):
+                        if fod.check_insert_position(image_index):
                             cursor_rect = sel_rect
                             self.cursor_rect_index = image_index
                         painter.setOpacity(1.0)
@@ -1259,12 +1259,12 @@ class ControlPanel(QWidget, UtilsMixin):
 
         else:
 
-            for image_index, file_data in enumerate(folder_data.get_phantomed_image_list()):
+            for image_index, file_data in enumerate(fod.get_phantomed_image_list()):
 
-                relative_offset_x = folder_data.relative_thumbnails_row_offset_x
+                relative_offset_x = fod.relative_thumbnails_row_offset_x
 
                 if is_board_page_active and not is_call_from_main_window:
-                    offset_x = THUMBNAIL_WIDTH*(image_index + 1) - THUMBNAIL_WIDTH/2 + folder_data.absolute_board_thumbnails_row_offset_x
+                    offset_x = THUMBNAIL_WIDTH*(image_index + 1) - THUMBNAIL_WIDTH/2 + fod.absolute_board_thumbnails_row_offset_x
                 else:
                     offset_x = r.width()/2+THUMBNAIL_WIDTH*image_index - THUMBNAIL_WIDTH + relative_offset_x
                 sel_rect = QRectF(offset_x, additional_y_offset+pos_y, THUMBNAIL_WIDTH, THUMBNAIL_WIDTH).toRect()
@@ -1272,7 +1272,7 @@ class ControlPanel(QWidget, UtilsMixin):
                 sel_rect.adjust(5, 0, -5, 0) # немного сплющиваем
 
                 if sel_rect.contains(self.mapped_cursor_pos()):
-                    if folder_data.check_insert_position(image_index):
+                    if fod.check_insert_position(image_index):
                         cursor_rect = sel_rect
                         self.cursor_rect_index = image_index
                     painter.setOpacity(1.0)
